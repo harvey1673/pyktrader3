@@ -1,16 +1,16 @@
 #-*- coding:utf-8 -*-
 import tkinter as tk
 import numpy as np
+import math
 import tkinter.ttk
 import matplotlib
 matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from pycmqlib3.cmqlib import cmqlib
-import instrument
-import math
 from pycmqlib3.utility.misc import product_code, min2time, BDAYS_PER_YEAR
-from gui_misc import *
+from . instrument import copy_volgrid
+from . gui_misc import *
 
 class OptVolgridGui(object):
     def __init__(self, vg, app, master):
@@ -39,7 +39,7 @@ class OptVolgridGui(object):
         for idx in range(len(self.strikes)):
             self.strikes[idx].sort()
         self.opt_dict = {v: k for k, v in self.option_insts.items()}
-        self.volgrid = instrument.copy_volgrid(vg)
+        self.volgrid = copy_volgrid(vg)
         self.rf = app.agent.irate.get(vg.ccy, 0.0)
         self.vm_figure = {}
         self.vm_lines = dict([(exp, {}) for exp in self.expiries])

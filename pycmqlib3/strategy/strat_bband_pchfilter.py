@@ -1,6 +1,6 @@
 #-*- coding:utf-8 -*-
 from pycmqlib3.utility.base import BaseObject, fcustom
-from strategy import Strategy
+from . strategy import Strategy
  
 class BbandPChanTrader(Strategy):
     common_params =  dict( Strategy.common_params, **{'channel_keys': ['DONCH_HC', 'DONCH_LC'], 'band_keys': ['MA_CLOSE', 'STDEV_CLOSE'], \

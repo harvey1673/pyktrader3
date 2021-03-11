@@ -1,12 +1,11 @@
 import datetime
 import numpy as np
-import cmq_crv_defn
-from cmq_inst import *
-import cmq_curve
-import misc
-import cmq_volgrid
-import bsopt
 import copy
+from cmq_inst import CMQInstrument, disc_factor
+from . import cmq_curve, cmq_crv_defn, cmq_volgrid
+from pycmqlib3.utility import misc
+from pycmqlib3.analytics import bsopt
+
 
 class CMQNormalCSO(CMQInstrument):
     class_params = dict(CMQInstrument.class_params, **{ 'strike': 0.0,

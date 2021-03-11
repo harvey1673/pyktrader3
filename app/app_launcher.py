@@ -5,10 +5,10 @@ import time
 import logging
 import json
 from pycmqlib3.utility import misc, base, sec_bits
-from .agent_save import SaveAgent
-from .agent_maqs import MAQSAgent
-from .agent import Agent
-from .gui_agent import MainApp, Gui
+from pycmqlib3.core.agent_save import SaveAgent
+from pycmqlib3.core.agent_maqs import MAQSAgent
+from pycmqlib3.core.agent import Agent
+from pycmqlib3.core.gui_agent import MainApp, Gui
 
 def save(config_file, tday):
     with open(config_file, 'r') as infile:

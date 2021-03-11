@@ -1,7 +1,7 @@
 #-*- coding:utf-8 -*-
 import numpy as np
 import logging
-from strategy import Strategy
+from . strategy import Strategy
 from pycmqlib3.core.trading_const import OrderType
 
 class ManualTrade(Strategy):

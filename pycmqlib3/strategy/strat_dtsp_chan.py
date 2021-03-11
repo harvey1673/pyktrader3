@@ -3,7 +3,7 @@ import numpy as np
 import logging
 from pycmqlib3.analytics.data_handler as dh
 from pycmqlib3.utility.base import BaseObject, fcustom
-from strategy import Strategy
+from . strategy import Strategy
  
 class DTSplitChan(Strategy):
     common_params =  dict({'daily_close_buffer': 0, 'price_limit_buffer': 5}, \

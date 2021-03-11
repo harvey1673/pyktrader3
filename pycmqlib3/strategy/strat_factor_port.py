@@ -5,7 +5,7 @@ import numpy as np
 import logging
 from pycmqlib3.analytics.data_handler as dh
 from pycmqlib3.utility.base import BaseObject, fcustom
-from strategy import Strategy
+from . strategy import Strategy
 
 # table format for factor data
 # create table fut_fact_data (product_code varchar(10), roll_label varchar(20), exch varchar(10),

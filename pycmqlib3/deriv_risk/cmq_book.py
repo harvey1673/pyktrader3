@@ -2,9 +2,8 @@
 import json
 import datetime
 import itertools
-import cmq_inst
-import dbaccess
-import misc
+from . import cmq_inst
+from pycmqlib3.utility import misc, dbaccess
 
 class CMQDealStatus:
     Perspective, PendingSignoff, Live, Matured, Unwinded, Cancelled = list(range(6))

@@ -4,10 +4,10 @@ import tkinter.ttk
 import json
 import pandas as pd
 import agent
-from gui_misc import *
-from gui_option import *
-from gui_strat import *
-from trading_const import Option_ProductTypes
+from . gui_misc import *
+from . gui_option import *
+from . gui_strat import *
+from . trading_const import Option_ProductTypes
     
 class Gui(tk.Tk):
     def __init__(self, app = None):

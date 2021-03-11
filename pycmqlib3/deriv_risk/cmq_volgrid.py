@@ -1,8 +1,8 @@
 import numpy as np
-import bsopt
 import workdays
 import datetime
-import misc
+from pycmqlib3.utility import misc
+from pycmqlib3.analytics import bsopt
 
 
 def delta_to_logratio(delta, vol, time2mat):

@@ -1,9 +1,7 @@
 from cmq_fxfwd import CMQFXForward
-import cmq_crv_defn
-import cmq_volgrid
-import cmq_curve
-import misc
-import bsopt
+from . import cmq_crv_defn, cmq_volgrid, cmq_curve
+from pycmqlib3.utility import misc
+from pycmqlib3.analytics import bsopt
 
 class CMQFXOption(CMQFXForward):
     class_params = dict(CMQFXForward.class_params, **{ 'otype': 'C' })

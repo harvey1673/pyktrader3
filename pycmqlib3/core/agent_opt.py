@@ -3,13 +3,13 @@ import os
 import csv
 import numpy as np
 import datetime
-from .agent import Agent
-from .instrument import VolGrid
+from . agent import Agent
+from . instrument import VolGrid
 from pycmqlib3.cmqlib import cmqlib
 #import pycmqlib3.analytics.data_handler as dh
 from pycmqlib3.utility.misc import date2xl, day_shift, CHN_Holidays, night_session_markets, \
     BDAYS_PER_YEAR, datetime2xl, min2time
-from .trading_const import Option_ProductTypes
+from . trading_const import Option_ProductTypes
 
 def discount(irate, dtoday, dexp):
     return np.exp(-irate * max(dexp - dtoday,0)/365.0)

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import datetime
 from logging import INFO
-from trading_const import *
+from . trading_const import *
 from pycmqlib3.utility.misc import get_tick_id
 
 @dataclass

@@ -1,7 +1,7 @@
 #-*- coding:utf-8 -*-
 import tkinter as tk
 import tkinter.ttk
-from gui_misc import *
+from . gui_misc import *
 
 class StratGui(object):
     def __init__(self, strat, app, master):

@@ -2,11 +2,15 @@
 import json
 import os
 import csv
-import trade
-import data_handler as dh
-from event_type import *
-from event_engine import Event
-from misc import *
+import logging
+import datetime
+import pycmqlib3.analytics.data_handler as dh
+from . event_type import EVENT_LOG
+from . event_engine import Event
+from . trade import XTrade
+from . trading_const import Direction, ProductType
+from pycmqlib3.utility.misc import get_opt_name
+from pycmqlib3.utility.dbaccess import get_stockopt_map
 
 class OptionStrategy(object):
     common_params = {'name': 'opt_m', 'products':{'m2009': {202009: [2800, 2850, 2900, 2950, 3000]},}, \
@@ -189,7 +193,7 @@ class OptionStrategy(object):
         if volume!=0:
             curr_price = self.agent.instruments[under].mid_price
             start_time = self.agent.tick_id
-            xtrade = trade.XTrade([under], [1], volume, curr_price,
+            xtrade = XTrade([under], [1], volume, curr_price,
                                   strategy=self.name,
                                   book = 'DeltaHedge', agent=self.agent, start_time=start_time)
             self.submit_trade(xtrade)
@@ -206,7 +210,7 @@ class OptionStrategy(object):
         if volume!=0:
             curr_price = self.agent.instruments[opt_inst].mid_price
             start_time = self.agent.tick_id
-            xtrade = trade.XTrade([opt_inst], [1], volume, curr_price,
+            xtrade = XTrade([opt_inst], [1], volume, curr_price,
                                   strategy=self.name,
                                   book = 'VegaHedge', agent=self.agent, start_time=start_time)
             self.submit_trade(xtrade)
@@ -215,8 +219,8 @@ class OptionStrategy(object):
         pass
         
 class EquityOptStrat(OptionStrategy):
-    def __init__(self, name, underliers, expiries, strikes, agent = None):
-        OptionStrategy.__init__(self, name, underliers, expiries, strikes, agent)        
+    def __init__(self, config, agent = None):
+        OptionStrategy.__init__(self, config, agent)        
         #self.proxy_flag = {'delta': True, 'gamma': True, 'vega': True, 'theta': True}
         self.dividends = [(datetime.date(2015,4,20), 0.0), (datetime.date(2015,11,20), 0.10)]
         
@@ -224,23 +228,23 @@ class EquityOptStrat(OptionStrategy):
         option_dict = {}
         for under in products:
             for cont_mth in products[under]:
-                map = dbaccess.get_stockopt_map(under, [cont_mth], products[under][cont_mth])
+                map = get_stockopt_map(under, [cont_mth], products[under][cont_mth])
                 option_dict.update(map)
         return option_dict
     
 class IndexFutOptStrat(OptionStrategy):
-    def __init__(self, name, underliers, expiries, strikes, agent = None):
-        OptionStrategy.__init__(self, name, underliers, expiries, strikes, agent)
+    def __init__(self, config, agent = None):
+        OptionStrategy.__init__(self, config, agent)
         #self.proxy_flag = {'delta': True, 'gamma': True, 'vega': True, 'theta': True}
 
 class CommodOptStrat(OptionStrategy):
-    def __init__(self, name, underliers, expiries, strikes, agent = None):
-        OptionStrategy.__init__(self, name, underliers, expiries, strikes, agent)
+    def __init__(self, config, agent = None):
+        OptionStrategy.__init__(self, config, agent)
         #self.proxy_flag = {'delta': False, 'gamma': False, 'vega': True, 'theta': True}
         
 class OptArbStrat(CommodOptStrat):
-    def __init__(self, name, underliers, expiries, strikes, agent = None):
-        CommodOptStrat.__init__(self, name, underliers, expiries, strikes, agent)
+    def __init__(self, config, agent = None):
+        CommodOptStrat.__init__(self, config, agent)
         self.callspd = dict([(exp, dict([(s, {'upbnd':0.0, 'lowbnd':0.0, 'pos':0.0}) for s in ss])) for exp, ss in zip(expiries, strikes)])
         self.putspd = dict([(exp, dict([(s, {'upbnd':0.0, 'lowbnd':0.0, 'pos':0.0}) for s in ss])) for exp, ss in zip(expiries, strikes)])
         self.bfly = dict([(exp, dict([(s, {'upbnd':0.0, 'lowbnd':0.0, 'pos':0.0}) for s in ss])) for exp, ss in zip(expiries, strikes)])

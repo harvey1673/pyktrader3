@@ -1,9 +1,9 @@
 import skpy
-import sec_bits
+from sec_bits import skype_user
 import logging
 
 class SkypeHandler(logging.Handler):
-    def __init__(self, user_conf = sec_bits.skype_user):
+    def __init__(self, user_conf = skype_user):
         # run the regular Handler __init__
         logging.Handler.__init__(self)
         self.user_conf = user_conf
