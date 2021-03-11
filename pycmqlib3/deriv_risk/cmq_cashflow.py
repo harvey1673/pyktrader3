@@ -1,10 +1,10 @@
 ﻿#-*- coding:utf-8 -*-
 from repoze.lru import lru_cache
-from cmq_utils import *  
-from cmq_rate_index import *  
 import numpy as np
 from scipy.optimize import brentq as solver
 import copy
+from . cmq_utils import *  
+from . cmq_rate_index import *  
 
 class LegFactory:
     class RollingRule(ql.DateGeneration):         

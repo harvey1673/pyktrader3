@@ -1,13 +1,12 @@
 import datetime
 import numpy as np
-import cmq_crv_defn
+import copy
 from cmq_inst import *
 from cmq_cmfwd import CMQCommodFuture
-import cmq_curve
-import misc
-import cmq_volgrid
-import bsopt
-import copy
+from . import cmq_curve, cmq_crv_defn, cmq_volgrid
+from pycmqlib3.utility import misc
+from pycmqlib3.analytics import bsopt
+
 
 class CMQCommodEuOpt(CMQCommodFuture):
     class_params = dict(CMQCommodFuture.class_params, **{ 'strike': 0.0,

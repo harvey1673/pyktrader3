@@ -1,5 +1,5 @@
 import pandas as pd
-from cmq_rpc import RpcClient, RemoteException
+from . cmq_rpc import RpcClient, RemoteException
 
 CLIENT_SETTING = {'req': 'tcp://sgferd0217w:11100', 'sub': 'tcp://sgferd0217w:11110'}
 

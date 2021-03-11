@@ -1,5 +1,5 @@
 #-*- coding:utf-8 -*-
-from trading_const import Direction, Offset
+from . trading_const import Direction, Offset
 
 class Position(object):
     def __init__(self, instrument, gateway = 'CTP'):

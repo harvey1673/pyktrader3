@@ -1,5 +1,5 @@
 #-*- coding:utf-8 -*-
-from strategy import Strategy
+from . strategy import Strategy
 from pycmqlib3.core.trading_const import OrderType
 
 class BulkTrade(Strategy):

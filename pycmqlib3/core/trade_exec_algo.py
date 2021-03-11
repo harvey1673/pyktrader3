@@ -1,6 +1,6 @@
 #-*- coding:utf-8 -*-
 from pycmqlib3.utility.misc import sign
-from trading_const import OrderStatus, OrderType, TradeStatus
+from . trading_const import OrderStatus, OrderType, TradeStatus
 
 class ExecAlgoBase(object):
     def __init__(self, xtrade, **kwargs):

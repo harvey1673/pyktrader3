@@ -1,9 +1,9 @@
 import datetime
 from pycmqlib3.utility.misc import day_shift
 from pycmqlib3.utility import dbaccess
-from .agent import Agent
-from .trading_const import ProductType
-from .event_type import EVENT_MIN_BAR, EVENT_TICK, EVENT_MKTDATA_EOD, EVENT_DB_WRITE, \
+from . agent import Agent
+from . trading_const import ProductType
+from . event_type import EVENT_MIN_BAR, EVENT_TICK, EVENT_MKTDATA_EOD, EVENT_DB_WRITE, \
     EVENT_LOG, EVENT_TIMER, EVENT_DAYSWITCH
 
 class SaveAgent(Agent):

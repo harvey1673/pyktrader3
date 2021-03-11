@@ -4,7 +4,7 @@ import itertools
 import datetime
 import csv
 import json
-from trading_const import OrderStatus, Direction, OrderType, Offset
+from . trading_const import OrderStatus, Direction, OrderType, Offset
 from pycmqlib3.utility.base import BaseObject
 from pycmqlib3.utility.misc import spreadinst2underlying
 

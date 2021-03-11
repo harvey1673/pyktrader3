@@ -1,12 +1,12 @@
 ﻿#-*- coding:utf-8 -*-
 from math import exp, log
 from QuantLib import Option
-from cmq_utils import *
 import pandas as pd 
 from scipy.stats import norm 
 from scipy.interpolate import interp1d, interp2d
 from scipy.optimize import brentq as solver
 from bisect import bisect_left
+from . cmq_utils import *
 
 class BlackModel(object):
     def __init__(self, forward, vol, term, discount):

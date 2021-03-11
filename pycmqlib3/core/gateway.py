@@ -5,12 +5,12 @@ import os
 import csv
 import workdays
 import logging
-import order
-import position
 from pycmqlib3.utility.misc import inst2exch, CHN_Holidays, spreadinst2underlying
-from event_type import *
-from event_engine import Event
-from trading_const import Alive_Order_Status, Direction, Offset, \
+from . position import Position, GrossPosition, SHFEPosition
+from . order import Order, SpreadOrder
+from . event_type import *
+from . event_engine import Event
+from . trading_const import Alive_Order_Status, Direction, Offset, \
     OrderStatus, OrderTyp, Option_ProductTypes
 
 
@@ -79,7 +79,7 @@ class Gateway(object):
         self.account_info['prev_capital'] = self.account_info['curr_capital']
 
     def get_pos_class(self, inst):
-        return (position.Position, {})
+        return (Position, {})
 
     def add_instrument(self, instID):
         if instID not in self.instruments:
@@ -455,7 +455,7 @@ class GrossGateway(Gateway):
         instIDs, units = spreadinst2underlying(instID)
         res = [self.get_order_offset(inst, u * volume, 1) for inst, u in zip(instIDs, units)]
         action_type = ''.join([offset[0][0] for offset in res])
-        new_order = order.SpreadOrder(inst = instID, exchange = exchange, limit_price = limit_price, volume = vol, \
+        new_order = SpreadOrder(inst = instID, exchange = exchange, limit_price = limit_price, volume = vol, \
                             order_time = self.agent.tick_id, action_type = action_type, \
                             direction = direction, price_type = price_type, \
                             trade_ref = trade_ref)

@@ -2,7 +2,7 @@
 import numpy as np
 from pycmqlib3.analytics.data_handler as dh
 from pycmqlib3.utility.base import BaseObject, fcustom
-from strategy import Strategy
+from . strategy import Strategy
 
 
 class XSMOMRetTrader(Strategy):

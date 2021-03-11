@@ -24,7 +24,7 @@ from openpyxl.utils import get_column_letter, range_boundaries
 from openpyxl.cell import Cell
 import lxml
 from Crypto.Cipher import AES
-from mysteel_config import *
+from . mysteel_config import *
 import base
 import sys
 if sys.version_info[0] < 3:
@@ -746,11 +746,11 @@ def _get_mysteel_price(
             the_date=get_biz_date(-1),
             session_requests=None,
             mode = "construction",
-            price_name ="ÉÏº£ÊÐ³¡½¨Öþ¸Ö²Ä¼Û¸ñÐÐÇé",
-            spec="¦µ16-22",
-            origin="Æ¼¸Ö",
-            product="ÂÝÎÆ¸Ö",
-            area="ÉÏº£",
+            price_name ="ï¿½Ïºï¿½ï¿½Ð³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö²Ä¼Û¸ï¿½ï¿½ï¿½ï¿½ï¿½",
+            spec="ï¿½ï¿½16-22",
+            origin="Æ¼ï¿½ï¿½",
+            product="ï¿½ï¿½ï¿½Æ¸ï¿½",
+            area="ï¿½Ïºï¿½",
             suppress_exception = False #set to True if you don't want this function to raise exeception
     ):
     '''
@@ -767,16 +767,16 @@ def _get_mysteel_price(
                 date of getting the mysteel price. Default the_date=get_biz_date(-1),
             mode:
                 mode can be either:
-                "furnace_raw": get the ³ö³§ price blast furnance raw material Â¯ÁÏ http://list1.mysteel.com/article/p-3571-------------1.html
-                "construction": construction material ½¨²Ä e.g url = "http://list1.mysteel.com/market/p-228-----010101-0-0104-------1.html"
+                "furnace_raw": get the ï¿½ï¿½ï¿½ï¿½ price blast furnance raw material Â¯ï¿½ï¿½ http://list1.mysteel.com/article/p-3571-------------1.html
+                "construction": construction material ï¿½ï¿½ï¿½ï¿½ e.g url = "http://list1.mysteel.com/market/p-228-----010101-0-0104-------1.html"
                     in this mode, additional parameters needed as below
-                        "price_name" in chinese is needed for navigating to the page with the price. e.g. "Ìì½òÊÐ³¡½¨Öþ¸Ö²Ä¼Û¸ñÐÐÇé" is needed to search for the title
-                        "product" in chinese e.g. "ÂÝÎÆ¸Ö"
-                        "spec" ¹æ¸ñ£¨mm£©e.g.
-                        "origin" ¸Ö³§/²úµØ" e.g. "¶«»ª¸ÖÌú"
-                "hrc"/"crc": HRC ÈÈÔþ first page e.g. "http://list1.mysteel.com/price/p-10058--010103--1.html"
-                "crc": CRC ÀäÔþ first page e.g. "http://list1.mysteel.com/price/p-10053--010104--1.html"
-                    area: e.g. "ÉÏº£" col
+                        "price_name" in chinese is needed for navigating to the page with the price. e.g. "ï¿½ï¿½ï¿½ï¿½Ð³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö²Ä¼Û¸ï¿½ï¿½ï¿½ï¿½ï¿½" is needed to search for the title
+                        "product" in chinese e.g. "ï¿½ï¿½ï¿½Æ¸ï¿½"
+                        "spec" ï¿½ï¿½ï¿½mmï¿½ï¿½e.g.
+                        "origin" ï¿½Ö³ï¿½/ï¿½ï¿½ï¿½ï¿½" e.g. "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"
+                "hrc"/"crc": HRC ï¿½ï¿½ï¿½ï¿½ first page e.g. "http://list1.mysteel.com/price/p-10058--010103--1.html"
+                "crc": CRC ï¿½ï¿½ï¿½ï¿½ first page e.g. "http://list1.mysteel.com/price/p-10053--010104--1.html"
+                    area: e.g. "ï¿½Ïºï¿½" col
                     spec: e.g. "1.0mm" row
     Postcondition:
         return the price (float). return None if data not found or not ready. Will not raise error if missing data. Just return none.
@@ -829,7 +829,7 @@ def _get_mysteel_price(
 
         #a) Furnace raw
         if mode == "furnace_raw":
-            #go to the link and find ³ö³§ price
+            #go to the link and find ï¿½ï¿½ï¿½ï¿½ price
             result = _retry_request(url=the_link,encoding="gb2312",session_requests=session_requests)
             html_data = result.content
             soup = BeautifulSoup(html_data,"lxml")
@@ -871,7 +871,7 @@ def _get_mysteel_price(
             return price
             
         if mode == "js_furnace_raw":
-            #go to the link and find ³ö³§ price
+            #go to the link and find ï¿½ï¿½ï¿½ï¿½ price
             result = _retry_request(url=the_link,encoding="gb2312",session_requests=session_requests)
             html_data = result.content
             soup = BeautifulSoup(html_data,"lxml")
@@ -997,7 +997,7 @@ def _get_mysteel_price(
             return price
 
         elif mode == "coal":
-            row_label = "¼Û¸ñ"
+            row_label = "ï¿½Û¸ï¿½"
             #go to the link
             result = _retry_request(url=the_link,encoding="gb2312",session_requests=session_requests)
             html_data = result.content

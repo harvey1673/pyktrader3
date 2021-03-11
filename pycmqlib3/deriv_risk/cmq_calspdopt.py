@@ -1,5 +1,9 @@
-from cmq_calspdswap import *
-import exotic_opt
+import datetime
+import copy
+from . cmq_calspdswap import CMQCalSpdSwap
+from . cmq_inst import disc_factor
+from . import cmq_crv_defn
+from pycmqlib3.analytics import exotic_opt
 
 class CMQCalSpdOpt(CMQCalSpdSwap):
     class_params = dict(CMQCalSpdSwap.class_params, **{'otype': 'C',
@@ -47,8 +51,8 @@ class CMQCalSpdOpt(CMQCalSpdSwap):
         return res
 
 def test_case(tday = datetime.date.today() - datetime.timedelta(days = 1)):
-    import cmq_book
-    import cmq_market_data
+    from . import cmq_book
+    from . import cmq_market_data
     def create_test_book():
         fwd_index = 'SGXIRO'
         accrual = 'act252'

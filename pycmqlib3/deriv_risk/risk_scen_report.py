@@ -1,13 +1,9 @@
-import cmq_book
-import cmq_market_data
 import datetime
-import cmq_inst_risk
-import cmq_inst
 import copy
 import pandas as pd
 import numpy as np
-import cmq_risk_engine
 import multiprocessing as mp
+from . import cmq_risk_engine, cmq_book, cmq_market_data, cmq_inst_risk, cmq_inst
 
 def run_book_report(value_date, book, req_greeks = ['cmdelta', 'cmgamma', 'cmvega_atm', 'theta'], \
                     base_mkt = {}, region = 'EOD'):

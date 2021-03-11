@@ -1,10 +1,9 @@
 import datetime
 import pandas as pd
 import numpy as np
-import cmq_crv_defn
-from cmq_inst import *
-import cmq_curve
-import misc
+from . import cmq_crv_defn, cmq_curve
+from . cmq_inst import *
+from pycmqlib3.utility import misc
 
 class CMQCommodForward(CMQInstrument):
     class_params = dict(CMQInstrument.class_params, **{ 'strike': 0.0,

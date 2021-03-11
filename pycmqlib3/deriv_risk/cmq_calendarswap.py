@@ -1,10 +1,9 @@
 import datetime
 import pandas as pd
 import numpy as np
-import cmq_crv_defn
-from cmq_inst import *
-import cmq_curve
-import misc
+from . cmq_inst import CMQInstrument, disc_factor
+from . import cmq_curve, cmq_crv_defn
+from pycmqlib3.utility import misc
 
 class CMQCalendarSwap(CMQInstrument):
     class_params = dict(CMQInstrument.class_params, **{ 'strike': 0.0,

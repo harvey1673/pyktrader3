@@ -3,7 +3,7 @@ import numpy as np
 import logging
 from pycmqlib3.analytics.data_handler as dh
 from pycmqlib3.utility.base import BaseObject, fcustom
-from strategy import Strategy
+from . strategy import Strategy
  
 class DTSplitChanAddon(Strategy):
     common_params =  dict({'open_period': [300, 2115], 'channel_keys': ['DONCH_HH', 'DONCH_LL'], \

@@ -1,8 +1,8 @@
 import datetime
 import copy
-from cmq_inst import *
-from cmq_calendarswap import *
-from cmq_calendarswap import *
+from . cmq_inst import *
+from . cmq_calendarswap import *
+from . cmq_calendarswap import *
 
 class CMQCalSpdSwap(CMQInstrument):
     class_params = dict(CMQInstrument.class_params, **{ 'strike': 0.0,

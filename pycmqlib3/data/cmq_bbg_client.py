@@ -1,5 +1,5 @@
 import pandas as pd
-from cmq_rpc import RpcClient
+from . cmq_rpc import RpcClient
 
 CLIENT_SETTING = {'req': 'tcp://sgferd0257w:11010', 'sub': 'tcp://sgferd0257w:11020'}
 

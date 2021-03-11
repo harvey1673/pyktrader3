@@ -4,8 +4,8 @@ import sys, traceback
 import threading
 from dataclasses import dataclass, field
 from typing import Any
-from event_type import EVENT_TIMER
-import event_priority 
+from . event_type import EVENT_TIMER
+from . event_priority import Event_Priority_Basic
 
 @dataclass(order=True)
 class PrioritizedItem:
@@ -139,7 +139,7 @@ class PriEventEngine(EventEngine):
 
 
 class Event(object):
-    def __init__(self, type=None, priority = None, priority_map = event_priority.Event_Priority_Basic):
+    def __init__(self, type=None, priority = None, priority_map = Event_Priority_Basic):
         """Constructor"""
         self.type = type      # event type
         if (priority == None) and (type!= None):

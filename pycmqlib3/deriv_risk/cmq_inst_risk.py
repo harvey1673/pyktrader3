@@ -1,10 +1,9 @@
 # -*- coding:utf-8 -*-
 import copy
 import json
-import cmq_inst
-import cmq_crv_defn
-import misc
 import workdays
+from . import cmq_inst, cmq_crv_defn
+from pycmqlib3.utility import misc
 
 def inst_valuation(val_data):
     inst_data = val_data[0]

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-from cmq_rpc import RpcServer
 import pandas as pd
 import json
 import time
 from tia.bbg import LocalTerminal
+from . cmq_rpc import RpcServer
 
 SERVER_SETTING = {'rep': 'tcp://0.0.0.0:11010', 'pub': 'tcp://0.0.0.0:11020'}
 

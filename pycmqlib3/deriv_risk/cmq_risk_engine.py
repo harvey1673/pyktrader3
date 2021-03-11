@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
-import misc
-import cmq_inst_risk
 import json
+from . import cmq_inst_risk
+from pycmqlib3.utility import misc
 
 class CMQRiskEngine(object):
     def __init__(self, book_obj, base_market, req_greeks, pool = None):

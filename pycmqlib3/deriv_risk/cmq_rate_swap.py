@@ -2,11 +2,8 @@ from QuantLib import *
 import copy
 import os
 import json
-from cmq_inst import CMQInstrument
-import cmq_utils
-import cmq_curve
-import cmq_cashflow
-import cmq_rate_index
+from . cmq_inst import CMQInstrument
+from . import cmq_utils, cmq_curve, cmq_cashflow, cmq_rate_index
 
 def calibrate_ycurve(market_data, field='IRYCurve_usd3m'):
     today = Date(str(market_data['MarketDate']), "YYYY-MM-DD")

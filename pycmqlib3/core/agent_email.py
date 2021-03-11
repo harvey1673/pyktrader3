@@ -1,13 +1,13 @@
 #-*- coding:utf-8 -*-
 import datetime
-from .agent import Agent
-from .event_type import EVENT_MAIL
-from .event_engine import Event
+from . agent import Agent
+from . event_type import EVENT_MAIL
+from . event_engine import Event
 from pycmqlib3.utility.email_tool import send_email_by_outlook
 
-class MAQSAgent(Agent):
+class EmailAgent(Agent):
     def __init__(self, config = {}, tday=datetime.date.today()):
-        super(MAQSAgent, self).__init__(config, tday)
+        super(EmailAgent, self).__init__(config, tday)
         self.report_email_addr = config.get("report_email", "")
         print("report email is set to %s" % self.report_email_addr)
         self.trade_email_addr = config.get("trade_email", {'default': self.report_email_addr})
@@ -17,7 +17,7 @@ class MAQSAgent(Agent):
         self.register_event_handler()
 
     def register_event_handler(self):
-        super(MAQSAgent, self).register_event_handler()
+        super(EmailAgent, self).register_event_handler()
         self.event_engine.register(EVENT_MAIL, self.email_distributor)
 
     def email_distributor(self, event):
@@ -29,14 +29,14 @@ class MAQSAgent(Agent):
         send_email_by_outlook(recepient, subject, msg, attach)
 
     def restart(self):
-        super(MAQSAgent, self).restart()
+        super(EmailAgent, self).restart()
         eod_time = datetime.datetime.combine(self.scur_day, datetime.time(15, 16, 0))
         if not self.eod_flag:
             if datetime.datetime.now() < eod_time:
                 self.put_command(eod_time, self.run_eod)
 
     def run_eod(self):
-        super(MAQSAgent, self).run_eod()
+        super(EmailAgent, self).run_eod()
         attach_files = []
         for name in self.gateways:
             filename = self.gateways[name].file_prefix + 'PNL_attribution_' + self.scur_day.strftime('%y%m%d') + '.csv'
@@ -54,7 +54,7 @@ class MAQSAgent(Agent):
         self.event_engine.put(event)
 
     def submit_trade(self, xtrade):
-        super(MAQSAgent, self).submit_trade(xtrade)
+        super(EmailAgent, self).submit_trade(xtrade)
         insts = xtrade.instIDs
         inst_key = '_'.join(insts)
         if (inst_key in self.trade_email_addr) or ('default' in self.trade_email_addr):

@@ -2,8 +2,8 @@
 import json
 import datetime
 import weakref
-import cmq_curve
 import numpy as np
+from . import cmq_curve
 
 class CurveShiftType:
     Abs, Rel = list(range(2))
