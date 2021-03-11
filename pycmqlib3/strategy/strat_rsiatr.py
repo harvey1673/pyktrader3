@@ -1,10 +1,8 @@
 #-*- coding:utf-8 -*-
-from base import *
-from misc import *
-import data_handler as dh
-import copy
-from trade_position import *
-from strategy import *
+import numpy as np
+from pycmqlib3.analytics.data_handler as dh
+from pycmqlib3.utility.base import BaseObject, fcustom
+from strategy import Strategy
  
 class RsiAtrStrat(Strategy):
     common_params =  dict( {'price_limit_buffer': 5, 'daily_close_buffer': 2, \

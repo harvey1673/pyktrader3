@@ -1,7 +1,6 @@
 #-*- coding:utf-8 -*-
-#from base import *
-from misc import *
-from strategy import *
+import numpy as np
+from strategy import Strategy
  
 class RBreaker(Strategy):
     common_params =  dict({'price_limit_buffer': 5}, **Strategy.common_params)

@@ -1,15 +1,16 @@
 #-*- coding:utf-8 -*-
-from event_type import *
-from event_engine import Event
-from trade_position import *
 import datetime
 import csv
 import json
 import os
 import logging
-import trade
-from trade_exec_algo import *
-from trading_const import *
+from pycmqlib3.core.event_type import EVENT_LOG, EVENT_MAIL
+from pycmqlib3.core.event_engine import Event
+from pycmqlib3.core.trade_position import tradepos2dict, tradepos_header, TradePos, TargetTrailTradePos
+from pycmqlib3.core.trade import XTrade
+from pycmqlib3.core.trade_exec_algo import ExecAlgo1DFixT, ExecAlgoFixTimer
+from pycmqlib3.core.trading_const import OrderType, TradeStatus
+from pycmqlib3.utility.misc import NO_ENTRY_TIME
 
 class Strategy(object):
     common_params = {'name': 'test_strat', 'email_notify':{}, 'data_func': [], 'pos_scaler': 1.0, \
@@ -224,7 +225,7 @@ class Strategy(object):
     def open_tradepos(self, idx, direction, price, volume = 0, tag = ''):
         tunit = self.trade_unit[idx] if volume == 0 else volume
         start_time = self.agent.tick_id
-        xtrade = trade.XTrade( instIDs = self.underliers[idx], units = self.volumes[idx], \
+        xtrade = XTrade( instIDs = self.underliers[idx], units = self.volumes[idx], \
                                vol = direction * tunit, limit_price = price, \
                                price_unit = self.price_unit[idx], start_time = start_time, \
                                strategy=self.name, book= str(idx))
@@ -252,7 +253,7 @@ class Strategy(object):
             tradepos = self.positions[idx][0]
             tradepos.target_pos += volume
             trade_volume = tradepos.target_pos - tradepos.pos
-        xtrade = trade.XTrade(instIDs=self.underliers[idx], units=self.volumes[idx], \
+        xtrade = XTrade(instIDs=self.underliers[idx], units=self.volumes[idx], \
                               vol = trade_volume, limit_price = price, \
                               price_unit = self.price_unit[idx], start_time=start_time, \
                               strategy=self.name, book=str(idx))
@@ -269,7 +270,7 @@ class Strategy(object):
 
     def close_tradepos(self, idx, tradepos, price):
         start_time = self.agent.tick_id
-        xtrade = trade.XTrade( instIDs = tradepos.insts, units = tradepos.volumes, \
+        xtrade = XTrade( instIDs = tradepos.insts, units = tradepos.volumes, \
                                vol = -tradepos.pos, limit_price = price, \
                                price_unit = self.price_unit[idx], start_time = start_time, \
                                strategy = self.name, book = str(idx))

@@ -1,6 +1,7 @@
 #-*- coding:utf-8 -*-
-from strategy import *
-from trading_const import *
+from strategy import Strategy
+from pycmqlib3.core.trading_const import OrderType, Direction, Option_ProductTypes
+from pycmqlib3.utility.misc import inst2exch
 
 def get_option_map(underliers, cont_mths, strikes, exch = ''):
     opt_map = {}

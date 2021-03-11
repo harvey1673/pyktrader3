@@ -1,11 +1,8 @@
 # -*- coding:utf-8 -*-
-from base import *
-from misc import *
-import data_handler as dh
-import copy
 import numpy as np
-import operator
-from strategy import *
+from pycmqlib3.analytics.data_handler as dh
+from pycmqlib3.utility.base import BaseObject, fcustom
+from strategy import Strategy
 
 
 class XSMOMRetTrader(Strategy):
