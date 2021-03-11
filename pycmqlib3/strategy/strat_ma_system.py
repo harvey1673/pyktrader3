@@ -1,9 +1,9 @@
 #-*- coding:utf-8 -*-
-from base import *
-from misc import *
-import data_handler as dh
-import copy
-from strategy import *
+import numpy as np
+import logging
+from pycmqlib3.analytics.data_handler as dh
+from pycmqlib3.utility.base import BaseObject, fcustom
+from strategy import Strategy
  
 class MASystemTrader(Strategy):
     common_params =  dict( Strategy.common_params, **{'channel_keys': ['DONCH_HC', 'DONCH_LC'], 'ma_key': 'MA_CLOSE', \

@@ -1,12 +1,11 @@
 # -*- coding:utf-8 -*-
-from base import *
-from misc import *
-import data_handler as dh
-import copy
-import numpy as np
-import dbaccess
-import operator
+from pycmqlib3.utility.dbaccess import load_factor_data
 from strategy import *
+import numpy as np
+import logging
+from pycmqlib3.analytics.data_handler as dh
+from pycmqlib3.utility.base import BaseObject, fcustom
+from strategy import Strategy
 
 # table format for factor data
 # create table fut_fact_data (product_code varchar(10), roll_label varchar(20), exch varchar(10),
@@ -54,7 +53,7 @@ class FactorPortTrader(Strategy):
             df = pd.DataFrame()
             for roll_rule in set(self.roll_label):
                 prod_list = [prod for prod, roll in zip(self.prod_list, self.roll_label) if roll == roll_rule]
-                adf = dbaccess.load_factor_data(prod_list, \
+                adf = load_factor_data(prod_list, \
                              factor_list = list(self.factor_repo.keys()),\
                              roll_label = roll_rule,\
                              start = start_date, \

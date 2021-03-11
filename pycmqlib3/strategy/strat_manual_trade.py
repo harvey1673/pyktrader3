@@ -1,7 +1,8 @@
 #-*- coding:utf-8 -*-
-from base import *
-from misc import *
-from strategy import *
+import numpy as np
+import logging
+from strategy import Strategy
+from pycmqlib3.core.trading_const import OrderType
 
 class ManualTrade(Strategy):
     common_params =  dict({'daily_close_buffer': 3, 'price_limit_buffer': 5}, \

@@ -1,7 +1,6 @@
 #-*- coding:utf-8 -*-
-from base import *
-from misc import *
-from strategy import *
+from strategy import Strategy
+from pycmqlib3.core.trading_const import OrderType
 
 class BulkTrade(Strategy):
     common_params =  dict({'trade_file': "bulktrade_test"}, **Strategy.common_params)
