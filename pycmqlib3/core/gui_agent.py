@@ -3,7 +3,11 @@ import tkinter as tk
 import tkinter.ttk
 import json
 import pandas as pd
-import agent
+from . agent import Agent
+from . agent_save import SaveAgent
+from . agent_email import EmailAgent
+from . agent_opt import OptionAgent
+from . agent_pseudo import PseudoAgent
 from . gui_misc import *
 from . gui_option import *
 from . gui_strat import *
@@ -358,9 +362,10 @@ class MainApp(object):
     def __init__(self, tday, config, master = None):
         self.scur_day = tday
         self.name = config.get('name', 'test_agent')
-        agent_class = config.get('agent_class', 'agent.Agent')
-        cls_str = agent_class.split('.')
-        agent_cls = getattr(__import__(str(cls_str[0])), str(cls_str[1]))
+        agent_class = config.get('agent_class', 'Agent')
+        #cls_str = agent_class.split('.')
+        # getattr(__import__(str(cls_str[0])), str(cls_str[1]))
+        agent_cls = eval(agent_class) 
         self.agent = agent_cls(config = config, tday = tday)
         self.master = master
                         

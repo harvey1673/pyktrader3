@@ -1,11 +1,18 @@
 # -*- coding: utf-8 -*-
 import socket
 import threading
+import datetime
+import logging
 import json
-import misc
-from trading_const import *
-from trading_object import TickData
-from gateway import *
+from pycmqlib3.utility.misc import get_obj_by_name, trading_hours, get_tick_id, \
+    inst2contmth, inst2product, day_shift, CHN_Holidays
+from pycmqlib3.core.trading_const import OrderStatus, Direction, OrderType, \
+    Exchange, Offset, ProductType, OptionType, Alive_Order_Status
+from pycmqlib3.core.trading_object import TickData
+from pycmqlib3.core.gateway import Gateway, GrossGateway
+from pycmqlib3.core.position import GrossPosition
+from pycmqlib3.core.event_engine import Event
+from pycmqlib3.core.event_type import EVENT_TICK, EVENT_TRADEX, EVENT_DAYSWITCH, EVENT_ETRADEUPDATE
 
 # 方向类型映射
 DIRECTION_CMQ2TX = {
@@ -24,8 +31,8 @@ ORDERTYPE_CMQ2TX = {
 ORDERTYPE_TX2VT = {v: k for k, v in ORDERTYPE_CMQ2TX.items()}
 
 def instID_to_contract(instID, exch):
-    cont_mth = str(misc.inst2contmth(instID))
-    cont_data = [exch, misc.inst2product(instID), cont_mth]
+    cont_mth = str(inst2contmth(instID))
+    cont_data = [exch, inst2product(instID), cont_mth]
     contract = "\\".join(cont_data)
     return contract
 
@@ -152,7 +159,7 @@ class TdApi(SocketService):
             req['BuySell'] = DIRECTION_CMQ2TX[iorder.direction]
         except:
             log_content = "unsupported direction = %s for order_ref = %s" % (iorder.direction, iorder.order_ref)
-            self.on_log(log_content, level=logging.WARNING)
+            self.gateway.on_log(log_content, level=logging.WARNING)
             return
         req['Quantity'] = iorder.volume
         req['Price1'] = iorder.limit_price
@@ -160,7 +167,7 @@ class TdApi(SocketService):
             req['OrderType'] = ORDERTYPE_CMQ2TX.get(iorder.price_type, "")
         except:
             log_content = "unsupported price type = %s for TradeX API for order_ref = %s" % (iorder.price_type, iorder.order_ref)
-            self.on_log(log_content, level=logging.WARNING)
+            self.gateway.on_log(log_content, level=logging.WARNING)
             return
         if len(self.gateway.strategy_tag) > 0:
             fields = ['C-Strategy', self.gateway.strategy_tag]
@@ -287,7 +294,7 @@ class TradeXGateway(GrossGateway):
         curr_hour = (dt.hour + 6) % 24
         if (self.trading_hour_index < curr_hour) and curr_hour == 2:
             tday = dt.date()
-            next_trade_day = misc.day_shift(tday, '1b', misc.CHN_Holidays)
+            next_trade_day = day_shift(tday, '1b', CHN_Holidays)
             trading_day = next_trade_day.strftime("%Y%m%d")
             if trading_day != self.trading_day:
                 self.trading_day = trading_day
@@ -300,7 +307,7 @@ class TradeXGateway(GrossGateway):
         iorder.local_id = self.order_prefix + str(iorder.order_ref)
 
     def get_pos_class(self, inst):
-        return (position.GrossPosition, {})
+        return (GrossPosition, {})
 
     def register_event_handler(self):
         self.event_engine.register(EVENT_TRADEX, self.msg_handler)

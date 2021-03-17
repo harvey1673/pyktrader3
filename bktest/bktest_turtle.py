@@ -1,11 +1,11 @@
-import misc
+import sys
 import json
-import data_handler as dh
 import pandas as pd
 import numpy as np
-import strategy as strat
-import sys
-import backtest
+import pycmqlib3.analytics.data_handler as dh
+from pycmqlib3.utility.misc import sign, day_split_dict
+from pycmqlib3.core.trade_position import TradePos, TargetTrailTradePos
+from . backtest import StratSim, simdf_to_trades1, simdf_to_trades2
 
 def turtle_sim( mdf, config ):
     ddf = config['ddf']
@@ -49,7 +49,7 @@ def turtle_sim( mdf, config ):
         if (min_id >= config['exit_min']) :
             if (tot_pos != 0) and (d == end_d):
                 for trade_pos in curr_pos:
-                    trade_pos.close(mslice.close - misc.sign(trade_pos.pos) * offset, dd)
+                    trade_pos.close(mslice.close - sign(trade_pos.pos) * offset, dd)
                     tradeid += 1
                     trade_pos.exit_tradeid = tradeid
                     closed_trades.append(trade_pos)
@@ -68,7 +68,7 @@ def turtle_sim( mdf, config ):
                     direction = -1
                 pos = direction * unit
                 if direction != 0:
-                    new_pos = strat.TradePos([mslice.contract], [1], pos, mslice.close, mslice.close)
+                    new_pos = TradePos([mslice.contract], [1], pos, mslice.close, mslice.close)
                     tradeid += 1
                     new_pos.entry_tradeid = tradeid
                     new_pos.open(mslice.close + direction * offset, dd)
@@ -80,7 +80,7 @@ def turtle_sim( mdf, config ):
                 if (direction == 1 and mslice.close <= dslice.CL_1) or \
                         (direction == -1 and mslice.close >= dslice.CS_1):
                     for trade_pos in curr_pos:
-                        trade_pos.close(mslice.close - misc.sign(trade_pos.pos) * offset, dd)
+                        trade_pos.close(mslice.close - sign(trade_pos.pos) * offset, dd)
                         tradeid += 1
                         trade_pos.exit_tradeid = tradeid
                         closed_trades.append(trade_pos)
@@ -90,7 +90,7 @@ def turtle_sim( mdf, config ):
                 elif curr_pos[-1].check_exit( mslice.close, curr_atr * max_loss ):
                     for trade_pos in curr_pos:
                         if trade_pos.check_exit( mslice.close, curr_atr * max_loss ):
-                            trade_pos.close(mslice.close - misc.sign(trade_pos.pos) * offset, dd)
+                            trade_pos.close(mslice.close - sign(trade_pos.pos) * offset, dd)
                             tradeid += 1
                             trade_pos.exit_tradeid = tradeid
                             closed_trades.append(trade_pos)
@@ -101,7 +101,7 @@ def turtle_sim( mdf, config ):
                     for trade_pos in curr_pos:
                         #trade.exit_target += curr_atr/max_pos*max_loss * direction
                         trade_pos.set_exit( mslice.close )
-                    new_pos = strat.TradePos([mslice.contract], [1], direction*unit, mslice.close, mslice.close)
+                    new_pos = TradePos([mslice.contract], [1], direction*unit, mslice.close, mslice.close)
                     tradeid += 1
                     new_pos.entry_tradeid = tradeid
                     new_pos.open(mslice.close + direction * offset, dd)

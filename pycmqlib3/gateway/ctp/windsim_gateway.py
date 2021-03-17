@@ -1,8 +1,13 @@
 # encoding: UTF-8
-
-from .ctp_gateway import *
-import misc
-from copy import copy
+import datetime
+import logging
+from pycmqlib3.utility.misc import is_workday, day_shift, CHN_Holidays
+from pycmqlib3.core.trading_const import Exchange
+from pycmqlib3.core.event_engine import Event
+from pycmqlib3.core.event_type import EVENT_MARKETDATA, EVENT_DAYSWITCH, \
+    EVENT_RTNORDER, EVENT_RTNTRADE, EVENT_ERRORDERINSERT, EVENT_ERRORDERCANCEL,\
+    EVENT_WIND_CONNECTREQ
+from . ctp_gateway import CtpGateway
 
 w = None
 
@@ -60,7 +65,7 @@ wsqParamMap['rt_asize1'] = 'AskVolume1'
 
 wsqParam = ','.join(list(wsqParamMap.keys()))
 
-class WindCtpSimGateway((CtpGateway)):
+class WindCtpSimGateway(CtpGateway):
     def __init__(self, agent, gateway_name='WindSim'):
         super(WindCtpSimGateway, self).__init__(agent, gateway_name, md_api = "ctp.windsim_gateway.WindMdApi", td_api = "ctp.ctpsim_gateway.SimctpTdApi")
         self.qry_enabled = False
@@ -130,7 +135,7 @@ class WindMdApi(object):
             self.tick_dict[windSymbol] = tick_data
             self.tick_counter[windSymbol] = 0
         dt = data.Times[0]
-        if (misc.is_workday(dt.date(), "CHN") == False) and (dt.time() >= datetime.time(2,30,0)):
+        if (is_workday(dt.date(), "CHN") == False) and (dt.time() >= datetime.time(2,30,0)):
             self.gateway.on_log("outside market hours", level = logging.WARNING)
             return
         #if tick_data['timestamp'] >= dt:
@@ -141,7 +146,7 @@ class WindMdApi(object):
         tick_data['TradingDay'] = dt.date()
         tick_data['UpdateTime'] = dt.time()
         if tick_data['UpdateTime'] > datetime.time(20,56,0):
-            tick_data['TradingDay'] = misc.day_shift(tick_data['TradingDay'], '1b', misc.CHN_Holidays)
+            tick_data['TradingDay'] = day_shift(tick_data['TradingDay'], '1b', CHN_Holidays)
             if tick_data['TradingDay'] > self.gateway.agent.scur_day:
                 event = Event(type=EVENT_DAYSWITCH)
                 event.dict['log'] = '换日: %s -> %s' % (self.gateway.agent.scur_day, tick_data['TradingDay'])

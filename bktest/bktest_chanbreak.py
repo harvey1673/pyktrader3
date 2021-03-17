@@ -1,14 +1,12 @@
-import os,sys,inspect
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0,parentdir)
+import sys
 import json
-import misc
-import data_handler as dh
 import pandas as pd
 import numpy as np
 import datetime
-from backtest import *
+import pycmqlib3.analytics.data_handler as dh
+from pycmqlib3.utility.misc import sign, day_split_dict
+from pycmqlib3.core.trade_position import TradePos, TargetTrailTradePos
+from . backtest import StratSim, simdf_to_trades1, simdf_to_trades2
 
 class ChanBreakSim(StratSim):
     def __init__(self, config):
@@ -185,7 +183,7 @@ def gen_config_file(filename):
     sim_config['stoploss'] = [0.5, 1.0, 2.0, 3.0]
     sim_config['stoploss_win'] = [10, 20]
     sim_config['channel'] = [[10, 3], [10, 5], [15, 3], [15, 5], [15, 10], [20, 5], [20,10], [25, 5], [25, 10], [25, 15]]
-    sim_config['pos_class'] = 'trade_position.TargetTrailTradePos'
+    sim_config['pos_class'] = 'TargetTrailTradePos'
     chan_func = {'high': {'func': 'dh.DONCH_H', 'args': {}},
                  'low': {'func': 'dh.DONCH_L', 'args': {}},
                  }

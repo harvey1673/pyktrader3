@@ -1,12 +1,12 @@
-import misc
+import sys
 import json
-import data_handler as dh
 import pandas as pd
 import numpy as np
-import trade_position
 import datetime
-import backtest
-import sys
+import pycmqlib3.analytics.data_handler as dh
+from pycmqlib3.utility.misc import sign, day_split_dict
+from . backtest import StratSim, simdf_to_trades1, simdf_to_trades2
+
 
 def bband_chan_sim( mdf, config):
     start_equity = config['capital']
@@ -67,34 +67,34 @@ def bband_chan_sim( mdf, config):
             continue
         if mslice.close_ind:
             if pos!=0:
-                curr_pos[0].close(mslice.open - misc.sign(pos) * offset, dd)
+                curr_pos[0].close(mslice.open - sign(pos) * offset, dd)
                 tradeid += 1
                 curr_pos[0].exit_tradeid = tradeid
                 closed_trades.append(curr_pos[0])
                 curr_pos = []
                 xdf.set_value(dd, 'cost', xdf.at[dd, 'cost'] - abs(pos) * ( mslice.open * tcost))
-                xdf.set_value(dd, 'traded_price', mslice.open - misc.sign(pos) * offset)
+                xdf.set_value(dd, 'traded_price', mslice.open - sign(pos) * offset)
                 pos = 0
         else:
             if ((mslice.open > mslice.boll_ma) and (pos<0)) or ((mslice.open < mslice.boll_ma) and (pos>0)):
-                curr_pos[0].close(mslice.open - misc.sign(pos) * offset, dd)
+                curr_pos[0].close(mslice.open - sign(pos) * offset, dd)
                 tradeid += 1
                 curr_pos[0].exit_tradeid = tradeid
                 closed_trades.append(curr_pos[0])
                 curr_pos = []
                 xdf.set_value(dd, 'cost', xdf.at[dd, 'cost'] - abs(pos) * (mslice.open * tcost))
-                xdf.set_value(dd, 'traded_price', mslice.open - misc.sign(pos) * offset)
+                xdf.set_value(dd, 'traded_price', mslice.open - sign(pos) * offset)
                 pos = 0
             if ((mslice.open >= mslice.high_band) or (mslice.open <= mslice.low_band)) and (pos==0):
                 target_pos = ( mslice.open >= mslice.high_band) * unit - (mslice.open <= mslice.low_band) * unit
                 new_pos = pos_class([mslice.contract], [1], target_pos, mslice.open, mslice.open, **pos_args)
                 tradeid += 1
                 new_pos.entry_tradeid = tradeid
-                new_pos.open(mslice.open + misc.sign(target_pos)*offset, dd)
+                new_pos.open(mslice.open + sign(target_pos)*offset, dd)
                 curr_pos.append(new_pos)
                 pos = target_pos
                 xdf.set_value(dd, 'cost', xdf.at[dd, 'cost'] -  abs(target_pos) * (mslice.open * tcost))
-                xdf.set_value(dd, 'traded_price', mslice.open + misc.sign(target_pos)*offset)
+                xdf.set_value(dd, 'traded_price', mslice.open + sign(target_pos)*offset)
         xdf.set_value(dd, 'pos', pos)
     return (xdf, closed_trades)
 
@@ -111,7 +111,7 @@ def gen_config_file(filename):
     sim_config['param'] = [(20, 1, 5), (20, 1, 10), (20, 1, 20), (20, 1, 40), (20, 1.5, 5), (20, 1.5, 10), (20, 1.5, 20), (20, 1.5, 40), \
                            (40, 1, 10), (40, 1, 20), (40, 1, 40), (40, 1, 80), (40, 1.5, 10), (40, 1.5, 20), (40, 1.5, 40), (40, 1.5, 80), \
                            (80, 1, 10), (80, 1, 20), (80, 1, 40), (80, 1, 80), (80, 1.5, 10), (80, 1.5, 20), (80, 1.5, 40), (80, 1.5, 80)]
-    sim_config['pos_class'] = 'trade_position.TradePos'
+    sim_config['pos_class'] = 'TradePos'
     sim_config['offset']    = 1
     chan_func = { 'high': {'func': 'dh.DONCH_H', 'args':{'field': 'high'}},
                   'low':  {'func': 'dh.DONCH_L', 'args':{'field': 'low'}}}

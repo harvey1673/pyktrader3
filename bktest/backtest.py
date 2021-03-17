@@ -1,15 +1,18 @@
 import datetime
 import os
+import platform
 import copy
 import sys
 import json
 import pandas as pd
 import numpy as np
-import data_handler as dh
-import trade_position
-import dbaccess
-import misc
-import platform
+import pycmqlib3.analytics.data_handler as dh
+from pycmqlib3.core.trade_position import TradePos, tradepos2dict
+from pycmqlib3.utility.dbaccess import dbconfig, hist_dbconfig, connect, \
+    insert_row_by_dict, load_daily_data_to_df, load_min_data_to_df, prod_main_cont_exch
+from pycmqlib3.utility.misc import sign, day_shift, nearby, cleanup_mindata, \
+    inst2product, night_session_markets, contract_range, contract_expiry, day_split_dict
+
 #import mysql_helper
 
 sim_margin_dict = { 'au': 0.06, 'ag': 0.08, 'cu': 0.07, 'al':0.05,
@@ -61,15 +64,11 @@ trade_offset_dict = {
                 'b': 1,     'sc': 0.2,  'fu': 1,
                 }
 
-day_split_dict = {'s1': [300, 2115],
-                  's2': [300, 1500, 2115],
-                  's3': [300, 1500, 1900, 2115],
-                  's4': [300, 1500, 1630, 1900, 2115],}
 
 class StratSim(object):
     def __init__(self, config):
         self.pos_update = False
-        self.pos_class = None
+        self.pos_class = TradePos
         self.pos_args = {}
         self.weights = [1]
         self.offset = 0
@@ -83,6 +82,9 @@ class StratSim(object):
         self.traded_price = 0.0
         self.closeout_pnl = 0.0
         self.scur_day = None
+        self.df = None
+        self.unit = 1
+        self.tcost = 0.0
 
     def process_config(self, config):
         pass
@@ -146,7 +148,7 @@ class StratSim(object):
         # print "close", self.timestamp, tp, self.traded_price, self.traded_vol
 
     def open_tradepos(self, contracts, price, traded_pos):
-        tp = price #+ misc.sign(traded_pos) * self.offset
+        tp = price #+ sign(traded_pos) * self.offset
         new_pos = self.pos_class(insts = contracts, volumes = self.weights, \
                                  pos = self.unit * traded_pos, \
                                  entry_target = tp, exit_target = tp, \
@@ -175,7 +177,7 @@ class StratSim(object):
                 tradepos.update_price(up)
         self.positions = [pos for pos in self.positions if not pos.is_closed]
 
-    def daily_initialize(self):
+    def daily_initialize(self, sim_data, n):
         pass
 
 def stat_min2daily(df):
@@ -193,7 +195,7 @@ def simdf_to_trades1(df, slippage = 0):
             if len(pos_list) > 0 and (pos_list[-1].pos * (pos - prev_pos) < 0):
                 print("Error: the new trade should be on the same direction of the existing trade cont=%s, prev_pos=%s, pos=%s, time=%s" % (
                 cont, prev_pos, pos, dtime))
-            new_pos = trade_position.TradePos(insts=[cont], volumes=[1], pos=pos - prev_pos, entry_target=tprice,
+            new_pos = TradePos(insts=[cont], volumes=[1], pos=pos - prev_pos, entry_target=tprice,
                                      exit_target=tprice)
             tradeid += 1
             new_pos.entry_tradeid = tradeid
@@ -212,7 +214,7 @@ def simdf_to_trades1(df, slippage = 0):
             pos_list = [tp for tp in pos_list if not tp.is_closed]
             if prev_pos != pos:
                 if len(pos_list) == 0:
-                    new_pos = trade_position.TradePos(insts=[cont], volumes=[1], pos=pos - prev_pos, entry_target=tprice,
+                    new_pos = TradePos(insts=[cont], volumes=[1], pos=pos - prev_pos, entry_target=tprice,
                                              exit_target=tprice)
                     tradeid += 1
                     new_pos.entry_tradeid = tradeid
@@ -247,19 +249,19 @@ def simdf_to_trades2(df, slippage=0.0):
                 print("Error: the new trade should be on the same direction of the existing trade cont=%s, prev_pos=%s, pos=%s, time=%s" % (
                 cont, prev_pos, pos, dtime))
             npos = int(abs(pos - prev_pos))
-            new_pos = [trade_position.TradePos(insts=[cont], volumes=[1], pos=misc.sign(pos - prev_pos), entry_target=tprice,
+            new_pos = [TradePos(insts=[cont], volumes=[1], pos=sign(pos - prev_pos), entry_target=tprice,
                                       exit_target=tprice) for i in range(npos)]
             for tpos in new_pos:
                 tradeid += 1
                 tpos.entry_tradeid = tradeid
-                tpos.open(tprice, misc.sign(pos - prev_pos), dtime)
+                tpos.open(tprice, sign(pos - prev_pos), dtime)
             pos_list = pos_list + new_pos
-            new_pos = [trade_position.TradePos(insts=[cont], volumes=[1], pos=misc.sign(pos - prev_pos), entry_target=tprice,
+            new_pos = [TradePos(insts=[cont], volumes=[1], pos=sign(pos - prev_pos), entry_target=tprice,
                                       exit_target=tprice) for i in range(npos)]
             for tpos in new_pos:
                 tradeid += 1
                 tpos.entry_tradeid = tradeid
-                tpos.open(tprice, misc.sign(pos - prev_pos), dtime)
+                tpos.open(tprice, sign(pos - prev_pos), dtime)
             pos_list = pos_list + new_pos
         else:
             for i, tp in enumerate(reversed(pos_list)):
@@ -276,12 +278,12 @@ def simdf_to_trades2(df, slippage=0.0):
                 if len(pos_list) == 0:
                     npos = int(abs(pos - prev_pos))
                     new_pos = [
-                        trade_position.TradePos(insts=[cont], volumes=[1], pos=misc.sign(pos - prev_pos), entry_target=tprice,
+                        TradePos(insts=[cont], volumes=[1], pos = sign(pos - prev_pos), entry_target=tprice,
                                        exit_target=tprice) for i in range(npos)]
                     for tpos in new_pos:
                         tradeid += 1
                         tpos.entry_tradeid = tradeid
-                        tpos.open(tprice, misc.sign(pos - prev_pos), dtime)
+                        tpos.open(tprice, sign(pos - prev_pos), dtime)
                     pos_list = pos_list + new_pos
                 else:
                     print("Warning: This should not happen for unit tradepos for prev_pos=%s, pos=%s, cont=%s, time=%s, should avoid this situation!" % (
@@ -344,7 +346,7 @@ def pnl_stats_by_tenor(df, tenors):
     res = {}
     for tenor in tenors:
         edate = df.index[-1]
-        sdate = misc.day_shift(edate, '-' + tenor)
+        sdate = day_shift(edate, '-' + tenor)
         pnl_df = df[df.index >= sdate]
         res_by_tenor = pnl_stats(pnl_df)
         for field in res_by_tenor:
@@ -521,7 +523,7 @@ class BacktestManager(object):
         if not os.path.exists(file_prefix):
             os.makedirs(file_prefix)
         self.file_prefix = file_prefix + self.sim_name
-        self.dbconfig = dbaccess.bktest_dbconfig
+        self.dbconfig = bktest_dbconfig
 
     def set_config(self, idx):
         assets = self.sim_assets[idx]
@@ -576,11 +578,11 @@ class BacktestManager(object):
     def load_data(self, idx):
         asset = self.sim_assets[idx]
         for prod in asset:
-            df = misc.nearby(prod, self.config['nearby'], self.config['start_date'], self.config['end_date'],
+            df = nearby(prod, self.config['nearby'], self.config['start_date'], self.config['end_date'],
                         self.config['rollrule'], self.sim_freq, need_shift = self.need_shift,
-                        database=self.config.get('dbconfig', dbaccess.hist_dbconfig)['database'])
+                        database=self.config.get('dbconfig', hist_dbconfig)['database'])
             if self.sim_freq == 'm':
-                df = misc.cleanup_mindata(df, prod)
+                df = cleanup_mindata(df, prod)
                 freq_key = '1m'
             else:
                 freq_key = self.sim_freq
@@ -632,15 +634,15 @@ class BacktestManager(object):
                 output[str(ix)] = res
                 all_trades = {}
                 for i, tradepos in enumerate(closed_trades):
-                    all_trades[i] = trade_position.tradepos2dict(tradepos)
+                    all_trades[i] = tradepos2dict(tradepos)
                 trades = pd.DataFrame.from_dict(all_trades).T
                 trades.to_csv(res['trade_file'])
                 ts.to_csv(res['pnl_file'])
                 fname = file_prefix + '_stats.json'
                 with open(fname, 'w') as ofile:
                     json.dump(output, ofile)
-                cnx = dbaccess.connect(**self.dbconfig)
-                dbaccess.insert_row_by_dict(cnx, self.dbtable, res, is_replace=True)
+                cnx = connect(**self.dbconfig)
+                insert_row_by_dict(cnx, self.dbtable, res, is_replace=True)
                 cnx.close()
                 print('The results for asset = %s, scen = %s are saved' % (asset, str(ix)))
 
@@ -673,27 +675,27 @@ class SpdBktestManager(BacktestManager):
                     rollrule = ticker_sp[2]
                 else:
                     rollrule = '-1b'
-                df = misc.nearby(ticker, nb, self.config['start_date'], self.config['end_date'], rollrule,
+                df = nearby(ticker, nb, self.config['start_date'], self.config['end_date'], rollrule,
                             self.sim_freq, need_shift = self.need_shift,
-                            database = self.config.get('dbconfig', dbaccess.hist_dbconfig)['database'])
+                            database = self.config.get('dbconfig', hist_dbconfig)['database'])
                 if self.sim_freq == 'm':
-                    df = misc.cleanup_mindata(df, ticker)
+                    df = cleanup_mindata(df, ticker)
             else:
-                cnx = dbaccess.connect(**self.config.get('dbconfig', dbaccess.hist_dbconfig))
+                cnx = connect(**self.config.get('dbconfig', hist_dbconfig))
                 if self.sim_freq == 'd':
-                    df = dbaccess.load_daily_data_to_df(cnx, dbtable, ticker,
+                    df = load_daily_data_to_df(cnx, dbtable, ticker,
                             self.config['start_date'], self.config['end_date'], index_col='date',
                             field = field_id)
                 else:
                     minid_start = 1500
                     minid_end = 2114
-                    prodcode = misc.inst2product(ticker)
-                    if prodcode in misc.night_session_markets:
+                    prodcode = inst2product(ticker)
+                    if prodcode in night_session_markets:
                         minid_start = 300
-                    df = dbaccess.load_min_data_to_df(cnx, dbtable, ticker, self.config['start_date'],
+                    df = load_min_data_to_df(cnx, dbtable, ticker, self.config['start_date'],
                                                       self.config['end_date'], minid_start, minid_end)
                     if self.sim_freq == 'm':
-                        df = misc.cleanup_mindata(df, prodcode)
+                        df = cleanup_mindata(df, prodcode)
                 df['contract'] = ticker
             if prod not in self.data_store:
                 self.data_store[prod] = {}
@@ -742,25 +744,25 @@ class ContBktestManager(BacktestManager):
     def load_data(self, assets):
         contlist = {}
         exp_dates = {}
-        dbconfig = self.config.get('dbconfig', dbaccess.hist_dbconfig)
-        cnx = dbaccess.connect(**dbconfig)
+        dbconfig = self.config.get('dbconfig', hist_dbconfig)
+        cnx = connect(**dbconfig)
         for i, prod in enumerate(assets):
-            cont_mth, exch = dbaccess.prod_main_cont_exch(prod)
-            self.contlist[prod], _ = misc.contract_range(prod, exch, cont_mth, self.start_date, self.end_date)
-            self.exp_dates[prod] = [misc.contract_expiry(cont) for cont in contlist[prod]]
-            edates = [ misc.day_shift(d, self.config['rollrule']) for d in exp_dates[prod] ]
-            sdates = [ misc.day_shift(d, self.sim_period) for d in exp_dates[prod] ]
+            cont_mth, exch = prod_main_cont_exch(prod)
+            self.contlist[prod], _ = contract_range(prod, exch, cont_mth, self.start_date, self.end_date)
+            self.exp_dates[prod] = [contract_expiry(cont) for cont in contlist[prod]]
+            edates = [ day_shift(d, self.config['rollrule']) for d in exp_dates[prod] ]
+            sdates = [ day_shift(d, self.sim_period) for d in exp_dates[prod] ]
             self.data_store[prod] = {}
             for cont, sd, ed in zip(contlist[prod], sdates, edates):
                 if self.sim_freq == 'd':
-                    tmp_df = dbaccess.load_daily_data_to_df(cnx, 'fut_min', cont, sd, ed)
+                    tmp_df = load_daily_data_to_df(cnx, 'fut_min', cont, sd, ed)
                 else:
                     minid_start = 1500
                     minid_end = 2114
-                    if prod in misc.night_session_markets:
+                    if prod in night_session_markets:
                         minid_start = 300
-                    tmp_df = dbaccess.load_min_data_to_df(cnx, 'fut_min', cont, sd, ed, minid_start, minid_end)
-                    misc.cleanup_mindata(tmp_df, prod)
+                    tmp_df = load_min_data_to_df(cnx, 'fut_min', cont, sd, ed, minid_start, minid_end)
+                    cleanup_mindata(tmp_df, prod)
                 tmp_df['contract'] = cont
                 self.data_store[prod][cont] = tmp_df
                 cnx.close()
@@ -769,7 +771,7 @@ class ContBktestManager(BacktestManager):
         assets = self.sim_assets[asset_idx]
         cont_map = self.cont_maplist[asset_idx]
         cont = self.contlist[assets[0]][cont_idx]
-        edate = misc.day_shift(self.exp_dates[assets[0]][cont_idx], self.config['rollrule'])
+        edate = day_shift(self.exp_dates[assets[0]][cont_idx], self.config['rollrule'])
         if self.sim_mode == 'OR':
             df = self.data_store[assets[0]][cont]
             df = df[df.date <= edate]
@@ -851,7 +853,7 @@ class ContBktestManager(BacktestManager):
                 print('saving results for asset = %s, scen = %s' % (asset, str(ix)))
                 all_trades = {}
                 for i, tradepos in enumerate(trade_list):
-                    all_trades[i] = trade_position.tradepos2dict(tradepos)
+                    all_trades[i] = tradepos2dict(tradepos)
                 trades = pd.DataFrame.from_dict(all_trades).T
                 trades.to_csv(fname1)
                 ts.to_csv(fname2)

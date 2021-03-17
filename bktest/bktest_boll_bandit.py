@@ -1,12 +1,12 @@
-import misc
 import json
-import data_handler as dh
 import pandas as pd
 import numpy as np
-import strategy as strat
 import datetime
-import backtest
 import sys
+from pycmqlib3.core.trade_position import TradePos, ParSARTradePos
+from pycmqlib3.utility.misc import sign, day_split_dict
+import pycmqlib3.analytics.data_handler as dh
+from . backtest import StratSim, simdf_to_trades1, simdf_to_trades2
 
 def bband_chan_sim( mdf, config):
     start_equity = config['capital']
@@ -72,13 +72,13 @@ def bband_chan_sim( mdf, config):
             continue
         if mslice.close_ind or (pos !=0 and curr_pos[0].check_exit(mslice.open, 0)):
             if pos!=0:
-                curr_pos[0].close(mslice.open - misc.sign(pos) * offset, dd)
+                curr_pos[0].close(mslice.open - sign(pos) * offset, dd)
                 tradeid += 1
                 curr_pos[0].exit_tradeid = tradeid
                 closed_trades.append(curr_pos[0])
                 curr_pos = []
                 xdf.set_value(dd, 'cost', xdf.at[dd, 'cost'] - abs(pos) * ( mslice.open * tcost))
-                xdf.set_value(dd, 'traded_price', mslice.open - misc.sign(pos) * offset)
+                xdf.set_value(dd, 'traded_price', mslice.open - sign(pos) * offset)
                 pos = 0
         else:
             if ((mslice.open >= mslice.high_band) or (mslice.open <= mslice.low_band)) and (pos==0):
@@ -86,11 +86,11 @@ def bband_chan_sim( mdf, config):
                 new_pos = pos_class([mslice.contract], [1], target_pos, mslice.open, mslice.open, **pos_args)
                 tradeid += 1
                 new_pos.entry_tradeid = tradeid
-                new_pos.open(mslice.open + misc.sign(target_pos)*offset, dd)
+                new_pos.open(mslice.open + sign(target_pos)*offset, dd)
                 curr_pos.append(new_pos)
                 pos = target_pos
                 xdf.set_value(dd, 'cost', xdf.at[dd, 'cost'] - abs(target_pos) * (mslice.open * tcost))
-                xdf.set_value(dd, 'traded_price', mslice.open + misc.sign(target_pos)*offset)
+                xdf.set_value(dd, 'traded_price', mslice.open + sign(target_pos)*offset)
         xdf.ix[dd, 'pos'] = pos
     return (xdf, closed_trades)
 

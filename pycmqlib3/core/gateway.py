@@ -11,7 +11,7 @@ from . order import Order, SpreadOrder
 from . event_type import *
 from . event_engine import Event
 from . trading_const import Alive_Order_Status, Direction, Offset, \
-    OrderStatus, OrderTyp, Option_ProductTypes
+    OrderStatus, OrderType, Option_ProductTypes
 
 
 class Gateway(object):
@@ -175,7 +175,7 @@ class Gateway(object):
                         exchange = instIDs[1]
                     else:
                         exchange = inst2exch(inst)
-                    order_class = eval('order.' + str(row[14]))
+                    order_class = eval(str(row[14]))
                     filled_orders = {}
                     if ':' in row[7]:
                         filled_str = row[7].split('|')
@@ -322,7 +322,7 @@ class Gateway(object):
         if not self.check_order_permission(instID, direction):
             return []
         order_offsets = self.get_order_offset(instID, volume, order_num)
-        new_orders = [order.Order(instID = instID, exchange = exchange, limit_price = limit_price, volume = v, \
+        new_orders = [Order(instID = instID, exchange = exchange, limit_price = limit_price, volume = v, \
                             order_time = self.agent.tick_id, action_type = action_type, \
                             direction = direction, price_type = price_type, trade_ref = trade_ref) \
                             for (action_type, v) in order_offsets]

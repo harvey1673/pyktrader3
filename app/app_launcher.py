@@ -6,7 +6,7 @@ import logging
 import json
 from pycmqlib3.utility import misc, base, sec_bits
 from pycmqlib3.core.agent_save import SaveAgent
-from pycmqlib3.core.agent_maqs import MAQSAgent
+from pycmqlib3.core.agent_email import EmailAgent
 from pycmqlib3.core.agent import Agent
 from pycmqlib3.core.gui_agent import MainApp, Gui
 

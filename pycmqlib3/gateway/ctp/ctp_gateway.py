@@ -1,15 +1,23 @@
 # -*- coding: utf-8 -*-
 import os
 import json
-from base import *
-from misc import *
-from gateway import *
+from pycmqlib3.utility.base import *
+from pycmqlib3.utility.dbaccess import insert_cont_data
+from pycmqlib3.utility.misc import get_obj_by_name, get_tick_id, inst2product, trading_hours
+from pycmqlib3.core.gateway import Gateway, GrossGateway
 import logging
 import datetime
-import position
-from trading_const import *
-from trading_object import TickData
-from .ctp_constant import *
+from pycmqlib3.core.position import GrossPosition, SHFEPosition
+from pycmqlib3.core.trading_const import OrderStatus, Direction, OrderType, \
+    Exchange, Offset, ProductType, OptionType, Alive_Order_Status
+from pycmqlib3.core.event_engine import Event
+from pycmqlib3.core.event_type import EVENT_MARKETDATA, EVENT_QRYACCOUNT, \
+    EVENT_QRYPOSITION, EVENT_QRYORDER, EVENT_QRYTRADE, EVENT_QRYINVESTOR, \
+    EVENT_QRYINSTRUMENT, EVENT_TIMER, EVENT_TDLOGIN, EVENT_ETRADEUPDATE, \
+    EVENT_RTNORDER, EVENT_RTNTRADE, EVENT_ERRORDERINSERT, EVENT_ERRORDERCANCEL
+from pycmqlib3.core.trading_object import TickData
+from . ctp_constant import *
+
 
 STATUS_CTP2CMQ = {
     THOST_FTDC_OAS_Submitted: OrderStatus.Sent,
@@ -71,7 +79,9 @@ TERT_QUICK = 2 #只传送登录后的流内容
 class CtpGateway(GrossGateway):
     """CTP接口"""
 
-    def __init__(self, agent, gateway_name='CTP', md_api = 'ctp.vnctp_gateway.VnctpMdApi', td_api = 'ctp.vnctp_gateway.VnctpTdApi'):
+    def __init__(self, agent, gateway_name='CTP', \
+                    md_api = 'pycmqlib3.gateway.ctp.vnctp_gateway.VnctpMdApi', \
+                    td_api = 'pycmqlib3.gateway.ctp.vnctp_gateway.VnctpTdApi'):
         """Constructor"""
         super(CtpGateway, self).__init__(agent, gateway_name)
         self.mdApi = get_obj_by_name(md_api)(self)
@@ -90,14 +100,13 @@ class CtpGateway(GrossGateway):
         #self.product_info = 'Zeno'
 
     def get_pos_class(self, inst):
-        ratio = 1
         pos_args = {}
         if inst.name in self.intraday_close_ratio:
             pos_args['intraday_close_ratio'] = self.intraday_close_ratio[inst.name]
         if inst.exchange == 'SHFE':
-            pos_cls = position.SHFEPosition
+            pos_cls = SHFEPosition
         else:
-            pos_cls = position.GrossPosition
+            pos_cls = GrossPosition
         return (pos_cls, pos_args)
 
     def connect(self):
@@ -358,8 +367,8 @@ class CtpGateway(GrossGateway):
             for instID in self.qry_inst_data:
                 expiry = self.qry_inst_data[instID]['expiry']
                 try:
-                    expiry_date = datetime.datetime.strptime(expiry, '%Y%m%d')
-                    dbaccess.insert_cont_data(self.qry_inst_data[instID])
+                    #expiry_date = datetime.datetime.strptime(expiry, '%Y%m%d')
+                    insert_cont_data(self.qry_inst_data[instID])
                 except:
                     print(instID, expiry)
                     continue
