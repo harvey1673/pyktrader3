@@ -1,14 +1,11 @@
-import os,sys,inspect
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0,parentdir)
 import json
-import misc
-import data_handler as dh
 import pandas as pd
 import numpy as np
 import datetime
-from backtest import *
+from pycmqlib3.core.trade_position import TradePos, ParSARTradePos
+from pycmqlib3.utility.misc import sign, day_split_dict
+import pycmqlib3.analytics.data_handler as dh
+from . backtest import StratSim, simdf_to_trades1, simdf_to_trades2
 
 class BBChanStop(StratSim):
     def __init__(self, config):

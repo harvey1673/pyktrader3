@@ -1,17 +1,24 @@
 # -*- coding: utf-8 -*-
 import os
-from misc import *
-from time import sleep
-from .vnctpmd import MdApi
-from .vnctptd import TdApi
-from .ctp_gateway import *
-
+import time
 import logging
 import datetime
+from pycmqlib3.core.event_engine import Event
+from pycmqlib3.core.trading_const import OrderType
+from pycmqlib3.core.event_type import EVENT_DAYSWITCH, EVENT_LOG, EVENT_MARKETDATA, EVENT_QRYACCOUNT, \
+    EVENT_QRYPOSITION, EVENT_QRYORDER, EVENT_QRYTRADE, EVENT_QRYINVESTOR, \
+    EVENT_QRYINSTRUMENT, EVENT_TIMER, EVENT_TDLOGIN, EVENT_ETRADEUPDATE, \
+    EVENT_RTNORDER, EVENT_RTNTRADE, EVENT_ERRORDERINSERT, EVENT_ERRORDERCANCEL
+from . vnctpmd import MdApi
+from . vnctptd import TdApi
+from . ctp_gateway import CtpGateway, DIRECTION_CMQ2CTP, OFFSET_CMQ2CTP, ORDERTYPE_CMQ2CTP
+from . ctp_constant import *
 
 class VnctpGateway(CtpGateway):
     def __init__(self, agent, gateway_name='CTP'):
-        super(VnctpGateway, self).__init__(agent, gateway_name, md_api = 'ctp.vnctp_gateway.VnctpMdApi', td_api = 'ctp.vnctp_gateway.VnctpTdApi')
+        super(VnctpGateway, self).__init__(agent, gateway_name, \
+            md_api = 'pycmqlib3.gateway.ctp.vnctp_gateway.VnctpMdApi', \
+            td_api = 'pycmqlib3.gateway.ctp.vnctp_gateway.VnctpTdApi')
 
 
 class VnctpMdApi(MdApi):
@@ -365,7 +372,7 @@ class VnctpTdApi(TdApi):
             if not n:
                 break
             else:
-                sleep(1)
+                time.sleep(1)
 
     def onRspQryTradingAccount(self, data, error, n, last):
         """资金账户查询回报"""

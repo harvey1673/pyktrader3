@@ -1,14 +1,12 @@
-import os,sys,inspect
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0,parentdir)
+import sys
 import json
-import misc
-import data_handler as dh
 import pandas as pd
 import numpy as np
 import datetime
-from backtest import *
+import pycmqlib3.analytics.data_handler as dh
+from pycmqlib3.utility.misc import sign, day_split_dict
+from pycmqlib3.core.trade_position import TradePos, TargetTrailTradePos
+from . backtest import StratSim, simdf_to_trades1, simdf_to_trades2
 
 class DTChanSim(StratSim):
     def __init__(self, config):
@@ -82,9 +80,9 @@ class DTChanSim(StratSim):
         xdf['ma'] = xdf.close.rolling(max(self.machan, 1)).mean()
         xdf['rng'] = pd.DataFrame([self.min_rng * xdf['ATR'], self.k * xdf['tr']]).max()
         xdf['upper'] = xdf['open'] + xdf['rng'].shift(1) * (1 + \
-                        (((xdf['open'] - xdf['ma'].shift(1)) * misc.sign(self.f) < - self.ma_width * xdf['ATR'].shift(1)) & self.use_chan) *self.f)
+                        (((xdf['open'] - xdf['ma'].shift(1)) * sign(self.f) < - self.ma_width * xdf['ATR'].shift(1)) & self.use_chan) *self.f)
         xdf['lower'] = xdf['open'] - xdf['rng'].shift(1) * (1 + \
-                        (((xdf['open'] - xdf['ma'].shift(1)) * misc.sign(self.f) > self.ma_width * xdf['ATR'].shift(1)) & self.use_chan) *self.f)
+                        (((xdf['open'] - xdf['ma'].shift(1)) * sign(self.f) > self.ma_width * xdf['ATR'].shift(1)) & self.use_chan) *self.f)
         xdata = pd.concat([xdf['upper'], xdf['lower'], xdf['chan_h'].shift(1), xdf['chan_l'].shift(1),
                            xdf['open'], xdf['last_min'], xdf['ATR'].shift(1)], axis=1,
                           keys=['upper','lower', 'chan_h', 'chan_l', 'xopen', 'last_min', 'ATR'])

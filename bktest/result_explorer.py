@@ -1,17 +1,13 @@
-import os,sys,inspect
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0,parentdir)
-
 import json
 import pandas as pd
 import numpy as np
-import dbaccess
-import misc
-import ts_tool
 import datetime
 from collections import OrderedDict
-sim_config_folder = "C:/dev/pycmqlib3/btest_setup/"
+from pycmqlib3.utility.dbaccess import connect, bktest_dbconfig
+from pycmqlib3.utility.misc import day_shift, product_lotsize
+from pycmqlib3.analytics.ts_tool import merge_df
+
+sim_config_folder = "C:/dev/pycmqlib3/pycmqlib3/btest_setup/"
 
 output_columns = ['asset', 'sim_name', 'scen_id', 'std_unit', \
                 'w_sharp', 'sharp_ratio_3m', 'sharp_ratio_6m', 'sharp_ratio_1y', 'sharp_ratio_2y', 'sharp_ratio_3y',\
@@ -44,7 +40,7 @@ asset_list =  ["rb", "hc", "i", "j", "jm", "ZC", "ni", "ru", \
                "MA$1$-35b$fut_MA$2$-35b$fut"]
 
 def load_btest_res(sim_names, dbtable = 'bktest_output'):
-    cnx = dbaccess.connect(**dbaccess.bktest_dbconfig)
+    cnx = connect(**bktest_dbconfig)
     stmt = "select * from {dbtable} where sim_name in ('{qlist}')".format( \
         dbtable=dbtable, qlist="','".join(sim_names))
     df = pd.read_sql(stmt, cnx)
@@ -57,7 +53,7 @@ def load_btest_from_file(csvfile):
     return df
 
 def load_btest_pnl(sim_keys, dbtable  = 'bktest_output'):
-    cnx = dbaccess.connect(**dbaccess.bktest_dbconfig)
+    cnx = connect(**bktest_dbconfig)
     df_list = []
     for sim_key in sim_keys:
         stmt = "select * from {dbtable} where sim_name = '{name}' and asset = '{asset}' and scen_id = {scen}".format( \
@@ -105,7 +101,7 @@ def calc_cov_by_asset(df, asset = None, start_date = None, end_date = None, teno
         xdf = xdf[xdf.index <= end_date]
     end_date = xdf.index[-1]
     if tenor:
-        start_date = misc.day_shift(end_date, tenor)
+        start_date = day_shift(end_date, tenor)
     if start_date:
         xdf = xdf[xdf.index >= start_date]
     corr = np.corrcoef(xdf.values.T, bias = bias)
@@ -386,7 +382,7 @@ def process_OpenbrkSim():
     filter = (df.sim_name == 'openbrk_pct45_200228')
     df.ix[filter, 'channel_type'] = 3
     df.ix[filter, 'trend_factor'] = 0.0
-    df['lot_size'] = df['asset'].apply(lambda x: misc.product_lotsize[x.split('$')[0]])
+    df['lot_size'] = df['asset'].apply(lambda x: product_lotsize[x.split('$')[0]])
     df['std_unit'] = df['std_pnl_1y'] * df['lot_size']
     assets = asset_list
     res = pd.DataFrame()
@@ -447,7 +443,7 @@ def process_RsiatrSim():
     df['atrma_win'] = df['par_value2']
     df['stoploss'] = df['par_value3']
     df['close_tday'] = df['par_value4']
-    df['lot_size'] = df['asset'].apply(lambda x: misc.product_lotsize[x.split('$')[0]])
+    df['lot_size'] = df['asset'].apply(lambda x: product_lotsize[x.split('$')[0]])
     df['std_unit'] = df['std_pnl_1y'] * df['lot_size']
     df['volumes'] = '[1]'
     assets = asset_list
@@ -491,7 +487,7 @@ def process_ChanbreakSim():
     df['channel'] = df['par_value3']
     df['entry_chan'] = extract_element(df, 'channel', 0)
     df['exit_chan'] = extract_element(df, 'channel', 1)
-    df['lot_size'] = df['asset'].apply(lambda x: misc.product_lotsize[x.split('$')[0]])
+    df['lot_size'] = df['asset'].apply(lambda x: product_lotsize[x.split('$')[0]])
     df['std_unit'] = df['std_pnl_1y'] * df['lot_size']
     df['volumes'] = '[1]'
     #df['open_period'] = '[300, 2115]'
@@ -537,9 +533,9 @@ def process_Ma2crossSim():
     df['win_l'] = extract_element(df, 'par_value1', 1)
     df['ma_win'] = df['par_value1']
     #flag = df.simname == 'ma2cross_200228'
-    #df.ix[flag, 'lot_size'] = df.ix[flag, 'asset'].apply(lambda x: misc.product_lotsize[x])
-    #df.ix[~flag, 'lot_size'] = df.ix[~flag, 'asset'].apply(lambda x: misc.product_lotsize[x.split('$')[0]])
-    df['lot_size'] = df['asset'].apply(lambda x: misc.product_lotsize[x.split('$')[0]])
+    #df.ix[flag, 'lot_size'] = df.ix[flag, 'asset'].apply(lambda x: product_lotsize[x])
+    #df.ix[~flag, 'lot_size'] = df.ix[~flag, 'asset'].apply(lambda x: product_lotsize[x.split('$')[0]])
+    df['lot_size'] = df['asset'].apply(lambda x: product_lotsize[x.split('$')[0]])
     df['std_unit'] = df['std_pnl_1y'] * df['lot_size']
     df['volumes'] = '[1]'
     assets = asset_list
@@ -573,7 +569,7 @@ def process_MAChanSim():
     df['win_s'] = extract_element(df, 'par_value0', 0)
     df['win_l'] = extract_element(df, 'par_value0', 1)
     df['win_list'] = df['par_value0']
-    df['lot_size'] = df['asset'].apply(lambda x: misc.product_lotsize[x])
+    df['lot_size'] = df['asset'].apply(lambda x: product_lotsize[x])
     df['std_unit'] = df['std_pnl_1y'] * df['lot_size']
     df['volumes'] = '[1]'
     assets = asset_list
@@ -602,7 +598,7 @@ def process_MARibbonSim():
     df['w_sharp'] = calc_w_col(df, key = 'sharp_ratio', weight = weight)
     df['freq'] = df['par_value0']
     df['param'] = df['par_value1']
-    df['lot_size'] = df['asset'].apply(lambda x: misc.product_lotsize[x])
+    df['lot_size'] = df['asset'].apply(lambda x: product_lotsize[x])
     df['std_unit'] = df['std_pnl_1y'] * df['lot_size']
     df['volumes'] = '[1]'
     assets = asset_list
@@ -644,7 +640,7 @@ def process_XSMOMSim():
     df['ma_win'] = df['par_value2']
     df['rebal_freq'] = df['par_value3']
     df['quantile'] = 0.2
-    #df['lot_size'] = df['asset'].apply(lambda x: misc.product_lotsize[x.split('$')[0]])
+    #df['lot_size'] = df['asset'].apply(lambda x: product_lotsize[x.split('$')[0]])
     df['std_unit'] = df['std_pnl_1y']
     df['volumes'] = '[1]'
 

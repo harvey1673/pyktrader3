@@ -1,15 +1,11 @@
-import os,sys,inspect
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-sys.path.insert(0,parentdir)
-import data_handler as dh
-from backtest import *
-import trade_position
-
-day_split_dict = {'s1': [300, 2115],
-                  's2': [300, 1500, 2115],
-                  's3': [300, 1500, 1900, 2115],
-                  's4': [300, 1500, 1630, 1900, 2115],}
+import sys
+import json
+import pandas as pd
+import numpy as np
+import pycmqlib3.analytics.data_handler as dh
+from pycmqlib3.utility.misc import sign, day_split_dict
+from pycmqlib3.core.trade_position import TradePos, TargetTrailTradePos
+from . backtest import StratSim, simdf_to_trades1, simdf_to_trades2
 
 class MALayerSim(StratSim):
     def __init__(self, config):

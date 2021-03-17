@@ -1,7 +1,7 @@
 #-*- coding:utf-8 -*-
 import numpy as np
 import logging
-from pycmqlib3.analytics.data_handler as dh
+import pycmqlib3.analytics.data_handler as dh
 from pycmqlib3.utility.base import BaseObject, fcustom
 from . strategy import Strategy
  

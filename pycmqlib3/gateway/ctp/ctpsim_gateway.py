@@ -1,10 +1,19 @@
 # -*- coding: utf-8 -*-
-from .ctp_gateway import *
+import json
+import logging
+import time
+from pycmqlib3.core.event_type import EVENT_MARKETDATA, EVENT_ETRADEUPDATE, \
+    EVENT_RTNORDER, EVENT_RTNTRADE, EVENT_ERRORDERINSERT, EVENT_ERRORDERCANCEL
+from pycmqlib3.core.event_engine import Event
+from . ctp_gateway import CtpGateway, DIRECTION_CMQ2CTP, OFFSET_CMQ2CTP, ORDERTYPE_CMQ2CTP
+from . ctp_constant import *
 
 class CtpSimGateway(CtpGateway):
     def __init__(self, agent, gateway_name='CTP'):
         """Constructor"""
-        super(CtpSimGateway, self).__init__(agent, gateway_name, md_api = "ctp.vnctp_gateway.VnctpMdApi", td_api = "ctp.ctpsim_gateway.SimctpTdApi")
+        super(CtpSimGateway, self).__init__(agent, gateway_name, \
+            md_api = "pycmqlib3.gateway.ctp.vnctp_gateway.VnctpMdApi", \
+            td_api = "pycmqlib3.gateway.ctp.ctpsim_gateway.SimctpTdApi")
         self.qry_enabled = False         # 是否要启动循环查询
         self.md_data_buffer = 0
 

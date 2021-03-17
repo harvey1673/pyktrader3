@@ -1,7 +1,7 @@
 #-*- coding:utf-8 -*-
 import tkinter as tk
-import tkinter.ttk
-from . gui_misc import *
+import tkinter.ttk as ttk
+from . gui_misc import type2str, keepdigit, type2str, get_type_var, str2type, ScrolledFrame
 
 class StratGui(object):
     def __init__(self, strat, app, master):
@@ -74,33 +74,33 @@ class StratGui(object):
         entries = {}
         stringvars = {}
         row_id = 0
-        set_btn = tkinter.ttk.Button(self.scr_frame.frame, text='Set', command=self.set_params)
+        set_btn = ttk.Button(self.scr_frame.frame, text='Set', command=self.set_params)
         set_btn.grid(row=row_id, column=3, sticky="ew")
-        refresh_btn = tkinter.ttk.Button(self.scr_frame.frame, text='Refresh', command=self.get_params)
+        refresh_btn = ttk.Button(self.scr_frame.frame, text='Refresh', command=self.get_params)
         refresh_btn.grid(row=row_id, column=4, sticky="ew")
-        recalc_btn = tkinter.ttk.Button(self.scr_frame.frame, text='Recalc', command=self.recalc)
+        recalc_btn = ttk.Button(self.scr_frame.frame, text='Recalc', command=self.recalc)
         recalc_btn.grid(row=row_id, column=5, sticky="ew")
-        save_btn = tkinter.ttk.Button(self.scr_frame.frame, text='SaveConfig', command=self.save_config)
+        save_btn = ttk.Button(self.scr_frame.frame, text='SaveConfig', command=self.save_config)
         save_btn.grid(row=row_id, column=6, sticky="ew")
         row_id += 1
         for idx, field in enumerate(self.shared_fields):
-            lbl = tkinter.ttk.Label(self.scr_frame.frame, text = field, anchor='w', width = 8)
+            lbl = ttk.Label(self.scr_frame.frame, text = field, anchor='w', width = 8)
             lbl.grid(row=row_id, column=idx+2, sticky="ew")
             if field in self.entry_fields:
-                ent = tkinter.ttk.Entry(self.scr_frame.frame, width=4)
+                ent = ttk.Entry(self.scr_frame.frame, width=4)
                 ent.grid(row=row_id+1, column=idx+2, sticky="ew")
                 ent.insert(0, "0")
                 entries[field] = ent
             elif field in self.status_fields:
                 v= get_type_var(self.field_types[field])
-                lab = tkinter.ttk.Label(self.scr_frame.frame, textvariable = v, anchor='w', width = 8)
+                lab = ttk.Label(self.scr_frame.frame, textvariable = v, anchor='w', width = 8)
                 lab.grid(row=row_id+1, column=idx+2, sticky="ew")
                 v.set('0')
                 stringvars[field] = v
             else:
                 for (f, func) in self.button_fields:
                     if field == f:
-                        button = tkinter.ttk.Button(self.scr_frame.frame, text= field, width=6,
+                        button = ttk.Button(self.scr_frame.frame, text= field, width=6,
                                                 command=lambda: self.run_func(func))
                         button.grid(column= idx+2, row=row_id + 1, sticky="ew")
                         break
@@ -110,21 +110,21 @@ class StratGui(object):
         local_button_fields = [ (f, func) for (f, func) in self.button_fields if f not in self.shared_fields]
         fields = ['assets'] + [''] * len(local_button_fields) + local_entry_fields + local_status_fields
         for idx, field in enumerate(fields):
-            lbl = tkinter.ttk.Label(self.scr_frame.frame, text = field, anchor='w', width = 12)
+            lbl = ttk.Label(self.scr_frame.frame, text = field, anchor='w', width = 12)
             lbl.grid(row=row_id, column=idx, sticky="ew")
         row_id += 1
         for i, underlier in enumerate(self.underliers):
             under_key = ','.join(underlier)
-            inst_lbl = tkinter.ttk.Label(self.scr_frame.frame, text=under_key, anchor="w", width = 12)
+            inst_lbl = ttk.Label(self.scr_frame.frame, text=under_key, anchor="w", width = 12)
             inst_lbl.grid(row=row_id, column=0, sticky="ew")
             col_id = 1
             entries[under_key] = {}
             for txt, func in local_button_fields:
-                button = tkinter.ttk.Button(self.scr_frame.frame, text = txt, width=6, command=lambda: self.run_func(func, idx))
+                button = ttk.Button(self.scr_frame.frame, text = txt, width=6, command=lambda: self.run_func(func, idx))
                 button.grid(column=col_id, row=row_id, sticky="ew")
                 col_id += 1
             for idx, field in enumerate(local_entry_fields):
-                ent = tkinter.ttk.Entry(self.scr_frame.frame, width=5)
+                ent = ttk.Entry(self.scr_frame.frame, width=5)
                 ent.grid(row=row_id, column=col_id+idx, sticky="ew")
                 ent.insert(0, "0")
                 entries[under_key][field] = ent
@@ -132,7 +132,7 @@ class StratGui(object):
             stringvars[under_key] = {}            
             for idx, field in enumerate(local_status_fields):
                 v= get_type_var(self.field_types[field])
-                lab = tkinter.ttk.Label(self.scr_frame.frame, textvariable = v, anchor='w', width = 8)
+                lab = ttk.Label(self.scr_frame.frame, textvariable = v, anchor='w', width = 8)
                 lab.grid(row=row_id, column=col_id+idx, sticky="ew")
                 v.set('0')
                 stringvars[under_key][field] = v       
@@ -206,10 +206,10 @@ class BulkTradeGui(StratGui):
         StratGui.set_frame(self, root)
         row_id = 0
         col_id = 7
-        load_btn = tkinter.ttk.Button(self.scr_frame.frame, text='LoadTrades', command=self.load_trades)
+        load_btn = ttk.Button(self.scr_frame.frame, text='LoadTrades', command=self.load_trades)
         load_btn.grid(row = row_id, column = col_id, sticky="ew")
         col_id += 1
-        bulk_btn = tkinter.ttk.Button(self.scr_frame.frame, text='BulkTrades', command=self.bulk_trades)
+        bulk_btn = ttk.Button(self.scr_frame.frame, text='BulkTrades', command=self.bulk_trades)
         bulk_btn.grid(row = row_id, column= col_id, sticky="ew")
 
     def load_trades(self):
