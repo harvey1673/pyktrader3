@@ -19,7 +19,7 @@ from . trading_const import TradeStatus
 from . agent_conf import BAR_BUF_SHIFT_SIZE, TICK_BUF_SHIFT_SIZE, tick_data_list, \
     min_data_list, day_data_list, dtype_map
 from . event_type import EVENT_LOG, EVENT_TICK, EVENT_ETRADEUPDATE, EVENT_DAYSWITCH, EVENT_TIMER, \
-    EVENT_DB_WRITE, EVENT_MKTDATA_EOD
+    EVENT_DB_WRITE, EVENT_MKTDATA_EOD, EVENT_MIN_BAR
 
 class MktDataMixin(object):
     def __init__(self, config):
@@ -129,10 +129,6 @@ class MktDataMixin(object):
 
 class Agent(MktDataMixin):
     def __init__(self, config = {}, tday = datetime.date.today()):
-        '''
-            trader为交易对象
-            tday为当前日,为0则为当日
-        '''
         self.tick_id = 0
         self.timer_count = 0
         self.name = config.get('name', 'test_agent')
@@ -169,7 +165,7 @@ class Agent(MktDataMixin):
             strat_args  = strat_conf.get('config', {})
             strat = get_obj_by_name(strat_conf['class'])(strat_args, self)
             self.add_strategy(strat)
-        self.init_init()    #init中的init,用于子类的处理
+        self.init_init()    #init in init, to be used by child class
 
     def register_event_handler(self):
         for key in self.gateways:
@@ -181,7 +177,7 @@ class Agent(MktDataMixin):
         self.event_engine.register(EVENT_DAYSWITCH, self.day_switch)
         self.event_engine.register(EVENT_TIMER, self.check_commands)
 
-    def put_command(self, timestamp, command, arg = {} ): #按顺序插入
+    def put_command(self, timestamp, command, arg = {} ): # insert command by timestamp
         stamps = [tstamp for (tstamp,cmd, fargs) in self.sched_commands]
         ii = bisect.bisect(stamps, timestamp)
         self.sched_commands.insert(ii,(timestamp, command, arg))
@@ -280,12 +276,12 @@ class Agent(MktDataMixin):
             strat.set_agent(self)
 
     def add_gateway(self, gateway, gateway_name=None, gateway_args = {}):
-        """创建接口"""
+        """create a gateway acccess"""
         if gateway_name not in self.gateways:
             self.gateways[gateway_name] = gateway(self, gateway_name, **gateway_args)
 
     def connect(self, gateway_name):
-        """连接特定名称的接口"""
+        """connect to gateway by name"""
         if gateway_name in self.gateways:
             gateway = self.gateways[gateway_name]
             gateway.connect()
@@ -556,7 +552,7 @@ class Agent(MktDataMixin):
         eod_time = datetime.datetime.combine(newday, datetime.time(15, 20, 0))
         self.put_command(eod_time, self.run_eod)
                 
-    def init_init(self):    #init中的init,用于子类的处理
+    def init_init(self): 
         self.register_event_handler()
 
     def min_switch(self, under_key, forced = False):
@@ -584,8 +580,7 @@ class Agent(MktDataMixin):
                 event1.dict['instID'] = under_key
                 self.event_engine.put(event1)
                 self.save_tick_idx[under_key] = nlen
-            if (self.cur_min[under_key]['high'] != self.cur_min[under_key]['low']) \
-                    or (self.cur_min[under_key]['volume'] > 0):
+            if (self.cur_min[under_key]['volume'] > 0):
                 event2 = Event(type=EVENT_DB_WRITE, priority = 500)
                 event2.dict['data'] = self.cur_min[under_key]
                 event2.dict['type'] = EVENT_MIN_BAR
