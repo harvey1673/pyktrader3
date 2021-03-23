@@ -2,7 +2,7 @@
 import numpy as np
 import logging
 from . strategy import Strategy
-from pycmqlib3.core.trading_const import OrderType
+from pycmqlib3.core.trading_const import OrderType, Direction
 
 class ManualTrade(Strategy):
     common_params =  dict({'daily_close_buffer': 3, 'price_limit_buffer': 5}, \

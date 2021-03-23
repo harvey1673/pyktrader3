@@ -2,6 +2,7 @@
 import numpy as np
 import datetime
 import pycmqlib3.analytics.data_handler as dh
+from pycmqlib3.utility.misc import sign
 from pycmqlib3.utility.base import BaseObject, fcustom
 from . strategy import Strategy
 

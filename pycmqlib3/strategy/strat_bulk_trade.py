@@ -1,4 +1,5 @@
 #-*- coding:utf-8 -*-
+import json
 from . strategy import Strategy
 from pycmqlib3.core.trading_const import OrderType
 

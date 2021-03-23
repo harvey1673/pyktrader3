@@ -1,10 +1,11 @@
 # -*- coding:utf-8 -*-
-from pycmqlib3.utility.dbaccess import load_factor_data
-from strategy import *
 import numpy as np
+import pandas as pd
 import logging
-import pycmqlib3.analytics.data_handler as dh
 from pycmqlib3.utility.base import BaseObject, fcustom
+from pycmqlib3.utility.misc import day_shift
+from pycmqlib3.utility.dbaccess import load_factor_data
+import pycmqlib3.analytics.data_handler as dh
 from . strategy import Strategy
 
 # table format for factor data
