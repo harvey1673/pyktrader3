@@ -14,8 +14,9 @@ def save(config_file, tday):
     with open(config_file, 'r') as infile:
         config = json.load(infile)
     name = config.get('name', 'save_ctp')
+    folder = config['folder']
     filter_flag = config.get('filter_flag', False)
-    base.config_logging(name + "/" + name + ".log", level=logging.DEBUG,
+    base.config_logging(folder + name + ".log", level=logging.DEBUG,
                    format = '%(name)s:%(funcName)s:%(lineno)d:%(asctime)s %(levelname)s %(message)s',
                    to_console = True,
                    console_level = logging.INFO)
@@ -38,8 +39,9 @@ def save_gui(config_file, tday):
     with open(config_file, 'r') as infile:
         config = json.load(infile)
     name = config.get('name', 'save_ctp')
+    folder = config['folder']
     filter_flag = config.get('filter_flag', False)
-    base.config_logging(name + "/" + name + ".log", level=logging.DEBUG,
+    base.config_logging(folder + name + ".log", level=logging.DEBUG,
                    format = '%(name)s:%(funcName)s:%(lineno)d:%(asctime)s %(levelname)s %(message)s',
                    to_console = True,
                    console_level = logging.INFO)
@@ -61,7 +63,8 @@ def run_gui(config_file, tday):
     with open(config_file, 'r') as infile:
         config = json.load(infile)
     name = config.get('name', 'test_agent')
-    base.config_logging(name + "/" + name + ".log", level=logging.DEBUG,
+    folder = config['folder']
+    base.config_logging(folder + name + ".log", level=logging.DEBUG,
                 format = '%(name)s:%(funcName)s:%(lineno)d:%(asctime)s %(levelname)s %(message)s',
                 to_console = True, console_level = logging.INFO,
                 to_msg = False,
@@ -79,7 +82,8 @@ def run(config_file, tday):
     with open(config_file, 'r') as infile:
         config = json.load(infile)
     name = config.get('name', 'test_agent')
-    base.config_logging(name + "/" + name + ".log", level=logging.DEBUG,
+    folder = config['folder']
+    base.config_logging(folder + name + ".log", level=logging.DEBUG,
                    format = '%(name)s:%(funcName)s:%(lineno)d:%(asctime)s %(levelname)s %(message)s',
                    to_console = True,
                    console_level = logging.INFO)
