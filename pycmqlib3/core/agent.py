@@ -140,6 +140,7 @@ class Agent(MktDataMixin):
         self.scur_day = tday
         super(Agent, self).__init__(config)
         self.event_period = config.get('event_period', 1.0)
+        self.eod_marker = config.get('eod_marker', '151600')
         self.event_engine = PriEventEngine(self.event_period)
         self.instruments = {}
         self.positions = {}
@@ -509,7 +510,13 @@ class Agent(MktDataMixin):
                     gateway.positions[inst].re_calc()
             gateway.calc_margin()
             gateway.connect()
-        self.event_engine.start()
+        self.event_engine.start()        
+        if not self.eod_flag:
+            eod_marker = int(self.eod_marker)//100
+            eod_time = max(datetime.datetime.combine(self.scur_day, \
+                datetime.time(int(self.eod_marker[:2]), int(self.eod_marker[2:4]), int(self.eod_marker[4:6]))), \
+                datetime.datetime.now()) + datetime.timedelta(minutes = 1)
+            self.put_command(eod_time, self.run_eod)
 
     def save_state(self):
         if not self.eod_flag:
@@ -692,6 +699,7 @@ class Agent(MktDataMixin):
             gateway.close()
             gateway.mdApi = None
             gateway.tdApi = None
+        
 
 if __name__=="__main__":
     pass

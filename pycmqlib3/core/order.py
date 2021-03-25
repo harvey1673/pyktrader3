@@ -8,7 +8,6 @@ from . trading_const import OrderStatus, Direction, OrderType, Offset
 from pycmqlib3.utility.base import BaseObject
 from pycmqlib3.utility.misc import spreadinst2underlying
 
-####下单
 class Order(object):
     id_generator = itertools.count(int(datetime.datetime.strftime(datetime.datetime.now(),'%d%H%M%S')))
     def __init__(self, **kwargs):

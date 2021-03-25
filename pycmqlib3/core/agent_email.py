@@ -28,13 +28,6 @@ class EmailAgent(Agent):
         subject = sender + ":" + event.dict['subject']
         send_email_by_outlook(recepient, subject, msg, attach)
 
-    def restart(self):
-        super(EmailAgent, self).restart()
-        eod_time = datetime.datetime.combine(self.scur_day, datetime.time(15, 16, 0))
-        if not self.eod_flag:
-            if datetime.datetime.now() < eod_time:
-                self.put_command(eod_time, self.run_eod)
-
     def run_eod(self):
         super(EmailAgent, self).run_eod()
         attach_files = []
