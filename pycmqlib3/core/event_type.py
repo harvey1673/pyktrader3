@@ -1,39 +1,39 @@
 #-*- coding:utf-8 -*-
-EVENT_TIMER = 'eTimer.'                  # 计时器事件，每隔1秒发送一次
-EVENT_LOG = 'eLog.'                      # 日志事件，通常使用某个监听函数直接显示
-EVENT_MAIL = 'eMail.'
+EVENT_TIMER = 'eTimer.'                  # timer event triggerd each sec
+EVENT_LOG = 'eLog.'                      # log event for logging
+EVENT_MAIL = 'eMail.'                    # email event for sending emails
 
-EVENT_TDLOGIN = 'eTdLogin.'                  # 交易服务器登录成功事件
-EVENT_TDDISCONNECTED = 'eTdDisconnected.'
+EVENT_TDLOGIN = 'eTdLogin.'                  # trade data connection login event
+EVENT_TDDISCONNECTED = 'eTdDisconnected.'    # trade data disconnection event
 
 # Wind接口相关事件
-EVENT_WIND_CONNECTREQ = 'eWindConnectReq.'  # Wind接口请求连接事件
+EVENT_WIND_CONNECTREQ = 'eWindConnectReq.'  # Wind connection request event
 
-EVENT_MARKETDATA = 'eMarketData.'            # 行情推送事件
-EVENT_MARKETDATA_CONTRACT = 'eMarketData.'  # 特定合约的行情事件
+EVENT_MARKETDATA = 'eMarketData.'            # market data event
+EVENT_MARKETDATA_CONTRACT = 'eMarketData.'  # market data event for partocular contract
 
-EVENT_TICK = 'eTick.'            # 行情推送事件
-EVENT_MIN_BAR = 'eMinBar.'
-EVENT_CONTRACT = 'eContract.'   #
-EVENT_RPCMKTDATA = 'eRPCMktData.'
-EVENT_MKTDATA_EOD ='eEOD.'
+EVENT_TICK = 'eTick.'                       # tick data event
+EVENT_MIN_BAR = 'eMinBar.'                  # min bar data event
+EVENT_CONTRACT = 'eContract.'               #  contract data event
+EVENT_RPCMKTDATA = 'eRPCMktData.'           # RPC market data event
+EVENT_MKTDATA_EOD ='eEOD.'                  # EOD event
 
-EVENT_RTNTRADE = 'eRtnTrade.'                      # 成交推送事件
-EVENT_TRADE = 'eTrade.'                      # 成交推送事件
-EVENT_TRADE_CONTRACT = 'eTrade.'            # 特定合约的成交事件
+EVENT_RTNTRADE = 'eRtnTrade.'               # trade return event on trade error/success
+EVENT_TRADE = 'eTrade.'                     # trade event
+EVENT_TRADE_CONTRACT = 'eTrade.'            # trade event on particular contract
 
-EVENT_RTNORDER = 'eRtnOrder.'                      # 报单推送事件
-EVENT_ORDER = 'eOrder.'                      # 报单推送事件
-EVENT_ORDER_ORDERREF = 'eOrder.'            # 特定报单号的报单事件
+EVENT_RTNORDER = 'eRtnOrder.'               # order return event on order error/success
+EVENT_ORDER = 'eOrder.'                     # order event
+EVENT_ORDER_ORDERREF = 'eOrder.'            # order event on particular contract
 
-EVENT_POSITION = 'ePosition.'                # 持仓查询回报事件
-EVENT_QRYPOSITION = 'eQryPosition.'                # 持仓查询回报事件
-EVENT_INSTRUMENT = 'eInstrument.'            # 合约查询回报事件
-EVENT_QRYINSTRUMENT = 'eQryInstrument.'            # 合约查询回报事件
-EVENT_INVESTOR = 'eInvestor.'                # 投资者查询回报事件
-EVENT_QRYINVESTOR = 'eQryInvestor.'                # 投资者查询回报事件
-EVENT_QRYACCOUNT = 'eQryAccount.'                  # 账户查询回报事件
-EVENT_ACCOUNT = 'eAccount.'                  # 账户查询回报事件
+EVENT_POSITION = 'ePosition.'               # position event 
+EVENT_QRYPOSITION = 'eQryPosition.'         # query position event
+EVENT_INSTRUMENT = 'eInstrument.'           # instrument event
+EVENT_QRYINSTRUMENT = 'eQryInstrument.'     # query instrument event
+EVENT_INVESTOR = 'eInvestor.'               # investor event
+EVENT_QRYINVESTOR = 'eQryInvestor.'         # query investor event
+EVENT_QRYACCOUNT = 'eQryAccount.'           # query account event
+EVENT_ACCOUNT = 'eAccount.'                 # account event
 
 EVENT_MARGINRATE = 'eMarginRate.'
 EVENT_DAYSWITCH = 'eDaySwitch.'
@@ -49,13 +49,12 @@ EVENT_TRADEX = 'eTradeX.'
 
 #----------------------------------------------------------------------
 def test():
-    """检查是否存在内容重复的常量定义"""
     check_dict = {}
     
     global_dict = globals()    
     
     for key, value in list(global_dict.items()):
-        if '__' not in key:                       # 不检查python内置对象
+        if '__' not in key: 
             if value in check_dict:
                 check_dict[value].append(key)
             else:
@@ -63,14 +62,13 @@ def test():
             
     for key, value in list(check_dict.items()):
         if len(value)>1:
-            print('存在重复的常量定义:' + str(key)) 
+            print('there are redundent definitions:' + str(key)) 
             for name in value:
                 print(name)
             print('')
         
-    print('测试完毕')
+    print('test is done')
     
 
-# 直接运行脚本可以进行测试
 if __name__ == '__main__':
     test()

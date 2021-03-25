@@ -4,7 +4,7 @@ import csv
 import json
 from . order import Order
 from . trade import XTrade
-from . trading_const import Alive_Trade_Status, Active_Trade_Status
+from . trading_const import Alive_Trade_Status, Active_Trade_Status, Direction, OrderStatus, TradeStatus
 from . trade_exec_algo import *
 from pycmqlib3.utility.misc import sign
 
