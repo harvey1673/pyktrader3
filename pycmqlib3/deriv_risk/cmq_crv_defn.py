@@ -1,9 +1,10 @@
 # -*- coding:utf-8 -*-
 import json
-import misc
 import workdays
 import datetime
 from dateutil.relativedelta import relativedelta
+from pycmqlib3.utility import misc
+
 COM_Curve_Map = {
     'SGXIRO': {'instID': 'fef', 'exch': 'SGX', 'calendar': 'PLIO', 'ccy': 'USD', \
                 'active_mths': list(range(1, 13)), 'roll_rule': '-0d',\
