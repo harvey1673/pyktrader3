@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import math
-import bsopt
 from statsmodels.tsa.stattools import coint, adfuller
 import numpy as np
 from numpy import log, polyfit, sqrt, std, subtract
@@ -11,7 +10,8 @@ import matplotlib.pyplot as plt
 from pandas.plotting import autocorrelation_plot
 import warnings
 import pprint
-from johansen_test import coint_johansen
+from .johansen_test import coint_johansen
+from . import bsopt
 
 pd.options.mode.chained_assignment = None  # default='warn'
 warnings.filterwarnings("ignore", category=DeprecationWarning)
