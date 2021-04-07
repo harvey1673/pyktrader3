@@ -335,10 +335,10 @@ def run_update(tday = datetime.date.today(), hist_tenor = '-2y'):
     #              ('xscarry', 'ryieldma', 1, 120, 1, [0.0, 0.0], 0.2), \
     #              # ('xscarry', 'basmom', 10, 1, 10, [0.0, 0.0], 0.2), \
     #              # ('xscarry', 'basmom', 30, 1, 10, [0.0, 0.0], 0.2), \
-    #              ('xscarry', 'basmom', 100, 1, 1, [0.0, 0.0], 0.2), \
+    #              # ('xscarry', 'basmom', 100, 1, 1, [0.0, 0.0], 0.2), \
     #              ('xscarry', 'basmom', 240, 1, 1, [0.0, 0.0], 0.2), \
-    #              # ('xscarry', 'basmomma', 100, 10, 5, [0.0, 0.0], 0.2), \
-    #              # ('xscarry', 'basmomma',240, 10, 5, [0.0, 0.0], 0.2), \
+    #              ('xscarry', 'basmomma', 100, 10, 5, [0.0, 0.0], 0.2), \
+    #              ('xscarry', 'basmomma',240, 10, 5, [0.0, 0.0], 0.2), \
     #              ('tsmom', 'momma', 40, 30, 5, [0.0]), \
     #              ('tsmom', 'momma', 40, 80, 5, [0.0]), \
     #              ('tsmom', 'mixedmom', 10, 1, 10, [0.0]), \

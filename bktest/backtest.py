@@ -317,17 +317,18 @@ def pnl_stats(pnl_df, field = 'daily_pnl'):
     res['avg_pnl'] = float(ts.mean())
     res['std_pnl'] = float(ts.std())
     res['tot_pnl'] = float(ts.sum())
-    if 'daily_cost' in pnl_df.columns:
+    if field and ('daily_cost' in pnl_df.columns):
         res['tot_cost'] = float(pnl_df['daily_cost'].sum())
     else:
         res['tot_cost'] = 0.0
     res['num_days'] = len(ts)
     if res['std_pnl'] > 0:
         res['sharp_ratio'] = float(res['avg_pnl'] / res['std_pnl'] * np.sqrt(252.0))
-        if 'cum_pnl' not in pnl_df.columns:
-            cum_pnl = pnl_df['daily_pnl'].cumsum()
-        else:
-            cum_pnl = pnl_df['cum_pnl']
+        if field:
+            if 'cum_pnl' not in pnl_df.columns:
+                cum_pnl = pnl_df['daily_pnl'].cumsum()
+            else:
+                cum_pnl = pnl_df['cum_pnl']
         max_dd, max_dur = max_drawdown(cum_pnl)
         res['max_drawdown'] = float(max_dd)
         res['max_dd_period'] = int(max_dur)
@@ -342,15 +343,15 @@ def pnl_stats(pnl_df, field = 'daily_pnl'):
         res['profit_dd_ratio'] = 0
     return res
 
-def pnl_stats_by_tenor(df, tenors):
+def pnl_stats_by_tenor(df, tenors, field = 'daily_pnl'):
     res = {}
     for tenor in tenors:
         edate = df.index[-1]
         sdate = day_shift(edate, '-' + tenor)
         pnl_df = df[df.index >= sdate]
-        res_by_tenor = pnl_stats(pnl_df)
-        for field in res_by_tenor:
-            res[field + '_' + tenor] = 0 if np.isnan(res_by_tenor[field]) else res_by_tenor[field]
+        res_by_tenor = pnl_stats(pnl_df, field)
+        for f in res_by_tenor:
+            res[f + '_' + tenor] = 0 if np.isnan(res_by_tenor[f]) else res_by_tenor[f]
         if sdate < df.index[0]:
             break
     return res

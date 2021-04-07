@@ -21,6 +21,12 @@ class SaveAgent(Agent):
             gateway = self.gateways[gway]
             gateway.connect()
         self.event_engine.start()
+        if not self.eod_flag:
+            eod_marker = int(self.eod_marker)//100
+            eod_time = max(datetime.datetime.combine(self.scur_day, \
+                datetime.time(int(self.eod_marker[:2]), int(self.eod_marker[2:4]), int(self.eod_marker[4:6]))), \
+                datetime.datetime.now()) + datetime.timedelta(minutes = 1)
+            self.put_command(eod_time, self.run_eod)
 
     def write_mkt_data(self, event):
         inst = event.dict['instID']

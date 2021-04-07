@@ -1,4 +1,4 @@
-from agent_pseudo import *
+from pycmqlib3.core.agent_pseudo import PseudoAgent
 from .vnctp_gateway import *
 
 class TestVnctpGateway(VnctpGateway):
