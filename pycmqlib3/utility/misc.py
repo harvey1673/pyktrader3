@@ -721,6 +721,12 @@ def inst_to_exch(inst):
     cnx.close()
     return str(out[0][0])
 
+def get_hols_by_exch(exch):
+    hols = []
+    if exch in ['DCE', 'CFFEX', 'CZCE', 'SHFE', 'INE', 'SSE', 'SZSE']:
+        hols = CHN_Holidays
+    return hols
+
 def get_option_map(products):
     option_map = {}
     for under in products:
@@ -786,8 +792,9 @@ def get_opt_expiry(fut_inst, cont_mth, exch=''):
 
 def cont_expiry_list(prodcode, start_date, end_date, roll_rule = '-0d'):
     cont_mth, exch = dbaccess.prod_main_cont_exch(prodcode)
-    contlist, tenor_list = contract_range(prodcode, exch, cont_mth, start_date, day_shift(end_date, '12m'))
-    exp_dates = [day_shift(contract_expiry(cont), roll_rule) for cont in contlist]
+    hols = get_hols_by_exch(exch)
+    contlist, tenor_list = contract_range(prodcode, exch, cont_mth, start_date, day_shift(end_date, '12m', hols))
+    exp_dates = [day_shift(contract_expiry(cont), roll_rule, hols) for cont in contlist]
     return contlist, exp_dates, tenor_list
 
 def nearby(prodcode, n = 1, start_date = None, end_date = None, roll_rule = '-20b', freq = 'd', need_shift = 0, database = None, dbtbl_prefix = ''):
@@ -796,6 +803,10 @@ def nearby(prodcode, n = 1, start_date = None, end_date = None, roll_rule = '-20
         if 'sn2001' in contlist:
             idx = contlist.index('sn2001')
             exp_dates[idx] = max(datetime.date(2019,12,26), exp_dates[idx])
+    elif prodcode == 'ni':
+        if 'ni1905' in contlist:
+            idx = contlist.index('ni1901')
+            exp_dates[idx] = max(datetime.date(2018,12,27), exp_dates[idx])
     sdate = start_date
     dbconf = copy.deepcopy(dbaccess.dbconfig)
     if database:
@@ -853,11 +864,12 @@ def rolling_hist_data(product, n, start_date, end_date, cont_roll, freq, win_rol
     cursor.execute(stmt)
     out = [(exchange, contract) for (exchange, contract) in cursor]
     exch = str(out[0][0])
+    hols = get_hols_by_exch(exch)
     cont = str(out[0][1])
     cont_mth = [month_code_map[c] for c in cont]
     cnx.close()
     contlist, _ = contract_range(product, exch, cont_mth, start_date, end_date)
-    exp_dates = [day_shift(contract_expiry(cont), cont_roll) for cont in contlist]
+    exp_dates = [day_shift(contract_expiry(cont), cont_roll, hols) for cont in contlist]
     sdate = start_date
     all_data = {}
     i = 0
@@ -871,10 +883,10 @@ def rolling_hist_data(product, n, start_date, end_date, cont_roll, freq, win_rol
             break
         nb_cont = contlist[idx + n - 1]
         if freq == 'd':
-            df = dbaccess.load_daily_data_to_df(cnx, 'fut_daily', nb_cont, day_shift(sdate, win_roll),
+            df = dbaccess.load_daily_data_to_df(cnx, 'fut_daily', nb_cont, day_shift(sdate, win_roll, hols),
                                                 min(exp, end_date))
         else:
-            df = dbaccess.load_min_data_to_df(cnx, 'fut_min', nb_cont, day_shift(sdate, win_roll), min(exp, end_date))
+            df = dbaccess.load_min_data_to_df(cnx, 'fut_min', nb_cont, day_shift(sdate, win_roll, hols), min(exp, end_date))
         all_data[i] = {'contract': nb_cont, 'data': df}
         i += 1
         sdate = min(exp, end_date) + datetime.timedelta(days=1)
@@ -905,13 +917,13 @@ def day_shift(d, roll_rule, hols = []):
         shft_day = shft_day - datetime.timedelta(days=1)
     return shft_day
 
-def process_min_id(df, adj_datetime = False):
+def process_min_id(df, adj_datetime = False, hols = CHN_Holidays):
     df['min_id'] = df['datetime'].apply(lambda x: ((x.hour + 6) % 24)*100 + x.minute)
     flag = df['min_id'] >= 1000
     df.loc[flag, 'date'] = df['datetime'][flag].apply(lambda x: x.date())
     df['date'] = df['date'].fillna(method = 'bfill')
     flag = pd.isnull(df['date'])
-    df.loc[flag,'date'] = df['datetime'][flag].apply(lambda x: day_shift(x.date(),'1b', CHN_Holidays))
+    df.loc[flag,'date'] = df['datetime'][flag].apply(lambda x: day_shift(x.date(),'1b', hols))
     if adj_datetime:
         df['datetime'] = df.apply(lambda x: datetime.datetime.combine(x['date'], x['datetime'].time()), axis = 1)
     return df
@@ -989,11 +1001,12 @@ def _contract_range(product, exch, cont_mth, start_date, end_date, tenor = '2y')
     st_year = start_date.year
     cont_list = []
     tenor_list = []
+    hols = get_hols_by_exch(exch)
     for yr in range(st_year, end_date.year + 2):
         for mth in range(1, 13):
             if (mth in cont_mth):
                 cont_ten = datetime.date(yr, mth, 1)
-                if (cont_ten >= start_date) and (cont_ten <= day_shift(end_date, tenor)):
+                if (cont_ten >= start_date) and (cont_ten <= day_shift(end_date, tenor, hols)):
                     prod = product
                     if product == 'ZC' and cont_ten < datetime.date(2016, 5, 1):
                         prod = 'TC'
