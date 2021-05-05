@@ -6,7 +6,7 @@ import copy
 from sqlalchemy import create_engine
 from pycmqlib3.utility.dbaccess import dbconfig, mysql_replace_into, connect
 from pycmqlib3.utility.misc import nearby, cleanup_mindata, prod2exch, inst2contmth, \
-    CHN_Holidays, contract_expiry, day_shift
+    CHN_Holidays, contract_expiry, day_shift, sign
 import pycmqlib3.analytics.data_handler as dh
 
 ferrous_products_mkts = ['rb', 'hc', 'i', 'j', 'jm']
@@ -25,11 +25,20 @@ fin_all_mkts = eq_fut_mkts + bond_fut_mkts
 commod_all_mkts = ind_all_mkts + ags_all_mkts + precious_metal_mkts
 all_markets = commod_all_mkts + fin_all_mkts
 
-trade_cont_map = {'rb': ['rb2105', 'rb2110'], 'hc': ['hc2105', 'hc2110'], 'i': ['i2105', 'i2109'],
-                  'j': ['j2105', 'j2109'], 'jm': ['jm2102', 'jm2105'], 'ru': ['ru2105', 'ru2109'],
-                  'FG': ['FG105', 'FG109'], 'ZC': ['ZC105', 'ZC109'], 'cu': ['cu2101', 'cu2102'],
-                  'al': ['al2101', 'al2102'], 'zn': ['zn2101', 'zn2102'], 'ni': ['ni2101', 'ni2102'],
-                  'sn': ['sn2102', 'sn2103'], }
+trade_cont_map = {'rb': ['rb2110', 'rb2201'], 'hc': ['hc2110', 'hc2201'], 'i': ['i2109', 'i2201'],
+                  'j': ['j2109', 'j2201'], 'jm': ['jm2109', 'jm2201'], 'ru': ['ru2109', 'ru2201'],
+                  'FG': ['FG109', 'FG201'], 'ZC': ['ZC109', 'ZC201'], 'cu': ['cu2107', 'cu2108'],
+                  'al': ['al2107', 'al2108'], 'zn': ['zn2107', 'zn2108'], 'ni': ['ni2107', 'ni2108'],
+                  'sn': ['sn2107', 'sn2108'], 'pb': ['pb2107', 'pb2108'], 'l': ['l2109', 'l2201'], 
+                  'pp': ['pp2109', 'pp2201'], 'v': ['v2109', 'v2201'], 'TA': ['TA109', 'TA201'],
+                  'sc': ['sc2106', 'sc2107'], 'm': ['m2109', 'm2201'], 'RM': ['RM109', 'RM201'],
+                  'y': ['y2109', 'y2201'], 'p': ['p2109', 'p2201'], 'OI': ['OI109', 'OI201'],
+                  'a': ['a2109', 'a2201'], 'c': ['c2109', 'c2201'], 'cs': ['cs2109', 'cs2201'],
+                  'CF': ['CF109', 'CF201'], 'jd': ['jd2109', 'jd2201'], 'AP': ['AP110', 'AP201'],
+                  'ss': ['ss2107', 'ss2108'], 'SM': ['SM109', 'SM201'], 'SF': ['SF109', 'SF201'],
+                  'SR': ['SR109', 'SR201'], 'CY': ['CY109', 'CY201'], 'eg': ['eg2109', 'eg2201'],
+                  'ag': ['ag2112', 'ag2206'], 'au': ['au2112', 'au2206'], 
+                  }
 
 sim_start_dict = {'c': datetime.date(2008, 10, 1), 'm': datetime.date(2010, 10, 1),
                   'y': datetime.date(2010, 1, 1), 'l': datetime.date(2008, 1, 1), 'rb': datetime.date(2010, 1, 1),
@@ -79,6 +88,8 @@ def update_factor_db(xdf, field, config, dbtable='fut_fact_data', flavor='mysql'
         conn = connect(**dbconfig)
         func = None
     df.to_sql(dbtable, con=conn, if_exists='append', index=False, method=func)
+    if flavor == 'mysql':
+        conn.dispose()
 
 def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule = '30b', flavor = 'mysql', dbtbl_prefix = ''):
     update_start = start_date  # day_shift(end_date, '-3b')
@@ -149,116 +160,100 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule 
             xdf['ryield'] = (np.log(xdf['close']) - np.log(xdf['close_2'])) / (xdf['mth_2'] - xdf['mth']) * 12.0
             xdf['logret'] = np.log(xdf['close']) - np.log(xdf['close'].shift(1))
             xdf['logret_2'] = np.log(xdf['close_2']) - np.log(xdf['close_2'].shift(1))
-        xdf['basmom'] = xdf['logret'] - xdf['logret_2']
+        xdf['baslr'] = xdf['logret'] - xdf['logret_2']
         xdf.index.name = 'date'
-        for field in ['logret', 'basmom', 'ryield']:
+        for field in ['logret', 'baslr', 'ryield']:
             update_factor_db(xdf, field, fact_config, start_date=update_start, end_date=end_date, flavor = flavor)
         for scen in scenarios:
             sim_name = scen[0]
-            run_mode = scen[1]
-            win = scen[2]
-            ma_win = scen[3]
-            rebal = scen[4]
-            params = scen[5]
+            run_mode = data_field = scen[1]
+            weight = scen[2]
+            win = scen[3]
+            ma_win = scen[4]
+            rebal = scen[5]
+            pos_func, pos_args, pos_name = scen[6]
+            params = scen[7]
+            extra_fields = []
             fact_name = None
-            if 'mom' in scen[1]:
+            quantile = 0
+            if len(scen) == 9:
+                quantile = scen[8]            
+            if 'basmom' in run_mode:
+                xdf['basmom'] = xdf['baslr'].rolling(win).sum()                
+            elif 'mom' in run_mode:
                 xdf['mom'] = xdf['logret'].rolling(win).sum()
-            if 'rsi' in scen[1]:
+            xdf['upratio'] = xdf['logret'].rolling(win).agg(lambda x: (x>0).sum()/win) - 0.5
+            if run_mode[:3] == 'rsi':
                 rsi_output = dh.RSI_F(xdf, win)
                 xdf['rsi'] = rsi_output['RSI' + str(win)]
-            if scen[1] == 'madist':
+            elif run_mode[:4] == 'macd':
                 xdf['ema1'] = dh.EMA(xdf, win, field='close')
                 xdf['ema2'] = dh.EMA(xdf, int(win * params[0]), field='close')
-                xdf['std'] = dh.STDEV(xdf, ma_win, field='close')
-                xdf['ma_dev'] = (xdf['ema1'] - xdf['ema2']) / xdf['std']
-                xdf['sig'] = xdf['ma_dev'] / dh.STDEV(xdf, int(ma_win * params[1]), field='ma_dev')
-                fact_name = '_'.join(
-                    [scen[1], str(win), str(int(win * params[0])), 'reverting', str(ma_win), str(int(ma_win * params[1]))])
-                xdf[fact_name] = xdf['sig'].apply(lambda x: dh.response_curve(x, "reverting", param=2.0))
-            elif scen[1] == 'rsi':
-                fact_name = '_'.join(['rsi', str(win)])
-                xdf[fact_name] = xdf['rsi']
-            elif scen[1] == 'mom':
-                fact_name = '_'.join(['mom', str(win)])
-                xdf[fact_name] = xdf['mom']
-            elif scen[1] == 'ryield':
-                fact_name = '_'.join(['ryield', 'ma', str(ma_win)])
-                xdf[fact_name] = xdf['ryield'].rolling(ma_win).mean()
-            elif scen[1] == 'basmom':
-                fact_name = '_'.join([scen[1], str(win), 'ma', str(ma_win)])
-                xdf[fact_name] = xdf['basmom'].rolling(win).sum()
-            elif 'ts' in scen[0]:
-                if scen[1] == 'momma':
-                    fact_name = '_'.join(['mom', str(win), 'xma', str(ma_win)])
-                    xdf[fact_name] = xdf['mom'] - xdf['mom'].rolling(ma_win).mean()
-                elif scen[1] == 'mixedmom':
-                    xdf['tmpos'] = xdf['logret'].rolling(win).agg(lambda x: (x > 0).sum() / win)
-                    xdf['tmneg'] = xdf['logret'].rolling(win).agg(lambda x: (x < 0).sum() / win)
-                    xdf['pos_long'] = np.nan
-                    flag = (xdf['mom'] > 0) & (xdf['tmpos'] > 0.5)
-                    xdf.loc[flag, 'pos_long'] = 1.0
-                    flag = (xdf['mom'] <= 0) | (xdf['tmpos'] <= 0.5)
-                    xdf.loc[flag, 'pos_long'] = 0.0
-                    xdf['pos_short'] = np.nan
-                    flag = (xdf['mom'] < 0) & (xdf['tmneg'] > 0.5)
-                    xdf.loc[flag, 'pos_short'] = -1.0
-                    flag = (xdf['mom'] >= 0) | (xdf['tmneg'] <= 0.5)
-                    xdf.loc[flag, 'pos_short'] = 0.0
-                    fact_name = '_'.join([scen[1], str(win)])
-                    xdf[fact_name] = xdf['pos_long'].fillna(method='ffill') + xdf['pos_short'].fillna(
-                        method='ffill').fillna(0.0)
-                elif scen[1] == 'rsima':
-                    fact_name = '_'.join(['rsi', str(win), 'xma', str(ma_win)])
-                    xdf[fact_name] = xdf['rsi'] - xdf['rsi'].rolling(ma_win).mean()
-                elif scen[1] == 'ryieldma':
-                    fact_name = '_'.join([scen[1], 'xma', str(ma_win)])
-                    xdf[fact_name] = xdf['ryield'] - xdf['ryield'].rolling(ma_win).mean()
-                elif scen[1] == 'basmomma':
-                    fact_name = '_'.join(['basmom', str(win), 'xma', str(ma_win)])
-                    basmom = xdf['basmom'].rolling(win).sum()
-                    xdf[fact_name] = basmom - basmom.rolling(ma_win).mean()
-            elif 'xs' in scen[0]:
-                if scen[1] == 'momma':
-                    fact_name = '_'.join(['mom', str(win), 'ma', str(ma_win)])
-                    xdf[fact_name] = xdf['mom'].rolling(ma_win).mean()
-                elif scen[1] == 'rsima':
-                    fact_name = '_'.join(['rsi', str(win), 'ma', str(ma_win)])
-                    xdf[fact_name] = xdf['rsi'].rolling(ma_win).mean()
-                elif scen[1] == 'ryieldma':
-                    fact_name = '_'.join(['ryield', 'ma', str(ma_win)])
-                    xdf[fact_name] = xdf['ryield'].rolling(ma_win).mean()
-                elif scen[1] == 'basmomma':
-                    fact_name = '_'.join(['basmom', str(win), 'ma', str(ma_win)])
-                    xdf[fact_name] = xdf['basmom'].rolling(win).sum().rolling(ma_win).mean()
+                xdf['mstd'] = dh.STDEV(xdf, int(win * params[1]), field='close')
+                xdf['macd'] = (xdf['ema1'] - xdf['ema2']) / xdf['mstd']
+                extra_fields += [str(int(win * params[0])), str(int(win * params[1]))]
+            elif run_mode == 'mixmom':                
+                xdf['mixmom'] = ((xdf['mom'] * xdf['upratio'])).apply(lambda x: x if x>0 else 0) * 1.0 \
+                                                              * xdf['mom'].apply(lambda x: sign(x))
+            if 'sma' == run_mode[-3:]:
+                ref_field = run_mode[:-3]
+                xdf[data_field] = xdf[ref_field].rolling(ma_win).mean()
+                extra_fields += ['sma', str(ma_win)]
+            elif 'ema' == run_mode[-3:]:
+                ref_field = run_mode[:-3]
+                xdf[data_field] = dh.EMA(xdf, ma_win, field = ref_field)
+                extra_fields += ['ema', str(ma_win)]
+            elif 'xma' == run_mode[-3:]:   
+                ref_field = run_mode[:-3]
+                xdf[data_field] = xdf[ref_field] - xdf[ref_field].rolling(ma_win).mean()
+                extra_fields += ['xma', str(ma_win)]
+            elif 'xea' == run_mode[-3:]:
+                ref_field = run_mode[:-3]
+                xdf[data_field] = xdf[ref_field] - dh.EMA(xdf, ma_win, field = ref_field)
+                extra_fields += ['xea', str(ma_win)]
+            elif 'nma' == run_mode[-3:]:
+                ref_field = run_mode[:-3]
+                xdf[data_field] = xdf[ref_field] / dh.STDEV(xdf, ma_win, field = ref_field)
+                extra_fields += ['nma', str(ma_win)]
+            elif 'nmb' == run_mode[-3:]:
+                ref_field = run_mode[:-3]
+                xdf[data_field] = xdf[ref_field] / dh.BSTDEV(xdf, ma_win, field = ref_field)
+                extra_fields += ['nmb', str(ma_win)]
+            elif 'zlv' == run_mode[-3:]:
+                ref_field = run_mode[:-3]
+                xdf[data_field] = (xdf[ref_field] - xdf[ref_field].rolling(ma_win).mean()) \
+                                        / dh.STDEV(xdf, ma_win, field = ref_field)
+                extra_fields += ['zlv', str(ma_win)]
+            else:
+                ref_field = run_mode
+            if pos_func:
+                xdf[data_field] = xdf[data_field].apply(lambda x: pos_func(x, **pos_args))
+                if len(pos_name) > 0:
+                    extra_fields.append(pos_name) 
+            fact_name = '_'.join([ref_field, str(win)] + extra_fields)
+            xdf[fact_name] = xdf[data_field]
             if fact_name not in factor_repo:
                 factor_repo[fact_name] = {}
                 factor_repo[fact_name]['name'] = fact_name
-                if run_mode == 'mixedmom':
-                    factor_repo[fact_name]['type'] = 'pos'
-                elif 'ts' in sim_name:
+                if 'ts' in sim_name:
                     factor_repo[fact_name]['type'] = 'ts'
+                    factor_repo[fact_name]['threshold'] = 0.0               
                 elif 'xs' in sim_name:
                     factor_repo[fact_name]['type'] = 'xs'
+                    factor_repo[fact_name]['threshold'] = quantile
                 else:
                     print("unsupported run mode")
                 factor_repo[fact_name]['rebal'] = rebal
                 factor_repo[fact_name]['param'] = params
-                factor_repo[fact_name]['weight'] = 1.0
-                if factor_repo[fact_name]['type'] == 'ts':
-                    if scen[1] in ['madist']:
-                        factor_repo[fact_name]['threshold'] = []
-                    else:
-                        factor_repo[fact_name]['threshold'] = [params, params]
-                else:
-                    factor_repo[fact_name]['threshold'] = []
+                factor_repo[fact_name]['weight'] = weight 
             update_factor_db(xdf, fact_name, fact_config, start_date=update_start, end_date=end_date, flavor = flavor)
     return factor_repo
 
-def create_strat_json(product_list, freq, roll_rule, factor_repo):
+def create_strat_json(product_list, freq, roll_rule, factor_repo, filename= "C:\\dev\\data\\MM_FACT_PORT.json", name = 'default'):
     strat_data = {}
-    strat_data["class"] = "strat_factor_port.FactorPortTrader"
+    strat_data["class"] = "pycmqlib3.strategy.strat_factor_port.FactorPortTrader"
     strat_config = {}
-    strat_config['name'] = 'MM_FACT_PORT'
+    strat_config['name'] = name
     if freq == 'd':
         strat_config['freq'] = 's1'
     else:
@@ -268,6 +263,7 @@ def create_strat_json(product_list, freq, roll_rule, factor_repo):
     strat_config['vol_win'] = 20
     strat_config['fact_db_table'] = 'fut_fact_data'
     strat_config['exec_bar_list'] = [1510]
+    strat_config['pos_scaler'] = 1000
 
     assets = []
     for asset in product_list:
@@ -275,91 +271,16 @@ def create_strat_json(product_list, freq, roll_rule, factor_repo):
         asset_data['underliers'] = [trade_cont_map[asset][0]]
         asset_data['volumes'] = [1]
         asset_data['alloc_w'] = 1.0
+        asset_data['prev_underliers'] = ''
         assets.append(asset_data)
     strat_config['assets'] = assets
 
     filtered_factors = {}
     for fact_name in factor_repo:
-        if factor_repo[fact_name]['type'] in ['pos', 'ts']:
+        if factor_repo[fact_name]['type'] in ['xs', 'ts']:
             filtered_factors[fact_name] = copy.copy(factor_repo[fact_name])
     strat_config['factor_repo'] = filtered_factors
     strat_data['config'] = strat_config
-    filename = "C:\\dev\\data\\MM_FACT_PORT.json"
     with open(filename, 'w') as f:
         json.dump(strat_data, f)
 
-def run_update(tday = datetime.date.today(), hist_tenor = '-2y'):
-    end_date = tday
-    start_date = day_shift(end_date, hist_tenor)
-
-    scenarios_mixed = [('tscarry', 'ryield', 1, 1, 5, [0.0, 0.0]), \
-                 ('tscarry', 'basmom', 60, 1, 10, [0.0, 0.0]), \
-                 ('tscarry', 'basmom', 100, 1, 10, [0.0, 0.0]), \
-                 ('tscarry', 'basmom', 240, 1, 10, [0.0, 0.0]), \
-                 ('xscarry', 'ryieldma', 1, 1, 5, [0.0, 0.0]), \
-                 ('xscarry', 'ryieldma', 1, 50, 5, [0.0, 0.0]), \
-                 ('xscarry', 'basmom', 110, 1, 5, [0.0, 0.0]), \
-                 ('xscarry', 'basmom', 140, 1, 5, [0.0, 0.0]), \
-                 ('xscarry', 'basmomma', 90, 20, 5, [0.0, 0.0]), \
-                 ('xscarry', 'basmomma', 230, 20, 5, [0.0, 0.0]), \
-                 ('tsmom', 'momma', 20, 50, 5, [0.0, 0.0]), \
-                 ('tsmom', 'momma', 30, 120, 5, [0.0, 0.0]), \
-                 ('tsmom', 'momma', 40, 30, 5, [0.0, 0.0]), \
-                 ('tsmom', 'mixedmom', 10, 1, 10, [0.0, 0.0]), \
-                 ('tsmom', 'mixedmom', 20, 1, 10, [0.0, 0.0]), \
-                 ('tsmom', 'rsima', 20, 30, 5, [0.0, 0.0]), \
-                 ('tsmom', 'rsima', 40, 30, 5, [0.0, 0.0]), \
-                 ('tsmom', 'rsima', 60, 30, 5, [0.0, 0.0]), \
-                 ('tsmom', 'madist', 8, 80, 5, [1.5, 2.0]), \
-                 ('tsmom', 'madist', 16, 80, 5, [1.5, 2.0]), \
-                 ('tsmom', 'madist', 24, 80, 5, [1.5, 2.0]), \
-                 ('xsmom', 'mom', 130, 1, 5, [0.0]), \
-                 ('xsmom', 'mom', 230, 1, 5, [0.0]), \
-                 ('xsmom', 'rsima', 60, 80, 5, [0.0]), \
-                 ('xsmom', 'rsima', 10, 80, 5, [0.0]), \
-                 ('xsmom', 'rsima', 40, 20, 5, [0.0]), \
-                 ('xsmom', 'madist', 16, 100, 5, [1.5, 2.0]), \
-                 ('xsmom', 'madist', 40, 100, 5, [1.5, 2.0]), \
-                 ('xsmom', 'madist', 56, 140, 5, [1.5, 2.0])]
-
-    mixed_metal_mkts = ['rb', 'hc', 'i', 'j', 'jm', 'ru', 'FG', 'ZC', 'cu', 'al', 'zn', 'ni']
-    update_factor_data(mixed_metal_mkts, scenarios_mixed, start_date, end_date, roll_rule='30b')
-
-    # commod_mkt = ags_all_mkts + ind_all_mkts
-    # scenarios_all = [('tscarry', 'ryield', 1, 1, 1, [0.0, 0.0]), \
-    #              ('tscarry', 'basmom', 70, 1, 1, [0.0, 0.0]), \
-    #              ('tscarry', 'basmom', 110, 1, 1, [0.0, 0.0]), \
-    #              ('tscarry', 'basmom', 230, 1, 1, [0.0, 0.0]), \
-    #              ('xscarry', 'ryieldma', 1, 1, 1, [0.0, 0.0], 0.2), \
-    #              ('xscarry', 'ryieldma', 1, 30, 1, [0.0, 0.0], 0.2), \
-    #              ('xscarry', 'ryieldma', 1, 120, 1, [0.0, 0.0], 0.2), \
-    #              # ('xscarry', 'basmom', 10, 1, 10, [0.0, 0.0], 0.2), \
-    #              # ('xscarry', 'basmom', 30, 1, 10, [0.0, 0.0], 0.2), \
-    #              # ('xscarry', 'basmom', 100, 1, 1, [0.0, 0.0], 0.2), \
-    #              ('xscarry', 'basmom', 240, 1, 1, [0.0, 0.0], 0.2), \
-    #              ('xscarry', 'basmomma', 100, 10, 5, [0.0, 0.0], 0.2), \
-    #              ('xscarry', 'basmomma',240, 10, 5, [0.0, 0.0], 0.2), \
-    #              ('tsmom', 'momma', 40, 30, 5, [0.0]), \
-    #              ('tsmom', 'momma', 40, 80, 5, [0.0]), \
-    #              ('tsmom', 'mixedmom', 10, 1, 10, [0.0]), \
-    #              ('tsmom', 'mixedmom', 20, 1, 10, [0.0]), \
-    #              ('tsmom', 'mixedmom', 220, 1, 10, [0.0]), \
-    #              ('tsmom', 'rsima', 30, 40, 5, [0.0]), \
-    #              ('tsmom', 'rsima', 30, 110, 5, [0.0]), \
-    #              ('tsmom', 'madist', 8, 80, 5, [1.5, 2.0]), \
-    #              ('tsmom', 'madist', 16, 80, 5, [1.5, 2.0]), \
-    #              ('tsmom', 'madist', 24, 80, 5, [1.5, 2.0]), \
-    #              ('xsmom', 'mom', 20, 1, 5, [0.0]), \
-    #              ('xsmom', 'mom', 210, 1, 5, [0.0]), \
-    #              # ('xsmom', 'mom', 160, 1, 5, [0.0]),
-    #              ('xsmom', 'momma', 140, 120, 5, [0.0]),
-    #              ('xsmom', 'momma', 240, 120, 5, [0.0]), \
-    #              ('xsmom', 'rsima', 70, 60, 5, [0.0]), \
-    #              ('xsmom', 'rsima', 100, 80, 5, [0.0]), \
-    #              ('xsmom', 'rsima', 90, 10, 5, [0.0]), \
-    #              ('xsmom', 'madist', 8, 100, 5, [1.5, 2.0]), \
-    #              ('xsmom', 'madist', 16, 100, 5, [1.5, 2.0]), \
-    #              ('xsmom', 'madist', 32, 100, 5, [1.5, 2.0]), \
-    #              # ('madist', 64, 100, 5, [1.5, 2.0]),
-    #              ]
-    # update_factor_data(commod_mkt, scenarios_all, start_date, end_date, roll_rule='30b')

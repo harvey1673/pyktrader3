@@ -422,6 +422,11 @@ def STDEV(df, n, field = 'close', prefix = ''):
 def stdev(df, n, field = 'close', prefix = ''):
     df[prefix + 'STDEV_' + field.upper() + '_' + str(n)][-1] = np.std(df[field][-n:])
 
+def BSTDEV(df, n, field = 'close', prefix = ''):
+    return pd.Series((df[prefix + field].rolling(n).var() \
+        + df[prefix + field].rolling(n).mean()**2)**(1/2), \
+        name = prefix + 'BSTDEV_' + field.upper() + '_' + str(n))
+
 def SMAVAR(df, n, field = 'close', prefix = ''):
     ma_ts = MA(df, n, field, prefix = prefix)
     var_ts = pd.Series((df[prefix + field]**2).rolling(n).mean() - ma_ts**2, name = prefix + 'SVAR_' + field.upper() + '_' + str(n))

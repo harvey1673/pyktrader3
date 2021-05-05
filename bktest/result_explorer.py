@@ -65,7 +65,7 @@ def load_btest_pnl(sim_keys, dbtable  = 'bktest_output'):
         xdf = xdf[['date', 'daily_pnl']].set_index('date')
         xdf.rename(columns = {'daily_pnl': '-'.join([ str(k) for k in sim_key])}, inplace = True)
         df_list.append(xdf)
-    df = ts_tool.merge_df(df_list)
+    df = merge_df(df_list)
     return df
 
 def calc_mthly_by_prod(csvfile, field = 'asset', products = None, xlfile = None, start_date = None, freq = '3M'):
