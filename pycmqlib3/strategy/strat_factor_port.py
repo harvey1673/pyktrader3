@@ -17,7 +17,7 @@ class FactorPortTrader(Strategy):
     common_params = dict(Strategy.common_params, \
                          **{'freq': 's1',
                             'factor_repo': {'lr_sum_20': {'name': 'lr_sum_20','type': 'ts', 'param': [], 'weight': 1.0, \
-                                            'rebal': 5, 'threshold': [[0.0, 0.0], [0.0, 0.0]]}}, \
+                                            'rebal': 5, 'threshold': 0.0}}, \
                             'factor_data': {}, \
                             'factor_pos': {}, \
                             'pos_scaler': 1000000.0, 'vol_win': 20, \
@@ -35,10 +35,15 @@ class FactorPortTrader(Strategy):
         self.bar_update_record = set()
         self.fact_src = 'db.prod_fact'
         self.fact_data = {}
+        self.pos_summary = pd.DataFrame()
         self.tick_base = [0.0] * numAssets
 
     def save_local_variables(self, file_writer):
-        pass
+        if len(self.pos_summary) > 0:
+            header = 'target_pos'
+            for idx in self.pos_summary.index:
+                row = [header, idx] + self.pos_summary.loc[idx].tolist()
+                file_writer.writerow(row)            
 
     def load_local_variables(self, row):
         pass
@@ -64,7 +69,7 @@ class FactorPortTrader(Strategy):
             for fact in self.factor_repo:
                 xdf = pd.pivot_table(df[df['fact_name'] == fact], values = 'fact_val', \
                                      index = ['date', 'serial_key'], columns = ['product_code'],\
-                                     aggfunc = 'last')
+                                     aggfunc = 'last')               
                 xdf = xdf[self.prod_list]
                 self.fact_data[fact] = xdf
         else:
@@ -73,6 +78,7 @@ class FactorPortTrader(Strategy):
 
     def update_target_pos(self):
         net_pos = pd.Series(dtype = 'float')
+        self.pos_summary = pd.DataFrame()
         for fact in self.factor_repo:
             rebal_freq = self.factor_repo[fact]['rebal']
             weight =  self.factor_repo[fact]['weight']
@@ -87,30 +93,42 @@ class FactorPortTrader(Strategy):
                     long_pos  = pd.Series(np.nan, index = self.fact_data[fact].index)
                     short_pos = pd.Series(np.nan, index = self.fact_data[fact].index)
                     for asset in self.prod_list:
-                        long_pos[flag & \
-                                  (self.fact_data[fact][asset] >= self.factor_repo[fact]['threshold'][0][0])] = 1.0
-                        long_pos[flag & \
-                                  (self.fact_data[fact][asset] < self.factor_repo[fact]['threshold'][0][1])] = 0.0
+                        pflag = (self.fact_data[fact][asset] >= 0.0)
+                        nflag = (self.fact_data[fact][asset] <= 0.0)
+                        long_pos[flag & pflag] = self.fact_data[fact][asset][flag & pflag]
+                        long_pos[flag & (~pflag)] = 0.0
                         long_pos[flag] = long_pos[flag].fillna(method = 'ffill').fillna(0.0)
-                        short_pos[flag & \
-                                  (self.fact_data[fact][asset] <= self.factor_repo[fact]['threshold'][1][0])] = -1.0
-                        short_pos[flag & \
-                                  (self.fact_data[fact][asset] > self.factor_repo[fact]['threshold'][1][1])] = 0.0
+                        short_pos[flag & nflag] = self.fact_data[fact][asset][flag & nflag]
+                        short_pos[flag & (~nflag)] = 0.0
                         short_pos[flag] = short_pos[flag].fillna(method='ffill').fillna(0.0)
                         self.factor_pos[fact].loc[flag, asset] = long_pos[flag] + short_pos[flag]
             elif self.factor_repo[fact]['type'] == 'xs':
-                lower_rank = int(len(self.prod_list) * self.factor_repo[fact]['threshold'][1][0]) + 1
-                upper_rank = len(self.prod_list) - int(len(self.prod_list) * self.factor_repo[fact]['threshold'][0][0])
-                rank_df = self.factor_pos[fact].rank(axis = 1)
-                self.factor_pos[fact][rank_df > upper_rank] = 1.0
-                self.factor_pos[fact][rank_df < lower_rank] = -1.0
+                lower_rank = int(len(self.prod_list) * self.factor_repo[fact]['threshold']) + 1
+                upper_rank = len(self.prod_list) - int(len(self.prod_list) * self.factor_repo[fact]['threshold'])
+                rank_df = self.fact_data[fact].rank(axis = 1)
+                rebal_ts = pd.Series(range(len(self.fact_data[fact].index)), index = self.fact_data[fact].index)
+                for rebal_idx in range(rebal_freq):
+                    flag = rebal_ts % rebal_freq == rebal_idx
+                    long_pos  = pd.Series(np.nan, index = self.fact_data[fact].index)
+                    short_pos = pd.Series(np.nan, index = self.fact_data[fact].index)
+                    for asset in self.prod_list:
+                        pflag = (rank_df[asset] > upper_rank)
+                        nflag = (rank_df[asset] < lower_rank)
+                        long_pos[flag & pflag] = 1.0
+                        long_pos[flag & (~pflag)] = 0.0
+                        long_pos[flag] = long_pos[flag].fillna(method = 'ffill').fillna(0.0)
+                        short_pos[flag & nflag] = -1.0
+                        short_pos[flag & (~nflag)] = 0.0
+                        short_pos[flag] = short_pos[flag].fillna(method='ffill').fillna(0.0)
+                        self.factor_pos[fact].loc[flag, asset] = long_pos[flag] + short_pos[flag]
                 self.factor_pos[fact] = self.factor_pos[fact].fillna(0.0)
-            if len(net_pos)>0:
-                net_pos += self.factor_pos[fact].iloc[-rebal_freq:,:].sum()/rebal_freq * weight
-            else:
-                net_pos = self.factor_pos[fact].iloc[-rebal_freq:,:].sum()/rebal_freq * weight
-        for idx, (under, prodcode) in enumerate(zip(self.underliers, self.prod_list)):
-            self.target_pos[idx] = int(net_pos[prodcode] * self.vol_weight[idx])
+            fact_pos = pd.Series(self.factor_pos[fact].iloc[-rebal_freq:,:].sum()/rebal_freq * weight, name = fact)
+            self.pos_summary = self.pos_summary.append(fact_pos)              
+        self.pos_summary = self.pos_summary[self.prod_list].round(2)
+        net_pos = self.pos_summary.sum()           
+        for idx, (under, prodcode) in enumerate(zip(self.underliers, self.prod_list)):            
+            self.target_pos[idx] = int(net_pos[prodcode] * self.vol_weight[idx] + (0.5 if net_pos[prodcode]>0 else -0.5))
+        self.save_state()        
 
     def register_func_freq(self):
         for idx, under in enumerate(self.underliers):
