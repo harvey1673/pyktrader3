@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import logging
 from pycmqlib3.utility.base import BaseObject, fcustom
-from pycmqlib3.utility.misc import day_shift
+from pycmqlib3.utility.misc import day_shift, check_trading_range
 from pycmqlib3.utility.dbaccess import load_factor_data
 import pycmqlib3.analytics.data_handler as dh
 from . strategy import Strategy
@@ -185,6 +185,8 @@ class FactorPortTrader(Strategy):
     def trade_target_pos(self):
         save_status = False
         for idx, underlier in enumerate(self.underliers):
+            if not check_trading_range(self.agent.tick_id, self.underlying[idx].product, self.underlying[idx].exchange):
+                continue
             curr_pos = 0
             curr_positions = self.positions[idx]
             new_pos = self.target_pos[idx]

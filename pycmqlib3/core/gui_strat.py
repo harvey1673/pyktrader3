@@ -237,10 +237,10 @@ class XSMOMRetGui(StratGui):
 class FactorPortGui(StratGui):
     def __init__(self, strat, app, master):
         StratGui.__init__(self, strat, app, master)
-        self.entry_fields = ['PosScaler']
+        self.entry_fields = ['PosScaler', 'IsDisabled']
         self.status_fields = ['VolWeight', 'CurrPos', 'TargetPos', 'CurrPrices']
         self.button_fields = [('LoadFact', 'load_fact_data'), ('TradeTarget', 'trade_target_pos')]
-        self.shared_fields = ['PosScaler', 'LoadFact', 'TradeTarget']
+        self.shared_fields = ['IsDisabled', 'PosScaler', 'LoadFact', 'TradeTarget']
         self.field_types = {'RunFlag': 'int',
                             'TradeUnit': 'int',
                             'CurrPos': 'int',
@@ -248,6 +248,7 @@ class FactorPortGui(StratGui):
                             'VolWeight': 'float',
                             'CurrPrices': 'float',
                             'PosScaler': 'float',
+                            'IsDisabled': 'bool',
                             }
 
 class DTSplitChanGui(StratGui):
