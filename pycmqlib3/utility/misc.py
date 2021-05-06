@@ -644,6 +644,15 @@ def trading_hours(product, exch):
             hrs = [night_trading_hrs[night_idx]] + hrs
     return hrs
 
+def check_trading_range(tick_id, product, exch, tick_buffer = 0):
+    in_range = False
+    hrs = trading_hours(product, exch)    
+    for ptime in hrs:
+        if (tick_id>=ptime[0]*1000 - tick_buffer) and (tick_id < ptime[1] *1000 + tick_buffer):
+            in_range = True
+            break
+    return in_range
+
 def spreadinst2underlying(inst_name):
     spread_keys = inst_name.split(' ')
     instIDs = spread_keys[1].split('&')

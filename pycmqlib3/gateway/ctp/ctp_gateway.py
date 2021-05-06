@@ -3,7 +3,7 @@ import os
 import json
 from pycmqlib3.utility.base import *
 from pycmqlib3.utility.dbaccess import insert_cont_data
-from pycmqlib3.utility.misc import get_obj_by_name, get_tick_id, inst2product, trading_hours
+from pycmqlib3.utility.misc import get_obj_by_name, get_tick_id, inst2product, trading_hours, check_trading_range
 from pycmqlib3.core.gateway import Gateway, GrossGateway
 import logging
 import datetime
@@ -319,15 +319,10 @@ class CtpGateway(GrossGateway):
             except:
                 pass
         product = inst2product(tick.instID)
-        hrs = trading_hours(product, tick.exchange)
-        bad_tick = True
-        for ptime in hrs:
-            if (tick_id>=ptime[0]*1000-self.md_data_buffer) and (tick_id< ptime[1]*1000+self.md_data_buffer):
-                bad_tick = False
-                break
-        if bad_tick:
-            return
-        self.on_tick(tick)
+        if not check_trading_range(tick_id, product, tick.exchange, self.md_data_buffer):
+            return 
+        else:
+            self.on_tick(tick)
 
     def rsp_qry_account(self, event):
         data = event.dict['data']
