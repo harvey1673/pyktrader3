@@ -37,6 +37,7 @@ class FactorPortTrader(Strategy):
         self.fact_data = {}
         self.pos_summary = pd.DataFrame()
         self.tick_base = [0.0] * numAssets
+        self.threshold = numAssets // 2
 
     def save_local_variables(self, file_writer):
         if len(self.pos_summary) > 0:
@@ -172,7 +173,7 @@ class FactorPortTrader(Strategy):
         save_status = False
         if (self.agent.tick_id // 1000) in self.exec_bar_list:
             self.bar_update_record.add(idx)
-        if len(self.bar_update_record) == len(self.underliers):
+        if len(self.bar_update_record) >= self.threshold:
             self.on_log("running strat = %s for tick_id = %d" % (self.name, self.agent.tick_id))
             # self.load_fact_data()
             save_status = self.trade_target_pos()

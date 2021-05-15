@@ -1,19 +1,11 @@
 # flake8: noqa
 import os
 import sys
-
-vnpy_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-if vnpy_root not in sys.path:
-    sys.path.append(vnpy_root)
-
-os.environ["VNPY_TESTING"] = "1"
-
-from vnpy.data.tdx.tdx_common import FakeStrategy
-from vnpy.data.tdx.tdx_stock_data import *
-
-os.environ["VNPY_TESTING"] = "1"
-
+from pycmqlib3.data.tdx.tdx_common import FakeStrategy
+from pycmqlib3.data.tdx.tdx_stock_data import *
 import json
+
+os.environ["VNPY_TESTING"] = "1"
 
 t1 = FakeStrategy()
 t2 = FakeStrategy()

@@ -8,8 +8,8 @@ if vnpy_root not in sys.path:
 
 os.environ["VNPY_TESTING"] = "1"
 
-from vnpy.data.tdx.tdx_common import FakeStrategy
-from vnpy.data.tdx.tdx_future_data import *
+from pycmqlib3.data.tdx.tdx_common import FakeStrategy
+from pycmqlib3.data.tdx.tdx_future_data import *
 
 t1 = FakeStrategy()
 t2 = FakeStrategy()

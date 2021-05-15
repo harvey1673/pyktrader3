@@ -22,9 +22,9 @@ from logging import ERROR
 from pytdx.hq import TdxHq_API
 from pytdx.params import TDXParams
 
-from vnpy.trader.object import BarData
-from vnpy.trader.constant import Exchange
-from vnpy.data.tdx.tdx_common import (
+from pycmqlib3.core.trading_const import Exchange
+from pycmqlib3.core.trading_object import BarData
+from pycmqlib3.data.tdx.tdx_common import (
     PERIOD_MAPPING,
     get_tdx_market_code,
     get_cache_config,

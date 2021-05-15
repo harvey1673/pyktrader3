@@ -22,14 +22,14 @@ from typing import Dict, Callable
 from pandas import to_datetime
 from pytdx.exhq import TdxExHq_API
 
-from vnpy.trader.constant import Exchange
-from vnpy.trader.object import BarData
-from vnpy.trader.utility import (
+from pycmqlib3.core.trading_const import Exchange
+from pycmqlib3.core.trading_object import BarData
+from pycmqlib3.utility.utils import (
     get_underlying_symbol,
     get_full_symbol,
     get_trading_date,
     get_real_symbol_by_exchange)
-from vnpy.data.tdx.tdx_common import (
+from pycmqlib3.data.tdx.tdx_common import (
     lru_cache,
     TDX_FUTURE_HOSTS,
     PERIOD_MAPPING,
