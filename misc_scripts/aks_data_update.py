@@ -92,37 +92,42 @@ def update_rank_table(start_date = datetime.date.today(), end_date = datetime.da
     shfe_var = [i for i in product_list if i in cons.market_exchange_symbols['shfe']]
     czce_var = [i for i in product_list if i in cons.market_exchange_symbols['czce']]
     cffex_var = [i for i in product_list if i in cons.market_exchange_symbols['cffex']]
+    col_list = ['date', 'prod', 'instID', 'rank', \
+                'vol_party_name', 'vol', 'vol_chg', \
+                'long_party_name', 'long_open_interest', 'long_open_interest_chg', \
+                'short_party_name', 'short_open_interest', 'short_open_interest_chg', ]
     while start_date <= end_date:
         big_dict = {}
         print(start_date)
         if start_date.strftime('%Y%m%d') in chn_calendar:
             adf = pd.DataFrame()            
-            for exch, rank_table_func in [('DCE', get_dce_rank_table), ('SHFE', get_shfe_rank_table), ('INE', get_shfe_rank_table), \
-                               ('CZCE', get_czce_rank_table), ('CFFEX', get_cffex_rank_table)]:
-                var_list = [ prod.upper() for prod in product_code[exch]]
+            for exch, rank_table_func, var_list in \
+                    [('DCE', get_dce_rank_table, dce_var), \
+                    ('SHFE', get_shfe_rank_table, shfe_var), \
+                    ('CZCE', get_czce_rank_table, czce_var), \
+                    ('CFFEX', get_cffex_rank_table, cffex_var)]:                
                 data = rank_table_func(start_date, var_list)
-                print(data)
                 if data is not False:
-                    big_dict.update(data)
                     for key in data:
                         data[key].rename(columns = {'variety': 'prod', 'var': 'prod',  'symbol': 'instID'}, inplace=True)
+                        data[key] = data[key].applymap(lambda x: 0 if x == '' else x)                        
                         if 'instID' not in data[key].columns:
                             data[key]['instID'] = key
                         if exch in ['DCE', 'SHFE']:
                             data[key]['prod'] = data[key]['prod'].str.lower()
                             data[key]['instID'] = data[key]['instID'].str.lower()
-                        data[key]['date'] = start_date                        
-                        adf = adf.append(data[key])                        
+                        elif exch in ['CZCE']:
+                            for col in [item for item in data[key].columns if item.find('open_interest') > -1] + ['vol', 'vol_chg']:
+                                data[key][col] = [float(value.replace(',', '')) if value != '-' else 0.0 for value in data[key][col]]                            
+                        data[key]['date'] = start_date  
+                        data[key] = data[key][col_list]
+                        adf = adf.append(data[key])
+                    big_dict.update(data)
             save_data('chn_fut_broker_rank', adf, flavor = flavor)
             for symbol, table in big_dict.items():
-                table = table.applymap(lambda x: 0 if x == '' else x)
                 for symbol_inner in set(table['instID']):
                     var = symbol_varieties(symbol_inner)
                     if var in product_list:
-                        if var in czce_var:
-                            for col in [item for item in table.columns if item.find('open_interest') > -1] + ['vol', 'vol_chg']:
-                                table[col] = [float(value.replace(',', '')) if value != '-' else 0.0 for value in table[col]]
-
                         table_cut = table[table['instID'] == symbol_inner]
                         table_cut['rank'] = table_cut['rank'].astype('float')
                         table_cut_top5 = table_cut[table_cut['rank'] <= 5]
@@ -175,4 +180,8 @@ def update_rank_table(start_date = datetime.date.today(), end_date = datetime.da
         else:
             warnings.warn(f"{start_date.strftime('%Y%m%d')}非交易日")
         start_date += datetime.timedelta(days=1)
-    return records.reset_index(drop=True)
+    records = records.reset_index(drop=True)
+    ordered_cols = ['date', 'prod', 'instID'] + ['%s%s_%s' % (s2, s3, s1) for (s1, s2, s3) in itertools.product(['top5','top10','top15','top20'], ['vol','long_open_interest','short_open_interest'], ['','_chg'], )]
+    records = records[ordered_cols]
+    save_data('chn_futbroker_ranksum', records, flavor = flavor)
+    return records
