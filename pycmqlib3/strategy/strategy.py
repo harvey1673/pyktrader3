@@ -3,6 +3,7 @@ import datetime
 import csv
 import json
 import os
+import shutil
 import logging
 from pycmqlib3.core.event_type import EVENT_LOG, EVENT_MAIL
 from pycmqlib3.core.event_engine import Event
@@ -187,6 +188,9 @@ class Strategy(object):
         self.num_entries = [0] * len(self.underliers)
         self.num_exits = [0] * len(self.underliers)
         self.save_state()
+        srcname = self.folder + 'strat_status.csv'
+        dstname = self.folder + self.agent.scur_day.strftime("%Y-%m%d") + '.csv' 
+        shutil.copyfile(srcname, dstname)
         self.initialize()
 
     def calc_curr_price(self, idx):

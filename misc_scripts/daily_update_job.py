@@ -92,10 +92,9 @@ if __name__=="__main__":
         tday = datetime.datetime.strptime(args[0], "%Y%m%d").date()
     else:
         tday = datetime.date.today()
-    sdate = day_shift(tday, '-2b', CHN_Holidays)
+    sdate = day_shift(tday, '-40b', CHN_Holidays)
     print('updating historical future data...')
     update_hist_fut_daily(sdate, tday, exchanges = ["SHFE", "INE", "CFFEX", "CZCE", "DCE"], flavor = 'mysql', fut_table = 'fut_daily')
-    #update_hist_fut_daily(sdate, tday, exchanges = ["DCE"], flavor = 'mysql', fut_table = 'fut_daily')
     print('updating factor data calculation...')
     end_date = tday
     start_date = day_shift(end_date, '-30m')    

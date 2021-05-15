@@ -6,7 +6,7 @@ import pickle
 import bz2
 from functools import lru_cache
 from logging import INFO, ERROR
-from vnpy.trader.utility import load_json, save_json
+from pycmqlib3.utility.utils import load_json, save_json
 
 # 期货的配置文件
 TDX_FUTURE_CONFIG = 'tdx_future_config.json'

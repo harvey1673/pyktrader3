@@ -7,17 +7,14 @@ import sys
 import json
 from collections import OrderedDict
 import pandas as pd
-
-vnpy_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-if vnpy_root not in sys.path:
-    sys.path.append(vnpy_root)
+from datetime import datetime, timedelta
 
 os.environ["VNPY_TESTING"] = "1"
 
-from vnpy.data.tdx.tdx_future_data import *
+from pycmqlib3.data.tdx.tdx_future_data import *
 
 # 保存的1分钟指数 bar目录
-bar_data_folder = os.path.abspath(os.path.join(vnpy_root, 'bar_data'))
+bar_data_folder = 'C:\\dev\\data\\bar_data'
 
 # 开始日期（每年大概需要几分钟）
 start_date = '20160101'
