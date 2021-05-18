@@ -130,6 +130,7 @@ def update_rank_table(start_date = datetime.date.today(), end_date = datetime.da
                         adf = adf.append(data[key])
                     big_dict.update(data)
                 else:
+                    print("date=%s, exch=%s is missing data" % (str(run_d), exch))
                     excl_dates.append([run_d, exch])
             if len(adf) > 0:
                 save_data('chn_fut_broker_rank', adf, flavor = flavor)
