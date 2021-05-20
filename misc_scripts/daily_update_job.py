@@ -57,8 +57,11 @@ scenarios_all = [ \
              ('xscarry', 'basmomnma', 1.5, 80, 120, 5, (None, {}, ''), [0.0, 0.0], 0.2), \
              ('xscarry', 'basmomnma', 1.5, 150, 120, 5, (None, {}, ''), [0.0, 0.0], 0.2), \
              ('xscarry', 'basmomnma', 1.5, 220, 120, 5, (None, {}, ''), [0.0, 0.0], 0.2), \
-             ('tsmom', 'momnma', 0.25, 10, 60, 1, (None, {}, ''), [0.0]), \
-             ('tsmom', 'momnma', 0.10, 220, 60, 1, (None, {}, ''), [0.0]), \
+             ('tsmom', 'momnma', 0.2, 10, 60, 1, (None, {}, ''), [0.0]), \
+             ('tsmom', 'momnma', 0.07, 220, 60, 1, (None, {}, ''), [0.0]), \
+             ('tsmom', 'hlbrk', 2.0, 10, 1, 10, (None, {}, ''), [0.0, 0.0], 0.2), \
+             ('tsmom', 'hlbrk', 1.5, 30, 1, 10, (None, {}, ''), [0.0, 0.0], 0.2), \
+             ('tsmom', 'hlbrk', 1.2, 240, 1, 10, (None, {}, ''), [0.0, 0.0], 0.2), \
              #('tsmom', 'momxma', 0.2, 40, 30, 5, (misc.sign, {}, 'sign'), [0.0]), \
              #('tsmom', 'momxma', 0.15, 40, 80, 5, (misc.sign, {}, 'sign'), [0.0]), \
              #('tsmom', 'mixmom', 0.375, 10, 1, 10, (misc.sign, {}, 'sign'), [0.0]), \
@@ -69,11 +72,14 @@ scenarios_all = [ \
              ('tsmom', 'macdnma', 0.4, 8, 160, 5, (dh.response_curve, {"response": "reverting", "param": 2}, 'reverting'), [1.5, 10.0]), \
              ('tsmom', 'macdnma', 0.3, 16, 160, 5, (dh.response_curve, {"response": "reverting", "param": 2}, 'reverting'), [1.5, 5.0]), \
              ('tsmom', 'macdnma', 0.3, 24, 160, 5, (dh.response_curve, {"response": "reverting", "param": 2}, 'reverting'), [1.5, 3.34]), \
-             ('xsmom', 'mom', 0.8, 20, 1, 5, (None, {}, ''), [0.0], 0.2), \
              #('xsmom', 'mom', 0.15, 160, 1, 5, (None, {}, ''), [0.0], 0.2), \
-             ('xsmom', 'mom', 0.8, 210, 1, 5, (None, {}, ''), [0.0], 0.2), \
-             ('xsmom', 'momnma', 0.8, 130, 90, 5, (None, {}, ''), [0.0], 0.2), \
-             ('xsmom', 'momnma', 0.8, 240, 90, 5, (None, {}, ''), [0.0], 0.2), \
+             ('xsmom', 'hlbrk', 1.5, 20, 1, 10, (None, {}, ''), [0.0, 0.0], 0.2), \
+             ('xsmom', 'hlbrk', 1.2, 120, 1, 10, (None, {}, ''), [0.0, 0.0], 0.2), \
+             ('xsmom', 'hlbrk', 1.2, 240, 1, 10, (None, {}, ''), [0.0, 0.0], 0.2), \
+             ('xsmom', 'mom', 1.0, 20, 1, 5, (None, {}, ''), [0.0], 0.2), \
+             ('xsmom', 'mom', 1.0, 210, 1, 5, (None, {}, ''), [0.0], 0.2), \
+             ('xsmom', 'momnma', 1.0, 130, 90, 5, (None, {}, ''), [0.0], 0.2), \
+             ('xsmom', 'momnma', 1.0, 240, 90, 5, (None, {}, ''), [0.0], 0.2), \
              ('xsmom', 'momsma', 0.8, 140, 120, 5, (None, {}, ''), [0.0], 0.2), \
              ('xsmom', 'momsma', 0.8, 240, 120, 5, (None, {}, ''), [0.0], 0.2), \
              #('xsmom', 'rsiema', 0.1, 70, 60, 5, (None, {}, ''), [0.0], 0.2), \
@@ -93,8 +99,8 @@ if __name__=="__main__":
     else:
         tday = datetime.date.today()
     sdate = day_shift(tday, '-2b', CHN_Holidays)
-    print('updating historical future data...')
-    update_hist_fut_daily(sdate, tday, exchanges = ["SHFE", "INE", "CFFEX", "CZCE", "DCE"], flavor = 'mysql', fut_table = 'fut_daily')
+    #print('updating historical future data...')
+    #update_hist_fut_daily(sdate, tday, exchanges = ["SHFE", "INE", "CZCE", "DCE", "CFFEX"], flavor = 'mysql', fut_table = 'fut_daily')
     print('updating factor data calculation...')
     end_date = tday
     start_date = day_shift(end_date, '-30m')    
