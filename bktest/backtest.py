@@ -367,14 +367,21 @@ def get_pnl_stats(df_list, marginrate, freq, tenors = ['3m', '6m', '1y', '2y', '
     for df in df_list:
         xdf = df.reset_index().set_index(index_col)
         if 'traded_price' in xdf.columns:
-            field = 'traded_price'
+            field = 'traded_price'            
         else:
             field  = 'close'
-        pnl = (xdf['pos'].shift(1).fillna(0.0) * (xdf[field] - xdf[field].shift(1))).fillna(0.0)
+        if 'close' in xdf.columns:
+            close_field = 'close'
+        else:
+            close_field = 'traded_price'        
+        pnl = (xdf['pos'] * (xdf[close_field] - xdf[field]) \
+            + xdf['pos'].shift(1).fillna(0.0) * (xdf[field] - xdf[close_field].shift(1))).fillna(0.0)
         if 'cost' in xdf.columns:
             pnl = pnl - xdf['cost'].fillna(0.0) * cost_ratio
         if 'closeout' in xdf.columns:
             pnl = pnl + xdf['closeout'].fillna(0.0)
+        if 'close' in xdf.columns:
+            pnl.iloc[-1] += xdf['pos'].iloc[-1] * (xdf['close'].iloc[-1] - xdf[field].iloc[-1])
         # pnl = pnl + (xdf['pos'] - xdf['pos'].shift(1).fillna(0.0)) * (xdf['close'] - xdf['traded_price'])
         if len(sum_pnl) == 0:
             sum_pnl = pd.Series(pnl, name='pnl')

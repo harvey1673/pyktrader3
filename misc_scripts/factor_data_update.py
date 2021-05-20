@@ -186,6 +186,16 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule 
             if run_mode[:3] == 'rsi':
                 rsi_output = dh.RSI_F(xdf, win)
                 xdf['rsi'] = rsi_output['RSI' + str(win)]
+            elif 'clbrk' in run_mode:
+                chmax = xdf['close'].rolling(win).max()
+                chmin = xdf['close'].rolling(win).min()
+                chavg = (chmax + chmin)/2.0
+                xdf['clbrk'] = (xdf['close'] - chavg)/(chmax - chmin)
+            elif 'hlbrk' in run_mode:
+                chmax = xdf['high'].rolling(win).max()
+                chmin = xdf['low'].rolling(win).min()
+                chavg = (chmax + chmin)/2.0
+                xdf['hlbrk'] = (xdf['close'] - chavg)/(chmax - chmin)
             elif run_mode[:4] == 'macd':
                 xdf['ema1'] = dh.EMA(xdf, win, field='close')
                 xdf['ema2'] = dh.EMA(xdf, int(win * params[0]), field='close')
