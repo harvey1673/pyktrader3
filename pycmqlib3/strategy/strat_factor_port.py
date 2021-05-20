@@ -58,19 +58,20 @@ class FactorPortTrader(Strategy):
             end_date = self.agent.scur_day
             start_date = day_shift(end_date, '-%sb' % (str(self.hist_fact_lookback)))
             df = pd.DataFrame()
+            fact_list = list(set([self.factor_repo[fact]['name'] for fact in self.factor_repo.keys()]))
             for roll_rule in set(self.roll_label):
-                prod_list = [prod for prod, roll in zip(self.prod_list, self.roll_label) if roll == roll_rule]
+                prod_list = [prod for prod, roll in zip(self.prod_list, self.roll_label) if roll == roll_rule]                
                 adf = load_factor_data(prod_list, \
-                             factor_list = list(self.factor_repo.keys()),\
+                             factor_list = fact_list,\
                              roll_label = roll_rule,\
                              start = start_date, \
                              end = end_date, \
                              freq = self.freq, db_table = self.fact_db_table)
                 df = df.append(adf)
             for fact in self.factor_repo:
-                xdf = pd.pivot_table(df[df['fact_name'] == fact], values = 'fact_val', \
+                xdf = pd.pivot_table(df[df['fact_name'] == self.factor_repo[fact]['name']], values = 'fact_val', \
                                      index = ['date', 'serial_key'], columns = ['product_code'],\
-                                     aggfunc = 'last')               
+                                     aggfunc = 'last')
                 xdf = xdf[self.prod_list]
                 self.fact_data[fact] = xdf
         else:
