@@ -5,12 +5,10 @@ import json
 import pandas as pd
 import numpy as np
 import itertools
-from sqlalchemy import create_engine
-from pycmqlib3.utility.dbaccess import dbconfig, mysql_replace_into, connect
+from pycmqlib3.utility.dbaccess import save_data
 from pycmqlib3.utility.misc import CHN_Holidays, day_shift, is_workday, product_code, instID_adjust, inst2product
 from akshare.futures.cot import get_dce_rank_table, \
                                 get_czce_rank_table, get_shfe_rank_table, get_cffex_rank_table
-from akshare.futures.symbol_var import symbol_varieties
 from akshare.futures import cons
 chn_calendar = cons.get_calendar()
 
@@ -25,22 +23,9 @@ def generate_calendar_json(start_date, end_date, filename, hols = CHN_Holidays, 
     outfile.write(json.dumps(dlist, indent=4))
     outfile.close()
     
-def save_data(dbtable, df, flavor = 'mysql'):
-    if flavor == 'mysql':
-        conn = create_engine('mysql+mysqlconnector://{user}:{passwd}@{host}/{dbase}'.format( \
-                    user = dbconfig['user'], \
-                    passwd = dbconfig['password'],\
-                    host = dbconfig['host'],\
-                    dbase = dbconfig['database']), echo=False)
-        func = mysql_replace_into
-    else:
-        conn = connect(**dbconfig)
-        func = None
-    df.to_sql(dbtable, con = conn, if_exists='append', index=False, method=func)
-
 def update_spot_daily(start_date = datetime.date.today(), end_date = datetime.date.today(), flavor = 'mysql'):
-    dce_mkt = ak.futures.cons.market_exchange_symbols['dce']
-    shfe_mkt = ak.futures.cons.market_exchange_symbols['shfe']
+    dce_mkt = cons.market_exchange_symbols['dce']
+    shfe_mkt = cons.market_exchange_symbols['shfe']
     df = ak.futures_spot_price_daily(start_date, end_date)
     df['date'] = df['date'].apply(lambda x: datetime.datetime.strptime(x, "%Y%m%d").date())
     df['symbol'] = df['symbol'].apply(lambda x: x.lower() if x in dce_mkt + shfe_mkt else x)
@@ -200,4 +185,51 @@ def update_rank_table(start_date = datetime.date.today(), end_date = datetime.da
         else:
             warnings.warn(f"{run_d.strftime('%Y%m%d')}非交易日")
         run_d -= datetime.timedelta(days=1)
+    return excl_dates
+
+def update_exch_receipt_table(start_date, end_date, flavor = 'mysql'):
+    run_d = end_date
+    excl_dates = []
+    while run_d >= start_date:        
+        if run_d.strftime('%Y%m%d') in chn_calendar:
+            df = ak.get_receipt(start_day=run_d, end_day=run_d)
+            if len(df) == 0:
+                print("no data for %s" % str(run_d))
+                excl_dates.append(run_d)
+            else:
+                df['rcpt_label'] = df['var_label']
+                df['date'] = df['date'].apply(lambda x: datetime.datetime.strptime(x, '%Y%m%d'))
+                df['rcpt_num'] = df['receipt'].astype('int32')
+                df = df[['date', 'exch', 'prod', 'rcpt_label', 'rcpt_num']]
+                flag = df['prod'].isin(product_code['INE'])
+                df['exch'][flag] = 'INE'
+                save_data('exch_receipts', df, flavor = flavor)
+        else:
+            warnings.warn(f"{run_d.strftime('%Y%m%d')}非交易日")
+        run_d -= datetime.timedelta(days=1)
+    return excl_dates
+
+def update_exch_inv_table(start_date, end_date, flavor = 'mysql'):
+    excl_dates = []
+    s_date = end_date - datetime.timedelta(days = end_date.weekday())    
+    while s_date >= start_date - datetime.timedelta(days = start_date.weekday()):
+        e_date = s_date + datetime.timedelta(days = 4)
+        df = ak.get_shfe_inv(start_day = s_date, end_day = e_date)
+        if len(df) == 0:
+            print("no data for %s - %s" % (str(s_date), str(e_date)))
+            excl_dates.append((s_date, e_date))     
+        else:
+            df['inv_label'] = df['var_label']
+            df['date'] = df['date'].apply(lambda x: datetime.datetime.strptime(x, '%Y%m%d'))
+            data_cols = ['spot_inventory', 'warrant_inventory', 'warehouse_stocks'] 
+            for col in data_cols:
+                df[col] = df[col].astype('int32')
+            df['exch'] = 'SHFE'
+            df['prod'] = df['var'].str.lower()
+            flag = df['prod'].isin(product_code['INE'])
+            df['exch'][flag] = 'INE'
+            df = df[['date', 'exch', 'prod', 'inv_label'] + data_cols]
+            print("save data for the week %s - %s" % (str(s_date), str(e_date)))
+            save_data('exch_inventory', df, flavor = flavor)
+        s_date -= datetime.timedelta(days=7)
     return excl_dates

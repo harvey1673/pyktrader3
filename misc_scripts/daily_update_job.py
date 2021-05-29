@@ -2,7 +2,8 @@ import sys
 import datetime
 from pycmqlib3.utility.misc import day_shift, CHN_Holidays, sign
 import pycmqlib3.analytics.data_handler as dh
-from aks_data_update import update_hist_fut_daily, update_spot_daily
+from aks_data_update import update_hist_fut_daily, update_spot_daily, \
+                            update_exch_receipt_table, update_exch_inv_table, update_rank_table
 from factor_data_update import update_factor_data
 
 scenarios_mixed = [('tscarry', 'ryield', 3.0, 1, 1, 5, (sign, {}, 'sign'), [0.0, 0.0]), \
@@ -91,6 +92,35 @@ scenarios_all = [ \
              #('xsmom', 'macdnma', 0.1, 64, 100, 5, (dh.response_curve, {"response": "absorbing", "param": 2}, "absorbing"), [1.5, 1.56], 0.2), \
             ]
 
+def factor_pos_update(tday):
+    edate = min(datetime.date.today(), tday)
+    sdate = day_shift(edate, '-2b', CHN_Holidays)    
+    print('updating historical future data...')
+    for exch in ["DCE", "CFFEX", "CZCE", "SHFE", "INE", ]:
+        try:
+            update_hist_fut_daily(sdate, edate, exchanges = [exch], flavor = 'mysql', fut_table = 'fut_daily')
+        except:
+            print("exch = %s EOD price is FAILED to update" % (exch))    
+    #update_hist_fut_daily(sdate, tday, exchanges = ["DCE", "CFFEX", "CZCE", "SHFE", "INE", ], flavor = 'mysql', fut_table = 'fut_daily')
+    print('updating factor data calculation...')    
+    start_date = day_shift(edate, '-30m')        
+    commod_fact_repo = update_factor_data(commod_mkts, scenarios_all, start_date, edate, roll_rule='30b')    
+    mixed_metal_fact_repo = update_factor_data(mixed_metal_mkts, scenarios_mixed, start_date, edate, roll_rule='30b')
+
+def eod_data_update(tday):    
+    sdate = day_shift(tday, '-2b', CHN_Holidays)
+    print('updating historical spot data ...')
+    update_exch_receipt_table(sdate, tday, flavor = 'mysql')
+    
+    print('updating exchange inventory and warrant table ...')
+    update_exch_inv_table(sdate, tday, flavor = 'mysql')    
+    
+    print('updating historical spot data ...')
+    update_spot_daily(sdate, tday)
+
+    print('updating top future broker ranking table ...')
+    update_rank_table(sdate, tday, flavor = 'mysql')
+
 
 if __name__=="__main__":
     args = sys.argv[1:]
@@ -98,13 +128,7 @@ if __name__=="__main__":
         tday = datetime.datetime.strptime(args[0], "%Y%m%d").date()
     else:
         tday = datetime.date.today()
-    sdate = day_shift(tday, '-2b', CHN_Holidays)
-    #print('updating historical future data...')
-    #update_hist_fut_daily(sdate, tday, exchanges = ["SHFE", "INE", "CZCE", "DCE", "CFFEX"], flavor = 'mysql', fut_table = 'fut_daily')
-    print('updating factor data calculation...')
-    end_date = tday
-    start_date = day_shift(end_date, '-30m')    
-    mixed_metal_fact_repo = update_factor_data(mixed_metal_mkts, scenarios_mixed, start_date, end_date, roll_rule='30b')
-    commod_fact_repo = update_factor_data(commod_mkts, scenarios_all, start_date, end_date, roll_rule='30b')    
-    print('updating historical spot data ...')
-    update_spot_daily(sdate, tday)
+    factor_pos_update(tday)
+    eod_data_update(tday)
+    
+

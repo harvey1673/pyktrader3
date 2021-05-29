@@ -37,7 +37,7 @@ class FactorPortTrader(Strategy):
         self.fact_data = {}
         self.pos_summary = pd.DataFrame()
         self.tick_base = [0.0] * numAssets
-        self.threshold = numAssets // 2
+        self.threshold = int(numAssets * 0.8)
 
     def save_local_variables(self, file_writer):
         if len(self.pos_summary) > 0:
