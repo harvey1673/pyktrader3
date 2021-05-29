@@ -2,6 +2,7 @@
 import datetime
 import numpy as np
 import mysql.connector as sqlconn
+from sqlalchemy import create_engine
 import copy
 import csv
 import os.path
@@ -711,3 +712,16 @@ def load_factor_data(product_list, \
     stmt = stmt + "order by date, serial_no"
     df = pd.io.sql.read_sql(stmt, cnx)
     return df
+
+def save_data(dbtable, df, flavor = 'mysql'):
+    if flavor == 'mysql':
+        conn = create_engine('mysql+mysqlconnector://{user}:{passwd}@{host}/{dbase}'.format( \
+                    user = dbconfig['user'], \
+                    passwd = dbconfig['password'],\
+                    host = dbconfig['host'],\
+                    dbase = dbconfig['database']), echo=False)
+        func = mysql_replace_into
+    else:
+        conn = connect(**dbconfig)
+        func = None
+    df.to_sql(dbtable, con = conn, if_exists='append', index=False, method=func)
