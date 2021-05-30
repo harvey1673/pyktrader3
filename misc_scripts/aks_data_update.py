@@ -73,13 +73,25 @@ def update_sgx_daily(start_date = datetime.date.today(), end_date = datetime.dat
         save_data(dbtable, df, flavor=flavor)
         start_date = day_shift(start_date, str(freq) + 'b')
 
-def update_rank_table(start_date = datetime.date.today(), end_date = datetime.date.today(), \
-                        product_list = product_code['DCE'] + product_code['CZCE'] + product_code['SHFE'] \
-                                    + product_code['CFFEX'] + product_code['INE'], flavor = 'mysql'):    
-    dce_var = [i.upper() for i in product_list if i.upper() in cons.market_exchange_symbols['dce']]
-    shfe_var = [i.upper() for i in product_list if i.upper() in cons.market_exchange_symbols['shfe']]
-    czce_var = [i for i in product_list if i in cons.market_exchange_symbols['czce']]
-    cffex_var = [i for i in product_list if i in cons.market_exchange_symbols['cffex']]
+def update_rank_table(start_date = datetime.date.today(), end_date = datetime.date.today(), 
+                        exch_list = ['DCE', 'CZCE', 'SHFE', 'CFFEX'], flavor = 'mysql'):
+    var_dict = {}
+    exch_func = {}
+    product_list = []
+    for exch in exch_list:
+        var_dict[exch] = [i.upper() for i in cons.market_exchange_symbols[exch.lower()]]
+        product_list = product_list + product_code[exch]
+        if exch == 'DCE':
+            exch_func[exch] = get_dce_rank_table
+        elif exch == 'SHFE':
+            exch_func[exch] = get_shfe_rank_table
+        elif exch == 'CZCE':
+            exch_func[exch] = get_czce_rank_table
+        elif exch == 'CFFEX':
+            exch_func[exch] = get_cffex_rank_table
+        else:
+            print("exch = %s is not supported, use shfe for ine" % (exch))
+            return []
     col_list = ['date', 'prod', 'instID', 'ranknum', \
                 'vol_party_name', 'vol', 'vol_chg', \
                 'long_party_name', 'long_open_interest', 'long_open_interest_chg', \
@@ -91,13 +103,10 @@ def update_rank_table(start_date = datetime.date.today(), end_date = datetime.da
         big_dict = {}
         print(run_d)
         if run_d.strftime('%Y%m%d') in chn_calendar:
-            adf = pd.DataFrame()            
-            for exch, rank_table_func, var_list in \
-                    [('DCE', get_dce_rank_table, dce_var), \
-                    ('SHFE', get_shfe_rank_table, shfe_var), \
-                    ('CZCE', get_czce_rank_table, czce_var), \
-                    ('CFFEX', get_cffex_rank_table, cffex_var)]:                
-                data = rank_table_func(run_d, var_list)
+            adf = pd.DataFrame()
+
+            for exch in exch_list:                
+                data = exch_func[exch](run_d, var_dict[exch])
                 if data is not False:
                     for key in data:
                         data[key].rename(columns = {'variety': 'prod', 'var': 'prod',  'symbol': 'instID', 'rank': 'ranknum'}, inplace=True)
@@ -119,6 +128,8 @@ def update_rank_table(start_date = datetime.date.today(), end_date = datetime.da
                     excl_dates.append([run_d, exch])
             if len(adf) > 0:
                 save_data('chn_fut_broker_rank', adf, flavor = flavor)
+            else:
+                print("date=%s, exch=%s datafram is empty" % (str(run_d), exch))
             for symbol, table in big_dict.items():
                 for symbol_inner in set(table['instID']):
                     if symbol_inner in product_list:
@@ -171,11 +182,12 @@ def update_rank_table(start_date = datetime.date.today(), end_date = datetime.da
                 add_prods = [prod for prod in product_code['DCE'] + product_code['SHFE'] \
                     + product_code['INE'] + product_code['CFFEX'] if prod in records['prod'].tolist()]
                 for prod in add_prods:
-                    records_cut = records[records['prod'] == prod]
-                    var_record = pd.DataFrame(records_cut.sum()).T
+                    records_cut = records[records['prod'] == prod]                    
+                    var_record = pd.DataFrame(records_cut.sum(numeric_only = True)).T                    
                     var_record['date'] = run_d
-                    var_record.loc[:, ['prod', 'instID']] = prod
-                    records = records.append(var_record)
+                    var_record.loc[:, 'prod'] = prod
+                    var_record.loc[:, 'instID'] = prod
+                    records = records.append(var_record)                
             records = records.reset_index(drop=True)
             ordered_cols = ['%s%s_%s' % (s2, s3, s1) for (s1, s2, s3) in itertools.product(['top5','top10','top15','top20'], ['vol','long_open_interest','short_open_interest'], ['','_chg'], )]
             for col in ordered_cols:
