@@ -94,7 +94,7 @@ scenarios_all = [ \
 
 def factor_pos_update(tday):
     edate = min(datetime.date.today(), tday)
-    sdate = day_shift(edate, '-2b', CHN_Holidays)    
+    sdate = day_shift(edate, '-1b', CHN_Holidays)    
     print('updating historical future data...')
     for exch in ["DCE", "CFFEX", "CZCE", "SHFE", "INE", ]:
         try:
@@ -108,7 +108,7 @@ def factor_pos_update(tday):
     mixed_metal_fact_repo = update_factor_data(mixed_metal_mkts, scenarios_mixed, start_date, edate, roll_rule='30b')
 
 def eod_data_update(tday):    
-    sdate = day_shift(tday, '-2b', CHN_Holidays)
+    sdate = day_shift(tday, '-1b', CHN_Holidays)
     print('updating historical spot data ...')
     update_exch_receipt_table(sdate, tday, flavor = 'mysql')
     
