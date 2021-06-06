@@ -166,9 +166,9 @@ class FactorPortTrader(Strategy):
                     tradepos.pos = self.curr_pos[idx]
                     tradepos.target_pos = self.curr_pos[idx]
                     tradepos.direction = 1 if self.curr_pos[idx] > 0 else -1
-                    self.positions[idx] = [tradepos]
+                    self.positions[idx] = [tradepos]        
+        self.bar_update_record = set()        
         self.load_fact_data()
-        self.bar_update_record = set()
 
     def on_bar(self, idx, freq_list):
         save_status = False

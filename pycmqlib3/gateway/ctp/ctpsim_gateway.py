@@ -56,7 +56,9 @@ class SimctpTdApi(object):
 
         self.connect_status = True      # 连接状态
         self.login_status = True            # 登录状态
-
+        self.auth_status = True
+        self.login_failed = False 
+        
         self.userID = ''
         self.password = ''
         self.brokerID = ''

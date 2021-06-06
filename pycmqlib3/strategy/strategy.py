@@ -11,7 +11,7 @@ from pycmqlib3.core.trade_position import tradepos2dict, tradepos_header, TradeP
 from pycmqlib3.core.trade import XTrade
 from pycmqlib3.core.trade_exec_algo import ExecAlgo1DFixT, ExecAlgoFixTimer
 from pycmqlib3.core.trading_const import OrderType, TradeStatus
-from pycmqlib3.utility.misc import NO_ENTRY_TIME
+from pycmqlib3.utility.misc import NO_ENTRY_TIME, CHN_Holidays, day_shift
 
 class Strategy(object):
     common_params = {'name': 'test_strat', 'email_notify':{}, 'data_func': [], 'pos_scaler': 1.0, \
@@ -189,9 +189,14 @@ class Strategy(object):
         self.num_exits = [0] * len(self.underliers)
         self.save_state()
         srcname = self.folder + 'strat_status.csv'
-        dstname = self.folder + self.agent.scur_day.strftime("%Y-%m%d") + '.csv' 
+        dstname = self.folder + self.agent.scur_day.strftime("%Y-%m-%d") + '.csv' 
         shutil.copyfile(srcname, dstname)
-        self.initialize()
+        if day_shift(self.agent.scur_day, '1b') in CHN_Holidays:
+            next_run = datetime.datetime.combine(day_shift(self.agent.scur_day, '1b', CHN_Holidays), \
+                                                    datetime.time(8, 30, 0))
+        else:
+            next_run = datetime.datetime.combine(self.agent.scur_day, datetime.time(20, 30, 0))
+        self.agent.put_command(next_run, self.initialize)
 
     def calc_curr_price(self, idx):
         self.curr_prices[idx] = self.underlying[idx].mid_price

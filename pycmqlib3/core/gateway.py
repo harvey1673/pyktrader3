@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 import time
+import datetime
 import os
 import csv
 import workdays
 import logging
-from pycmqlib3.utility.misc import inst2exch, CHN_Holidays, spreadinst2underlying
+from pycmqlib3.utility.misc import inst2exch, CHN_Holidays, spreadinst2underlying, day_shift
 from . position import Position, GrossPosition, SHFEPosition
 from . order import Order, SpreadOrder
 from . event_type import *
@@ -45,6 +46,13 @@ class Gateway(object):
                                     'submit_limit': 200,  'cancel_limit': 200,  'failure_limit': 200 }
 
     def initialize(self):
+        self.id2order  = {}
+        self.working_orders = []
+        self.order_stats = {'total_submit': 0, 'total_failure': 0, 'total_cancel':0 }
+        self.account_info['prev_capital'] = self.account_info['curr_capital']
+        self.check_connection()
+    
+    def check_connection(self):
         pass
 
     def process_eod_report(self, tday):
@@ -66,17 +74,21 @@ class Gateway(object):
         for inst in self.positions:
             pos = self.positions[inst]
             eod_pos[inst] = pos.curr_pos
-        self.id2order  = {}
-        self.working_orders = []
+
         self.positions = {}
-        self.order_stats = {'total_submit': 0, 'total_failure': 0, 'total_cancel':0 }
         for inst in self.instruments:
             self.order_stats[inst] = {'submit': 0, 'cancel':0, 'failure': 0, 'status': True }
             (pos_cls, pos_args) = self.get_pos_class(self.agent.instruments[inst])
             self.positions[inst] = pos_cls(self.agent.instruments[inst], self, **pos_args)
             self.positions[inst].pos_yday = eod_pos[inst]
             self.positions[inst].re_calc()
-        self.account_info['prev_capital'] = self.account_info['curr_capital']
+
+        if day_shift(self.agent.scur_day, '1b') in CHN_Holidays:
+            next_run = datetime.datetime.combine(day_shift(self.agent.scur_day, '1b', CHN_Holidays), \
+                                                    datetime.time(8, 0, 0))
+        else:
+            next_run = datetime.datetime.combine(self.agent.scur_day, datetime.time(20, 0, 0))
+        self.agent.put_command(next_run, self.initialize)
 
     def get_pos_class(self, inst):
         return (Position, {})
