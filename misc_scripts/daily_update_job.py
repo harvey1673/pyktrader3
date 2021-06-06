@@ -1,6 +1,7 @@
 import sys
 import datetime
-from pycmqlib3.utility.misc import day_shift, CHN_Holidays, sign
+import json
+from pycmqlib3.utility.misc import day_shift, CHN_Holidays, sign, is_workday
 import pycmqlib3.analytics.data_handler as dh
 from aks_data_update import update_hist_fut_daily, update_spot_daily, \
                             update_exch_receipt_table, update_exch_inv_table, update_rank_table
@@ -92,35 +93,63 @@ scenarios_all = [ \
              #('xsmom', 'macdnma', 0.1, 64, 100, 5, (dh.response_curve, {"response": "absorbing", "param": 2}, "absorbing"), [1.5, 1.56], 0.2), \
             ]
 
-def factor_pos_update(tday):
-    edate = min(datetime.date.today(), tday)
-    sdate = day_shift(edate, '-1b', CHN_Holidays)    
+def run_update(tday = datetime.date.today()):
+    edate = min(datetime.date.today(), tday)    
+    if not is_workday(edate, 'CHN'):
+        edate = day_shift(edate, '-1b', CHN_Holidays)
+    sdate = day_shift(edate, '-1b', CHN_Holidays)
+    filename = "C:\\dev\\data\\dailyjob_status_%s.json" % edate.strftime("%Y%m%d")
+    try:
+        with open(filename, 'r') as f:
+            job_status = json.load(f)
+    except:
+        job_status = {}
+
     print('updating historical future data...')
-    for exch in ["DCE", "CFFEX", "CZCE", "SHFE", "INE", ]:
+    update_field = 'fut_daily'
+    if update_field not in job_status:
+        job_status[update_field] = {}
+    for exch in ["DCE", "CFFEX", "CZCE", "SHFE", "INE",]:
         try:
-            update_hist_fut_daily(sdate, edate, exchanges = [exch], flavor = 'mysql', fut_table = 'fut_daily')
+            if not job_status[update_field].get(exch, False):
+                update_hist_fut_daily(sdate, edate, exchanges = [exch], flavor = 'mysql', fut_table = 'fut_daily')
+                job_status[update_field][exch] = True
         except:
-            print("exch = %s EOD price is FAILED to update" % (exch))    
+            job_status[update_field][exch] = False
+            print("exch = %s EOD price is FAILED to update" % (exch))
+
     #update_hist_fut_daily(sdate, tday, exchanges = ["DCE", "CFFEX", "CZCE", "SHFE", "INE", ], flavor = 'mysql', fut_table = 'fut_daily')
-    print('updating factor data calculation...')    
-    start_date = day_shift(edate, '-30m')        
-    commod_fact_repo = update_factor_data(commod_mkts, scenarios_all, start_date, edate, roll_rule='30b')    
-    mixed_metal_fact_repo = update_factor_data(mixed_metal_mkts, scenarios_mixed, start_date, edate, roll_rule='30b')
+    print('updating factor data calculation...')
+    start_date = day_shift(edate, '-30m')
+    update_field = 'fact_repo'
+    if update_field not in job_status:
+        job_status[update_field] = {}
+    for (fact_key, fact_mkts, scenarios) in [('commod_all', commod_mkts, scenarios_all), \
+                                             ('ind_mixed', mixed_metal_mkts, scenarios_mixed)]:
+        try:
+            if not job_status[update_field].get(exch, False):
+                repo = update_factor_data(fact_mkts, scenarios, start_date, edate, roll_rule='30b')
+                job_status[update_field][fact_key] = True
+        except:
+            job_status[update_field][fact_key] = False
+            print("fact_key = %s is FAILED to update" % (fact_key))
 
-def eod_data_update(tday):    
     sdate = day_shift(tday, '-1b', CHN_Holidays)
-    print('updating historical spot data ...')
-    update_exch_receipt_table(sdate, tday, flavor = 'mysql')
-    
-    print('updating exchange inventory and warrant table ...')
-    update_exch_inv_table(sdate, tday, flavor = 'mysql')    
-    
-    print('updating historical spot data ...')
-    update_spot_daily(sdate, tday)
 
-    print('updating top future broker ranking table ...')
-    update_rank_table(sdate, tday, flavor = 'mysql')
-
+    for (update_field, update_func, ref_text) in [('exch_receipt', update_exch_receipt_table, 'exch receipt'), \
+                                                ('exch_inv', update_exch_inv_table, 'exchange warrant'), \
+                                                ('spot_daily', update_spot_daily, 'spot data'), \
+                                                ('rank_table', update_rank_table, 'top future broker ranking table'),]:
+        try:
+            print('updating historical %s ...' % ref_text)
+            if not job_status.get(update_field, False):
+                update_func(sdate, tday, flavor = 'mysql')
+                job_status[update_field] = True
+        except:
+            job_status[update_field] = False
+            print("update_field = %s is FAILED to update" % (update_field))
+    with open(filename, 'w') as ofile:
+        json.dump(job_status, ofile)
 
 if __name__=="__main__":
     args = sys.argv[1:]
@@ -128,7 +157,7 @@ if __name__=="__main__":
         tday = datetime.datetime.strptime(args[0], "%Y%m%d").date()
     else:
         tday = datetime.date.today()
-    factor_pos_update(tday)
-    eod_data_update(tday)
+    run_update(tday)
+    
     
 

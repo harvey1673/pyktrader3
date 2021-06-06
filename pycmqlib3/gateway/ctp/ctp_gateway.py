@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import time
 import json
 from pycmqlib3.utility.base import *
 from pycmqlib3.utility.dbaccess import insert_cont_data
@@ -127,14 +128,12 @@ class CtpGateway(GrossGateway):
             #self.product_info = str(setting.get('product_info', 'Zeno'))
 
         except KeyError:
-            logContent = '连接配置缺少字段，请检查'
-            self.on_log(logContent, level = logging.WARNING)
+            self.on_log('连接配置缺少字段，请检查', level = logging.WARNING)
             return            
 
         if 'authCode' in setting:
             authCode = str(setting['authCode'])
             appID = str(setting['appID'])
-            self.tdApi.requireAuthentication = True
         else:
             authCode = None
             appID = None
@@ -148,7 +147,37 @@ class CtpGateway(GrossGateway):
         error_id = error["ErrorID"]
         error_msg = error["ErrorMsg"]
         msg = f"{msg}，代码：{error_id}，信息：{error_msg}"
-        self.on_log(msg)
+        self.on_log(msg, level = logging.ERROR)
+
+    def check_connection(self):
+        """检查状态"""        
+        qry_status = False
+        if not self.mdApi.connect_status:
+            self.mdApi.connect()
+            qry_status = True
+            self.on_log("CTP MD connect_status = False, reconnecting ...", level = logging.WARNING)
+        elif not self.mdApi.login_status:
+            self.mdApi.login()
+            qry_status = True
+            self.on_log("CTP MD login_status = False, re-login ...", level = logging.WARNING)
+        elif not self.tdApi.connect_status: 
+            self.tdApi.connect()
+            qry_status = True
+            self.on_log("CTP TD connect_status = False, reconnecting ...", level = logging.WARNING)
+        elif not self.tdApi.auth_status:
+            self.tdApi.authenticate()
+            qry_status = True
+            self.on_log("CTP TD auth_status = False, re-authenticating ...", level = logging.WARNING)
+        elif not self.tdApi.login_status:
+            self.tdApi.login()
+            qry_status = True
+            self.on_log("CTP TD login_status = False, re-logining ...", level = logging.WARNING)
+        if qry_status:
+            time.sleep(30)
+            self.on_log("CTP gateway will check connection in 30 sec.", level = logging.INFO)
+            self.qry_commands.append(self.check_connection)
+        else:
+            self.on_log("CTP gateway TD|MD are both connected.", level = logging.INFO)
 
     def subscribe(self, subscribeReq):
         self.add_instrument(subscribeReq.symbol)
@@ -205,11 +234,12 @@ class CtpGateway(GrossGateway):
         """注册到事件处理引擎上的查询函数"""
         if self.qry_enabled:
             self.qry_count += 1
-            if self.qry_count > self.qry_trigger:
-                self.qryCount = 0
-                if len(self.qry_commands)>0:
-                    self.qry_commands[0]()
-                    del self.qry_commands[0]
+            if self.qry_count < self.qry_trigger:
+                return
+            self.qry_count = 0
+            if len(self.qry_commands)>0:
+                self.qry_commands[0]()
+                del self.qry_commands[0]
 
     def register_event_handler(self):
         self.event_engine.register(EVENT_MARKETDATA+self.gateway_name, self.rsp_market_data)
