@@ -29,6 +29,7 @@ class Gateway(object):
         self.working_order_stats = {}
         self.instruments = []      # subscribed instruments
         self.working_orders = []
+        self.conn_check_times = []
         self.process_flag = False
         self.eod_report = True
         self.account_info = {'available': 0,
@@ -45,12 +46,15 @@ class Gateway(object):
         self.order_constraints = {	'total_submit': 2000, 'total_cancel': 2000, 'total_failure':500, \
                                     'submit_limit': 200,  'cancel_limit': 200,  'failure_limit': 200 }
 
-    def initialize(self):
-        self.id2order  = {}
-        self.working_orders = []
-        self.order_stats = {'total_submit': 0, 'total_failure': 0, 'total_cancel':0 }
-        self.account_info['prev_capital'] = self.account_info['curr_capital']
-        self.check_connection()
+    def initialize(self, shift = 0):
+        self.update_conn_check(shift)
+        now_dt = datetime.datetime.now() + datetime.timedelta(minutes = 1)
+        for dt in self.conn_check_times:
+            if now_dt < dt:
+                self.agent.put_command(dt, self.check_connection)
+    
+    def update_conn_check(shift = 1):
+        pass
     
     def check_connection(self):
         pass
@@ -74,22 +78,19 @@ class Gateway(object):
         for inst in self.positions:
             pos = self.positions[inst]
             eod_pos[inst] = pos.curr_pos
-
+        
+        self.id2order  = {}
+        self.working_orders = []
+        self.order_stats = {'total_submit': 0, 'total_failure': 0, 'total_cancel':0 }
+        self.account_info['prev_capital'] = self.account_info['curr_capital']
         self.positions = {}
         for inst in self.instruments:
             self.order_stats[inst] = {'submit': 0, 'cancel':0, 'failure': 0, 'status': True }
             (pos_cls, pos_args) = self.get_pos_class(self.agent.instruments[inst])
             self.positions[inst] = pos_cls(self.agent.instruments[inst], self, **pos_args)
             self.positions[inst].pos_yday = eod_pos[inst]
-            self.positions[inst].re_calc()
-
-        if day_shift(self.agent.scur_day, '1b') in CHN_Holidays:
-            next_run = datetime.datetime.combine(day_shift(self.agent.scur_day, '1b', CHN_Holidays), \
-                                                    datetime.time(8, 0, 0))
-        else:
-            next_run = datetime.datetime.combine(self.agent.scur_day, datetime.time(20, 0, 0))
-        if datetime.datetime.now() < next_run:
-            self.agent.put_command(next_run, self.initialize)
+            self.positions[inst].re_calc()            
+        self.initialize(shift = 1)
 
     def get_pos_class(self, inst):
         return (Position, {})
