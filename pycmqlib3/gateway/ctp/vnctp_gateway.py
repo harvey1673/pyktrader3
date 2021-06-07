@@ -62,7 +62,7 @@ class VnctpMdApi(MdApi):
     def onRspUserLogin(self, data, error, n, last):
         """登陆回报"""
         # 如果登录成功，推送日志信息
-        if (error['ErrorID'] == 0) and last:
+        if (error['ErrorID'] == 0):
             self.login_status = True
             logContent = '行情服务器登录完成'
             self.gateway.on_log(logContent, level = logging.INFO)
@@ -164,10 +164,10 @@ class VnctpMdApi(MdApi):
             # 初始化连接，成功会调用onFrontConnected
             self.init()
             
+            self.connect_status = True
         # 若已经连接但尚未登录，则进行登录
-        else:
-            if not self.login_status:
-                self.login()
+        elif not self.login_status:
+            self.login()
     
     def subscribe(self, subscribeReq):
         """订阅合约"""
@@ -180,14 +180,14 @@ class VnctpMdApi(MdApi):
 
     def login(self):
         """登录"""
-        # 如果填入了用户名密码等，则登录
-        if self.userID and self.password and self.brokerID:
-            req = {}
-            req['UserID'] = self.userID
-            req['Password'] = self.password
-            req['BrokerID'] = self.brokerID
-            self.reqID += 1
-            self.reqUserLogin(req, self.reqID)    
+        logContent = '向行情服务器发出登录请求'
+        self.gateway.on_log(logContent, level = logging.INFO)
+        req = {}
+        req['UserID'] = self.userID
+        req['Password'] = self.password
+        req['BrokerID'] = self.brokerID
+        self.reqID += 1
+        self.reqUserLogin(req, self.reqID)    
 
     def logout(self):
         if self.userID and self.brokerID:
@@ -217,8 +217,8 @@ class VnctpTdApi(TdApi):
 
         self.connect_status = False       # 连接状态
         self.login_status = False            # 登录状态
-        self.authStatus = False             # 验证状态
-        self.loginFailed = False            # 登录失败（账号密码错误）
+        self.auth_status = False             # 验证状态
+        self.login_failed = False            # 登录失败（账号密码错误）
 
         self.userID = ''
         self.password = ''
@@ -226,7 +226,6 @@ class VnctpTdApi(TdApi):
         self.address = ''
         self.frontID = 0
         self.sessionID = 0
-        self.requireAuthentication = False
 
     def onFrontConnected(self):
         """服务器连接"""
@@ -234,16 +233,18 @@ class VnctpTdApi(TdApi):
         logContent = '交易服务器连接成功'
         self.gateway.on_log(logContent, level = logging.INFO)
 
-        if self.requireAuthentication:
+        if self.authCode:
             self.authenticate()
-        else:
+            logContent = "向交易服务器提交授权码验证"
+            self.gateway.on_log(logContent, level = logging.INFO)
+        else:            
             self.login()
+            logContent = "向交易服务器进行帐号登录"
+            self.gateway.on_log(logContent, level = logging.INFO)
 
     def onFrontDisconnected(self, n):
-        """服务器断开"""
-        self.connect_status = False
+        """服务器断开"""        
         self.login_status = False
-
         logContent = '交易服务器连接断开'
         self.gateway.on_log(logContent, level = logging.INFO)
 
@@ -254,7 +255,7 @@ class VnctpTdApi(TdApi):
     def onRspAuthenticate(self, data, error, n, last):
         """"""
         if error['ErrorID'] == 0:
-            self.authStatus = True
+            self.auth_status = True
             logContent = '交易服务器认证成功'
             self.gateway.on_log(logContent, level=logging.INFO)
             self.login()
@@ -270,20 +271,16 @@ class VnctpTdApi(TdApi):
             self.login_status = True
             logContent = '交易服务器登录完成, frontID=%s, sessionID=%s' % (self.frontID, self.sessionID)
             self.gateway.on_log(logContent, level = logging.INFO)
-
             # 确认结算信息
             req = {}
             req['BrokerID'] = self.brokerID
             req['InvestorID'] = self.userID
             self.reqID += 1
             self.reqSettlementInfoConfirm(req, self.reqID)
-
         # 否则，推送错误信息
         else:
-            self.login_status = False
-            self.gateway.write_error("交易服务器登录s失败", error)
-            time.sleep(30)
-            self.login()
+            self.login_failed = True
+            self.gateway.write_error("交易服务器登录失败", error)
 
     def onRspUserLogout(self, data, error, n, last):
         """登出回报"""
@@ -777,39 +774,36 @@ class VnctpTdApi(TdApi):
             self.subscribePrivateTopic(self.gateway.td_conn_mode)
             # 注册服务器地址
             self.registerFront(self.address)
-
             # 初始化连接，成功会调用onFrontConnected
             self.init()
+            self.connect_status = True
 
         # 若已经连接但尚未登录，则进行登录
         else:
-            if self.requireAuthentication and not self.authStatus:
-                self.authenticate()
-            elif not self.login_status:
-                self.login()
+            self.authenticate()
 
     def login(self):
         """连接服务器"""
         # 如果填入了用户名密码等，则登录
-        if self.userID and self.password and self.brokerID:
-            req = {}
-            req['UserID'] = self.userID
-            req['Password'] = self.password
-            req['BrokerID'] = self.brokerID
-            #req['UserProductInfo'] = self.gateway.product_info
-            self.reqID += 1
-            self.reqUserLogin(req, self.reqID)
+        if self.login_failed:
+            return        
+        req = {}
+        req['UserID'] = self.userID
+        req['Password'] = self.password
+        req['BrokerID'] = self.brokerID
+        #req['UserProductInfo'] = self.gateway.product_info
+        self.reqID += 1
+        self.reqUserLogin(req, self.reqID)
 
     def authenticate(self):
         """申请验证"""
-        if self.userID and self.brokerID and self.authCode and self.appID:
-            req = {}
-            req['UserID'] = self.userID
-            req['BrokerID'] = self.brokerID
-            req['AuthCode'] = self.authCode
-            req['AppID'] = self.appID
-            self.reqID += 1
-            self.reqAuthenticate(req, self.reqID)
+        req = {}
+        req['UserID'] = self.userID
+        req['BrokerID'] = self.brokerID
+        req['AuthCode'] = self.authCode
+        req['AppID'] = self.appID
+        self.reqID += 1
+        self.reqAuthenticate(req, self.reqID)
 
     def qryOrder(self):
         self.reqID += 1
