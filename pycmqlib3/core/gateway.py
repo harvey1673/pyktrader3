@@ -88,7 +88,8 @@ class Gateway(object):
                                                     datetime.time(8, 0, 0))
         else:
             next_run = datetime.datetime.combine(self.agent.scur_day, datetime.time(20, 0, 0))
-        self.agent.put_command(next_run, self.initialize)
+        if datetime.datetime.now() < next_run:
+            self.agent.put_command(next_run, self.initialize)
 
     def get_pos_class(self, inst):
         return (Position, {})

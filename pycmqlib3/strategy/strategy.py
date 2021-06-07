@@ -196,7 +196,8 @@ class Strategy(object):
                                                     datetime.time(8, 30, 0))
         else:
             next_run = datetime.datetime.combine(self.agent.scur_day, datetime.time(20, 30, 0))
-        self.agent.put_command(next_run, self.initialize)
+        if datetime.datetime.now() < next_run:
+            self.agent.put_command(next_run, self.initialize)
 
     def calc_curr_price(self, idx):
         self.curr_prices[idx] = self.underlying[idx].mid_price
