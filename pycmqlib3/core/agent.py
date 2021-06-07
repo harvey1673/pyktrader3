@@ -509,6 +509,7 @@ class Agent(MktDataMixin):
                 for inst in gateway.positions:
                     gateway.positions[inst].re_calc()
             gateway.calc_margin()
+            gateway.initialize()
             gateway.connect()
         self.event_engine.start()        
         if not self.eod_flag:

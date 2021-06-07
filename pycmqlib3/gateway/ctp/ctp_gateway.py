@@ -4,7 +4,7 @@ import time
 import json
 from pycmqlib3.utility.base import *
 from pycmqlib3.utility.dbaccess import insert_cont_data
-from pycmqlib3.utility.misc import get_obj_by_name, get_tick_id, inst2product, trading_hours, check_trading_range
+from pycmqlib3.utility.misc import get_obj_by_name, get_tick_id, inst2product, trading_hours, check_trading_range, day_shift, CHN_Holidays
 from pycmqlib3.core.gateway import Gateway, GrossGateway
 import logging
 import datetime
@@ -148,6 +148,15 @@ class CtpGateway(GrossGateway):
         error_msg = error["ErrorMsg"]
         msg = f"{msg}，代码：{error_id}，信息：{error_msg}"
         self.on_log(msg, level = logging.ERROR)
+
+    def update_conn_check(self, shift = 0):
+        trading_day = day_shift(self.agent.scur_day, str(shift) + 'b', CHN_Holidays)        
+        self.conn_check_times = [datetime.datetime.combine(trading_day, datetime.time(8, 25, 0)), \
+                                 datetime.datetime.combine(trading_day, datetime.time(12, 35, 0))]
+        prior_wday = day_shift(trading_day, '-1b')        
+        if prior_wday not in CHN_Holidays:
+            check_dt = datetime.datetime.combine(prior_wday, datetime.time(20, 30, 0))
+            self.conn_check_times.append(check_dt)
 
     def check_connection(self):
         """检查状态"""        
