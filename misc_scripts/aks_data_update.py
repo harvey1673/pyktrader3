@@ -52,8 +52,8 @@ def update_hist_fut_daily(start_date = datetime.date.today(), \
                 if exch in ['DCE', 'SHFE', 'INE']:
                     df['symbol'] = df['symbol'].apply(lambda x: x.lower())
                     df['variety'] = df['variety'].apply(lambda x: x.lower())
-                if exch == 'SHFE':
-                    df = df[~df['variety'].apply(lambda x: x in product_code['INE'])]
+                #if exch == 'SHFE':
+                df = df[df['variety'].apply(lambda x: x in product_code[exch])]
                 df['exch'] = exch
                 df.rename(columns = {'symbol': 'instID', 'open_interest': 'openInterest'}, inplace=True)
                 df['instID'] = df['instID'].apply(lambda x: instID_adjust(x, exch, end_date))

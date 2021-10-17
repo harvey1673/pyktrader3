@@ -821,7 +821,7 @@ def nearby(prodcode, n = 1, start_date = None, end_date = None, roll_rule = '-20
             idx = contlist.index('sn2001')
             exp_dates[idx] = max(datetime.date(2019,12,26), exp_dates[idx])
     elif prodcode == 'ni':
-        if 'ni1905' in contlist:
+        if ('ni1905' in contlist) and ('ni1901' in contlist):
             idx = contlist.index('ni1901')
             exp_dates[idx] = max(datetime.date(2018,12,27), exp_dates[idx])
     sdate = start_date

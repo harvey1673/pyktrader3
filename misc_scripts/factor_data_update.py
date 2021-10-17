@@ -60,7 +60,7 @@ sim_start_dict = {'c': datetime.date(2008, 10, 1), 'm': datetime.date(2010, 10, 
                   'T': datetime.date(2015, 6, 1), 'ss': datetime.date(2020, 4, 1), 'sp': datetime.date(2019, 1, 24),
                   'CJ': datetime.date(2019, 8, 1), 'UR': datetime.date(2019, 8, 9), 'SA': datetime.date(2019, 12, 9),
                   'eb': datetime.date(2019, 12, 1), 'eg': datetime.date(2019, 2, 13), 'rr': datetime.date(2019, 8, 19),
-                  'pg': datetime.date(2020, 10, 1), 'lu': datetime.date(2020, 8, 1), }
+                  'pg': datetime.date(2020, 4, 1), 'lu': datetime.date(2020, 8, 1), }
 
 field_list = ['open', 'high', 'low', 'close', 'volume', 'openInterest', 'contract', 'shift']
 
@@ -256,7 +256,10 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule 
                 factor_repo[fact_name]['rebal'] = rebal
                 factor_repo[fact_name]['param'] = params
                 factor_repo[fact_name]['weight'] = weight 
-            update_factor_db(xdf, fact_name, fact_config, start_date=update_start, end_date=end_date, flavor = flavor)
+            try:
+                update_factor_db(xdf, fact_name, fact_config, start_date=update_start, end_date=end_date, flavor = flavor)
+            except:
+                continue
     return factor_repo
 
 def create_strat_json(product_list, freq, roll_rule, factor_repo, filename= "C:\\dev\\data\\MM_FACT_PORT.json", name = 'default'):
