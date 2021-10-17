@@ -72,8 +72,10 @@ class FactorPortTrader(Strategy):
                 xdf = pd.pivot_table(df[df['fact_name'] == self.factor_repo[fact]['name']], values = 'fact_val', \
                                      index = ['date', 'serial_key'], columns = ['product_code'],\
                                      aggfunc = 'last')
-                xdf = xdf[self.prod_list]
-                self.fact_data[fact] = xdf
+                for prod in self.prod_list:
+                    if prod not in xdf.columns:
+                        xdf[prod] = np.nan
+                self.fact_data[fact] = xdf[self.prod_list]
         else:
             print("Update from the strategy is not implemented yet.")
         self.update_target_pos()

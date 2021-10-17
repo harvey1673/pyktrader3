@@ -41,7 +41,7 @@ mixed_metal_mkts = ['rb', 'hc', 'i', 'j', 'jm', 'ru', 'FG', 'ZC', 'cu', 'al', 'z
 
 commod_mkts = ['rb', 'hc', 'i', 'j', 'jm', 'ru', 'FG', 'ZC', 'cu', 'al', 'zn', 'pb', 'sn', \
                'l', 'pp', 'v', 'TA', 'sc', 'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'CF', 'jd', \
-               'AP', 'SM']
+               'AP', 'SM', 'ss', 'CJ', 'UR', 'eb', 'eg', 'pg']
 
 scenarios_all = [ \
              ('tscarry', 'ryieldnmb', 2.8, 1, 120, 1, (None, {}, ''), [0.0, 0.0]), \
@@ -124,8 +124,7 @@ def run_update(tday = datetime.date.today()):
     update_field = 'fact_repo'
     if update_field not in job_status:
         job_status[update_field] = {}
-    for (fact_key, fact_mkts, scenarios) in [('commod_all', commod_mkts, scenarios_all), \
-                                             ('ind_mixed', mixed_metal_mkts, scenarios_mixed)]:
+    for (fact_key, fact_mkts, scenarios) in [('commod_all', commod_mkts, scenarios_all), ]:
         try:
             if not job_status[update_field].get(exch, False):
                 repo = update_factor_data(fact_mkts, scenarios, start_date, edate, roll_rule='30b')
