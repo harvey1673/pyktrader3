@@ -725,3 +725,21 @@ def save_data(dbtable, df, flavor = 'mysql'):
         conn = connect(**dbconfig)
         func = None
     df.to_sql(dbtable, con = conn, if_exists='append', index=False, method=func)
+
+def load_fut_by_product(product, exch, start_date ,end_date, db_table = 'fut_daily'):
+    prod_key = product
+    if exch in ['DCE', 'SHFE']:
+        prod_key = f"{product}____"
+    else:
+        prod_key = f'{product}%'
+    cnx = connect(**dbconfig)
+    columns = ['instID', 'date', 'open', 'high', 'low', 'close', 'volume', 'openInterest']
+    stmt = "select {variables} from {table} where instID like '{prod_key}'  ".format(\
+                        prod_key = prod_key, \
+                        variables=','.join(columns), table = db_table)
+    stmt = stmt + "and date >='%s' " % start_date.strftime('%Y-%m-%d')
+    stmt = stmt + "and date <='%s' " % end_date.strftime('%Y-%m-%d')
+    stmt = stmt + "and exch = '%s' " % (exch)
+    stmt = stmt + "order by date, instID"    
+    df = pd.io.sql.read_sql(stmt, cnx)
+    return df
