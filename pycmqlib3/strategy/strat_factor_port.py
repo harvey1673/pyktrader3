@@ -131,7 +131,10 @@ class FactorPortTrader(Strategy):
         self.pos_summary = self.pos_summary[self.prod_list].round(2)
         net_pos = self.pos_summary.sum()           
         for idx, (under, prodcode) in enumerate(zip(self.underliers, self.prod_list)):            
-            self.target_pos[idx] = int(net_pos[prodcode] * self.vol_weight[idx] + (0.5 if net_pos[prodcode]>0 else -0.5))
+            if prodcode == 'CJ':
+                self.target_pos[idx] = int((net_pos[prodcode] * self.vol_weight[idx]/4 + (0.5 if net_pos[prodcode]>0 else -0.5)))*4
+            else:
+                self.target_pos[idx] = int(net_pos[prodcode] * self.vol_weight[idx] + (0.5 if net_pos[prodcode]>0 else -0.5))
         self.save_state()        
 
     def register_func_freq(self):
