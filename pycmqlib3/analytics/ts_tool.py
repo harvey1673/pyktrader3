@@ -40,9 +40,9 @@ def calc_roll_yield1(prod_code, start_date, end_date):
     return df
 
 def calc_roll_yield2(prod_code, start_date, end_date, roll_rule = '-35b'):
-    need_shift = 0
+    shift_mode = 0
     freq = 'd'
-    args = {'roll_rule': roll_rule, 'freq': freq, 'need_shift': need_shift, 'start_date': start_date, 'end_date': end_date}
+    args = {'roll_rule': roll_rule, 'freq': freq, 'shift_mode': shift_mode, 'start_date': start_date, 'end_date': end_date}
     df_list = []
     for idy, nb in enumerate([1, 2]):
         args['n'] = nb
@@ -167,7 +167,7 @@ def get_cont_data(asset, start_date, end_date, freq = '1m', nearby = 1, rollrule
         mdf = dbaccess.load_min_data_to_df(cnx, 'fut_min', asset, start_date, end_date, minid_start = 300, minid_end = 2114, database = 'hist_data')
         mdf['contract'] = asset
     else:
-        mdf = misc.nearby(asset, nearby, start_date, end_date, rollrule, 'm', need_shift=True, database = 'hist_data')
+        mdf = misc.nearby(asset, nearby, start_date, end_date, rollrule, 'm', shift_mode=True, database = 'hist_data')
     mdf = misc.cleanup_mindata(mdf, asset)
     xdf = dh.conv_ohlc_freq(mdf, freq, extra_cols = ['contract'], bar_func = dh.bar_conv_func2)
     return xdf

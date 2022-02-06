@@ -15,6 +15,8 @@ from pycmqlib3.utility.misc import sign, day_shift, nearby, cleanup_mindata, \
 
 #import mysql_helper
 
+ANNUAL_VOL_SCALER = np.sqrt(252.0)
+
 sim_margin_dict = { 'au': 0.06, 'ag': 0.08, 'cu': 0.07, 'al':0.05,
                 'zn': 0.06, 'rb': 0.06, 'ru': 0.12, 'a': 0.05,
                 'm':  0.05, 'RM': 0.05, 'y' : 0.05, 'p': 0.05,
@@ -310,6 +312,10 @@ def check_bktest_bar_stop(bar, stop_price, direction=1):
 def pnl_stats(pnl_df, field = 'daily_pnl'):
     if field:
         ts = pnl_df[field]
+        if 'cum_pnl' not in pnl_df.columns:
+            cum_pnl = ts.cumsum()
+        else:
+            cum_pnl = pnl_df['cum_pnl']        
     else:
         ts = pnl_df
         cum_pnl = ts.cumsum()
@@ -323,12 +329,9 @@ def pnl_stats(pnl_df, field = 'daily_pnl'):
         res['tot_cost'] = 0.0
     res['num_days'] = len(ts)
     if res['std_pnl'] > 0:
-        res['sharp_ratio'] = float(res['avg_pnl'] / res['std_pnl'] * np.sqrt(252.0))
-        if field:
-            if 'cum_pnl' not in pnl_df.columns:
-                cum_pnl = pnl_df['daily_pnl'].cumsum()
-            else:
-                cum_pnl = pnl_df['cum_pnl']
+        res['sharpe_ratio'] = sharpe_ratio(ts, need_diff = False)
+        res['sortino_ratio'] = sortino_ratio(ts, need_diff = False)
+        res['calmar_ratio'] = calmar_ratio(ts, need_diff = False)
         max_dd, max_dur = max_drawdown(cum_pnl)
         res['max_drawdown'] = float(max_dd)
         res['max_dd_period'] = int(max_dur)
@@ -337,7 +340,7 @@ def pnl_stats(pnl_df, field = 'daily_pnl'):
         else:
             res['profit_dd_ratio'] = 0
     else:
-        res['sharp_ratio'] = 0
+        res['sharpe_ratio'] = 0
         res['max_drawdown'] = 0
         res['max_dd_period'] = 0
         res['profit_dd_ratio'] = 0
@@ -369,19 +372,17 @@ def get_pnl_stats(df_list, marginrate, freq, tenors = ['3m', '6m', '1y', '2y', '
         if 'traded_price' in xdf.columns:
             field = 'traded_price'            
         else:
-            field  = 'close'
+            field  = 'open'
         if 'close' in xdf.columns:
             close_field = 'close'
         else:
             close_field = 'traded_price'        
         pnl = (xdf['pos'] * (xdf[close_field] - xdf[field]) \
-            + xdf['pos'].shift(1).fillna(0.0) * (xdf[field] - xdf[close_field].shift(1))).fillna(0.0)
+            + xdf['pos'].shift(1) * (xdf[field] - xdf[close_field].shift(1))).fillna(0.0)
         if 'cost' in xdf.columns:
             pnl = pnl - xdf['cost'].fillna(0.0) * cost_ratio
         if 'closeout' in xdf.columns:
             pnl = pnl + xdf['closeout'].fillna(0.0)
-        if 'close' in xdf.columns:
-            pnl.iloc[-1] += xdf['pos'].iloc[-1] * (xdf['close'].iloc[-1] - xdf[field].iloc[-1])
         # pnl = pnl + (xdf['pos'] - xdf['pos'].shift(1).fillna(0.0)) * (xdf['close'] - xdf['traded_price'])
         if len(sum_pnl) == 0:
             sum_pnl = pd.Series(pnl, name='pnl')
@@ -444,6 +445,32 @@ def hold_period(face_value, scaling = 0, fillna = True):
     trades[trades.isnull()] = face_value[trades.isnull()]  # fill the first trade
     return 2 * np.sum(np.sum(face_value.abs())) / np.sum(np.sum(trades.abs())) * scaling
 
+
+def sharpe_ratio(ts, need_diff = True):
+    if need_diff:
+        ts = ts.diff(1).dropna()
+    return ts.mean() / ts.std() * ANNUAL_VOL_SCALER
+
+
+def sortino_ratio(ts, need_diff = True):
+    if need_diff:
+        ts = ts.diff(1).dropna()
+    return ts.mean() / (ts[ts<0].std()) * ANNUAL_VOL_SCALER
+
+
+def calmar_ratio(ts, need_diff = True):
+    if need_diff:
+        max_dd, _ = max_drawdown2(ts)
+        daily_pnl = ts.diff(1).dropna()
+    else:        
+        daily_pnl = ts
+        cum_pnl = daily_pnl.cumsum()
+        max_dd, _ = max_drawdown2(cum_pnl)
+    if max_dd >=0:
+        return np.nan
+    else:
+        return daily_pnl.mean() * (ANNUAL_VOL_SCALER**2) / (-max_dd)
+    
 def max_drawdown(ts):
     dd = ts - ts.cummax()
     max_dd = dd.min()
@@ -456,13 +483,13 @@ def max_drawdown2(ts):
     i = np.argmax(np.maximum.accumulate(ts) - ts)
     j = np.argmax(ts[:i])
     max_dd = ts[i] - ts[j]
-    max_duration = (i - j).days
+    max_duration = i - j
     return max_dd, max_duration
 
 def scen_dict_to_df(data):
     res = pd.DataFrame.from_dict(data, orient='index')
     res.index.name = 'scenario'
-    res = res.sort_values(by=['sharp_ratio'], ascending=False)
+    res = res.sort_values(by=['sharpe_ratio'], ascending=False)
     res = res.reset_index()
     res.set_index(['asset', 'scenario'])
     return res
@@ -477,7 +504,7 @@ class BacktestManager(object):
             sim_class = getattr(sim_class, bktest_split[i])
         self.sim_class = sim_class
         self.sim_func = sim_config['sim_func']
-        self.need_shift = sim_config.get('need_shift', 1)
+        self.shift_mode = sim_config.get('shift_mode', 1)
         self.sim_freq = sim_config.get('sim_freq', 'm')
         self.sim_name = sim_config['sim_name']
         self.cost_ratio = sim_config.get('cost_ratio', 1.0)
@@ -513,7 +540,7 @@ class BacktestManager(object):
         self.sim_margin_dict = sim_config.get('sim_margin_dict', sim_margin_dict)
         self.start_capital = self.config['capital']
         self.config['data_freq'] = self.sim_freq
-        self.config['need_shift'] = self.need_shift
+        self.config['shift_mode'] = self.shift_mode
         self.data_store = {}
         self.contlist = {}
         self.exp_dates = {}
@@ -587,7 +614,7 @@ class BacktestManager(object):
         asset = self.sim_assets[idx]
         for prod in asset:
             df = nearby(prod, self.config['nearby'], self.config['start_date'], self.config['end_date'],
-                        self.config['rollrule'], self.sim_freq, need_shift = self.need_shift,
+                        self.config['rollrule'], self.sim_freq, shift_mode = self.shift_mode,
                         database=self.config.get('dbconfig', hist_dbconfig)['database'])
             if self.sim_freq == 'm':
                 df = cleanup_mindata(df, prod)
@@ -684,7 +711,7 @@ class SpdBktestManager(BacktestManager):
                 else:
                     rollrule = '-1b'
                 df = nearby(ticker, nb, self.config['start_date'], self.config['end_date'], rollrule,
-                            self.sim_freq, need_shift = self.need_shift,
+                            self.sim_freq, shift_mode = self.shift_mode,
                             database = self.config.get('dbconfig', hist_dbconfig)['database'])
                 if self.sim_freq == 'm':
                     df = cleanup_mindata(df, ticker)

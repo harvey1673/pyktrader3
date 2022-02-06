@@ -93,13 +93,13 @@ def update_factor_db(xdf, field, config, dbtable='fut_fact_data', flavor='mysql'
 
 def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule = '30b', flavor = 'mysql', dbtbl_prefix = ''):
     update_start = start_date  # day_shift(end_date, '-3b')
-    need_shift = 1
+    shift_mode = 1
     freq = 'd'
-    args = {'roll_rule': '-' + roll_rule, 'freq': freq, 'need_shift': need_shift, 'dbtbl_prefix': dbtbl_prefix}
-    base_args = {'roll_rule': '-' + roll_rule, 'freq': freq, 'need_shift': need_shift, 'dbtbl_prefix': dbtbl_prefix}
-    eq_args = {'roll_rule': '-1b', 'freq': freq, 'need_shift': need_shift, 'dbtbl_prefix': dbtbl_prefix}
-    bond_args = {'roll_rule': '-' + roll_rule, 'freq': freq, 'need_shift': need_shift, 'dbtbl_prefix': dbtbl_prefix}
-    precious_args = {'roll_rule': '-25b', 'freq': freq, 'need_shift': need_shift, 'dbtbl_prefix': dbtbl_prefix}
+    args = {'roll_rule': '-' + roll_rule, 'freq': freq, 'shift_mode': shift_mode, 'dbtbl_prefix': dbtbl_prefix}
+    base_args = {'roll_rule': '-' + roll_rule, 'freq': freq, 'shift_mode': shift_mode, 'dbtbl_prefix': dbtbl_prefix}
+    eq_args = {'roll_rule': '-1b', 'freq': freq, 'shift_mode': shift_mode, 'dbtbl_prefix': dbtbl_prefix}
+    bond_args = {'roll_rule': '-' + roll_rule, 'freq': freq, 'shift_mode': shift_mode, 'dbtbl_prefix': dbtbl_prefix}
+    precious_args = {'roll_rule': '-25b', 'freq': freq, 'shift_mode': shift_mode, 'dbtbl_prefix': dbtbl_prefix}
 
     fact_config = {}
     fact_config['roll_label'] = 'CAL_%s' % ('30b')
@@ -146,12 +146,12 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule 
         xdf = pd.concat([df, xdf], axis=1, sort=False).sort_index()
         fact_config['product_code'] = asset
         fact_config['exch'] = prod2exch(asset)
-        if need_shift == 1:
+        if shift_mode == 1:
             xdf['ryield'] = (np.log(xdf['close'] - xdf['shift']) - np.log(xdf['close_2'] - xdf['shift_2'])) / (
                         xdf['mth_2'] - xdf['mth']) * 12.0
             xdf['logret'] = np.log(xdf['close'] - xdf['shift']) - np.log(xdf['close'].shift(1) - xdf['shift'])
             xdf['logret_2'] = np.log(xdf['close_2'] - xdf['shift_2']) - np.log(xdf['close_2'].shift(1) - xdf['shift_2'])
-        elif need_shift == 2:
+        elif shift_mode == 2:
             xdf['ryield'] = (np.log(xdf['close']) - np.log(xdf['close_2']) - xdf['shift'] + xdf['shift_2']) / (
                         xdf['mth_2'] - xdf['mth']) * 12.0
             xdf['logret'] = np.log(xdf['close']) - np.log(xdf['close'].shift(1))
