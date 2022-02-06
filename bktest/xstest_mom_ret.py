@@ -19,7 +19,7 @@ class XSMOMRetSim(StratSim):
         self.ma_win = config['ma_win']
         self.freq = config['freq']
         self.total_risk = config['total_risk']
-        self.need_shift = config.get('need_shift', 1)
+        self.shift_mode = config.get('shift_mode', 1)
         self.rebal_freq = config.get('rebal_freq', 1)
         self.quantile_cutoff = config.get('quantile_cutoff', 0.2)
         self.exclude_minlist = config.get('exclude_minlist', [])
@@ -44,7 +44,7 @@ class XSMOMRetSim(StratSim):
             self.data_store[self.freq] = adf
         xdf = adf.copy()
         for asset in self.assets:
-            if self.need_shift == 1:
+            if self.shift_mode == 1:
                 xdf[(asset, 'lr')] = ((xdf[(asset, 'close')] - xdf[(asset, 'shift')]).astype('float') \
                                       / (xdf[(asset, 'close')].shift(1) - xdf[(asset, 'shift')]) - 1.0) * 100.0
             else:
@@ -103,9 +103,9 @@ class XSMOMRetSim(StratSim):
         extract_fields = ['open', 'close', 'traded_price', 'contract', 'cost', 'pos']
         df_list = []
         for asset, offset in zip(self.assets, self.offset):
-            if self.need_shift == 1:
+            if self.shift_mode == 1:
                 orig_close = xdf[(asset, 'close')] - xdf[(asset, 'shift')]
-            elif self.need_shift == 2:
+            elif self.shift_mode == 2:
                 orig_close = xdf[(asset, 'close')] * np.exp(-xdf[(asset, 'shift')])
             else:
                 orig_close = xdf[(asset, 'close')]

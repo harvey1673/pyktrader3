@@ -821,7 +821,7 @@ def cont_expiry_list(prodcode, start_date, end_date, roll_rule = '-0d'):
     exp_dates = [day_shift(contract_expiry(cont), roll_rule, hols) for cont in contlist]
     return contlist, exp_dates, tenor_list
 
-def nearby(prodcode, n = 1, start_date = None, end_date = None, roll_rule = '-20b', freq = 'd', need_shift = 0, database = None, dbtbl_prefix = ''):
+def nearby(prodcode, n = 1, start_date = None, end_date = None, roll_rule = '-20b', freq = 'd', shift_mode = 0, database = None, dbtbl_prefix = ''):
     contlist, exp_dates, _ = cont_expiry_list(prodcode, start_date, end_date, roll_rule)
     if prodcode == 'sn':
         if 'sn2001' in contlist:
@@ -858,13 +858,13 @@ def nearby(prodcode, n = 1, start_date = None, end_date = None, roll_rule = '-20
         else:
             print("continuous contract stopped at %s for start = %s, expiry= %s" % (nb_cont, sdate, exp))
             continue
-        if len(df) > 0 and need_shift > 0:
+        if len(df) > 0 and shift_mode > 0:
             if isinstance(df.index[-1], datetime.datetime):
                 last_date = df.index[-1].date()
             else:
                 last_date = df.index[-1]
             tmp_df = dbaccess.load_daily_data_to_df(cnx, dbtbl_prefix + 'fut_daily', nb_cont, last_date, last_date)
-            if need_shift == 1:
+            if shift_mode == 1:
                 shift = tmp_df['close'][-1] - df['close'][-1]
                 df['shift'] = df['shift'] + shift
                 for ticker in ['open', 'high', 'low', 'close']:
@@ -1050,7 +1050,8 @@ def _contract_range(product, exch, cont_mth, start_date, end_date, tenor = '2y')
 def contract_range(product, exch, cont_mth, start_date, end_date):
     product_cont_map = {'ni': [datetime.date(2019, 5, 1), [1, 5, 9]],
                         'sn': [datetime.date(2020, 5, 1), [1, 5, 9]],
-                        'ZC': [datetime.date(2020, 9, 1), [1, 5, 9]],}
+                        #'ZC': [datetime.date(2020, 9, 1), [1, 5, 9]],
+                        }
     if product in product_cont_map:
         cont_list, tenor_list = _contract_range(product, exch, cont_mth, start_date, end_date)
         res_cont = []

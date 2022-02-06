@@ -106,7 +106,7 @@ def load_data(inst_key, start, end):
         kargs['field'] = 'instID'
     elif len(args) > 1:
         kargs['field'] = 'instID'
-        kargs['args'] = {'n': int(args[1]),  'roll_rule': '-' + args[2], 'freq': 'd', 'need_shift': 0}
+        kargs['args'] = {'n': int(args[1]),  'roll_rule': '-' + args[2], 'freq': 'd', 'shift_mode': 0}
     if fx_pair:
         kargs['fx_pair'] = fx_pair
     df = ts_tool.get_data(inst_name, start, end, **kargs)

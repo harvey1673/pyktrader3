@@ -1,6 +1,9 @@
 import numpy as np
 import pandas as pd
-
+from typing import Union, List
+import datetime
+from pycmqlib3.utility import misc
+from pycmqlib3.utility.dbaccess import load_fut_by_product, prod_main_cont_exch
 
 class DataSeriesError(Exception):
     def __init__(self, value):
@@ -23,95 +26,162 @@ def process_expiry(data_series, exp_list):
                 data_series.loc[data_series.index > idx, c] = np.nan
 
 
-def _move_rows_np2(roll_index, col_idx, ds, nan_value = np.nan):
-    print(ds)
-    nds = ds.values
-    len_ds = len(ds)
-    len_cols = len(ds.columns)
-    len_rollidx = len(roll_index)
-    rollidx = roll_index.values
-    col_index = col_idx.values
-    for j in range(len_rollidx - 1, 0, -1):
-        ri = rollidx[j-1]
-        ci = col_index[j]
-        if ri < 0:
-            ri = 0
-        np.copyto(nds[ri:len_ds, ci-1:len_cols -1], nds[ri:len_ds, ci:len_cols])
-        nds[ri:len_ds, len_cols-1:len_cols] = nan_value
-    ds[:] = nds
-    print(ds)
-
-
-def nearby(data_series, roll = None, fwd_expiries = None, clean_expiries = False, nan_value = np.nan, hols = 'CHN'):
-    ds = data_series.copy(deep = True)
-    if clean_expiries:
-        process_expiry(ds, fwd_expiries)
-    ds = ds.dropna(axis=0, how = 'all')
-    ds = ds.dropna(axis=1, how = 'all')
-    if ds.empty:
-        return ds
-
-    ds_index = ds.index
-    is_forward_success = False
-    if (roll is not None) and (fwd_expiries is not None):
-        lastdt = pd.to_datetime(ds.index[-1:][0])
-        slbl = ds.iloc[-1:].dropna(axis=1).columns
-        first_contract = slbl[0]
-        next_expiry = None
-        for expiry in fwd_expiries:
-            if expiry is not None:
-                if first_contract in expiry.columns:
-                    if next_expiry is None:
-                        next_expiry = pd.to_datetime(expiry[first_contract][0])
-                    elif pd.to_datetime(expiry[first_contract][0]) < next_expiry:
-                        next_expiry = pd.to_datetime(expiry[first_contract][0])
-        if next_expiry is not None:
-            edts = pd.date_range(start = lastdt.to_pydatetime() + pd.DateOffset(days = 1), 
-                                end = next_expiry.to_pydatetime() + pd.DateOffset(days = 20), 
-                                freq = 'B')
-            hol = dates.get_holidays()
-            fdts = edts.difference(edts.intersection(hol))
-            newdts = fdts[fdts <= fdts[fdts > next_expiry][0]]
-            newvals = pd.DataFrame(index = newdts)
-            ds = ds.append(newvals)
-            ds.loc[lastdt:] = ds.loc[lastdt:].fillna(method = 'pad')
-            ds.reset_index(drop = True, inplace = True)
-            ds.columns = list(range(0, len(ds.columns)))
-            last_idx = ds[-1:].notnull.idxmax(axis = 1)
-            ds.iloc[-1:, last_idx] = np.nan
-            is_forward_success = True
-        else:
-            if roll is None:
-                roll = 0
-            ds.reset_index(drop = True, inplace = True)
-            ds.columns = list(range(0, len(ds.columns)))
+def prod_main_cont_filter(df, asset):
+    contlist, exch = prod_main_cont_exch(asset)
+    if asset == 'ni':
+        flag = (df.expiry < datetime.date(2019, 6, 1)) & df.month.isin([1, 5, 9])
+        flag = flag | ((df.expiry >= datetime.date(2019, 6, 1)) & df.month.isin(contlist))
+    elif asset =='sn':
+        flag = (df.expiry < datetime.date(2020, 6, 1)) & df.month.isin([1, 5, 9])
+        flag = flag | ((df.expiry >= datetime.date(2020, 6, 1)) & df.month.isin(contlist))
     else:
-        if roll is None:
-            roll = 0
-        ds.reset_index(drop = True, inplace = True)
-        ds.columns = list(range(0, len(ds.columns)))            
+        flag = df.month.isin(contlist)
+    return flag
+
+
+def nearby(prodcode, n = 1, start_date = None, end_date = None, 
+           roll_rule = '-20b', freq = 'd', shift_mode = 0, 
+           adj_field = 'close', calc_fields = ['open', 'close', 'high', 'low'], 
+           contract_filter = prod_main_cont_filter, fill_cont = False,
+          ):
+    exch = misc.prod2exch(prodcode)
+    xdf = load_fut_by_product(prodcode, exch, start_date ,end_date)
+    xdf['expiry'] = xdf['instID'].apply(lambda x: misc.contract_expiry(x, hols = misc.CHN_Holidays))
+    xdf['month'] = xdf['instID'].apply(lambda x: misc.inst2contmth(x)%100)
+    xdf = xdf.sort_values(['instID', 'date'])
+
+    if shift_mode == 2:
+        xdf['price_chg'] = np.log(xdf[adj_field]).diff()
+    else:
+        xdf['price_chg'] = xdf[adj_field].diff()        
+    xdf.loc[xdf['instID']!=xdf['instID'].shift(1), 'price_chg'] = 0
+    if (roll_rule[0] == '-') and (roll_rule[-1] in ['b', 'd']):
+        xdf['roll_date'] = xdf['expiry'].apply(lambda x: misc.day_shift(x, roll_rule, hols = misc.CHN_Holidays))
+        xdf = xdf[xdf.date <= xdf['roll_date']]
+    else:
+        xdf['roll_date'] = xdf['expiry']
+    if contract_filter:
+        flag = contract_filter(xdf, prodcode)
+        xdf = xdf[flag]
+    df = pd.pivot_table(xdf, index = 'date', columns = 'expiry', values = 'instID', aggfunc = 'first')
+    df1 = df.apply(lambda x: pd.Series(x.dropna().values), axis=1)
+    df1 = df1.reset_index()
+    col_df = df1[['date', n-1]].rename(columns = {n-1: 'instID'})
+    if len(col_df[col_df['instID'].isna()])> 0:
+        if fill_cont:
+            col_df = col_df.fillna(method = 'ffill')
+        else:
+            raise ValueError('There are nan values for product=%s, nearby=%s, roll=%s, dates = %s' % 
+            (prodcode, str(n), roll_rule, col_df[col_df['instID'].isna()]['date']))
+    out_df = pd.merge(col_df, xdf,left_on = ['date', 'instID'], right_on=['date', 'instID'], how = 'left')
+    if shift_mode > 0:
+        cum_adj = out_df.loc[::-1, 'price_chg'].cumsum().shift(1).fillna(0)[::-1]
+        if shift_mode == 2:
+            adj_price = out_df[adj_field].iloc[-1]/np.exp(cum_adj)
+            out_df['shift'] = np.log(adj_price) - np.log(out_df[adj_field])
+        else:
+            adj_price = out_df[adj_field].iloc[-1] - cum_adj
+            out_df['shift'] = adj_price - out_df[adj_field]    
+
+        for cfield in calc_fields:
+            if shift_mode == 2:
+                out_df[cfield] = out_df[cfield] * np.exp(out_df['shift'])
+            else:
+                out_df[cfield] = out_df[cfield] + out_df['shift']
+    else:
+        out_df['shift'] = 0
+    out_df = out_df.set_index('date').rename(columns = {'instID': 'contract'})
+    return out_df
+
+# def _move_rows_np2(roll_index, col_idx, ds, nan_value = np.nan):
+#     print(ds)
+#     nds = ds.values
+#     len_ds = len(ds)
+#     len_cols = len(ds.columns)
+#     len_rollidx = len(roll_index)
+#     rollidx = roll_index.values
+#     col_index = col_idx.values
+#     for j in range(len_rollidx - 1, 0, -1):
+#         ri = rollidx[j-1]
+#         ci = col_index[j]
+#         if ri < 0:
+#             ri = 0
+#         np.copyto(nds[ri:len_ds, ci-1:len_cols -1], nds[ri:len_ds, ci:len_cols])
+#         nds[ri:len_ds, len_cols-1:len_cols] = nan_value
+#     ds[:] = nds
+#     print(ds)
+
+
+# def nearby(data_series, roll = None, fwd_expiries = None, clean_expiries = False, nan_value = np.nan, hols = 'CHN'):
+#     ds = data_series.copy(deep = True)
+#     if clean_expiries:
+#         process_expiry(ds, fwd_expiries)
+#     ds = ds.dropna(axis=0, how = 'all')
+#     ds = ds.dropna(axis=1, how = 'all')
+#     if ds.empty:
+#         return ds
+
+#     ds_index = ds.index
+#     is_forward_success = False
+#     if (roll is not None) and (fwd_expiries is not None):
+#         lastdt = pd.to_datetime(ds.index[-1:][0])
+#         slbl = ds.iloc[-1:].dropna(axis=1).columns
+#         first_contract = slbl[0]
+#         next_expiry = None
+#         for expiry in fwd_expiries:
+#             if expiry is not None:
+#                 if first_contract in expiry.columns:
+#                     if next_expiry is None:
+#                         next_expiry = pd.to_datetime(expiry[first_contract][0])
+#                     elif pd.to_datetime(expiry[first_contract][0]) < next_expiry:
+#                         next_expiry = pd.to_datetime(expiry[first_contract][0])
+#         if next_expiry is not None:
+#             edts = pd.date_range(start = lastdt.to_pydatetime() + pd.DateOffset(days = 1), 
+#                                 end = next_expiry.to_pydatetime() + pd.DateOffset(days = 20), 
+#                                 freq = 'B')
+#             hol = dates.get_holidays()
+#             fdts = edts.difference(edts.intersection(hol))
+#             newdts = fdts[fdts <= fdts[fdts > next_expiry][0]]
+#             newvals = pd.DataFrame(index = newdts)
+#             ds = ds.append(newvals)
+#             ds.loc[lastdt:] = ds.loc[lastdt:].fillna(method = 'pad')
+#             ds.reset_index(drop = True, inplace = True)
+#             ds.columns = list(range(0, len(ds.columns)))
+#             last_idx = ds[-1:].notnull.idxmax(axis = 1)
+#             ds.iloc[-1:, last_idx] = np.nan
+#             is_forward_success = True
+#         else:
+#             if roll is None:
+#                 roll = 0
+#             ds.reset_index(drop = True, inplace = True)
+#             ds.columns = list(range(0, len(ds.columns)))
+#     else:
+#         if roll is None:
+#             roll = 0
+#         ds.reset_index(drop = True, inplace = True)
+#         ds.columns = list(range(0, len(ds.columns)))            
     
-    roll = int(roll)    
-    roll_index = ds.iloc[::-1].notnull().idxmax()
-    max_roll_index = roll_index.idxmax()
-    if (roll_index[max_roll_index+1:] < roll_index[max_roll_index]).any():
-        print('warning: later contract is truncated...')
-    roll_index[max_roll_index:] = roll_index[max_roll_index]
-    col_index = ds.columns
-    full_series = roll_index[roll_index == len(ds) - 1]
-    full_series = full_series[1:]
-    roll_index = roll_index.drop(full_series.index)
-    col_index = col_index.difference(col_index.intersection(full_series.index))
-    roll_index = roll_index - roll + 1
-    print(roll_index, col_index)
-    _move_rows_np2(roll_index, col_index, ds, nan_value)
+#     roll = int(roll)    
+#     roll_index = ds.iloc[::-1].notnull().idxmax()
+#     max_roll_index = roll_index.idxmax()
+#     if (roll_index[max_roll_index+1:] < roll_index[max_roll_index]).any():
+#         print('warning: later contract is truncated...')
+#     roll_index[max_roll_index:] = roll_index[max_roll_index]
+#     col_index = ds.columns
+#     full_series = roll_index[roll_index == len(ds) - 1]
+#     full_series = full_series[1:]
+#     roll_index = roll_index.drop(full_series.index)
+#     col_index = col_index.difference(col_index.intersection(full_series.index))
+#     roll_index = roll_index - roll + 1
+#     print(roll_index, col_index)
+#     _move_rows_np2(roll_index, col_index, ds, nan_value)
 
-    if is_forward_success:
-        ds = ds.drop(ds[-len(newdts):].index)
+#     if is_forward_success:
+#         ds = ds.drop(ds[-len(newdts):].index)
 
-    ds.columns = [col for col in range(len(ds.columns))]
-    ds.index = ds_index
-    return ds
+#     ds.columns = [col for col in range(len(ds.columns))]
+#     ds.index = ds_index
+#     return ds
 
 
 def invert_dict(old_dict, return_flat = False):
@@ -155,10 +225,6 @@ def make_seasonal_df(ser, limit = 1, fill = False, weekly_dense = False):
         df = df.ffill(limit = 4)
     
     return df
-
-
-import pandas as pd
-from typing import Union, List
 
 
 def get_level_index(df: pd.DataFrame, level=Union[str, int]) -> int:
@@ -224,17 +290,6 @@ def fetch_df_by_index(
         return df.loc[
             pd.IndexSlice[idx_slc],
         ]
-
-
-def fetch_df_by_col(df: pd.DataFrame, col_set: Union[str, List[str]]) -> pd.DataFrame:
-    from .handler import DataHandler
-
-    if not isinstance(df.columns, pd.MultiIndex) or col_set == DataHandler.CS_RAW:
-        return df
-    elif col_set == DataHandler.CS_ALL:
-        return df.droplevel(axis=1, level=0)
-    else:
-        return df.loc(axis=1)[col_set]
 
 
 def convert_index_format(df: Union[pd.DataFrame, pd.Series], level: str = "datetime") -> Union[pd.DataFrame, pd.Series]:

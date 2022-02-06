@@ -143,7 +143,7 @@ def calc_pos_val(df, ref_date, lookback = 30, var_percentile = 95, use_contract 
             rr = '-20b'
         elif asset in ['ni']:
             rr = '-40b'
-        args = {'n': nb, 'roll_rule': rr, 'freq': 'd', 'need_shift': 2}
+        args = {'n': nb, 'roll_rule': rr, 'freq': 'd', 'shift_mode': 2}
         if use_contract:
             map_field = 'contract'
             inst_list.append([cont, 'fut_daily', 'instID', {}])
