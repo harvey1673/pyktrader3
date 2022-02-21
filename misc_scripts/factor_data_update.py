@@ -40,27 +40,29 @@ trade_cont_map = {'rb': ['rb2110', 'rb2201'], 'hc': ['hc2110', 'hc2201'], 'i': [
                   'ag': ['ag2112', 'ag2206'], 'au': ['au2112', 'au2206'], 
                   }
 
-sim_start_dict = {'c': datetime.date(2008, 10, 1), 'm': datetime.date(2010, 10, 1),
-                  'y': datetime.date(2010, 1, 1), 'l': datetime.date(2008, 1, 1), 'rb': datetime.date(2010, 1, 1),
-                  'p': datetime.date(2010, 1, 1), 'cu': datetime.date(2010, 1, 1), 'al': datetime.date(2010, 1, 1),
-                  'zn': datetime.date(2010, 1, 1), 'au': datetime.date(2010, 1, 1), 'v': datetime.date(2010, 1, 1),
-                  'a': datetime.date(2010, 1, 1), 'ru': datetime.date(2010, 1, 1), 'ag': datetime.date(2012, 7, 6),
-                  'i': datetime.date(2013, 12, 13), 'j': datetime.date(2012, 6, 1), 'jm': datetime.date(2013, 5, 24),
-                  'CF': datetime.date(2008, 1, 1), 'TA': datetime.date(2007, 2, 15),
-                  'PM': datetime.date(2012, 10, 1), 'RM': datetime.date(2013, 3, 16), 'SR': datetime.date(2006, 1, 6),
-                  'FG': datetime.date(2013, 2, 1), 'OI': datetime.date(2013, 6, 1), 'RI': datetime.date(2013, 6, 1),
-                  'WH': datetime.date(2014, 2, 1), 'pp': datetime.date(2014, 4, 28),
-                  'IF': datetime.date(2010, 5, 1), 'MA': datetime.date(2011, 12, 23), 'TF': datetime.date(2014, 4, 1),
-                  'IH': datetime.date(2015, 5, 1), 'IC': datetime.date(2015, 5, 1), 'cs': datetime.date(2015, 2, 17),
-                  'jd': datetime.date(2014, 1, 6), 'ni': datetime.date(2015, 5, 26), 'sn': datetime.date(2017, 4, 1),
-                  'ZC': datetime.date(2014, 5, 1), 'hc': datetime.date(2016, 4, 1), 'SM': datetime.date(2017, 1, 1),
-                  'SF': datetime.date(2017, 5, 17), 'CY': datetime.date(2017, 7, 17), 'AP': datetime.date(2018, 2, 26),
-                  'TS': datetime.date(2018, 8, 17), 'fu': datetime.date(2018, 7, 16), 'sc': datetime.date(2018, 5, 25),
-                  'b': datetime.date(2017, 12, 26), 'pb': datetime.date(2016, 7, 1), 'bu': datetime.date(2015, 11, 1),
-                  'T': datetime.date(2015, 6, 1), 'ss': datetime.date(2020, 4, 1), 'sp': datetime.date(2019, 1, 24),
-                  'CJ': datetime.date(2019, 8, 1), 'UR': datetime.date(2019, 8, 9), 'SA': datetime.date(2019, 12, 9),
-                  'eb': datetime.date(2019, 12, 1), 'eg': datetime.date(2019, 2, 13), 'rr': datetime.date(2019, 8, 19),
-                  'pg': datetime.date(2020, 4, 1), 'lu': datetime.date(2020, 8, 1), }
+sim_start_dict = {'c': datetime.date(2011, 1, 1), 'm': datetime.date(2011, 1, 1),
+                  'y': datetime.date(2011, 1, 1), 'l': datetime.date(2011, 1, 1), 'rb': datetime.date(2011, 1, 1),
+                  'p': datetime.date(2011, 1, 1), 'cu': datetime.date(2011, 1, 1), 'al': datetime.date(2011, 1, 1),
+                  'zn': datetime.date(2011, 1, 1), 'au': datetime.date(2011, 1, 1), 'v': datetime.date(2011, 1, 1),
+                  'a': datetime.date(2011, 1, 1), 'ru': datetime.date(2011, 1, 1), 'ag': datetime.date(2012, 6, 1),
+                  'i': datetime.date(2014, 1, 1), 'j': datetime.date(2012, 6, 1), 'jm': datetime.date(2013, 7, 1),
+                  'CF': datetime.date(2012, 5, 1), 'TA': datetime.date(2012, 4, 15),
+                  'PM': datetime.date(2013, 10, 1), 'RM': datetime.date(2013, 1, 1), 'SR': datetime.date(2013, 1, 1),
+                  'FG': datetime.date(2013, 1, 1), 'OI': datetime.date(2013, 5, 1), 'RI': datetime.date(2013, 1, 1),
+                  'WH': datetime.date(2014, 5, 1), 'pp': datetime.date(2014, 5, 1),
+                  'IF': datetime.date(2010, 5, 1), 'MA': datetime.date(2012, 1, 1), 'TF': datetime.date(2019, 6, 1),
+                  'IH': datetime.date(2015, 5, 1), 'IC': datetime.date(2015, 5, 1), 'cs': datetime.date(2015, 2, 1),
+                  'jd': datetime.date(2014, 5, 1), 'ni': datetime.date(2015, 9, 1), 'sn': datetime.date(2017, 5, 1),
+                  'ZC': datetime.date(2013, 11, 1), 'hc': datetime.date(2016, 4, 1), 'SM': datetime.date(2017, 1, 1),
+                  'SF': datetime.date(2017, 9, 1), 'CY': datetime.date(2017, 9, 1), 'AP': datetime.date(2018, 1, 1),
+                  'TS': datetime.date(2018, 9, 1), 'fu': datetime.date(2018, 9, 1), 'sc': datetime.date(2018, 8, 1),
+                  'b': datetime.date(2018, 1, 1), 'pb': datetime.date(2016, 7, 1), 'bu': datetime.date(2015, 9, 15),
+                  'T': datetime.date(2019, 4, 1), 'ss': datetime.date(2020, 5, 1), 'sp': datetime.date(2019, 5, 1),
+                  'CJ': datetime.date(2019, 8, 9), 'UR': datetime.date(2019, 8, 9), 'SA': datetime.date(2020, 1, 1),
+                  'eb': datetime.date(2020, 2, 1), 'eg': datetime.date(2019, 5, 1), 'rr': datetime.date(2019, 9, 1),
+                  'pg': datetime.date(2020, 9, 5), 'lu': datetime.date(2020, 10, 1), 'nr': datetime.date(2020,1,1),
+                  'lh': datetime.date(2021,5,1), 'PF': datetime.date(2021,1,1), 'PK': datetime.date(2021,4,1),
+                  }
 
 field_list = ['open', 'high', 'low', 'close', 'volume', 'openInterest', 'contract', 'shift']
 
@@ -96,9 +98,11 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule 
     shift_mode = 1
     freq = 'd'
     args = {'roll_rule': '-' + roll_rule, 'freq': freq, 'shift_mode': shift_mode, 'dbtbl_prefix': dbtbl_prefix}
-    base_args = {'roll_rule': '-' + roll_rule, 'freq': freq, 'shift_mode': shift_mode, 'dbtbl_prefix': dbtbl_prefix}
+    base_args = {'roll_rule': '-25b', 'freq': freq, 'shift_mode': shift_mode, 'dbtbl_prefix': dbtbl_prefix}
+    base2_args = {'roll_rule': '-40b', 'freq': freq, 'shift_mode': shift_mode}
+    sc_args = {'roll_rule': '-20b', 'freq': freq, 'shift_mode': shift_mode}
     eq_args = {'roll_rule': '-1b', 'freq': freq, 'shift_mode': shift_mode, 'dbtbl_prefix': dbtbl_prefix}
-    bond_args = {'roll_rule': '-' + roll_rule, 'freq': freq, 'shift_mode': shift_mode, 'dbtbl_prefix': dbtbl_prefix}
+    bond_args = {'roll_rule': '-20b', 'freq': freq, 'shift_mode': shift_mode, 'dbtbl_prefix': dbtbl_prefix}
     precious_args = {'roll_rule': '-25b', 'freq': freq, 'shift_mode': shift_mode, 'dbtbl_prefix': dbtbl_prefix}
 
     fact_config = {}
@@ -117,6 +121,10 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule 
             use_args = eq_args
         elif asset in ['cu', 'al', 'zn', 'pb', 'sn']:
             use_args = base_args
+        elif asset in ['ni']:
+            use_args = base2_args
+        elif asset in ['sc']:
+            use_args = sc_args            
         elif asset in bond_fut_mkts:
             use_args = bond_args
         elif asset in precious_metal_mkts:

@@ -650,7 +650,7 @@ def trading_hours(product, exch):
     if exch in ['SSE', 'SZE']:
         hrs = [(1530, 1730), (1900, 2100)]
     elif product in ['TF', 'T', 'TS']:
-        hrs = [(1515, 1730), (1900, 2115)]
+        hrs = [(1530, 1730), (1900, 2115)]
     elif product in ['IF', 'IH', 'IC']:
         hrs = [(1530, 1730), (1900, 2100)]
     else:
@@ -1118,6 +1118,8 @@ def cleanup_mindata(df, asset, index_col='datetime', skip_hl=False):
     if asset in ['IF', 'IH', 'IC']:
         cond = cond | ((xdf.index < datetime.datetime(2016, 1, 1, 15, 0, 0)) & (xdf.min_id >= 1515) & (xdf.min_id < 1530))
         cond = cond | ((xdf.index < datetime.datetime(2016, 1, 1, 15, 0, 0)) & (xdf.min_id >= 2100) & (xdf.min_id < 2115))
+    elif asset in ['T', 'TF', 'TS']:
+        cond = cond | ((xdf.index < datetime.datetime(2020, 7, 20, 0, 0, 0)) & (xdf.min_id >= 1515) & (xdf.min_id < 1530))        
     if asset in ['CF', 'CF_Opt', 'CY', 'SR', 'SR_Opt', 'RM', 'TA', 'MA', 'SA', 'OI', 'ZC', 'ZC_Opt', 'FG']:
         cond = cond | ((xdf.date < datetime.date(2019, 12, 12)) & (xdf.min_id >= 300) & (xdf.min_id < 530))
     if asset in product_code['DCE'] + product_code['SHFE'] + product_code['CZCE'] + product_code['INE']:

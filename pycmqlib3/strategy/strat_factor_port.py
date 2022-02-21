@@ -133,6 +133,8 @@ class FactorPortTrader(Strategy):
         for idx, (under, prodcode) in enumerate(zip(self.underliers, self.prod_list)):            
             if prodcode == 'CJ':
                 self.target_pos[idx] = int((net_pos[prodcode] * self.vol_weight[idx]/4 + (0.5 if net_pos[prodcode]>0 else -0.5)))*4
+            elif prodcode == 'ZC':
+                self.target_pos[idx] = int((net_pos[prodcode] * self.vol_weight[idx]/2 + (0.5 if net_pos[prodcode]>0 else -0.5)))*2
             else:
                 self.target_pos[idx] = int(net_pos[prodcode] * self.vol_weight[idx] + (0.5 if net_pos[prodcode]>0 else -0.5))
         self.save_state()        
