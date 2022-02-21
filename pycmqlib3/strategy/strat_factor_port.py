@@ -37,6 +37,7 @@ class FactorPortTrader(Strategy):
         self.fact_data = {}
         self.pos_summary = pd.DataFrame()
         self.tick_base = [0.0] * numAssets
+        self.min_trade_size = [1] * numAssets
         self.threshold = int(numAssets * 0.8)
 
     def save_local_variables(self, file_writer):
@@ -160,7 +161,13 @@ class FactorPortTrader(Strategy):
 
     def initialize(self):
         for idx, underlier in enumerate(self.underliers):
-            self.tick_base[idx] = max([self.agent.instruments[inst].tick_base for inst in underlier])
+            self.tick_base[idx] = max([self.agent.instruments[inst].tick_base for inst in underlier])            
+            if self.prod_list[idx] in ['CJ']:
+                self.min_trade_size[idx] = 4
+            elif self.prod_list[idx] in ['ZC']:
+                self.min_trade_size[idx] = 2
+            else:
+                self.min_trade_size[idx] = 1
             xdata = self.agent.day_data[self.underlying[idx].name].data
             self.vol_weight[idx] = self.pos_scaler/xdata[self.scaling_field][-1]/self.conv_f[underlier[0]]
         for idx in self.positions:
@@ -209,7 +216,7 @@ class FactorPortTrader(Strategy):
                     save_status = True
                 else:
                     curr_pos = curr_positions[0].target_pos
-            if (curr_pos == 0) and (new_pos != 0):
+            if (curr_pos == 0) and (abs(new_pos)>=self.min_trade_size[idx]):
                 msg = '%s to open position for inst = %s, pos=%s' % \
                       (self.name, underlier, new_pos)
                 dir = 1 if new_pos > 0 else -1
@@ -218,7 +225,7 @@ class FactorPortTrader(Strategy):
                 save_status = True
             else:
                 trade_volume = new_pos - curr_pos
-                if trade_volume != 0:
+                if (abs(trade_volume)>=self.min_trade_size[idx]):
                     msg = '%s to modify position for inst = %s, old_pos=%s, new_pos = %s' % \
                           (self.name, underlier, curr_pos, new_pos)
                     self.update_tradepos(idx, self.curr_prices[idx], trade_volume)

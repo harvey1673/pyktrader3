@@ -238,7 +238,7 @@ class FactorPortGui(StratGui):
     def __init__(self, strat, app, master):
         StratGui.__init__(self, strat, app, master)
         self.entry_fields = ['PosScaler', 'IsDisabled']
-        self.status_fields = ['VolWeight', 'CurrPos', 'TargetPos', 'CurrPrices']
+        self.status_fields = ['VolWeight', 'CurrPos', 'TargetPos', 'CurrPrices', 'MinTradeSize']
         self.button_fields = [('LoadFact', 'load_fact_data'), ('TradeTarget', 'trade_target_pos')]
         self.shared_fields = ['IsDisabled', 'PosScaler', 'LoadFact', 'TradeTarget']
         self.field_types = {'RunFlag': 'int',
@@ -249,6 +249,7 @@ class FactorPortGui(StratGui):
                             'CurrPrices': 'float',
                             'PosScaler': 'float',
                             'IsDisabled': 'bool',
+                            'MinTradeSize': 'int',
                             }
 
 class DTSplitChanGui(StratGui):
