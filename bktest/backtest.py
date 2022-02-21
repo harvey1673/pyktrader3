@@ -460,12 +460,12 @@ def sortino_ratio(ts, need_diff = True):
 
 def calmar_ratio(ts, need_diff = True):
     if need_diff:
-        max_dd, _ = max_drawdown2(ts)
+        max_dd, _ = max_drawdown(ts)
         daily_pnl = ts.diff(1).dropna()
     else:        
         daily_pnl = ts
         cum_pnl = daily_pnl.cumsum()
-        max_dd, _ = max_drawdown2(cum_pnl)
+        max_dd, _ = max_drawdown(cum_pnl)
     if max_dd >=0:
         return np.nan
     else:
