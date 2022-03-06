@@ -31,7 +31,7 @@ class FactorPortTrader(Strategy):
         numAssets = len(self.underliers)
         self.prod_list = [''] * numAssets
         self.target_pos = [0] * numAssets
-        self.vol_weight = [1.0] * numAssets
+        self.vol_weight = [1.0] * numAssets        
         self.bar_update_record = set()
         self.fact_src = 'db.prod_fact'
         self.fact_data = {}
@@ -133,11 +133,11 @@ class FactorPortTrader(Strategy):
         net_pos = self.pos_summary.sum()           
         for idx, (under, prodcode) in enumerate(zip(self.underliers, self.prod_list)):            
             if prodcode == 'CJ':
-                self.target_pos[idx] = int((net_pos[prodcode] * self.vol_weight[idx]/4 + (0.5 if net_pos[prodcode]>0 else -0.5)))*4
+                self.target_pos[idx] = int((self.alloc_w[idx] * net_pos[prodcode] * self.vol_weight[idx]/4 + (0.5 if net_pos[prodcode]>0 else -0.5)))*4
             elif prodcode == 'ZC':
-                self.target_pos[idx] = int((net_pos[prodcode] * self.vol_weight[idx]/2 + (0.5 if net_pos[prodcode]>0 else -0.5)))*2
+                self.target_pos[idx] = int((self.alloc_w[idx] * net_pos[prodcode] * self.vol_weight[idx]/2 + (0.5 if net_pos[prodcode]>0 else -0.5)))*2
             else:
-                self.target_pos[idx] = int(net_pos[prodcode] * self.vol_weight[idx] + (0.5 if net_pos[prodcode]>0 else -0.5))
+                self.target_pos[idx] = int(self.alloc_w[idx] * net_pos[prodcode] * self.vol_weight[idx] + (0.5 if net_pos[prodcode]>0 else -0.5))
         self.save_state()        
 
     def register_func_freq(self):
