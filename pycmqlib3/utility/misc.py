@@ -1050,6 +1050,7 @@ def _contract_range(product, exch, cont_mth, start_date, end_date, tenor = '2y')
 def contract_range(product, exch, cont_mth, start_date, end_date):
     product_cont_map = {'ni': [datetime.date(2019, 5, 1), [1, 5, 9]],
                         'sn': [datetime.date(2020, 5, 1), [1, 5, 9]],
+                        'eg': [datetime.date(2021, 5, 1), [1, 5, 9]],
                         #'ZC': [datetime.date(2020, 9, 1), [1, 5, 9]],
                         }
     if product in product_cont_map:
