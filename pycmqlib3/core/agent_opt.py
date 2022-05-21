@@ -39,7 +39,7 @@ class OptAgentMixin(object):
             elif (day_shift(self.scur_day, '-1b') not in CHN_Holidays) and (inst.product in night_session_markets):
                     accr = 'COMN' + str(night_session_markets[inst.product])
             if prod not in volgrids:
-                volgrids[prod] = instrument.VolGrid(prod, accrual= accr, is_spot = is_spot, ccy = 'CNY')
+                volgrids[prod] = VolGrid(prod, accrual= accr, is_spot = is_spot, ccy = 'CNY')
             if expiry not in volgrids[prod].option_insts:
                 volgrids[prod].option_insts[expiry] = []
                 volgrids[prod].underlier[expiry] = inst.underlying
