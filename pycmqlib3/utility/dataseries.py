@@ -5,6 +5,14 @@ import datetime
 from pycmqlib3.utility import misc
 from pycmqlib3.utility.dbaccess import load_fut_by_product, prod_main_cont_exch
 
+
+def multislice_many(df, label_map):
+    idx_label_map = {idx: label_map[label] for idx, label in enumerate(df.columns.names) if label in label_map}
+    num_levels = len(df.columns.names)
+    idx_slice = tuple([idx_label_map.get(i, slice(None)) for i in range(num_levels)])
+    return df.loc[:, idx_slice]
+
+
 class DataSeriesError(Exception):
     def __init__(self, value):
         self.value = value

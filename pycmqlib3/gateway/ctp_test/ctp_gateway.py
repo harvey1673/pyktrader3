@@ -104,7 +104,7 @@ class CtpGateway(GrossGateway):
         pos_args = {}
         if inst.name in self.intraday_close_ratio:
             pos_args['intraday_close_ratio'] = self.intraday_close_ratio[inst.name]
-        if inst.exchange == 'SHFE':
+        if inst.exchange in ['SHFE', 'INE']:
             pos_cls = SHFEPosition
         else:
             pos_cls = GrossPosition
