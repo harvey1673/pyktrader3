@@ -104,7 +104,7 @@ class CtpGateway(GrossGateway):
         pos_args = {}
         if inst.name in self.intraday_close_ratio:
             pos_args['intraday_close_ratio'] = self.intraday_close_ratio[inst.name]
-        if inst.exchange == 'SHFE':
+        if inst.exchange in ['SHFE', 'INE']:
             pos_cls = SHFEPosition
         else:
             pos_cls = GrossPosition
@@ -161,29 +161,21 @@ class CtpGateway(GrossGateway):
     def check_connection(self):
         """检查状态"""        
         qry_status = False
-        if not self.mdApi.connect_status:
+        if not (self.mdApi.connect_status and self.mdApi.login_status):
             self.mdApi.connect()
             qry_status = True
             self.on_log("CTP MD connect_status = False, reconnecting ...", level = logging.WARNING)
-        elif not self.mdApi.login_status:
-            self.mdApi.login()
-            qry_status = True
-            self.on_log("CTP MD login_status = False, re-login ...", level = logging.WARNING)
-        elif not self.tdApi.connect_status: 
+        elif not (self.tdApi.connect_status): 
             self.tdApi.connect()
             qry_status = True
             self.on_log("CTP TD connect_status = False, reconnecting ...", level = logging.WARNING)
-        elif not self.tdApi.auth_status:
+        elif not (self.tdApi.auth_status and self.tdApi.login_status):
             self.tdApi.authenticate()
             qry_status = True
-            self.on_log("CTP TD auth_status = False, re-authenticating ...", level = logging.WARNING)
-        elif not self.tdApi.login_status:
-            self.tdApi.login()
-            qry_status = True
-            self.on_log("CTP TD login_status = False, re-logining ...", level = logging.WARNING)
+            self.on_log("CTP TD auth_status = False, re-authenticating ...", level = logging.WARNING)            
         if qry_status:
-            time.sleep(30)
             self.on_log("CTP gateway will check connection in 30 sec.", level = logging.INFO)
+            time.sleep(30)            
             self.qry_commands.append(self.check_connection)
         else:
             self.on_log("CTP gateway TD|MD are both connected.", level = logging.INFO)
@@ -197,13 +189,13 @@ class CtpGateway(GrossGateway):
         inst = self.agent.instruments[iorder.instrument]
         # 上期所不支持市价单
         if (iorder.price_type == OrderType.MARKET):
-            if (iorder.exchange in ['SHFE', 'CFFEX']):
+            if (iorder.exchange in ['SHFE', 'CFFEX', 'INE']):
                 iorder.price_type = OrderType.LIMIT
                 if iorder.direction == Direction.LONG:
                     iorder.limit_price = inst.up_limit
                 else:
                     iorder.limit_price = inst.down_limit
-                self.on_log('sending limiting local_id=%s inst=%s for SHFE and CFFEX, change to limit order' % (iorder.local_id, inst.name), level = logging.DEBUG)
+                self.on_log('sending limiting local_id=%s inst=%s for SHFE, INE and CFFEX, change to limit order' % (iorder.local_id, inst.name), level = logging.DEBUG)
             else:
                 iorder.limit_price = 0.0
         self.tdApi.sendOrder(iorder)

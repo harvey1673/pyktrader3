@@ -441,7 +441,7 @@ class GrossGateway(Gateway):
         else:
             can_close = pos.can_close[1]
             can_yclose = pos.can_yclose[1]
-        is_shfe = (pos.instrument.exchange == 'SHFE')
+        is_shfe = (pos.instrument.exchange in ['SHFE', 'INE'])
         n_orders = order_num
         res = []
         if (can_close > 0) and (vol > 0) and ((n_orders > 1) or (can_close >= vol)):
