@@ -1,0 +1,1 @@
+{"class": "pycmqlib3.strategy.optionarb.OptionArbStrat", "config": {"data_func": [], "trade_valid_time": 600, "num_tick": 1, "name": "Opt_i", "future_conts": ["i2209"],"cont_mths": [202209], "strikes":[[640, 660, 680, 690, 700, 710, 720, 730, 740, 750, 760, 770, 780, 790, 800, 820, 840]], "assets": [], "exec_class": "ExecAlgoFixTimer", "is_disabled": true}}

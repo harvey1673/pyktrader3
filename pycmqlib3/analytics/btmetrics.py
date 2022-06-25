@@ -1,17 +1,23 @@
-import tstool
+from . import tstool
 import copy
 import pandas as pd
 import numpy as np
+import workdays
 from datetime import date, timedelta
+from pycmqlib3.utility.misc import get_first_day_of_month, Holiday_Map
+
 
 class MetricsBase(object):
-    def __init__(self, holdings, returns, portfolio_obj = None, limits = None, shift_holdings = 0, backtest = True):
+    def __init__(self, holdings, returns, portfolio_obj = None, limits = None, shift_holdings = 0, backtest = True, hols = 'CHN'):
+        holdings.index = pd.to_datetime(holdings.index)
+        returns.index = pd.to_datetime(returns.index)
         self.raw_holdings, self.raw_returns = holdings, returns
         self.holdings, self.returns = self._align_holding_returns(holdings, returns, limits, backtest)
         self.holdings = self.holdings.shift(shift_holdings)
         self.portfolio_obj = portfolio_obj
         self.date_range = self.holdings.index
         self.universe = self.holdings.columns
+        self.holidays = Holiday_Map.get(hols, [])
 
     def _align_holding_returns(self, holdings, returns, limits, backtest):
         import warnings
@@ -164,13 +170,12 @@ class MetricsBase(object):
         }
 
         return group_pnl
-
-    @staticmethod
-    def _business_day_in_month(date_index):
+    
+    def _business_day_in_month(self, date_index):
         new_index = [None] * len(date_index)
         new_col = [None] * len(date_index)
-        for t, t_date in enumerate(date_index):
-            bd = dates.DateRange(dates.get_first_day_of_month(t_date), t_date).business_day_count()
+        for t, t_date in enumerate(date_index):            
+            bd = workdays.networkdays(get_first_day_of_month(t_date), t_date, self.holidays)
             if bd <= 4:
                 new_col[t] = '1-4'
                 new_index[t] = t_date

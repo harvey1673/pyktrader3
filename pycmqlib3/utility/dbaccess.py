@@ -726,7 +726,15 @@ def save_data(dbtable, df, flavor = 'mysql'):
         func = None
     df.to_sql(dbtable, con = conn, if_exists='append', index=False, method=func)
 
-def load_fut_by_product(product, exch, start_date ,end_date, db_table = 'fut_daily'):
+def load_fut_by_product(product, exch, start_date ,end_date, freq = 'd'):
+    if freq == 'd':
+        db_table = 'fut_daily'
+        columns = ['instID', 'date', 'open', 'high', 'low', 'close', 'volume', 'openInterest']
+        order_fields = ['instID', 'date',]
+    elif freq == 'm':
+        db_table = 'fut_min'
+        columns = ['instID', 'datetime', 'date', 'min_id', 'open', 'high', 'low', 'close', 'volume', 'openInterest']
+        order_fields = ['instID', 'date', 'min_id',]
     if product == 'MA':
         prod_keys = ['ME', 'MA']
     elif product == 'ZC':
@@ -739,15 +747,14 @@ def load_fut_by_product(product, exch, start_date ,end_date, db_table = 'fut_dai
             prod_key = f"{prod}____"
         else:
             prod_key = f'{prod}%'
-        cnx = connect(**dbconfig)
-        columns = ['instID', 'date', 'open', 'high', 'low', 'close', 'volume', 'openInterest']
+        cnx = connect(**dbconfig)        
         stmt = "select {variables} from {table} where instID like '{prod_key}'  ".format(\
                             prod_key = prod_key, \
                             variables=','.join(columns), table = db_table)
         stmt = stmt + "and date >='%s' " % start_date.strftime('%Y-%m-%d')
         stmt = stmt + "and date <='%s' " % end_date.strftime('%Y-%m-%d')
         stmt = stmt + "and exch = '%s' " % (exch)
-        stmt = stmt + "order by date, instID"    
+        stmt = stmt + "order by %s" % (','.join(order_fields))
         df = pd.io.sql.read_sql(stmt, cnx)
         out_df = out_df.append(df)
     if product == 'MA':        

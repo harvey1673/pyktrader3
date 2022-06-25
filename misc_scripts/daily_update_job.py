@@ -42,7 +42,7 @@ mixed_metal_mkts = ['rb', 'hc', 'i', 'j', 'jm', 'ru', 'FG', 'ZC', 'cu', 'al', 'z
 commod_mkts = ['rb', 'hc', 'i', 'j', 'jm', 'ru', 'FG', 'ZC', 'cu', 'al', 'zn', 'pb', 'ni', 'sn', \
                'l', 'pp', 'v', 'TA', 'sc', 'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'CF', 'jd', \
                'AP', 'SM', 'SF', 'ss', 'CJ', 'UR', 'eb', 'eg', 'pg', 'T', 'PK', 'PF', 'lh', \
-               'MA', 'SR', 'cs', ]
+               'MA', 'SR', 'cs', 'TF', 'lu', 'fu']
 
 scenarios_all = [ \
              ('tscarry', 'ryieldnmb', 2.8, 1, 120, 1, (None, {}, ''), [0.0, 0.0]), \
@@ -98,7 +98,7 @@ def run_update(tday = datetime.date.today()):
     edate = min(datetime.date.today(), tday)    
     if not is_workday(edate, 'CHN'):
         edate = day_shift(edate, '-1b', CHN_Holidays)
-    sdate = day_shift(edate, '-1b', CHN_Holidays)
+    sdate = day_shift(edate, '-3b', CHN_Holidays)
     filename = "C:\\dev\\data\\dailyjob_status_%s.json" % edate.strftime("%Y%m%d")
     try:
         with open(filename, 'r') as f:

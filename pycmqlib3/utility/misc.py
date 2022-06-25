@@ -641,6 +641,10 @@ def filter_main_cont(sdate, filter=False):
             main_insts.append(inst)
     return main_insts
 
+def get_first_day_of_month(t_date):
+    return t_date.replace(day=1)
+    
+
 def trading_hours(product, exch):
     if product in ['sc']:
         hrs = [(1500, 1730), (1930, 2100)]
@@ -798,7 +802,7 @@ def get_opt_expiry(fut_inst, cont_mth, exch=''):
         else:
             expiry_month = datetime.date(cont_yr - 1, 12, 1)
         expiry = workdays.workday(workdays.workday(expiry_month, -1, CHN_Holidays), 3, CHN_Holidays)
-    elif product in ['m', 'c', 'i', 'pg']:
+    elif product in ['m', 'c', 'i', 'pg', 'l', 'pp', 'v']:
         if cont_mth > 1:
             expiry_month = datetime.date(cont_yr, cont_mth - 1, 1) + datetime.timedelta(days=-1)
         else:
