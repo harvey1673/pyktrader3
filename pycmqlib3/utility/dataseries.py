@@ -53,15 +53,18 @@ def nearby(prodcode, n = 1, start_date = None, end_date = None,
            contract_filter = prod_main_cont_filter, fill_cont = False,
           ):
     exch = misc.prod2exch(prodcode)
-    xdf = load_fut_by_product(prodcode, exch, start_date ,end_date)
+    xdf = load_fut_by_product(prodcode, exch, start_date ,end_date, freq = freq)
     xdf['expiry'] = xdf['instID'].apply(lambda x: misc.contract_expiry(x, hols = misc.CHN_Holidays))
     xdf['month'] = xdf['instID'].apply(lambda x: misc.inst2contmth(x)%100)
-    xdf = xdf.sort_values(['instID', 'date'])
-
+    if freq == 'd':
+        index_cols = ['date']        
+    elif freq == 'm':
+        index_cols = ['date', 'min_id']
+    xdf = xdf.sort_values(['instID'] + index_cols)
     if shift_mode == 2:
         xdf['price_chg'] = np.log(xdf[adj_field]).diff()
     else:
-        xdf['price_chg'] = xdf[adj_field].diff()        
+        xdf['price_chg'] = xdf[adj_field].diff()      
     xdf.loc[xdf['instID']!=xdf['instID'].shift(1), 'price_chg'] = 0
     if (roll_rule[0] == '-') and (roll_rule[-1] in ['b', 'd']):
         xdf['roll_date'] = xdf['expiry'].apply(lambda x: misc.day_shift(x, roll_rule, hols = misc.CHN_Holidays))
@@ -71,7 +74,7 @@ def nearby(prodcode, n = 1, start_date = None, end_date = None,
     if contract_filter:
         flag = contract_filter(xdf, prodcode)
         xdf = xdf[flag]
-    df = pd.pivot_table(xdf, index = 'date', columns = 'expiry', values = 'instID', aggfunc = 'first')
+    df = pd.pivot_table(xdf, index = index_cols, columns = 'expiry', values = 'instID', aggfunc = 'first')
     df1 = df.apply(lambda x: pd.Series(x.dropna().values), axis=1)
     df1 = df1.reset_index()
     col_df = df1[['date', n-1]].rename(columns = {n-1: 'instID'})

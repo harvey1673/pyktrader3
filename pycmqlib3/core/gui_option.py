@@ -93,8 +93,12 @@ class OptVolgridGui(object):
                 self.stringvars['NewVolParam'][expiry][vlbl] = get_type_var('float')
                 self.stringvars['NewVolParam'][expiry][vlbl].set(keepdigit(val,4))
             fwd = vn.fwd_()
-            for strike in strikes:
+            for idx, strike in enumerate(strikes):
                 self.otype_selector[expiry][strike] = tk.StringVar()
+                if idx < len(strikes) * 0.4:
+                    self.otype_selector[expiry][strike].set(self.combobox_choices[4])
+                else:
+                    self.otype_selector[expiry][strike].set(self.combobox_choices[1])
                 self.strike_selector[expiry][strike] = tk.BooleanVar()
                 iv = self.volgrid.volnode[expiry].GetVolByStrike(strike)
                 self.stringvars['Selected'][expiry][strike] = get_type_var('float')
@@ -107,7 +111,7 @@ class OptVolgridGui(object):
                 self.stringvars['DiffVol'][expiry][strike].set(0.0)
         self.stringvars['FigSetup'] = dict([(exp, {'YLow': get_type_var('float'), 'YHigh': get_type_var('float')}) for exp in self.expiries])
         for exp in self.expiries:
-            for key, ylim in zip(['YLow', 'YHigh'], [0.1, 0.8]):
+            for key, ylim in zip(['YLow', 'YHigh'], [0.1, 0.6]):
                 self.stringvars['FigSetup'][exp][key].set(ylim)
 
     def set_selected_vol(self, expiry, strike):
@@ -184,8 +188,8 @@ class OptVolgridGui(object):
                     tkinter.ttk.Label(scr_frame.frame, textvariable = self.stringvars[op_inst][vlbl]).grid(row=row_id+idy, column=idx)
             idx += 1
             cbbox = tkinter.ttk.Combobox(scr_frame.frame, textvariable = self.otype_selector[expiry][strike], \
-                         values = self.combobox_choices, width = 5)
-            cbbox.current(1)
+                         values = self.combobox_choices, width = 6)
+            # cbbox.current(1)
             cbbox.grid(row=row_id+idy, column = idx)
             idx += 1
             tkinter.ttk.Checkbutton(scr_frame.frame, variable = self.strike_selector[expiry][strike], \
@@ -208,7 +212,9 @@ class OptVolgridGui(object):
         tk.Label(scr_frame.frame, textvariable = self.stringvars['ArbStatus'][expiry], width=7).grid(row=row_start - 3, column=15)
         self.vm_figure[expiry] = Figure(figsize=(5,4), facecolor='w', edgecolor='k')
         self.vm_ax[expiry] = self.vm_figure[expiry].add_subplot(111)
-        self.vm_ax[expiry].set_ylim(0.05, 0.8)
+        self.vm_ax[expiry].set_ylim(
+            self.stringvars['FigSetup'][expiry]['YLow'].get(), 
+            self.stringvars['FigSetup'][expiry]['YHigh'].get())
         for field, lstyle in zip(['Selected', 'TheoryVol', 'NewVol'], ['y-', 'b-', 'r-']):
             xdata, ydata = self.get_stringvar_field(expiry, field)
             self.vm_lines[expiry][field], = self.vm_ax[expiry].plot(xdata, ydata, lstyle)

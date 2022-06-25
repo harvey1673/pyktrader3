@@ -1,0 +1,1 @@
+{"class": "pycmqlib3.strategy.optionarb.OptionArbStrat", "config": {"data_func": [], "trade_valid_time": 600, "num_tick": 1, "name": "Opt_TA", "future_conts": ["TA209"],"cont_mths": [202209], "strikes":[[6000, 6100, 6200, 6300, 6400, 6500, 6600, 6700, 6800, 6900, 7000, 7100, 7200, 7300,7400, 7500]], "assets": [], "exec_class": "ExecAlgoFixTimer", "is_disabled": true}}
