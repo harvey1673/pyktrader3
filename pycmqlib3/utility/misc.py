@@ -139,7 +139,7 @@ Holiday_Map = { 'CHN': CHN_Holidays, 'PLIO': PLIO_Holidays}
 
 product_code = {'SHFE': ['cu', 'cu_Opt', 'al', 'zn', 'pb', 'wr', 'rb', 'fu', 'ru', 'ru_Opt', \
                          'bu', 'hc', 'ag', 'au', 'au_Opt', 'sn', 'ni', 'sp', 'ss'],
-                'CFFEX': ['IF', 'TF', 'IO_Opt', 'T', 'TS', 'IH', 'IC'],
+                'CFFEX': ['IF', 'TF', 'IO_Opt', 'T', 'TS', 'IH', 'IC', 'IM', 'MO_Opt',],
                 'DCE': ['c', 'c_Opt', 'cs', 'j', 'jd', 'a', 'b', 'm', 'm_Opt', 'y', 'p', \
                         'l', 'v', 'pp', 'l_Opt', 'v_Opt', 'pp_Opt', \
                         'jm', 'i', 'i_Opt', 'fb', 'bb', 'eg', 'rr', 'eb', 'pg', 'pg_Opt', 'lh'],
@@ -159,7 +159,7 @@ CHN_Stock_Exch = {
 option_market_products = ['m_Opt', 'i_Opt', 'c_Opt', 'pg_Opt', 'l_Opt', 'pp_Opt', 'v_Opt', \
                           'SR_Opt', 'CF_Opt', 'TA_Opt', 'MA_Opt', 'RM_Opt', 'ZC_Opt',\
                           'cu_Opt', 'ru_Opt', 'au_Opt'\
-                          'ETF_Opt', 'IO_Opt', ]
+                          'ETF_Opt', 'IO_Opt', 'MO_Opt',]
 
 night_session_markets = {'cu': 1,
                          'cu_Opt': 1,
@@ -331,6 +331,8 @@ product_class_map = {'zn': ('Ind', "BaseMetal"),
                    'IF': ('Macro', 'Equity'),
                    'IH': ('Macro', 'Equity'),
                    'IC': ('Macro', 'Equity'),
+                   'IM': ('Macro', 'Equity'),
+                   'MO_Opt': ('Macro', 'Equity'),
                    'TF': ('Macro', 'Bond'),
                    'T': ('Macro', 'Bond'),
                    'TS': ('Macro', 'Bond'),
@@ -424,10 +426,12 @@ product_lotsize = {'zn': 5,
                    'IF': 300,
                    'IH': 300,
                    'IC': 200,
+                   'IM': 200,
                    'TF': 10000,
                    'T': 10000,
                    'TS': 10000,
                    'IO_Opt': 100,
+                   'MO_Opt': 100,
                    'sc': 1000,
                    'sc_Opt': 1000,
                    'lu': 10,
@@ -516,10 +520,12 @@ product_ticksize = {'zn': 5,
                     'IF': 0.2,
                     'IH': 0.2,
                     'IC': 0.2,
+                    'IM': 0.2,
                     'TF': 0.005,
                     'TS': 0.005,
                     'T': 0.005,
-                    'IO_Opt': 0.1,
+                    'IO_Opt': 0.2,
+                    'MO_Opt': 0.2,
                     'sc': 0.1,
                     'sc_Opt': 0.05,
                     'lu': 1.0,
@@ -669,7 +675,7 @@ def trading_hours(product, exch):
         hrs = [(1530, 1730), (1900, 2100)]
     elif product in ['TF', 'T', 'TS']:
         hrs = [(1530, 1730), (1900, 2115)]
-    elif product in ['IF', 'IH', 'IC']:
+    elif product in ['IF', 'IH', 'IC', 'IM', 'IO_Opt', 'MO_Opt',]:
         hrs = [(1530, 1730), (1900, 2100)]
     else:
         if product in night_session_markets:
@@ -797,6 +803,8 @@ def get_opt_name(fut_inst, otype, strike):
     exch = inst2exch(instID)
     if instID[:2] == "IF":
         instID = instID.replace('IF', 'IO')
+    elif instID[:2] == "IM":
+        instID = instID.replace('IM', 'MO')
     if exch in ['CZCE', 'SHFE']:
         instID = instID + otype + str(int(strike))
     else:
@@ -816,7 +824,7 @@ def get_opt_expiry(fut_inst, cont_mth, exch=''):
             nbweeks = 3
         expiry = expiry_month + datetime.timedelta(days=nbweeks * 7 - wkday + 1)
         expiry = workdays.workday(expiry, 1, CHN_Holidays)
-    elif product in ['IF']:
+    elif product in ['IF', 'IM',]:
         nbweeks = 2
         if wkday >= 5:
             nbweeks = 3
@@ -1119,7 +1127,7 @@ def get_asset_tradehrs(asset):
         hrs = [(1500, 1730), (1930, 2100)]
     else:
         hrs = [(1500, 1615), (1630, 1730), (1930, 2100)]
-    if (exch in ['SSE', 'SZE']) or (asset in ['IF', 'IC', 'IH']):
+    if (exch in ['SSE', 'SZE']) or (asset in ['IF', 'IC', 'IH', 'IM', 'IO_Opt', 'MO_Opt']):
         hrs = [(1530, 1730), (1900, 2100)]
     elif asset in ['TF', 'T', 'TS']:
         hrs = [(1515, 1730), (1900, 2115)]
@@ -1159,7 +1167,7 @@ def cleanup_mindata(df, asset, index_col='datetime', skip_hl=False):
         cond = cond | (( xdf.date <= datetime.date(2019, 3, 29)) & (xdf.date >= datetime.date(2015, 5, 12)) & (xdf.min_id >= 300) & (xdf.min_id < 530))
     if asset in ['rb', 'hc', 'bu']:
         cond = cond | ((xdf.date < datetime.date(2016, 5, 1)) & (xdf.min_id >= 300) & (xdf.min_id < 700))
-    if asset in ['IF', 'IH', 'IC']:
+    if asset in ['IF', 'IH', 'IC', ]:
         cond = cond | ((xdf.index < datetime.datetime(2016, 1, 1, 15, 0, 0)) & (xdf.min_id >= 1515) & (xdf.min_id < 1530))
         cond = cond | ((xdf.index < datetime.datetime(2016, 1, 1, 15, 0, 0)) & (xdf.min_id >= 2100) & (xdf.min_id < 2115))
     elif asset in ['T', 'TF', 'TS']:
