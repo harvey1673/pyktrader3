@@ -100,16 +100,16 @@ class MetricsBase(object):
             cumpnl = df.cumsum()
         return cumpnl
 
-    def _calculate_pnl_stats(self, holdings, shift = 0, use_log_returns = False):
+    def _calculate_pnl_stats(self, holdings, shift=0, use_log_returns=False):
         asset_pnl = self._lagged_asset_pnl(holdings=holdings, shift=shift)
-        portfolio_pnl = self._lagged_portfolio_pnl(holdings = holdings, shift = shift)
-        portfolio_sharpe_all = self._calculate_sharpe(portfolio_pnl, fl = True)
-        asset_sharpe_stats = asset_pnl.apply(lambda x: self._calculate_sharpe(x, fl = True), axis = 0)
+        portfolio_pnl = self._lagged_portfolio_pnl(holdings=holdings, shift=shift)
+        portfolio_sharpe_all = self._calculate_sharpe(portfolio_pnl, fl=True)
+        asset_sharpe_stats = asset_pnl.apply(lambda x: self._calculate_sharpe(x, fl=True), axis=0)
         pnl_stats = {
             'asset_pnl': asset_pnl,
             'asset_cumpnl': self._cumpnl(asset_pnl, use_log_returns=use_log_returns),
-            'portfolio_pnl': portfolio_pnl.to_frame(name = 'total'),
-            'portfolio_cumpnl': self._cumpnl(portfolio_pnl, use_log_returns=use_log_returns).to_frame(name = 'total'),
+            'portfolio_pnl': portfolio_pnl.to_frame(name='total'),
+            'portfolio_cumpnl': self._cumpnl(portfolio_pnl, use_log_returns=use_log_returns).to_frame(name='total'),
             'sharpe': portfolio_sharpe_all,
             'asset_sharpe_stats': asset_sharpe_stats,
         }
@@ -123,33 +123,31 @@ class MetricsBase(object):
     def calculate_pnl_stats(self, **kwargs):
         return self._calculate_pnl_stats(holdings=self.holdings, **kwargs)
 
-    def annual_pnl(self, use_log_returns = False):
-        portfolio_pnl = self._lagged_portfolio_pnl().to_frame(name = 'total')
+    def annual_pnl(self, use_log_returns=False):
+        portfolio_pnl = self._lagged_portfolio_pnl().to_frame(name='total')
         portfolio_pnl['Year'] = portfolio_pnl.index.year
         portfolio_pnl.index = [i.replace(year=2016) for i in portfolio_pnl.index]
-        annual_pnl = portfolio_pnl.pivot(columns = 'Year', values = 'total')
+        annual_pnl = portfolio_pnl.pivot(columns='Year', values='total').fillna(0.0)
         annual_sharpe_stats = self._calculate_sharpe(annual_pnl)
-        
         group_pnl = {
             'years': annual_pnl.columns,
             'pnl': annual_pnl,
-            'cumlog_pnl': self._cumpnl(annual_pnl, use_log_returns = use_log_returns),
+            'cumlog_pnl': self._cumpnl(annual_pnl, use_log_returns=use_log_returns),
             'sharpe_stats': annual_sharpe_stats,
         }
 
         return group_pnl
 
-    def seasonal_pnl(self, use_log_returns = False):
+    def seasonal_pnl(self, use_log_returns=False):
         portfolio_pnl = self._lagged_portfolio_pnl().to_frame(name='total')
         portfolio_pnl['Month'] = portfolio_pnl.index.month
         portfolio_pnl.index = [i.replace(month=1) for i in portfolio_pnl.index]
-        seasonal_pnl = portfolio_pnl.pivot(columns = 'Month', values = 'total')
+        seasonal_pnl = portfolio_pnl.pivot(columns='Month', values='total').fillna(0.0)
         seasonal_stats = self._calculate_sharpe(seasonal_pnl)
-        
         group_pnl = {
             'years': list(set(self.holdings.index.year)),
             'pnl': seasonal_pnl,
-            'cumlog_pnl': self._cumpnl(seasonal_pnl, use_log_returns = use_log_returns, limits = 4),
+            'cumlog_pnl': self._cumpnl(seasonal_pnl, use_log_returns=use_log_returns, limits=4),
             'sharpe_stats': seasonal_stats,
         }
 
@@ -159,13 +157,12 @@ class MetricsBase(object):
         portfolio_pnl = self._lagged_portfolio_pnl().to_frame(name='total')
         portfolio_pnl['WeekDay'] = portfolio_pnl.index.weekday
         portfolio_pnl.index = [i-timedelta(days=i.weekday()) for i in portfolio_pnl.index]
-        weekday_pnl = portfolio_pnl.pivot(columns = 'WeekDay', values = 'total')
+        weekday_pnl = portfolio_pnl.pivot(columns='WeekDay', values='total').fillna(0.0)
         weekday_stats = self._calculate_sharpe(weekday_pnl)
-
         group_pnl = {
             'years': list(set(self.holdings.index.year)),
             'pnl': weekday_pnl,
-            'cumlog_pnl': self._cumpnl(weekday_pnl, use_log_returns = use_log_returns, limits = 4),
+            'cumlog_pnl': self._cumpnl(weekday_pnl, use_log_returns=use_log_returns, limits=4),
             'sharpe_stats': weekday_stats,
         }
 
@@ -214,20 +211,17 @@ class MetricsBase(object):
     def long_short_pnl(self, use_log_returns = False):
         long_holdings = copy.deepcopy(self.holdings)
         long_holdings[long_holdings < 0] = 0
-
         short_holdings = copy.deepcopy(self.holdings)
         short_holdings[short_holdings > 0] = 0
-
         long_short_pnl = {
             'total_pnl_stat': self._calculate_pnl_stats(holdings=self.holdings, use_log_returns=use_log_returns),
             'long_pnl_stat': self._calculate_pnl_stats(holdings=long_holdings, use_log_returns=use_log_returns),
             'short_pnl_stat': self._calculate_pnl_stats(holdings=short_holdings, use_log_returns=use_log_returns),
         }
-
         return long_short_pnl
 
-    def lead_lag(self, ll_limit_left = -20, ll_limit_right = 60, 
-                ll_sub_windows = [
+    def lead_lag(self, ll_limit_left=-20, ll_limit_right=60,
+                ll_sub_windows=[
                     (date(1980, 1, 1), date(1989, 12, 31)),
                     (date(1990, 1, 1), date(1999, 12, 31)),
                     (date(2000, 1, 1), date(2009, 12, 31)),
@@ -246,12 +240,11 @@ class MetricsBase(object):
         leadlag_stats = {
             'leadlag_sharpes': pd.DataFrame(leadlag_result),
         }
-
         return leadlag_stats
 
     # lagged/smoothed stats
-    def lagged_pnl(self, use_log_returns = False, lags = [1,2,5,10,20], shift_func=None):
-        lagged_pnl = pd.DataFrame(index = self.date_range, columns = lags, dtype = float)
+    def lagged_pnl(self, use_log_returns=False, lags=[1,2,5,10,20], shift_func=None):
+        lagged_pnl = pd.DataFrame(index=self.date_range, columns=lags, dtype = float)
 
         if shift_func is None:
             lagged_pnl = lagged_pnl.apply(lambda x: self._lagged_portfolio_pnl(shift=x.name), axis=0)
@@ -264,27 +257,24 @@ class MetricsBase(object):
                 params = shift_func.get('params', {})
                 shifted_holdings = func(self.holdings, **params)
                 lagged_pnl = shifted_holdings.multiply(self.returns).sum(axis=1, skipna = True).to_frame(name = 'total')
-                lagged_sharpes = self._calculate_sharpe(lagged_pnl)
+                lagged_sharpe = self._calculate_sharpe(lagged_pnl)
 
         portfolio_pnl_stats = {
             'pnl': lagged_pnl,
             'cumpnl': self._cumpnl(lagged_pnl, use_log_returns=use_log_returns),
-            'sharpe': lagged_sharpes,
+            'sharpe': lagged_sharpe,
         }
-
         return portfolio_pnl_stats
 
-    def smoothed_pnl(self, use_log_returns = False, smooth_hls = [1, 2, 5, 10, 20]):
-        smoothed_pnl = pd.DataFrame(index = self.date_range, columns = smooth_hls, dtype = float)
-        smoothed_pnl = smoothed_pnl.apply(lambda x: self._smoothed_portfolio_pnl(hl = x.name), axis=0)
+    def smoothed_pnl(self, use_log_returns=False, smooth_hls=[1, 2, 5, 10, 20]):
+        smoothed_pnl = pd.DataFrame(index=self.date_range, columns=smooth_hls, dtype=float)
+        smoothed_pnl = smoothed_pnl.apply(lambda x: self._smoothed_portfolio_pnl(hl=x.name), axis=0)
         smoothed_sharpes = self._calculate_sharpe(smoothed_pnl)
-
         portfolio_pnl_stats = {
             'pnl': smoothed_pnl,
             'cumpnl': self._cumpnl(smoothed_pnl, use_log_returns=use_log_returns),
             'sharpe': smoothed_sharpes,
         }
-
         return portfolio_pnl_stats
 
     def tilt_timing(self, tilt_rolling_window = 3 * tstool.PNL_BDAYS, use_log_returns = False):

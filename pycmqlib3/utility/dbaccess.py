@@ -45,6 +45,7 @@ deal_columns = ['status', 'internal_id', 'external_id', 'cpty', 'positions', \
                 'trader', 'sales', 'desk', 'business', 'portfolio', 'premium', 'product', 'reporting_ccy', \
                 'enter_date', 'last_date', 'commission', 'day1_comments']
 
+
 def get_proxy_server():
     user = sec_bits.PROXY_CREDENTIALS['user']
     passwd = sec_bits.PROXY_CREDENTIALS['passwd']
@@ -52,11 +53,13 @@ def get_proxy_server():
                 'https':'https://%s:%s@10.252.22.102:4200' % (user, passwd)}
     return server_dict
 
+
 def connect(**args):
     conn = sqlconn.connect(**args)
     if USE_DB_TYPE == 'sqlite3':
         conn.text_factory = sqlconn.OptimizedUnicode
     return conn
+
 
 def mysql_replace_into(table, conn, keys, data_iter):
     from sqlalchemy.dialects.mysql import insert
@@ -71,6 +74,7 @@ def mysql_replace_into(table, conn, keys, data_iter):
 
     data = [dict(zip(keys, row)) for row in data_iter]
     conn.execute(table.table.insert(replace_string=""), data)
+
 
 tick_field_rename_map = {
     'bid_price1': 'bidPrice1',
@@ -94,6 +98,8 @@ tick_field_rename_map = {
     'ask_price5': 'askPrice5',
     'ask_vol5': 'askVol5',
 }
+
+
 def tick2dict(tick):
     tick_dict = {}
     for idx, field in enumerate(agent_conf.tick_data_list):
@@ -106,6 +112,7 @@ def tick2dict(tick):
     tick_dict['msec'] = tick_dict['timestamp'].microsecond / 1000
     tick_dict['date'] =  tick_dict['timestamp'].date()
     return tick_dict
+
 
 def insert_tick_data(cnx, inst, tick, dbtable='fut_tick'):
     tick_columns = fut_tick_columns
@@ -120,6 +127,7 @@ def insert_tick_data(cnx, inst, tick, dbtable='fut_tick'):
     args = tuple([tick_dict[col] for col in tick_columns])
     cursor.execute(stmt, args)
     cnx.commit()
+
 
 def bulkinsert_tick_data(cnx, inst, tick_data, dbtable='fut_tick'):
     if len(tick_data) == 0:
@@ -140,6 +148,7 @@ def bulkinsert_tick_data(cnx, inst, tick_data, dbtable='fut_tick'):
     cursor.executemany(stmt, args)
     cnx.commit()
 
+
 def insert_min_data(cnx, inst, min_data, dbtable='fut_min', option='IGNORE'):
     cursor = cnx.cursor()
     exch = misc.inst2exch(inst)
@@ -152,6 +161,7 @@ def insert_min_data(cnx, inst, min_data, dbtable='fut_min', option='IGNORE'):
     args = tuple([inst, exch] + [min_data[col] for col in min_columns])
     cursor.execute(stmt, args)
     cnx.commit()
+
 
 def bulkinsert_min_data(cnx, inst, exch, rec_array, ldate, dbtable='fut_min', is_replace=False):
     cursor = cnx.cursor()
@@ -189,6 +199,7 @@ def bulkinsert_min_data(cnx, inst, exch, rec_array, ldate, dbtable='fut_min', is
         cursor.executemany(stmt, args)
     cnx.commit()
 
+
 def bulkinsert_daily_data(cnx, inst, exch, rec_array, ldate, dbtable='fut_daily', is_replace=False):
     cursor = cnx.cursor()
     if is_replace:
@@ -215,6 +226,7 @@ def bulkinsert_daily_data(cnx, inst, exch, rec_array, ldate, dbtable='fut_daily'
         cursor.executemany(stmt, args)
     cnx.commit()
 
+
 def bulkinsert_spot_data(cnx, df, is_replace = True, dbtable = 'spot_daily'):
     cursor = cnx.cursor()
     col_list = df.columns
@@ -235,6 +247,7 @@ def bulkinsert_spot_data(cnx, df, is_replace = True, dbtable = 'spot_daily'):
     if len(args) > 0:
         cursor.executemany(stmt, args)
     cnx.commit()
+
 
 def insert_daily_data(cnx, inst, daily_data, is_replace=False, dbtable='fut_daily'):
     cursor = cnx.cursor()
@@ -260,6 +273,7 @@ def insert_daily_data(cnx, inst, daily_data, is_replace=False, dbtable='fut_dail
         cnx.commit()
     except:
         print([inst, exch] + [(daily_data[col], type(daily_data[col])) for col in col_list])
+
 
 def insert_row_by_dict(cnx, dbtable, rowdict, is_replace=False):
     cursor = cnx.cursor()
@@ -290,6 +304,7 @@ def insert_row_by_dict(cnx, dbtable, rowdict, is_replace=False):
     cursor.execute(stmt, values)
     cnx.commit()
 
+
 def import_tick_from_file(dbtable, conn = None):
     inst_list = ['IF1406', 'IO1406-C-2300', 'IO1406-P-2300', 'IO1406-C-2250',
                  'IO1406-P-2250', 'IO1406-C-2200', 'IO1406-P-2200', 'IO1406-C-2150',
@@ -317,6 +332,7 @@ def import_tick_from_file(dbtable, conn = None):
     if conn == None:
         cnx.close()
 
+
 def insert_cont_data(cont, conn = None, is_replace = True):
     if conn == None:
         cnx = connect(**dbconfig)
@@ -343,6 +359,7 @@ def insert_cont_data(cont, conn = None, is_replace = True):
     if conn == None:
         cnx.close()
 
+
 def prod_main_cont_exch(prodcode, conn = None):
     if conn == None:
         cnx = connect(**dbconfig)
@@ -358,6 +375,7 @@ def prod_main_cont_exch(prodcode, conn = None):
     if conn == None:
         cnx.close()
     return cont_mth, exch
+
 
 def load_product_info(prod, conn = None):
     if conn == None:
@@ -380,6 +398,7 @@ def load_product_info(prod, conn = None):
     if conn == None:
         cnx.close()
     return out
+
 
 def load_stockopt_info(inst, conn = None):
     if conn == None:
@@ -404,6 +423,7 @@ def load_stockopt_info(inst, conn = None):
         cnx.close()
     return out
 
+
 def get_stockopt_map(underlying, cont_mths, strikes, conn = None):
     if conn == None:
         cnx = connect(**dbconfig)
@@ -421,6 +441,7 @@ def get_stockopt_map(underlying, cont_mths, strikes, conn = None):
     if conn == None:
         cnx.close()
     return out
+
 
 def update_contract_list_table(sdate, exch = ['DCE', 'CZCE', 'SHFE', 'CFFEX', 'INE'], default_margin = 0.08):
     conn = connect(**dbconfig)
@@ -443,6 +464,7 @@ def update_contract_list_table(sdate, exch = ['DCE', 'CZCE', 'SHFE', 'CFFEX', 'I
                 insert_cont_data(cont_data, conn, is_replace = False)
     conn.close()
 
+
 def load_alive_cont(sdate, conn = None):
     if conn == None:
         cnx = connect(**dbconfig)
@@ -463,6 +485,7 @@ def load_alive_cont(sdate, conn = None):
         cnx.close()
     return cont, pc
 
+
 def load_inst_marginrate(instID, conn = None):
     if conn == None:
         cnx = connect(**dbconfig)
@@ -477,6 +500,7 @@ def load_inst_marginrate(instID, conn = None):
     if conn == None:
         cnx.close()
     return out
+
 
 def load_min_data_to_df(cnx, dbtable, inst, d_start = None, d_end = None, minid_start=1, minid_end=2359, \
                         index_col='datetime', fields = 'open,high,low,close,volume,openInterest', shift_datetime = False):
@@ -508,6 +532,7 @@ def load_min_data_to_df(cnx, dbtable, inst, d_start = None, d_end = None, minid_
         df = df.set_index(index_col)
     return df
 
+
 def load_daily_data_to_df(cnx, dbtable, inst, d_start, d_end, index_col='date', field = 'instID', date_as_str = False):
     if 'fut_daily' in dbtable:
         inst_field = 'instID'
@@ -533,12 +558,14 @@ def load_daily_data_to_df(cnx, dbtable, inst, d_start, d_end, index_col='date', 
         df = df.set_index(index_col)
     return df
 
+
 def query_data_to_df(cnx, dbtable, filter, fields):
     stmt = "select {variables} from {table} where {filter} order by date".format(variables = fields,
                                                                                  table = dbtable,
                                                                                  filter = filter)
     df = pd.io.sql.read_sql(stmt, cnx)
     return df
+
 
 def load_fut_curve(cnx, prod_code, ref_date, dbtable = 'fut_daily', field = 'instID'):
     qry_str = '%'
@@ -553,6 +580,7 @@ def load_fut_curve(cnx, prod_code, ref_date, dbtable = 'fut_daily', field = 'ins
         df = df[df['prod_code'] == prod_code]
     return df
 
+
 def load_deal_data(cnx, dbtable = 'deal', book = 'BOF', strategy = '', deal_status = [2]):
     stmt = "select {variables} from {table} where book like '{book}' and strategy like '{strat}' ".format(\
                         table=dbtable, variables=','.join(deal_columns), \
@@ -565,6 +593,7 @@ def load_deal_data(cnx, dbtable = 'deal', book = 'BOF', strategy = '', deal_stat
     stmt = stmt + "order by internal_id"
     df = pd.io.sql.read_sql(stmt, cnx)
     return df
+
 
 def load_cmvol_curve(cnx, prod_code, ref_date, dbtable = 'cmvol_daily', field = 'cmvol'):
     stmt = "select {variables} from {table} where product_code like '{prod}%' ".format( \
@@ -592,6 +621,7 @@ def load_cmvol_curve(cnx, prod_code, ref_date, dbtable = 'cmvol_daily', field = 
                             'vol90': 'COMVolV90', }, inplace=True)
     return vol_tbl
 
+
 def load_cmdv_curve(cnx, fwd_index, spd_key, ref_date, dbtable = 'cmspdvol_daily', field = 'cmdv'):
     stmt = "select {variables} from {table} where fwd_index like '{fwd_index}%' and spd_key='{spd_key}' ".format( \
                                     variables=','.join(price_fields[field]), spd_key = spd_key, \
@@ -599,6 +629,7 @@ def load_cmdv_curve(cnx, fwd_index, spd_key, ref_date, dbtable = 'cmspdvol_daily
     stmt = stmt + "and date like '{refdate}%' order by expiry".format( refdate = ref_date)
     df = pd.io.sql.read_sql(stmt, cnx)
     return df
+
 
 def load_tick_to_df(cnx, dbtable, inst, d_start, d_end, start_tick=1500000, end_tick=2115000):
     tick_columns = fut_tick_columns
@@ -613,6 +644,7 @@ def load_tick_to_df(cnx, dbtable, inst, d_start, d_end, start_tick=1500000, end_
     stmt = stmt + "order by date, tick_id"
     df = pd.io.sql.read_sql(stmt, cnx)
     return df
+
 
 def load_tick_data(cnx, dbtable, insts, d_start, d_end):
     cursor = cnx.cursor()
@@ -635,9 +667,11 @@ def load_tick_data(cnx, dbtable, insts, d_start, d_end):
         all_ticks.append(tick)
     return all_ticks
 
+
 def insert_min_data_to_df(df, min_data):
     new_data = {key: min_data[key] for key in min_columns[1:]}
     df.loc[min_data['datetime']] = pd.Series(new_data)
+
 
 def insert_new_min_to_df(df, idx, min_data):
     need_update = True
@@ -655,10 +689,12 @@ def insert_new_min_to_df(df, idx, min_data):
         df.loc[idy] = pd.Series(new_min)
     return idy + 1
 
+
 def insert_daily_data_to_df(df, daily_data):
     if (daily_data['date'] not in df.index):
         new_data = {key: daily_data[key] for key in daily_columns[1:]}
         df.loc[daily_data['date']] = pd.Series(new_data)
+
 
 def get_daily_by_tick(inst, cur_date, start_tick=1500000, end_tick=2100000):
     df = load_tick_to_df('fut_tick', inst, cur_date, cur_date, start_tick, end_tick)
@@ -680,6 +716,7 @@ def get_daily_by_tick(inst, cur_date, start_tick=1500000, end_tick=2100000):
         ddata['openInterest'] = 0
     return ddata
 
+
 def load_agg_pos_from_db(start = datetime.date.today(), end = datetime.date.today(), strategy = ('SQP', 'SQP'), \
                          out_cols = ['position', 'pos_val', 'pos_bias', 'var95_30d'], db_table = "daily_position"):
     cnx = connect(**pos_dbconfig)
@@ -694,6 +731,7 @@ def load_agg_pos_from_db(start = datetime.date.today(), end = datetime.date.toda
     df['lot_size'] = df['product'].apply(lambda x: misc.product_lotsize[x])
     df['exchange'] = df['product'].apply(lambda x: misc.prod2exch(x))
     return df
+
 
 def load_factor_data(product_list, \
                      factor_list = [],\
@@ -713,6 +751,7 @@ def load_factor_data(product_list, \
     df = pd.io.sql.read_sql(stmt, cnx)
     return df
 
+
 def save_data(dbtable, df, flavor = 'mysql'):
     if flavor == 'mysql':
         conn = create_engine('mysql+mysqlconnector://{user}:{passwd}@{host}/{dbase}'.format( \
@@ -726,7 +765,12 @@ def save_data(dbtable, df, flavor = 'mysql'):
         func = None
     df.to_sql(dbtable, con = conn, if_exists='append', index=False, method=func)
 
-def load_fut_by_product(product, exch, start_date ,end_date, freq = 'd'):
+
+def load_fut_by_product(product, exch, start_date, end_date, freq = 'd'):
+    if end_date is None:
+        end_date = datetime.date.today()
+    if start_date is None:
+        start_date = end_date - datetime.timedelta(days=365)
     if freq == 'd':
         db_table = 'fut_daily'
         columns = ['instID', 'date', 'open', 'high', 'low', 'close', 'volume', 'openInterest']
@@ -743,13 +787,13 @@ def load_fut_by_product(product, exch, start_date ,end_date, freq = 'd'):
         prod_keys = [product]
     out_df = pd.DataFrame()
     for prod in prod_keys:
-        if exch in ['DCE', 'SHFE']:
-            prod_key = f"{prod}____"
-        else:
+        if exch in ['CZCE']:
             prod_key = f'{prod}%'
+        else:
+            prod_key = f"{prod}____"
         cnx = connect(**dbconfig)        
         stmt = "select {variables} from {table} where instID like '{prod_key}'  ".format(\
-                            prod_key = prod_key, \
+                            prod_key = prod_key,
                             variables=','.join(columns), table = db_table)
         stmt = stmt + "and date >='%s' " % start_date.strftime('%Y-%m-%d')
         stmt = stmt + "and date <='%s' " % end_date.strftime('%Y-%m-%d')
