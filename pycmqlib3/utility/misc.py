@@ -429,7 +429,7 @@ product_lotsize = {'zn': 5,
                    'IM': 200,
                    'TF': 10000,
                    'T': 10000,
-                   'TS': 10000,
+                   'TS': 20000,
                    'IO_Opt': 100,
                    'MO_Opt': 100,
                    'sc': 1000,
@@ -1016,15 +1016,21 @@ def cont_date_expiry(cont_date, prod_code, exch):
     mth = cont_date.month
     if prod_code in ['fu', 'sc', 'lu']:
         expiry = workdays.workday(cont_date, -1, hols)
-    elif prod_code in ['lh', 'jd']:
+    elif prod_code in ['lh', 'jd', 'pg', 'eb', 'eg']:
         expiry = workdays.workday(cont_date + relativedelta(months=1), -4, hols)
-    elif exch == 'DCE' or exch == 'CZCE':
-        expiry = workdays.workday(cont_date - datetime.timedelta(days=1), 10, hols)
-    elif exch == 'CFFEX':
+    elif prod_code in ['IF', 'IH', 'IC',]:
         wkday = cont_date.weekday()
-        expiry = cont_date + datetime.timedelta(days=13 + (11 - wkday) % 7)
+        expiry = cont_date + datetime.timedelta(days=13+(11-wkday)%7)
         expiry = workdays.workday(expiry, 1, CHN_Holidays)
-    elif exch in ['SHFE'] or prod_code in ['nr', 'bc']:
+    elif prod_code in ['T', 'TF', 'TS',]:
+        wkday = cont_date.weekday()
+        expiry = cont_date + datetime.timedelta(days=6+(11-wkday)%7)
+        expiry = workdays.workday(expiry, 1, CHN_Holidays)                    
+    elif prod_code in ['ZC', 'TC']:
+        expiry = workdays.workday(cont_date - datetime.timedelta(days=1), 5, hols)   
+    elif exch in ['DCE', 'CZCE']:
+        expiry = workdays.workday(cont_date - datetime.timedelta(days=1), 10, hols)    
+    elif exch in ['SHFE', 'INE']:
         expiry = datetime.date(yr, mth, 14)
         expiry = workdays.workday(expiry, 1, CHN_Holidays)
     elif exch in ['SGX', 'LME', 'NYMEX', 'OTC']:
@@ -1119,7 +1125,7 @@ def cleanup_mindata(df, asset, index_col='datetime', skip_hl=False):
         if idx == 0:
             cond = (xdf.min_id >= tradehrs[idx][0]) & (xdf.min_id < tradehrs[idx][1])
         else:
-            cond = cond | (xdf.min_id >= tradehrs[idx][0]) & (xdf.min_id < tradehrs[idx][1])
+            cond = cond | ((xdf.min_id >= tradehrs[idx][0]) & (xdf.min_id < tradehrs[idx][1]))
     if asset in ['a', 'b', 'p', 'y', 'm', 'i', 'j', 'jm']:
         cond = cond | (
         (xdf.date < datetime.date(2015, 5, 12)) & (xdf.min_id >= 300) & (xdf.min_id < 830))
