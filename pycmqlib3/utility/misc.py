@@ -1015,7 +1015,7 @@ def tenor_to_expiry(tenor_label, prod_code = 'fef'):
         cont_date = datetime.datetime.strptime(tenor_label, "%Y-%m-%d").date()
         return cont_date_expiry(cont_date, prod_code, exch)
 
-def contract_expiry(cont, hols='db'):
+def contract_expiry(cont, hols=CHN_Holidays):
     if cont == 'sn2005':
         return datetime.date(2020, 2, 12)
     if type(hols) == list:
