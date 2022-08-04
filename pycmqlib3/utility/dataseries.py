@@ -20,6 +20,7 @@ class DataSeriesError(Exception):
     def __str__(self):
         return repr(self.value)
 
+
 def process_expiry(data_series, exp_list):
     if exp_list is None:
         return
@@ -47,10 +48,137 @@ def prod_main_cont_filter(df, asset):
     return flag
 
 
-def nearby(prodcode, n = 1, start_date = None, end_date = None, 
-           roll_rule = '-20b', freq = 'd', shift_mode = 0, 
-           adj_field = 'close', calc_fields = ['open', 'close', 'high', 'low'], 
-           contract_filter = prod_main_cont_filter, fill_cont = False,
+def load_processed_fut_by_product(prodcode, start_date=None, end_date=None, freq = 'd',
+                                  roll_win=3, roll_cutoff='-20b', cont_ratio=[1.0, 1.0],
+                                  contract_filter=None, min_thres=0):
+    exch = misc.prod2exch(prodcode)
+    xdf = load_fut_by_product(prodcode, exch, start_date, end_date, freq=freq)
+    inst_list = xdf['instID'].unique()
+    expiry_map = dict([(inst, misc.contract_expiry(inst, hols=misc.CHN_Holidays)) for inst in inst_list])
+    # expiry_inv_map = {str(v): k for k, v in expiry_map.items()}
+    xdf['expiry'] = xdf['instID'].map(expiry_map)
+    xdf['exp_str'] = xdf['expiry'].astype('str')
+    xdf['month'] = xdf['instID'].apply(lambda x: misc.inst2contmth(x) % 100)
+    if contract_filter:
+        flag = contract_filter(xdf, prodcode)
+        xdf = xdf[flag]
+    if freq == 'd':
+        index_cols = ['date']
+    else:
+        index_cols = ['date', 'min_id']
+    xdf = xdf.sort_values(['instID'] + index_cols)
+    if (roll_cutoff[0] == '-') and (roll_cutoff[-1] in ['b', 'd']):
+        xdf['roll_date'] = xdf['expiry'].apply(lambda x: misc.day_shift(x, roll_cutoff, hols=misc.CHN_Holidays))
+        xdf = xdf[xdf.date <= xdf['roll_date']]
+    else:
+        xdf['roll_date'] = xdf['expiry']
+    xdf['roll_ind'] = (xdf['volume'] * cont_ratio[0] + xdf['openInterest'] * cont_ratio[1]).rolling(roll_win).mean()
+    xdf['log_ret'] = np.log(xdf['close']).diff()
+    xdf.loc[xdf['instID'] != xdf['instID'].shift(1), 'log_ret'] = 0
+    xdf['price_chg'] = xdf['close'].diff()
+    xdf.loc[xdf['instID'] != xdf['instID'].shift(1), 'price_chg'] = 0
+    for w in range(1, roll_win):
+        if w == 1:
+            flag = (xdf['instID'].shift(w) != xdf['instID'])
+        else:
+            flag = flag | (xdf['instID'].shift(w) != xdf['instID'])
+    if roll_win > 1:
+        xdf.loc[flag, 'roll_ind'] = np.nan
+    xdf['roll_ind'] = xdf['roll_ind'].fillna(method='bfill')
+    xdf = xdf[xdf['roll_ind'] >= min_thres]
+    return xdf
+
+
+def rolling_fut_cont(xdf, nb_cont=2, cont_thres=10_000, roll_mode=1):
+    inst_list = xdf['instID'].unique()
+    expiry_map = dict([(inst, misc.contract_expiry(inst, hols=misc.CHN_Holidays)) for inst in inst_list])
+    expiry_inv_map = {str(v): k for k, v in expiry_map.items()}
+    roll_df = pd.pivot_table(xdf, index=['date'], columns='expiry', values='roll_ind', aggfunc='first')
+    inst_df = pd.pivot_table(xdf, index=['date'], columns='expiry', values='exp_str', aggfunc='first')
+    daily_index = roll_df.index
+    if roll_mode % 10 == 1:
+        thres = roll_df.apply(lambda row: min(row.nlargest(nb_cont + 2).values[-1], cont_thres), axis=1)
+        inst_df = inst_df[roll_df.ge(thres, axis='rows')]
+    inst_df = inst_df.apply(lambda x: pd.Series(x.dropna().values), axis=1)
+    inst_df = inst_df.reset_index()
+    curr_list = []
+    data_list = []
+    date_list = []
+    for alist in inst_df.to_numpy():
+        if len(curr_list) == 0:
+            curr_date = alist[0]
+            curr_list = alist[1:nb_cont + 1]
+            curr_list = curr_list[~pd.isnull(curr_list)]
+            curr_list.sort()
+        else:
+            alist = alist[~pd.isnull(alist)]
+            exp_list = np.array([e for e in alist[1:] if (e in curr_list) or (e > curr_list[-1])])[:nb_cont]
+            exp_list = exp_list[~pd.isnull(exp_list)]
+            exp_list.sort()
+            if ((roll_mode // 10 == 1) and ((len(exp_list) < nb_cont) or (np.array_equal(exp_list, curr_list)))) or \
+                    ((roll_mode // 10 == 0) and ((len(exp_list) == 0) or (exp_list[0] == curr_list[0]))):
+                continue
+            else:
+                curr_list = exp_list
+                curr_date = alist[0]
+        data_list.append(np.array([expiry_inv_map[e] for e in curr_list]))
+        date_list.append(curr_date)
+    roll_map = pd.DataFrame(data_list, columns=range(nb_cont), index=date_list)
+    roll_map.index.name = 'date'
+    daily_cont = roll_map.reindex(index=daily_index).fillna(method='ffill')
+    daily_cont.index.name = 'date'
+    return roll_map, daily_cont
+
+
+def nearby_series(prodcode, start_date=None, end_date=None, shift_mode=1,
+                  freq='d', calc_fields=['open', 'close', 'high', 'low'],
+                  roll_kwargs={'roll_win': 3, 'roll_cutoff': '-20b', 'cont_ratio': [1.0, 0.0], 'contract_filter': None, 'min_thres': 0},
+                  roll_map={'nb_cont': 2, 'cont_thres': 10_000, 'roll_mode': 0, }):
+    df = load_processed_fut_by_product(prodcode, start_date=start_date, end_date=end_date, freq=freq, **roll_kwargs)
+    if freq == 'm':
+        sort_by = ['date', 'min_id']
+    else:
+        sort_by = ['date']
+    daily_index = df['date'].unique()
+    daily_index.sort()
+    #daily_index = pd.to_datetime(daily_index)
+    if type(roll_map).__name__ == 'DataFrame':
+        roll_map.index = pd.to_datetime(roll_map.index)
+        daily_cont = roll_map.reindex(index=pd.date_range(roll_map.index[0], datetime.date.today(), freq='d'))\
+                             .fillna(method='ffill').reindex(index=daily_index)
+    else:
+        roll_map, daily_cont = rolling_fut_cont(df, **roll_map)
+    nb_df = {}
+    for col in daily_cont.columns:
+        roll_df = daily_cont[col].to_frame()
+        roll_df.index.name = 'date'
+        roll_df = roll_df.reset_index().rename(columns={col: 'instID'})
+        roll_df['flag'] = 1
+        out_df = df.merge(roll_df, left_on=['date', 'instID'], right_on=['date', 'instID']).dropna(subset=['flag'])
+        out_df = out_df.drop(columns=['flag']).sort_values(sort_by)
+        if shift_mode > 0:
+            cum_adj = out_df.loc[::-1, 'price_chg'].cumsum().shift(1).fillna(0)[::-1]
+            if shift_mode == 2:
+                adj_price = out_df['close'].iloc[-1] / np.exp(cum_adj)
+                out_df['shift'] = np.log(adj_price) - np.log(out_df['close'])
+            else:
+                adj_price = out_df['close'].iloc[-1] - cum_adj
+                out_df['shift'] = adj_price - out_df['close']
+            for cfield in calc_fields:
+                if shift_mode == 2:
+                    out_df[cfield] = out_df[cfield] * np.exp(out_df['shift'])
+                else:
+                    out_df[cfield] = out_df[cfield] + out_df['shift']
+        else:
+            out_df['shift'] = 0
+        nb_df['c%s' % str(col)] = out_df.set_index('date').rename(columns={'instID': 'contract'})
+    return nb_df
+
+
+def nearby(prodcode, n=1, start_date=None, end_date=None,
+           roll_rule='-20b', freq='d', shift_mode=0,
+           adj_field='close', calc_fields=['open', 'close', 'high', 'low'],
+           contract_filter=prod_main_cont_filter, fill_cont=False,
           ):
     exch = misc.prod2exch(prodcode)
     xdf = load_fut_by_product(prodcode, exch, start_date ,end_date, freq = freq)
@@ -82,8 +210,8 @@ def nearby(prodcode, n = 1, start_date = None, end_date = None,
         if fill_cont:
             col_df = col_df.fillna(method = 'ffill')
         else:
-            raise ValueError('There are nan values for product=%s, nearby=%s, roll=%s, dates = %s' % 
-            (prodcode, str(n), roll_rule, col_df[col_df['instID'].isna()]['date']))
+            raise ValueError('There are nan values for product=%s, nearby=%s, roll=%s, dates = %s' %
+                             (prodcode, str(n), roll_rule, col_df[col_df['instID'].isna()]['date']))
     out_df = pd.merge(col_df, xdf,left_on = ['date', 'instID'], right_on=['date', 'instID'], how = 'left')
     if shift_mode > 0:
         cum_adj = out_df.loc[::-1, 'price_chg'].cumsum().shift(1).fillna(0)[::-1]
@@ -101,7 +229,7 @@ def nearby(prodcode, n = 1, start_date = None, end_date = None,
                 out_df[cfield] = out_df[cfield] + out_df['shift']
     else:
         out_df['shift'] = 0
-    out_df = out_df.set_index('date').rename(columns = {'instID': 'contract'})
+    out_df = out_df.set_index('date').rename(columns={'instID': 'contract'})
     return out_df
 
 # def _move_rows_np2(roll_index, col_idx, ds, nan_value = np.nan):

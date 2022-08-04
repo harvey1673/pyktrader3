@@ -2,6 +2,7 @@
 import os
 import csv
 import numpy as np
+import pandas as pd
 import datetime
 from . agent import Agent
 from . instrument import VolGrid
@@ -17,7 +18,7 @@ def discount(irate, dtoday, dexp):
 class OptAgentMixin(object):
     def __init__(self, config = {}):
         self.volgrids = {}
-        self.irate = config.get('irate', {'CNY': 0.03, 'USD': 0.02})
+        self.irate = config.get('irate', {'CNY': 0.02, 'USD': 0.02})
         self.option_insts = [inst for inst in list(self.instruments.values()) if inst.ptype in Option_ProductTypes]
         self.option_map = dict([((inst.underlying, inst.cont_mth, inst.otype.value, inst.strike), inst.name) for inst in self.option_insts])
 
@@ -48,40 +49,47 @@ class OptAgentMixin(object):
             volgrids[prod].option_insts[expiry].append(inst.name)
         self.volgrids = volgrids
 
-    def load_volgrids(self):
+    def load_volgrids(self, tday = None):
+        if tday is None:
+            tday = self.scur_day
         self.logger.info('loading volgrids')
         for prod in list(self.volgrids.keys()):
-            logfile = self.folder + 'volgrids_' + prod + '.csv'
-            if os.path.isfile(logfile):       
-                with open(logfile, 'r') as f:
-                    reader = csv.reader(f)
-                    for row in reader:
-                        inst = row[0]
-                        expiry = datetime.datetime.strptime(row[1], '%Y%m%d %H%M%S')
-                        fwd = float(row[2]) 
-                        atm = float(row[3])
-                        v90 = float(row[4])
-                        v75 = float(row[5])
-                        v25 = float(row[6])
-                        v10 = float(row[7])
-                        last_update = float(row[8])
-                        if len(row) > 9:
-                            ccy = str(row[9])
-                        else:
-                            ccy = 'CNY'
-                        if len(row) > 10:
-                            mark_date = datetime.datetime.strptime(row[10], '%Y%m%d')
-                            if self.scur_day > mark_date.date():
-                                last_update = 0
-                        dexp = datetime2xl(expiry)
-                        vg = self.volgrids[prod]
-                        vg.underlier[expiry] = inst
-                        vg.df[expiry] = discount(self.irate[ccy], self.dtoday(), dexp)
-                        vg.fwd[expiry] = fwd
-                        vg.volparam[expiry] = [atm, v90, v75, v25, v10]
-                        vg.volnode[expiry] = cmqlib.Delta5VolNode(self.dtoday(), dexp, fwd, atm, v90, v75, v25, v10, self.volgrids[prod].accrual)
-                        vg.t2expiry[expiry] = vg.volnode[expiry].expiry_() * BDAYS_PER_YEAR
-                        vg.last_update[expiry] = last_update
+            for dstr in ['_' + tday.strftime('%y%m%d'),
+                         '_' + day_shift(tday, '-1b', CHN_Holidays).strftime('%y%m%d'), '']:
+                logfile = '%svolgrids_%s%s.csv' % (self.folder, prod, dstr)
+                if os.path.isfile(logfile):
+                    break
+            if os.path.isfile(logfile):
+                grid_df = pd.read_csv(logfile, header=None).sort_values([0, 10, 8]).drop_duplicates(subset=[0, 10, 8], keep = 'last')
+                grid_df.to_csv(logfile, header=False, index=False)
+                #grid_df = grid_df.drop_duplicates(subset=[0, 10, 8], keep='last')
+                for index, row in grid_df.iterrows():
+                    inst = row[0]
+                    expiry = datetime.datetime.strptime(row[1], '%Y%m%d %H%M%S')
+                    fwd = float(row[2])
+                    atm = float(row[3])
+                    v90 = float(row[4])
+                    v75 = float(row[5])
+                    v25 = float(row[6])
+                    v10 = float(row[7])
+                    last_update = float(row[8])
+                    if len(row) > 9:
+                        ccy = str(row[9])
+                    else:
+                        ccy = 'CNY'
+                    if len(row) > 10:
+                        mark_date = datetime.datetime.strptime(str(row[10]), '%Y%m%d')
+                        if self.scur_day > mark_date.date():
+                            last_update = 0
+                    dexp = datetime2xl(expiry)
+                    vg = self.volgrids[prod]
+                    vg.underlier[expiry] = inst
+                    vg.df[expiry] = discount(self.irate[ccy], self.dtoday(), dexp)
+                    vg.fwd[expiry] = fwd
+                    vg.volparam[expiry] = [atm, v90, v75, v25, v10]
+                    vg.volnode[expiry] = cmqlib.Delta5VolNode(self.dtoday(), dexp, fwd, atm, v90, v75, v25, v10, self.volgrids[prod].accrual)
+                    vg.t2expiry[expiry] = vg.volnode[expiry].expiry_() * BDAYS_PER_YEAR
+                    vg.last_update[expiry] = last_update
             else:
                 for expiry in self.volgrids[prod].option_insts:
                     dexp = datetime2xl(expiry)
@@ -102,11 +110,13 @@ class OptAgentMixin(object):
                     vg.t2expiry[expiry] = vg.volnode[expiry].expiry_() * BDAYS_PER_YEAR
                     vg.last_update[expiry] = 0
 
-    def save_volgrids(self):
+    def save_volgrids(self, tday = None):
+        if tday is None:
+            tday = self.scur_day
         self.logger.info('saving volgrids')
         for prod in list(self.volgrids.keys()):
-            logfile = self.folder + 'volgrids_' + prod + '.csv'
-            with open(logfile,'w', newline='') as log_file:
+            logfile = '%svolgrids_%s_%s.csv' % (self.folder, prod, tday.strftime('%y%m%d'))
+            with open(logfile,'a', newline="") as log_file:
                 file_writer = csv.writer(log_file, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
                 vg = self.volgrids[prod]
                 for expiry in vg.volparam:
@@ -187,7 +197,7 @@ class OptionAgent(Agent, OptAgentMixin):
         Agent.__init__(self, config, tday)
         OptAgentMixin.__init__(self, config)
         self.create_volgrids()
-        self.load_volgrids()
+        self.load_volgrids(tday)
         self.set_opt_pricers()
 
     def restart(self):        
@@ -209,5 +219,5 @@ class OptionAgent(Agent, OptAgentMixin):
                 self.calc_volgrid(prod, expiry, update_risk=True)
 
     def save_state(self):
-        self.save_volgrids()
+        self.save_volgrids(self.scur_day)
         super(OptionAgent, self).save_state()

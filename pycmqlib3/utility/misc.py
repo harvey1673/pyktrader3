@@ -101,37 +101,37 @@ PLIO_Holidays = [datetime.date(2014, 1, 1),
                 datetime.date(2021, 4, 2), datetime.date(2021,5,26), datetime.date(2021,8,9), datetime.date(2021,11,4), datetime.date(2021,12,25),
                 ]
 
-WASDE_Dates = [datetime.date(2010, 1, 12), datetime.date(2010, 2, 9), datetime.date(2010, 3, 10), \
-               datetime.date(2010, 4, 9), datetime.date(2010, 5, 11), datetime.date(2010, 6, 10), \
-               datetime.date(2010, 7, 9), datetime.date(2010, 8, 12), datetime.date(2010, 9, 10), \
-               datetime.date(2010, 10, 8), datetime.date(2010, 11, 9), datetime.date(2010, 12, 10), \
-               datetime.date(2011, 1, 12), datetime.date(2011, 2, 9), datetime.date(2011, 3, 10), \
-               datetime.date(2011, 4, 8), datetime.date(2011, 5, 11), datetime.date(2011, 6, 9), \
-               datetime.date(2011, 7, 12), datetime.date(2011, 8, 11), datetime.date(2011, 9, 12), \
-               datetime.date(2011, 10, 12), datetime.date(2011, 11, 9), datetime.date(2011, 12, 9), \
-               datetime.date(2012, 1, 12), datetime.date(2012, 2, 9), datetime.date(2012, 3, 9), \
-               datetime.date(2012, 4, 10), datetime.date(2012, 5, 10), datetime.date(2012, 6, 12), \
-               datetime.date(2012, 7, 11), datetime.date(2012, 8, 10), datetime.date(2012, 9, 12), \
-               datetime.date(2012, 10, 11), datetime.date(2012, 11, 9), datetime.date(2012, 12, 11), \
-               datetime.date(2013, 1, 11), datetime.date(2013, 2, 8), datetime.date(2013, 3, 8), \
-               datetime.date(2013, 4, 10), datetime.date(2013, 5, 10), datetime.date(2013, 6, 12), \
-               datetime.date(2013, 7, 11), datetime.date(2013, 8, 12), datetime.date(2013, 9, 12), \
-               datetime.date(2013, 11, 8), datetime.date(2013, 12, 10), datetime.date(2014, 1, 10), \
-               datetime.date(2014, 2, 10), datetime.date(2014, 3, 10), datetime.date(2014, 4, 9), \
-               datetime.date(2014, 5, 9), datetime.date(2014, 6, 11), datetime.date(2014, 7, 11), \
-               datetime.date(2014, 8, 12), datetime.date(2014, 9, 11), datetime.date(2014, 10, 10), \
-               datetime.date(2014, 11, 10), datetime.date(2014, 12, 10), datetime.date(2015, 1, 12), \
-               datetime.date(2015, 2, 10), datetime.date(2015, 3, 10), datetime.date(2015, 4, 9), \
-               datetime.date(2015, 5, 12), datetime.date(2015, 6, 10), datetime.date(2015, 7, 10), \
-               datetime.date(2015, 8, 12), datetime.date(2015, 9, 11), datetime.date(2015, 10, 9), \
-               datetime.date(2015, 11, 10), datetime.date(2015, 12, 9), datetime.date(2016, 1, 12), \
-               datetime.date(2016, 2, 9), datetime.date(2016, 3, 9), datetime.date(2016, 4, 12), \
-               datetime.date(2016, 5, 10), datetime.date(2016, 6, 10), datetime.date(2016, 7, 12), \
-               datetime.date(2016, 8, 12), datetime.date(2016, 9, 12), datetime.date(2016, 10, 12), \
-               datetime.date(2016, 11, 9), datetime.date(2016, 12, 9), datetime.date(2017, 1, 12), \
-               datetime.date(2017, 2, 9), datetime.date(2017, 3, 9), datetime.date(2017, 4, 11), \
-               datetime.date(2017, 5, 10), datetime.date(2017, 6, 9), datetime.date(2017, 7, 12), \
-               datetime.date(2017, 8, 10), datetime.date(2017, 9, 12), datetime.date(2017, 10, 12), \
+WASDE_Dates = [datetime.date(2010, 1, 12), datetime.date(2010, 2, 9), datetime.date(2010, 3, 10),
+               datetime.date(2010, 4, 9), datetime.date(2010, 5, 11), datetime.date(2010, 6, 10),
+               datetime.date(2010, 7, 9), datetime.date(2010, 8, 12), datetime.date(2010, 9, 10),
+               datetime.date(2010, 10, 8), datetime.date(2010, 11, 9), datetime.date(2010, 12, 10),
+               datetime.date(2011, 1, 12), datetime.date(2011, 2, 9), datetime.date(2011, 3, 10),
+               datetime.date(2011, 4, 8), datetime.date(2011, 5, 11), datetime.date(2011, 6, 9),
+               datetime.date(2011, 7, 12), datetime.date(2011, 8, 11), datetime.date(2011, 9, 12),
+               datetime.date(2011, 10, 12), datetime.date(2011, 11, 9), datetime.date(2011, 12, 9),
+               datetime.date(2012, 1, 12), datetime.date(2012, 2, 9), datetime.date(2012, 3, 9),
+               datetime.date(2012, 4, 10), datetime.date(2012, 5, 10), datetime.date(2012, 6, 12),
+               datetime.date(2012, 7, 11), datetime.date(2012, 8, 10), datetime.date(2012, 9, 12),
+               datetime.date(2012, 10, 11), datetime.date(2012, 11, 9), datetime.date(2012, 12, 11),
+               datetime.date(2013, 1, 11), datetime.date(2013, 2, 8), datetime.date(2013, 3, 8),
+               datetime.date(2013, 4, 10), datetime.date(2013, 5, 10), datetime.date(2013, 6, 12),
+               datetime.date(2013, 7, 11), datetime.date(2013, 8, 12), datetime.date(2013, 9, 12),
+               datetime.date(2013, 11, 8), datetime.date(2013, 12, 10), datetime.date(2014, 1, 10),
+               datetime.date(2014, 2, 10), datetime.date(2014, 3, 10), datetime.date(2014, 4, 9),
+               datetime.date(2014, 5, 9), datetime.date(2014, 6, 11), datetime.date(2014, 7, 11),
+               datetime.date(2014, 8, 12), datetime.date(2014, 9, 11), datetime.date(2014, 10, 10),
+               datetime.date(2014, 11, 10), datetime.date(2014, 12, 10), datetime.date(2015, 1, 12),
+               datetime.date(2015, 2, 10), datetime.date(2015, 3, 10), datetime.date(2015, 4, 9),
+               datetime.date(2015, 5, 12), datetime.date(2015, 6, 10), datetime.date(2015, 7, 10),
+               datetime.date(2015, 8, 12), datetime.date(2015, 9, 11), datetime.date(2015, 10, 9),
+               datetime.date(2015, 11, 10), datetime.date(2015, 12, 9), datetime.date(2016, 1, 12),
+               datetime.date(2016, 2, 9), datetime.date(2016, 3, 9), datetime.date(2016, 4, 12),
+               datetime.date(2016, 5, 10), datetime.date(2016, 6, 10), datetime.date(2016, 7, 12),
+               datetime.date(2016, 8, 12), datetime.date(2016, 9, 12), datetime.date(2016, 10, 12),
+               datetime.date(2016, 11, 9), datetime.date(2016, 12, 9), datetime.date(2017, 1, 12),
+               datetime.date(2017, 2, 9), datetime.date(2017, 3, 9), datetime.date(2017, 4, 11),
+               datetime.date(2017, 5, 10), datetime.date(2017, 6, 9), datetime.date(2017, 7, 12),
+               datetime.date(2017, 8, 10), datetime.date(2017, 9, 12), datetime.date(2017, 10, 12),
                datetime.date(2017, 11, 9), datetime.date(2017, 12, 12)]
 
 
@@ -531,15 +531,19 @@ product_ticksize = {'zn': 5,
                     'lu': 1.0,
                     }
 
+
 def xl2date(num):
     return datetime.date(1970,1,1) + datetime.timedelta(days = int(num) - 25569)
+
 
 def date2xl(d):
     return (d - datetime.date(1970, 1, 1)).days + 25569.0
 
+
 def datetime2xl(dt):
     t = dt - datetime.datetime(1970, 1, 1, 0, 0, 0)
     return 25569.0 + t.days + t.seconds / 60.0 / 60.0 / 24.0
+
 
 def time2exp(opt_expiry, curr_time):
     curr_date = curr_time.date()
@@ -552,6 +556,7 @@ def time2exp(opt_expiry, curr_time):
         delta = opt_expiry - curr_time
         return (delta.hour * 3600 + delta.min * 60 + delta.second) / 3600.0 / 5.5 / BDAYS_PER_YEAR
 
+
 def conv_expiry_date(curr_date, expiry, accrual = 'act365', hols = []):
     if expiry < curr_date:
         return 0.0
@@ -561,12 +566,14 @@ def conv_expiry_date(curr_date, expiry, accrual = 'act365', hols = []):
     else:
         return workdays.networkdays(curr_date, expiry, hols) / float(year_conv)
 
+
 def get_obj_by_name(obj_name):
     obj_split = obj_name.split('.')
     mod_str = '.'.join(obj_split[:-1])
     module = __import__(mod_str, fromlist=[obj_split[-1]])
     obj = getattr(module,obj_split[-1])
     return obj
+
 
 def merge_dict(src_dict, dest_dict, w_src = 1, w_dest = 1):
     for key, value in list(src_dict.items()):
@@ -584,14 +591,18 @@ def merge_dict(src_dict, dest_dict, w_src = 1, w_dest = 1):
 def min2time(min_id):
     return int((min_id // 100 - 6) % 24) / 24.0 + (min_id % 100) / 1440.0
 
+
 def get_tick_id(dt):
     return ((dt.hour + 6) % 24) * 100000 + dt.minute * 1000 + dt.second * 10 + dt.microsecond // 100000
+
 
 def get_min_id(dt):
     return ((dt.hour+6)%24)*100+dt.minute
 
+
 def is_workday(d, calendar = '', we_cutoff = 5):
     return (d.weekday() < we_cutoff) and (d not in Holiday_Map.get(calendar, []))
+
 
 def get_mkt_fxpair(fx1, fx2):
     ccy1 = fx1.upper()
@@ -615,6 +626,7 @@ def get_mkt_fxpair(fx1, fx2):
         direction = 0
     return direction
 
+
 def conv_fx_rate(ccy, reporting_ccy, fx_market):
     fx_pair = None
     if ccy == reporting_ccy:
@@ -628,6 +640,7 @@ def conv_fx_rate(ccy, reporting_ccy, fx_market):
         fx_pair = '/'.join([ccy, reporting_ccy])
         fx_rate = fx_market[fx_pair][0][2]
     return fx_rate
+
 
 def filter_main_cont(sdate, filter=False):
     insts, prods = dbaccess.load_alive_cont(sdate)
@@ -646,6 +659,7 @@ def filter_main_cont(sdate, filter=False):
         if mth in main_cont[pc]:
             main_insts.append(inst)
     return main_insts
+
 
 def get_first_day_of_month(t_date):
     return t_date.replace(day=1)
@@ -669,6 +683,7 @@ def trading_hours(product, exch):
             hrs = [night_trading_hrs[night_idx]] + hrs
     return hrs
 
+
 def check_trading_range(tick_id, product, exch, tick_buffer = 0):
     in_range = False
     hrs = trading_hours(product, exch)    
@@ -678,16 +693,18 @@ def check_trading_range(tick_id, product, exch, tick_buffer = 0):
             break
     return in_range
 
+
 def spreadinst2underlying(inst_name):
     spread_keys = inst_name.split(' ')
     instIDs = spread_keys[1].split('&')
     units = [1, -1]
     return (instIDs, units)
 
+
 def instID_adjust(instID, exch, ref_date):
     adj_inst = instID
     if exch == 'CZCE':
-        if (len(instID) == 5):
+        if len(instID) == 5:
             if ref_date < datetime.date(2015, 1, 1):
                 if (int(instID[2]) <= 4) and ref_date >= datetime.datetime.date(2005, 1, 1):
                     adj_inst = instID[:2] + '1' + instID[-3:]
@@ -697,6 +714,7 @@ def instID_adjust(instID, exch, ref_date):
         if (len(instID) == 4) and ref_date<datetime.date(2010, 1, 1):
             adj_inst = instID[:1] + '0' + instID[-3:]
     return adj_inst
+
 
 def inst2product(inst):
     if inst[4].isalpha():
@@ -719,7 +737,7 @@ def inst2contmth(instID):
     if exch == 'CZCE':
         if len(instID) == 6:
             cont_mth = 200000 + int(instID[-4:])
-        elif (int(instID[-3]) >= 5):
+        elif int(instID[-3]) >= 5:
             cont_mth = 201000 + int(instID[-3:])
         else:
             cont_mth = 202000 + int(instID[-3:])
@@ -727,11 +745,13 @@ def inst2contmth(instID):
         cont_mth = 200000 + int(instID[-4:])
     return cont_mth
 
+
 def inst2cont(instID):
     cont_mth = inst2contmth(instID)
     year = int(cont_mth /100)
     mth = cont_mth % 100
     return datetime.date(year, mth, 1)
+
 
 def inst2exch(inst):
     if inst.isdigit():
@@ -739,11 +759,13 @@ def inst2exch(inst):
     prod = inst2product(inst)
     return prod2exch(prod)
 
+
 def prod2exch(prod):
     for exch in list(product_code.keys()):
         if prod in product_code[exch]:
             return exch
     return "NA"
+
 
 def inst_to_exch(inst):
     key = inst2product(inst)
@@ -755,11 +777,13 @@ def inst_to_exch(inst):
     cnx.close()
     return str(out[0][0])
 
+
 def get_hols_by_exch(exch):
     hols = []
     if exch in ['DCE', 'CFFEX', 'CZCE', 'SHFE', 'INE', 'SSE', 'SZSE']:
         hols = CHN_Holidays
     return hols
+
 
 def get_option_map(products):
     option_map = {}
@@ -770,6 +794,7 @@ def get_option_map(products):
                     key = (str(under), cont_mth, otype, strike)
                     option_map[key] = get_opt_name(under, otype, strike)
     return option_map
+
 
 def get_opt_name(fut_inst, otype, strike):
     cont_mth = inst2contmth(fut_inst)
@@ -785,6 +810,7 @@ def get_opt_name(fut_inst, otype, strike):
     else:
         instID = instID + '-' + otype + '-' + str(int(strike))
     return instID
+
 
 def get_opt_expiry(fut_inst, cont_mth, exch=''):
     cont_yr = int(cont_mth / 100)
@@ -826,12 +852,20 @@ def get_opt_expiry(fut_inst, cont_mth, exch=''):
         expiry = workdays.workday(expiry_month, -1, PLIO_Holidays)
     return datetime.datetime.combine(expiry, datetime.time(15, 0))
 
-def cont_expiry_list(prodcode, start_date, end_date, roll_rule = '-0d'):
+
+def cont_expiry_list(prodcode, start_date, end_date, roll_rule='-0d'):
     cont_mth, exch = dbaccess.prod_main_cont_exch(prodcode)
     hols = get_hols_by_exch(exch)
     contlist, tenor_list = contract_range(prodcode, exch, cont_mth, start_date, day_shift(end_date, '12m', hols))
     exp_dates = [day_shift(contract_expiry(cont), roll_rule, hols) for cont in contlist]
     return contlist, exp_dates, tenor_list
+
+
+def default_next_main_contract(inst, start_date=datetime.date(2006, 1, 1), end_date=datetime.date.today()):
+    prodcode = inst2product(inst)
+    contlist, _, _ = cont_expiry_list(prodcode, start_date, end_date)
+    return [c for c in contlist if c > inst][0]
+
 
 def nearby(prodcode, n = 1, start_date = None, end_date = None, roll_rule = '-20b', freq = 'd', shift_mode = 0, database = None, dbtbl_prefix = ''):
     contlist, exp_dates, _ = cont_expiry_list(prodcode, start_date, end_date, roll_rule)
@@ -953,6 +987,7 @@ def day_shift(d, roll_rule, hols = []):
         shft_day = shft_day - datetime.timedelta(days=1)
     return shft_day
 
+
 def process_min_id(df, adj_datetime = False, hols = CHN_Holidays):
     df['min_id'] = df['datetime'].apply(lambda x: ((x.hour + 6) % 24)*100 + x.minute)
     flag = df['min_id'] >= 1000
@@ -963,6 +998,7 @@ def process_min_id(df, adj_datetime = False, hols = CHN_Holidays):
     if adj_datetime:
         df['datetime'] = df.apply(lambda x: datetime.datetime.combine(x['date'], x['datetime'].time()), axis = 1)
     return df
+
 
 def tenor_to_expiry(tenor_label, prod_code = 'fef'):
     exch = prod2exch(prod_code)
@@ -986,13 +1022,13 @@ def contract_expiry(cont, hols='db'):
         prod_code = inst2product(cont)
         exch = prod2exch(prod_code)
         mth = int(cont[-2:])
-        if cont[-4:-2].isdigit():
-            yr = 2000 + int(cont[-4:-2])
-        else:
-            if int(cont[-3:-2])>5:
+        if exch == 'CZCE' and len(cont) == 5:
+            if int(cont[-3:-2])>=5:
                 yr = 2010 + int(cont[-3:-2])
             else:
                 yr = 2020 + int(cont[-3:-2])
+        else:
+            yr = 2000 + int(cont[-4:-2])
         cont_date = datetime.date(yr, mth, 1)
         expiry = cont_date_expiry(cont_date, prod_code, exch)
     else:
@@ -1009,6 +1045,7 @@ def contract_expiry(cont, hols='db'):
             expiry = contract_expiry(cont, CHN_Holidays)
         cnx.close()
     return expiry
+
 
 def cont_date_expiry(cont_date, prod_code, exch):
     hols = CHN_Holidays
@@ -1065,6 +1102,7 @@ def _contract_range(product, exch, cont_mth, start_date, end_date, tenor = '2y')
                     cont_list.append(contLabel)
     return cont_list, tenor_list
 
+
 def contract_range(product, exch, cont_mth, start_date, end_date):
     product_cont_map = {'ni': [datetime.date(2019, 5, 1), [1, 5, 9]],
                         'sn': [datetime.date(2020, 5, 1), [1, 5, 9]],
@@ -1083,7 +1121,8 @@ def contract_range(product, exch, cont_mth, start_date, end_date):
         return res_cont, res_ten
     else:
         return _contract_range(product, exch, cont_mth, start_date, end_date)
-    
+
+
 def get_asset_tradehrs(asset):
     exch = 'SHFE'
     for ex in product_code:
@@ -1104,6 +1143,7 @@ def get_asset_tradehrs(asset):
             hrs = [night_trading_hrs[night_idx]] + hrs
     return hrs
 
+
 def cleanup_dailydata(df, asset, index_col = 'date'):
     if index_col == 'date':
         xdf = df.reset_index()
@@ -1113,6 +1153,7 @@ def cleanup_dailydata(df, asset, index_col = 'date'):
     if index_col == 'date':
         xdf = xdf.set_index('date')
     return xdf
+
 
 def cleanup_mindata(df, asset, index_col='datetime', skip_hl=False):
     cond = None
@@ -1127,11 +1168,9 @@ def cleanup_mindata(df, asset, index_col='datetime', skip_hl=False):
         else:
             cond = cond | ((xdf.min_id >= tradehrs[idx][0]) & (xdf.min_id < tradehrs[idx][1]))
     if asset in ['a', 'b', 'p', 'y', 'm', 'i', 'j', 'jm']:
-        cond = cond | (
-        (xdf.date < datetime.date(2015, 5, 12)) & (xdf.min_id >= 300) & (xdf.min_id < 830))
+        cond = cond | ((xdf.date < datetime.date(2015, 5, 12)) & (xdf.min_id >= 300) & (xdf.min_id < 830))
     if asset in ['a', 'b', 'm', 'm_Opt', 'y', 'p', 'i', 'j', 'jm']:
-        cond = cond | (( xdf.date <= datetime.date(2019, 3, 29)) &
-                (xdf.date >= datetime.date(2015, 5, 12)) & (xdf.min_id >= 300) & (xdf.min_id < 530))
+        cond = cond | (( xdf.date <= datetime.date(2019, 3, 29)) & (xdf.date >= datetime.date(2015, 5, 12)) & (xdf.min_id >= 300) & (xdf.min_id < 530))
     if asset in ['rb', 'hc', 'bu']:
         cond = cond | ((xdf.date < datetime.date(2016, 5, 1)) & (xdf.min_id >= 300) & (xdf.min_id < 700))
     if asset in ['IF', 'IH', 'IC', ]:

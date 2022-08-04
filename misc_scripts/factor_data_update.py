@@ -101,6 +101,7 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule 
     base_args = {'roll_rule': '-25b', 'freq': freq, 'shift_mode': shift_mode, 'dbtbl_prefix': dbtbl_prefix}
     base2_args = {'roll_rule': '-40b', 'freq': freq, 'shift_mode': shift_mode}
     sc_args = {'roll_rule': '-20b', 'freq': freq, 'shift_mode': shift_mode}
+    lu_args = {'roll_rule': '-45b', 'freq': freq, 'shift_mode': shift_mode}
     eq_args = {'roll_rule': '-1b', 'freq': freq, 'shift_mode': shift_mode, 'dbtbl_prefix': dbtbl_prefix}
     bond_args = {'roll_rule': '-20b', 'freq': freq, 'shift_mode': shift_mode, 'dbtbl_prefix': dbtbl_prefix}
     precious_args = {'roll_rule': '-25b', 'freq': freq, 'shift_mode': shift_mode, 'dbtbl_prefix': dbtbl_prefix}
@@ -124,7 +125,9 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule 
         elif asset in ['ni']:
             use_args = base2_args
         elif asset in ['sc']:
-            use_args = sc_args            
+            use_args = sc_args
+        elif asset in ['lu']:
+            use_args = lu_args
         elif asset in bond_fut_mkts:
             use_args = bond_args
         elif asset in precious_metal_mkts:
