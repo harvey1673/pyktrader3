@@ -2,11 +2,8 @@
 import os
 import sys
 import json
-vnpy_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-if vnpy_root not in sys.path:
-    sys.path.append(vnpy_root)
 
-os.environ["VNPY_TESTING"] = "1"
+# os.environ["VNPY_TESTING"] = "1"
 
 from pycmqlib3.data.tdx.tdx_common import FakeStrategy
 from pycmqlib3.data.tdx.tdx_future_data import *
@@ -28,6 +25,9 @@ api_01 = TdxFutureData(strategy=t1)
 # 获取某个合约得最新价
 #price = api_01.get_price('rb2010')
 #print('price={}'.format(price))
+ret, bars = api_01.get_bars('rb2105.SHFE',period='1min')
+for bar in bars:
+    print(bar.__dict__)
 
 
 # 获取主力合约

@@ -70,7 +70,8 @@ INIT_TDX_MARKET_MAP = {
     'CJL9': 28, 'CYL9': 28, 'FGL9': 28, 'JRL9': 28, 'LRL9': 28, 'MAL9': 28,
     'OIL9': 28, 'PML9': 28, 'RIL9': 28, 'RML9': 28, 'RSL9': 28, 'SFL9': 28,
     'SML9': 28, 'SRL9': 28, 'TAL9': 28, 'ICL9': 47, 'IFL9': 47, 'IHL9': 47,
-    'TFL9': 47, 'TL9': 47, 'TSL9': 47, 'SAL9': 28, 'PGL9': 29, 'PFL9': 28, 'LH':29}
+    'TFL9': 47, 'TL9': 47, 'TSL9': 47, 'SAL9': 28, 'PGL9': 29, 'PFL9': 28,
+    'LHL9':29,'LUL9':30}
 # 常量
 QSIZE = 500
 ALL_MARKET_BEGIN_HOUR = 8
@@ -80,11 +81,14 @@ ALL_MARKET_END_HOUR = 16
 @lru_cache()
 def get_tdx_marketid(symbol):
     """普通合约/指数合约=》tdx合约所在市场id"""
-    underlying_symbol = get_underlying_symbol(symbol)
-    tdx_index_symbol = underlying_symbol.upper() + 'L9'
+    if symbol.endswith('L9'):
+        tdx_index_symbol = symbol
+    else:
+        underlying_symbol = get_underlying_symbol(symbol).upper()
+        tdx_index_symbol = underlying_symbol.upper() + 'L9'
     market_id = INIT_TDX_MARKET_MAP.get(tdx_index_symbol, None)
     if market_id is None:
-        raise KeyError(f'{tdx_index_symbol}不存在INIT_TDX_MARKET_MAP中')
+        raise KeyError(f'{symbol} => {tdx_index_symbol} 不存在INIT_TDX_MARKET_MAP中')
     return market_id
 
 
@@ -235,10 +239,9 @@ class TdxFutureData(object):
                     self.best_ip = get_cache_json(TDX_FUTURE_CONFIG)
 
                     if is_reconnect:
-                        if is_reconnect:
-                            selected_ip = self.best_ip.get('ip')
-                            if selected_ip not in self.exclude_ips:
-                                self.exclude_ips.append(selected_ip)
+                        selected_ip = self.best_ip.get('ip')
+                        if selected_ip not in self.exclude_ips:
+                            self.exclude_ips.append(selected_ip)
                         self.best_ip = {}
                     else:
                         # 超时的话，重新选择
@@ -407,7 +410,9 @@ class TdxFutureData(object):
         else:
             tdx_symbol = get_full_symbol(symbol).upper()
 
+        # 查询合约 => 指数合约, 主要是用来获取市场
         tdx_index_symbol = underlying_symbol + 'L9'
+        # 合约缩写 => 交易所
         vn_exchange = self._get_vn_exchange(underlying_symbol)
 
         self.connect()
@@ -441,19 +446,20 @@ class TdxFutureData(object):
             _bars = []
             _pos = 0
             while _start_date > qry_start_date:
+                # 利用api查询历史数据
                 _res = self.api.get_instrument_bars(
-                    tdx_period,
-                    self.symbol_market_dict.get(tdx_index_symbol, 0),
-                    tdx_symbol,
-                    _pos,
-                    QSIZE)
+                    category=tdx_period,
+                    market=get_tdx_marketid(tdx_symbol),
+                    code=tdx_symbol,
+                    start=_pos,
+                    count=QSIZE)
                 if _res is not None:
                     _bars = _res + _bars
                 _pos += QSIZE
                 if _res is not None and len(_res) > 0:
                     _start_date = _res[0]['datetime']
                     _start_date = datetime.strptime(_start_date, '%Y-%m-%d %H:%M')
-                    self.write_log(u'分段取数据开始:{}'.format(_start_date))
+                    self.write_log(u'分段取{}数据,开始时间:{}'.format(tdx_symbol, _start_date))
                 else:
                     break
             if len(_bars) == 0:
