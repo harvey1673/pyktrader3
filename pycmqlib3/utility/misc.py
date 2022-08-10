@@ -1055,7 +1055,7 @@ def cont_date_expiry(cont_date, prod_code, exch):
         expiry = workdays.workday(cont_date, -1, hols)
     elif prod_code in ['lh', 'jd', 'pg', 'eb', 'eg']:
         expiry = workdays.workday(cont_date + relativedelta(months=1), -4, hols)
-    elif prod_code in ['IF', 'IH', 'IC',]:
+    elif prod_code in ['IF', 'IH', 'IC', 'IM']:
         wkday = cont_date.weekday()
         expiry = cont_date + datetime.timedelta(days=13+(11-wkday)%7)
         expiry = workdays.workday(expiry, 1, CHN_Holidays)
