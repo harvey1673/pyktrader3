@@ -10,7 +10,17 @@ from pycmqlib3.core.agent_email import EmailAgent
 from pycmqlib3.core.agent import Agent
 from pycmqlib3.core.gui_agent import MainApp, Gui
 
-def save(config_file, tday):
+def get_run_date():
+    tday = datetime.date.today()
+    now = datetime.datetime.now()
+    if misc.is_workday(tday, 'CHN') and now.hour < 18:
+        run_date = tday
+    else:
+        run_date = misc.day_shift(tday, '1b', misc.CHN_Holidays)
+    return run_date
+
+
+def save(config_file):
     with open(config_file, 'r') as infile:
         config = json.load(infile)
     name = config.get('name', 'save_ctp')
@@ -20,12 +30,13 @@ def save(config_file, tday):
                    format = '%(name)s:%(funcName)s:%(lineno)d:%(asctime)s %(levelname)s %(message)s',
                    to_console = True,
                    console_level = logging.INFO)
-    scur_day = datetime.datetime.strptime(tday, '%Y%m%d').date()
+    scur_day = get_run_date()
+    print('scur_day = %s' % scur_day.strftime('%Y%m%d'))
     save_agent = SaveAgent(config = config, tday = scur_day)
     if 'instIDs' in config:
         curr_insts = config['instIDs']
     else:
-        curr_insts = misc.filter_main_cont(tday, filter_flag)
+        curr_insts = misc.filter_main_cont(scur_day.strftime('%Y%m%d'), filter_flag)
     for inst in curr_insts:
         save_agent.add_instrument(inst)
     try:
@@ -35,7 +46,7 @@ def save(config_file, tday):
     except KeyboardInterrupt:
         save_agent.exit()
 
-def save_gui(config_file, tday):
+def save_gui(config_file):
     with open(config_file, 'r') as infile:
         config = json.load(infile)
     name = config.get('name', 'save_ctp')
@@ -45,7 +56,7 @@ def save_gui(config_file, tday):
                    format = '%(name)s:%(funcName)s:%(lineno)d:%(asctime)s %(levelname)s %(message)s',
                    to_console = True,
                    console_level = logging.INFO)
-    scur_day = datetime.datetime.strptime(tday, '%Y%m%d').date()
+    scur_day = get_run_date()
     if 'instIDs' in config:
         curr_insts = config['instIDs']
     else:
@@ -59,7 +70,7 @@ def save_gui(config_file, tday):
     # myGui.iconbitmap(r'c:\Python27\DLLs\thumbs-up-emoticon.ico')
     myGui.mainloop()
 
-def run_gui(config_file, tday):
+def run_gui(config_file):
     with open(config_file, 'r') as infile:
         config = json.load(infile)
     name = config.get('name', 'test_agent')
@@ -71,14 +82,15 @@ def run_gui(config_file, tday):
                 msg_conf = {'msg_class': 'loghandler_skype.SkypeHandler', \
                             'user_conf': dict({'group_name': 'AlgoTrade'}, **sec_bits.skype_user)},
                 msg_level = logging.INFO)
-    scur_day = datetime.datetime.strptime(tday, '%Y%m%d').date()
+    scur_day = get_run_date()
+    print('scur_day = %s' % scur_day.strftime('%Y%m%d'))
     myApp = MainApp(scur_day, config, master = None)
     myApp.restart()
     myGui = Gui(myApp)
     # myGui.iconbitmap(r'c:\Python27\DLLs\thumbs-up-emoticon.ico')
     myGui.mainloop()
 
-def run(config_file, tday):
+def run(config_file):
     with open(config_file, 'r') as infile:
         config = json.load(infile)
     name = config.get('name', 'test_agent')
@@ -87,7 +99,8 @@ def run(config_file, tday):
                    format = '%(name)s:%(funcName)s:%(lineno)d:%(asctime)s %(levelname)s %(message)s',
                    to_console = True,
                    console_level = logging.INFO)
-    scur_day = datetime.datetime.strptime(tday, '%Y%m%d').date()
+    scur_day = get_run_date()
+    print('scur_day = %s' % scur_day.strftime('%Y%m%d'))
     agent_class = config.get('agent_class', 'Agent')
     cls_str = agent_class.split('.')
     agent_cls = getattr(__import__(str(cls_str[0])), str(cls_str[1]))
@@ -102,5 +115,7 @@ def run(config_file, tday):
 if __name__ == '__main__':
     args = sys.argv[1:]
     app_name = args[0]
-    params = (args[1], args[2], )
+    params = (args[1],)
     getattr(sys.modules[__name__], app_name)(*params)
+    kw = input('press any key to exit\n')
+
