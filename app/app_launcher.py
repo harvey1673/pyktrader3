@@ -5,6 +5,7 @@ import time
 import logging
 import json
 from pycmqlib3.utility import misc, base, sec_bits
+from pycmqlib3.utility import dbaccess
 from pycmqlib3.core.agent_save import SaveAgent
 from pycmqlib3.core.agent_email import EmailAgent
 from pycmqlib3.core.agent import Agent
@@ -31,6 +32,7 @@ def save(config_file):
                    to_console = True,
                    console_level = logging.INFO)
     scur_day = get_run_date()
+    dbaccess.update_contract_list_table(scur_day)
     print('scur_day = %s' % scur_day.strftime('%Y%m%d'))
     save_agent = SaveAgent(config = config, tday = scur_day)
     if 'instIDs' in config:
@@ -57,6 +59,7 @@ def save_gui(config_file):
                    to_console = True,
                    console_level = logging.INFO)
     scur_day = get_run_date()
+    dbaccess.update_contract_list_table(scur_day)
     if 'instIDs' in config:
         curr_insts = config['instIDs']
     else:
