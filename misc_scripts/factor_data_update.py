@@ -306,5 +306,5 @@ def create_strat_json(product_list, freq, roll_rule, factor_repo, filename= "C:\
     strat_config['factor_repo'] = filtered_factors
     strat_data['config'] = strat_config
     with open(filename, 'w') as f:
-        json.dump(strat_data, f)
+        json.dump(strat_data, f, indent=4)
 

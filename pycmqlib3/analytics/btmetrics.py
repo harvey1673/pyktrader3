@@ -357,7 +357,7 @@ class MetricsBase(object):
         trades = tstool.diff(self.holdings, skipna = True)
 
         turnover_perc_y = (
-            tstool.calendar_aggregation(trades.abs(), jpw = 'sum', period = 'annual') /
+            tstool.calendar_aggregation(trades.abs(), how = 'sum', period = 'annual') /
             tstool.calendar_aggregation(self.holdings.abs(), how = 'mean', period = 'annual'))
         
         turnover_portfolio_perc_y = (

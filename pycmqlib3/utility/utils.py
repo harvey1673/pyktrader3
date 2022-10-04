@@ -4,7 +4,7 @@ from functools import wraps, lru_cache
 from datetime import datetime, timedelta
 from pycmqlib3.core.trading_const import Exchange
 
-TEMP_DIR = "C:\\dev\\data\\"
+TEMP_DIR = ""
 
 def save_json(filename: str, data: dict) -> None:
     """
