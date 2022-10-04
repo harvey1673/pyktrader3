@@ -57,7 +57,7 @@ class OptionStrategy(object):
         config['assets'] = []
         fname = self.folder + 'config.json'
         with open(fname, 'w') as ofile:
-            json.dump(config, ofile)
+            json.dump(config, ofile, indent=4)
 
     def save_state(self):
         filename = self.folder + 'strat_status.csv'

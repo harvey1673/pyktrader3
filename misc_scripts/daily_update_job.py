@@ -95,7 +95,7 @@ scenarios_all = [ \
             ]
 
 def run_update(tday = datetime.date.today()):
-    edate = min(datetime.date.today(), tday)    
+    edate = min(datetime.date.today(), tday)     
     if not is_workday(edate, 'CHN'):
         edate = day_shift(edate, '-1b', CHN_Holidays)
     sdate = day_shift(edate, '-3b', CHN_Holidays)
@@ -149,14 +149,14 @@ def run_update(tday = datetime.date.today()):
             job_status[update_field] = False
             print("update_field = %s is FAILED to update" % (update_field))
     with open(filename, 'w') as ofile:
-        json.dump(job_status, ofile)
+        json.dump(job_status, ofile, indent=4)
 
-if __name__=="__main__":
+if __name__=="__main__":    
     args = sys.argv[1:]
     if len(args)>=1:
         tday = datetime.datetime.strptime(args[0], "%Y%m%d").date()
     else:
-        tday = datetime.date.today()
+        tday = datetime.date.today()    
     run_update(tday)
     
     

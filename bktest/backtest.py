@@ -675,7 +675,7 @@ class BacktestManager(object):
                 ts.to_csv(res['pnl_file'])
                 fname = file_prefix + '_stats.json'
                 with open(fname, 'w') as ofile:
-                    json.dump(output, ofile)
+                    json.dump(output, ofile, indent=4)
                 cnx = connect(**self.dbconfig)
                 insert_row_by_dict(cnx, self.dbtable, res, is_replace=True)
                 cnx.close()
@@ -894,7 +894,7 @@ class ContBktestManager(BacktestManager):
                 ts.to_csv(fname2)
                 fname = file_prefix + '_stats.json'
                 with open(fname, 'w') as ofile:
-                    json.dump(output, ofile)
+                    json.dump(output, ofile, indent=4)
             cont_df = pd.DataFrame()
             for idy in range(abs(min(cont_map)), len(self.contlist[asset[0]]) - max(cont_map)):
                 cont = self.contlist[asset[0]][idy]

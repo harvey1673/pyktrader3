@@ -57,7 +57,7 @@ class Strategy(object):
             config['assets'].append(asset)
         fname = self.folder + 'config.json'
         with open(fname, 'w') as ofile:
-            json.dump(config, ofile)        
+            json.dump(config, ofile, indent=4)        
     
     def load_config(self, config):
         d = self.__dict__
