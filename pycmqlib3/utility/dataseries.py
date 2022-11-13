@@ -3,7 +3,8 @@ import pandas as pd
 from typing import Union, List
 import datetime
 from pycmqlib3.utility import misc
-from pycmqlib3.utility.dbaccess import load_fut_by_product, prod_main_cont_exch
+from pycmqlib3.utility.dbaccess import prod_main_cont_exch
+from pycmqlib3.utility.process_wt_data import load_fut_by_product
 
 
 def multislice_many(df, label_map):
@@ -181,8 +182,8 @@ def nearby(prodcode, n=1, start_date=None, end_date=None,
            contract_filter=prod_main_cont_filter, fill_cont=False,
           ):
     exch = misc.prod2exch(prodcode)
-    xdf = load_fut_by_product(prodcode, exch, start_date ,end_date, freq = freq)
-    xdf['expiry'] = xdf['instID'].apply(lambda x: misc.contract_expiry(x, hols = misc.CHN_Holidays))
+    xdf = load_fut_by_product(prodcode, exch, start_date, end_date, freq=freq)
+    xdf['expiry'] = xdf['instID'].apply(lambda x: misc.contract_expiry(x, hols=misc.CHN_Holidays))
     xdf['month'] = xdf['instID'].apply(lambda x: misc.inst2contmth(x)%100)
     if freq == 'd':
         index_cols = ['date']        
@@ -193,7 +194,7 @@ def nearby(prodcode, n=1, start_date=None, end_date=None,
         xdf['price_chg'] = np.log(xdf[adj_field]).diff()
     else:
         xdf['price_chg'] = xdf[adj_field].diff()      
-    xdf.loc[xdf['instID']!=xdf['instID'].shift(1), 'price_chg'] = 0
+    xdf.loc[xdf['instID'] != xdf['instID'].shift(1), 'price_chg'] = 0
     if (roll_rule[0] == '-') and (roll_rule[-1] in ['b', 'd']):
         xdf['roll_date'] = xdf['expiry'].apply(lambda x: misc.day_shift(x, roll_rule, hols = misc.CHN_Holidays))
         xdf = xdf[xdf.date <= xdf['roll_date']]
