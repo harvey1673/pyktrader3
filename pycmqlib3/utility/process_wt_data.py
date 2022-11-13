@@ -350,6 +350,10 @@ def save_ticks_to_wt_store(
 def combine_bars_wt_store(src_folder, dst_folder, target_folder, cutoff=None):
     dtHelper = WtDataHelper()
     period_map = {'day': 'd', 'min1': 'm1', 'min5': 'm5'}
+    if src_folder.lower() == target_folder.lower():
+        update_flag = True
+    else:
+        update_flag = False
     for period in ['day', 'min1', 'min5', ]:
         for exch in ['CFFEX', 'DCE', 'CZCE', 'SHFE', 'INE', ]:
             print(f'{period}-{exch}')
@@ -372,7 +376,10 @@ def combine_bars_wt_store(src_folder, dst_folder, target_folder, cutoff=None):
                         dst_df = dst_df[dst_df['date'] >= cutoff]
                         dst_df = src_df.append(dst_df)
                 else:
-                    dst_df = src_df
+                    if update_flag:
+                        continue
+                    else:
+                        dst_df = src_df
                 dst_df['time'] = dst_df['time'].astype('int64')
                 save_bars_to_dsb(dst_df, contract=cont, folder_loc=f'{target_folder}/{period}/{exch}',
                                  period=period_map[period])
@@ -390,9 +397,12 @@ def zip_wt_dir(path, filename, cutoff=None, file_type='.dsb'):
                     ziph.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), os.path.join(path, '..')))
 
 
-def update_wt_store(src_folder, dst_folder, cutoff=None):
-    combine_bars_wt_store(dst_folder, src_folder, dst_folder, cutoff=cutoff)
-    shutil.copytree(src_folder + '/ticks/', dst_folder + '/ticks/', dirs_exist_ok=True)
+def update_wt_store(base_folder, update_folder, cutoff=None):
+    if isinstance(cutoff, datetime.date):
+        cutoff = int(datetime.datetime.strftime(cutoff, '%Y%m%d'))
+    combine_bars_wt_store(base_folder, update_folder, base_folder, cutoff=cutoff)
+    shutil.copytree(update_folder + '/ticks/', base_folder + '/ticks/', dirs_exist_ok=True)
+    shutil.copytree(update_folder + '/snapshot/', base_folder + '/snapshot/', dirs_exist_ok=True)
 
 
 if __name__ == "__main__":
