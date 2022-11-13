@@ -31,7 +31,7 @@ fut_tick_columns = ['instID', 'date', 'tick_id', 'hour', 'min', 'sec', 'msec', '
 ss_tick_columns = ['instID', 'date', 'tick_id', 'hour', 'min', 'sec', 'msec', 'openInterest', 'volume', 'price', 'high',
                    'low', 'bidPrice1', 'bidVol1', 'askPrice1', 'askVol1']
 min_columns = ['datetime', 'date', 'open', 'high', 'low', 'close', 'volume', 'openInterest', 'min_id']
-daily_columns = ['date', 'open', 'high', 'low', 'close', 'volume', 'openInterest']
+daily_columns = ['date', 'open', 'high', 'low', 'close', 'settle', 'volume', 'openInterest']
 fx_columns = ['date', 'tenor', 'rate']
 ir_columns = ['date', 'tenor', 'rate']
 spot_columns = ['date', 'close']

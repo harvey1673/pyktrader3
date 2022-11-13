@@ -6,6 +6,7 @@ import calendar
 import math
 import copy
 import pandas as pd
+import json
 from . import dbaccess
 
 BDAYS_PER_YEAR = 245.0
@@ -236,7 +237,8 @@ product_code = {'SHFE': ['cu', 'cu_Opt', 'al', 'zn', 'al_Opt', 'zn_Opt', 'pb', '
                 'DCE': ['c', 'c_Opt', 'cs', 'j', 'jd', 'a', 'a_Opt', 'b', 'b_Opt','m', 'm_Opt', 'y', 'y_Opt', 'p', 'p_Opt',\
                         'l', 'v', 'pp', 'l_Opt', 'v_Opt', 'pp_Opt', \
                         'jm', 'i', 'i_Opt', 'fb', 'bb', 'eg', 'rr', 'eb', 'pg', 'pg_Opt', 'lh'],
-                'CZCE': ['ER', 'RO', 'WS', 'WT', 'WH', 'PM', 'CF', 'CF_Opt', 'CY', 'SR', 'SR_Opt', \
+                # 'ER', 'WS', 'WT',
+                'CZCE': ['WH', 'PM', 'CF', 'CF_Opt', 'CY', 'SR', 'SR_Opt', \
                          'TA', 'TA_Opt', 'OI', 'OI_Opt', 'RI', 'ME', 'FG', 'RS', 'RM', 'RM_Opt', 'TC', \
                          'JR', 'LR', 'MA', 'MA_Opt', 'SM', 'SF', 'ZC', 'ZC_Opt', 'AP', 'CJ', 'UR', 'SA', 'PF', 'PK', 'PK_Opt'],
                 'INE': ['sc', 'nr', 'lu', 'bc'],
@@ -652,6 +654,17 @@ product_ticksize = {
                     'sc_Opt': 0.05,
                     'lu': 1.0,
                     }
+
+
+def read_holidays_from_json(filename = 'C:/dev/akshare/akshare/file_fold/calendar.json',
+                            start_date = datetime.date(2000, 1, 1),
+                            end_date = datetime.date(2013,12,31)):
+    f = open(filename)
+    workday_list = json.load(f)
+    pd.date_range(start = start_date, end = end_date)
+    hols = [d.date() for d in pd.date_range(start = start_date, end = end_date)
+            if (d.strftime('%Y%m%d') not in workday_list) and (d.weekday()<5)]
+    return hols
 
 
 def xl2date(num):
