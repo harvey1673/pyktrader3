@@ -385,11 +385,11 @@ def combine_bars_wt_store(src_folder, dst_folder, target_folder, cutoff=None):
                                  period=period_map[period])
 
 
-def zip_wt_dir(path, filename, cutoff=None, file_type='.dsb'):
+def zip_wt_dir(path, filename, cutoff=None, file_types=['.dsb', 'csv']):
     with zipfile.ZipFile(filename, 'w', zipfile.ZIP_DEFLATED) as ziph:
         for root, dirs, files in os.walk(path):
             for file in files:
-                if file.endswith(file_type):
+                if file.endswith(tuple(file_types)):
                     time_mod = os.path.getmtime(f'{root}/{file}')
                     time_mod = datetime.datetime.fromtimestamp(time_mod)
                     if cutoff and (time_mod.date() < cutoff):
