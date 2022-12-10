@@ -400,6 +400,24 @@ def load_product_info(prod, conn = None):
     return out
 
 
+def load_cont_by_prod(prod, conn=None):
+    if conn == None:
+        cnx = connect(**dbconfig)
+    else:
+        cnx = conn
+    cursor = cnx.cursor()
+    exch = misc.prod2exch(prod)
+    qry_key = f'{prod}____'
+    if exch in ['CZCE']:
+        qry_key = f'{prod}%'
+    stmt = f"select distinct(instID) from fut_daily where instID like '{qry_key}' and exch='{exch}'"
+    cursor.execute(stmt)
+    out = []
+    for (instID,) in cursor:
+        out.append(instID)
+    return out
+
+
 def load_stockopt_info(inst, conn = None):
     if conn == None:
         cnx = connect(**dbconfig)

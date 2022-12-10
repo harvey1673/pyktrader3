@@ -1,15 +1,15 @@
 import numpy as np
+import os
 import pathlib
 import math
 import zipfile
 import shutil
 import pandas as pd
-from typing import Union, List
 import datetime
 from os import listdir
 from os.path import isfile, join
 from pycmqlib3.utility import misc
-from pycmqlib3.utility.dbaccess import *
+from pycmqlib3.utility import dbaccess
 import pycmqlib3.analytics.data_handler as dh
 from wtpy.wrapper import WtDataHelper
 from wtpy.WtCoreDefs import WTSBarStruct, WTSTickStruct
@@ -68,6 +68,7 @@ def load_fut_by_product(product, exch, start_date, end_date, freq = 'd', folder_
     for file in file_list:
         cont = file.split('.')[0]
         prod = cont[:2] if exch in ['CZCE', ] else cont[:-4]
+        expiry = misc.contract_expiry(cont, hols=misc.CHN_Holidays)
         if prod not in prod_keys:
             continue
         dst_df = dtHelper.read_dsb_bars(f'{src_path}/{file}')
@@ -180,17 +181,17 @@ def save_bars_to_wt_store(exchange_list=['DCE', 'CZCE', 'SHFE', 'INE', 'CFFEX'],
     mcol_list = ['date', 'time', 'open', 'high', 'low', 'close', 'money', 'vol', 'hold', 'diff']
     dcol_list = ['date', 'time', 'open', 'high', 'low', 'close', 'settle', 'money', 'vol', 'hold', 'diff']
     dtHelper = WtDataHelper()
-    cnx = connect(**dbconfig)
+    cnx = dbaccess.connect(**dbaccess.dbconfig)
     for exch in exchange_list:
         for prod in misc.product_code[exch]:
             if ('_Opt' in prod) or (prod in exclusion_list):
                 continue
             print('product = %s\n' % prod)
-            contlist, _ = misc.contract_range(prod, exch, range(1, 13), start_date, misc.day_shift(end_date, '1y'))
+            contlist = dbaccess.load_cont_by_prod(prod)
             multiple = misc.product_lotsize[prod]
             for cont in contlist:
                 if process_min:
-                    mdf = load_min_data_to_df(cnx, 'fut_min', cont, start_date, end_date, index_col=None, shift_datetime=False)
+                    mdf = dbaccess.load_min_data_to_df(cnx, 'fut_min', cont, start_date, end_date, index_col=None, shift_datetime=False)
                     if len(mdf) > 0:
                         print('minute data for contract = %s\n' % cont)
                         m5df = dh.conv_ohlc_freq(mdf, '5m', index_col=None)
@@ -237,7 +238,7 @@ def save_bars_to_wt_store(exchange_list=['DCE', 'CZCE', 'SHFE', 'INE', 'CFFEX'],
                                          period='m5')
 
                 if process_day:
-                    ddf = load_daily_data_to_df(cnx, 'fut_daily', cont, start_date, end_date, index_col=None)
+                    ddf = dbaccess.load_daily_data_to_df(cnx, 'fut_daily', cont, start_date, end_date, index_col=None)
                     ddf['settle'] = ddf['settle'].fillna(method='ffill')
                     ddf = ddf.dropna(subset=['close', 'volume', 'settle'])
                     if len(ddf) > 0:
@@ -270,7 +271,7 @@ def save_ticks_to_wt_store(
         end_date=misc.day_shift(datetime.date.today(), '-1b', misc.CHN_Holidays),
         dst_folder='../storage/his',
         exclusion_list=[]):
-    cnx = connect(**dbconfig)
+    cnx = dbaccess.connect(**dbaccess.dbconfig)
     for exch in exchange_list:
         for prod in misc.product_code[exch]:
             if ('_Opt' in prod) or (prod in exclusion_list):
@@ -279,9 +280,9 @@ def save_ticks_to_wt_store(
             contlist, _ = misc.contract_range(prod, exch, range(1, 13), start_date, misc.day_shift(end_date, '1y'))
             multiple = misc.product_lotsize[prod]
             for cont in contlist:
-                tdf = load_tick_to_df(cnx, 'fut_tick', cont, start_date, end_date, start_tick=0)
-                ddf = load_daily_data_to_df(cnx, 'fut_daily', cont, start_date, end_date, index_col='date', field='instID',
-                                            date_as_str=False)
+                tdf = dbaccess.load_tick_to_df(cnx, 'fut_tick', cont, start_date, end_date, start_tick=0)
+                ddf = dbaccess.load_daily_data_to_df(cnx, 'fut_daily', cont, start_date, end_date,
+                                                     index_col='date', field='instID', date_as_str=False)
                 if len(ddf) == 0:
                     continue
                 print(f'contract = {cont}')
@@ -401,8 +402,14 @@ def update_wt_store(base_folder, update_folder, cutoff=None):
     if isinstance(cutoff, datetime.date):
         cutoff = int(datetime.datetime.strftime(cutoff, '%Y%m%d'))
     combine_bars_wt_store(base_folder, update_folder, base_folder, cutoff=cutoff)
-    shutil.copytree(update_folder + '/ticks/', base_folder + '/ticks/', dirs_exist_ok=True)
-    shutil.copytree(update_folder + '/snapshot/', base_folder + '/snapshot/', dirs_exist_ok=True)
+    try:
+        shutil.copytree(update_folder + '/ticks/', base_folder + '/ticks/', dirs_exist_ok=True)
+    except FileNotFoundError:
+        pass
+    try:
+        shutil.copytree(update_folder + '/snapshot/', base_folder + '/snapshot/', dirs_exist_ok=True)
+    except FileNotFoundError:
+        pass
 
 
 if __name__ == "__main__":
@@ -426,5 +433,5 @@ if __name__ == "__main__":
     #                         src_folder=src_folder,
     #                         dst_folder=dst_folder)
 
-    cutoff = datetime.date(2022, 11, 5)
-    zipdir('c:/dev/wtdev/storage/his/', 'C:/dev/data/test_zip.zip', cutoff=cutoff)
+    cutoff_date = datetime.date(2022, 11, 26)
+    zip_wt_dir('c:/dev/wtdev/storage/his/', 'C:/dev/data/test_zip.zip', cutoff=cutoff_date)
