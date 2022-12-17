@@ -42,7 +42,7 @@ def update_hist_fut_daily(start_date = datetime.date.today(), \
     while start_date <= end_date:
         for exch in exchanges:
             print("exch = %s, date=%s" % (exch, end_date))
-            df = ak.get_futures_daily(start_date=end_date, end_date=end_date, market = exch, index_bar=False)
+            df = ak.get_futures_daily(start_date=end_date, end_date=end_date, market = exch)
             if (df is not None) and (len(df) > 0):
                 df = df[df['close'].apply(lambda x: pd.api.types.is_number(x))]
                 df = df[df['open'].apply(lambda x: pd.api.types.is_number(x))]
