@@ -101,7 +101,7 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule 
     base_args = {'roll_rule': '-25b', 'freq': freq, 'shift_mode': shift_mode, 'dbtbl_prefix': dbtbl_prefix}
     base2_args = {'roll_rule': '-35b', 'freq': freq, 'shift_mode': shift_mode}
     sc_args = {'roll_rule': '-20b', 'freq': freq, 'shift_mode': shift_mode}
-    #lu_args = {'roll_rule': '-25b', 'freq': freq, 'shift_mode': shift_mode}
+    lu_args = {'roll_rule': '-45b', 'freq': freq, 'shift_mode': shift_mode}
     eq_args = {'roll_rule': '-1b', 'freq': freq, 'shift_mode': shift_mode, 'dbtbl_prefix': dbtbl_prefix}
     bond_args = {'roll_rule': '-20b', 'freq': freq, 'shift_mode': shift_mode, 'dbtbl_prefix': dbtbl_prefix}
     precious_args = {'roll_rule': '-15b', 'freq': freq, 'shift_mode': shift_mode, 'dbtbl_prefix': dbtbl_prefix}
@@ -138,7 +138,6 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule 
         use_args['n'] = 1
         print("loading mkt = %s, nb = %s, args = %s" % (asset, str(use_args['n']), use_args))
         df = nearby(asset, **use_args)
-        df = df[['open', 'high', 'low', 'close', 'volume', 'openInterest', 'contract', 'shift']]
         if freq == 'm':
             df = cleanup_mindata(df, asset)
         # df['expiry'] = df['contract'].apply(lambda x: contract_expiry(x, CHN_Holidays))
@@ -148,7 +147,6 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule 
         use_args['n'] = 2
         print("loading mkt = %s, nb = %s, args = %s" % (asset, str(use_args['n']), use_args))
         xdf = nearby(asset, **use_args)
-        xdf = xdf[['open', 'high', 'low', 'close', 'volume', 'openInterest', 'contract', 'shift']]
         if freq == 'm':
             xdf = cleanup_mindata(xdf, asset)
         # xdf['expiry'] = xdf['contract'].apply(lambda x: contract_expiry(x, CHN_Holidays))
