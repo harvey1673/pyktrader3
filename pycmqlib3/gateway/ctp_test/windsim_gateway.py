@@ -24,6 +24,8 @@ exchangeMap[Exchange.CFFEX.value] = 'CFE'
 exchangeMap[Exchange.SHFE.value] = 'SHF'
 exchangeMap[Exchange.DCE.value] = 'DCE'
 exchangeMap[Exchange.CZCE.value] = 'CZC'
+exchangeMap[Exchange.INE.value] = 'INE'
+exchangeMap[Exchange.GFEX.value] = 'GFEX'
 exchangeMapReverse = {v: k for k, v in list(exchangeMap.items())}
 
 wsqParamMap = {}

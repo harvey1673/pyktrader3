@@ -242,6 +242,7 @@ product_code = {'SHFE': ['cu', 'cu_Opt', 'al', 'zn', 'al_Opt', 'zn_Opt', 'pb', '
                          'TA', 'TA_Opt', 'OI', 'OI_Opt', 'RI', 'ME', 'FG', 'RS', 'RM', 'RM_Opt', 'TC', \
                          'JR', 'LR', 'MA', 'MA_Opt', 'SM', 'SF', 'ZC', 'ZC_Opt', 'AP', 'CJ', 'UR', 'SA', 'PF', 'PK', 'PK_Opt'],
                 'INE': ['sc', 'nr', 'lu', 'bc'],
+                'GFEX': ['si', 'si_Opt'],
                 'SGX': ['fef', 'iolp', 'iac', 'm65f',], \
                 'LME': ['lsc', 'lsr', 'lhc',], \
                 'NYMEX': ['nhr', ],}
@@ -254,7 +255,7 @@ CHN_Stock_Exch = {
 option_market_products = ['m_Opt', 'c_Opt', 'a_Opt', 'b_Opt', 'y_Opt', 'p_Opt', \
     'i_Opt', 'pg_Opt', 'l_Opt', 'pp_Opt', 'v_Opt', \
     'OI_Opt', 'PK_Opt', 'SR_Opt', 'CF_Opt', 'TA_Opt', 'MA_Opt', 'RM_Opt', 'ZC_Opt',\
-    'cu_Opt', 'al_Opt', 'zn_Opt', 'ru_Opt', 'au_Opt', \
+    'cu_Opt', 'al_Opt', 'zn_Opt', 'ru_Opt', 'au_Opt', 'si_Opt',\
     'ETF_Opt', 'IO_Opt', 'MO_Opt',]
 
 night_session_markets = {'cu': 1,
@@ -449,6 +450,8 @@ product_class_map = {'zn': ('Ind', "BaseMetal"),
                    'sc': ('Ind', "Petro"),
                    'sc_Opt': ('Ind', "Petro"),
                    'lu': ('Ind', "Petro"),
+                   'si': ('Ind', "NonFerrous"),
+                   'si_Opt': ('Ind', "NonFerrous"),
                    }
 
 product_lotsize = {'zn': 5,
@@ -551,6 +554,8 @@ product_lotsize = {'zn': 5,
                    'sc': 1000,
                    'sc_Opt': 1000,
                    'lu': 10,
+                   'si': 5,
+                   'si_Opt': 5,
                    }
 
 product_ticksize = {
@@ -653,6 +658,8 @@ product_ticksize = {
                     'sc': 0.1,
                     'sc_Opt': 0.05,
                     'lu': 1.0,
+                    'si': 5.0,
+                    'si_Opt': 5.0,
                     }
 
 
@@ -915,7 +922,7 @@ def inst_to_exch(inst):
 
 def get_hols_by_exch(exch):
     hols = []
-    if exch in ['DCE', 'CFFEX', 'CZCE', 'SHFE', 'INE', 'SSE', 'SZSE']:
+    if exch in ['DCE', 'CFFEX', 'CZCE', 'SHFE', 'INE', 'GFEX', 'SSE', 'SZSE',]:
         hols = CHN_Holidays
     return hols
 
@@ -971,7 +978,7 @@ def get_opt_expiry(fut_inst, cont_mth, exch=''):
         else:
             expiry_month = datetime.date(cont_yr - 1, 12, 1)
         expiry = workdays.workday(workdays.workday(expiry_month, -1, CHN_Holidays), 3, CHN_Holidays)
-    elif product in ['m', 'c', 'i', 'pg', 'l', 'pp', 'v', 'a', 'b', 'p', 'y']:
+    elif product in ['m', 'c', 'i', 'pg', 'l', 'pp', 'v', 'a', 'b', 'p', 'y', 'si']:
         if cont_mth > 1:
             expiry_month = datetime.date(cont_yr, cont_mth - 1, 1) + datetime.timedelta(days=-1)
         else:
@@ -1200,7 +1207,7 @@ def cont_date_expiry(cont_date, prod_code, exch):
         expiry = workdays.workday(expiry, 1, CHN_Holidays)                    
     elif prod_code in ['ZC', 'TC']:
         expiry = workdays.workday(cont_date - datetime.timedelta(days=1), 5, hols)   
-    elif exch in ['DCE', 'CZCE']:
+    elif exch in ['DCE', 'CZCE', 'GFEX',]:
         expiry = workdays.workday(cont_date - datetime.timedelta(days=1), 10, hols)    
     elif exch in ['SHFE', 'INE']:
         expiry = datetime.date(yr, mth, 14)

@@ -29,9 +29,10 @@ def main_cont_filter(df, prodcode):
         'sn': [datetime.date(2020, 1, 1), [1, 5, 9]],
         'bu': [datetime.date(2018, 1, 1), [6, 9, 12]],
         'b': [datetime.date(2019, 4, 1), [1, 5, 9]],
+        'sp': [datetime.date(2020, 4, 1), [1, 5, 9]],
     }
 
-    if prodcode in base_metal_mkts + ['sc', 'nr', 'eb', 'lu', 'IF', 'IC', 'IH', 'IM', 'b', 'bu']:
+    if prodcode in base_metal_mkts + ['sc', 'nr', 'eb', 'lu', 'IF', 'IC', 'IH', 'IM', 'b', 'bu', 'sp']:
         cont_list = [i for i in range(1, 13)]
     elif prodcode in ['T', 'TF', 'TS']:
         cont_list = [3, 6, 9, 12]
@@ -50,14 +51,6 @@ def main_cont_filter(df, prodcode):
         flag = flag | ((df['date'] >= product_cont_map[prodcode][0]) & (df['month'].isin(cont_list)))
     else:
         flag = df['month'].isin(cont_list)
-
-    product_starts = {
-        'fu': datetime.date(2018, 9, 1),
-        'b': datetime.date(2018, 1, 3),
-        'nr': datetime.date(2020, 2, 1),
-    }
-    if prodcode in product_starts:
-        flag = flag & (df['date'] >= product_starts[prodcode])
     return flag
 
 
@@ -65,17 +58,25 @@ def update_expiry_roll(start_date=datetime.date(2020, 1, 1),
                        end_date=datetime.date.today(),
                        cutoff=misc.day_shift(datetime.date.today(), '-1b', misc.CHN_Holidays),
                        roll_name='troll',
-                       nb_cont=2,
                        folder="C:/dev/wtdev/config/roll",
+                       markets=all_markets,
                        skip_exists=True):
     roll_mode = 0
     roll_win = 1
     cont_thres = 0
     cont_ratio = [1.0, 1.0]
+    product_starts = {
+        'fu': datetime.date(2018, 9, 1),
+        'b': datetime.date(2018, 1, 3),
+        'nr': datetime.date(2020, 2, 1),
+        'pb': datetime.date(2013, 12, 1),
+    }
     contract_filter = main_cont_filter
-    for prodcode in all_markets:
+    for prodcode in markets:
+        sdate = start_date
+        nb_cont = 2
         roll_cutoff = '-30b'
-        if prodcode in ['cu', 'al', 'zn', 'pb', 'sn', 'ss', ]:
+        if prodcode in ['cu', 'al', 'zn', 'pb', 'sn', 'ss', 'sp',]:
             roll_cutoff = '-25b'
         elif prodcode in ['ni', 'jd', 'lh', ]:
             roll_cutoff = '-35b'
@@ -87,7 +88,10 @@ def update_expiry_roll(start_date=datetime.date(2020, 1, 1),
             roll_cutoff = '-15b'
         elif prodcode in eq_fut_mkts:
             roll_cutoff = '-0b'
-
+        if prodcode in product_starts:
+            sdate = max(sdate, product_starts[prodcode])
+        if prodcode in ['cu', 'al', 'zn', 'ss',]:
+            nb_cont = 3
         filename = "%s/%s_%s.csv" % (folder, prodcode, roll_name)
         file = Path(filename)
         if file.exists():
@@ -95,12 +99,16 @@ def update_expiry_roll(start_date=datetime.date(2020, 1, 1),
                 continue
             curr_roll = pd.read_csv(file, parse_dates=['date'])
             curr_roll['date'] = curr_roll['date'].dt.date
+            curr_roll = curr_roll[[col for col in curr_roll.columns if col in ['date'] + [str(i) for i in range(nb_cont)]]]
+            curr_roll = curr_roll[curr_roll['date'] < cutoff]
+            curr_roll = curr_roll.set_index('date')
         else:
-            curr_roll = pd.DataFrame()
+            curr_roll = pd.DataFrame(columns = [str(i) for i in range(nb_cont)])
+            curr_roll.index.name = 'date'
         roll_kwargs = {'roll_win': roll_win, 'roll_cutoff': roll_cutoff, 'cont_ratio': cont_ratio,
                        'contract_filter': contract_filter, 'min_thres': 0}
         df = load_processed_fut_by_product(prodcode,
-                                           start_date=start_date,
+                                           start_date=sdate,
                                            end_date=end_date,
                                            freq='d',
                                            **roll_kwargs)
@@ -111,32 +119,34 @@ def update_expiry_roll(start_date=datetime.date(2020, 1, 1),
         if len(roll_map) == 0:
             print(f"empty roll map, skipping {prodcode}\n")
             continue
-        roll_map = roll_map.reset_index()
-        roll_map.columns = [str(col) for col in roll_map.columns]
-        if len(curr_roll) > 0:
-            last_roll = min(curr_roll['date'].iloc[-1], cutoff)
-            roll_map = curr_roll.append(roll_map[roll_map['date'] > last_roll], ignore_index=True)
-        if roll_map['1'].iloc[-1] == None:
-            roll_map['1'].iloc[-1] = misc.default_next_main_contract(roll_map['0'].iloc[-1], start_date, end_date)
-        flag = roll_map['1'].isna()
-        roll_map['1'].loc[flag] = roll_map['0'].loc[flag.shift(1).fillna(False)].values
-        roll_map = roll_map.set_index('date')
+        for idx in range(1, nb_cont):
+            if roll_map[str(idx)].iloc[-1] is None:
+                roll_map[str(idx)].iloc[-1] = misc.default_next_main_contract(roll_map[str(idx-1)].iloc[-1], start_date, end_date)
         roll_map.to_csv(filename)
 
 
 def update_main_roll(start_date=datetime.date(2020, 1, 1),
                     end_date=datetime.date.today(),
                     cutoff=misc.day_shift(datetime.date.today(), '-1b', misc.CHN_Holidays),
-                    roll_name='nroll',
+                    roll_name='vroll',
                     folder="C:/dev/wtdev/config/roll",
+                    markets = all_markets,
+                    roll_mode = 0,
+                    cont_thres = 1e+6,
                     skip_exists=True,
-                    nb_cont=2,
                     cont_ratio=[1.0, 0.0],
                     min_thres=7500):
-    roll_mode = 0
     roll_win = 1
-    for prodcode in all_markets:
+    product_starts = {
+        'fu': datetime.date(2018, 9, 1),
+        'b': datetime.date(2018, 1, 3),
+        'nr': datetime.date(2020, 2, 1),
+        'pb': datetime.date(2013, 12, 1),
+    }
+    for prodcode in markets:
         roll_cutoff = '-20b'
+        nb_cont = 2
+        sdate = start_date
         contract_filter = None
         if prodcode in ['IF', 'IC', 'IH', 'IM', 'sc', ]:
             min_thres = 0.1 * min_thres
@@ -150,7 +160,10 @@ def update_main_roll(start_date=datetime.date(2020, 1, 1),
             min_thres = 0
         if prodcode in ['IF', 'IC', 'IH', 'IM', ]:
             roll_cutoff = '0b'
-
+        if prodcode in product_starts:
+            sdate = max(sdate, product_starts[prodcode])
+        if prodcode in ['cu', 'al', 'zn', 'ss',]:
+            nb_cont = 3
         filename = "%s/%s_%s.csv" % (folder, prodcode, roll_name)
         file = Path(filename)
         if file.exists():
@@ -158,27 +171,28 @@ def update_main_roll(start_date=datetime.date(2020, 1, 1),
                 continue
             curr_roll = pd.read_csv(file, parse_dates=['date'])
             curr_roll['date'] = curr_roll['date'].dt.date
+            curr_roll = curr_roll[[col for col in curr_roll.columns if col in ['date'] + [str(i) for i in range(nb_cont)]]]
+            curr_roll = curr_roll[curr_roll['date'] < cutoff]
         else:
-            curr_roll = pd.DataFrame()
+            curr_roll = pd.DataFrame(columns = [str(i) for i in range(nb_cont)])
+            curr_roll.index.name = 'date'
         roll_kwargs = {'roll_win': roll_win, 'roll_cutoff': roll_cutoff, 'cont_ratio': cont_ratio,
                        'contract_filter': contract_filter, 'min_thres': min_thres}
-
-        df = load_processed_fut_by_product(prodcode, start_date=start_date, end_date=end_date, freq='d', **roll_kwargs)
-        cont_thres = 50_000
-        roll_map, daily_cont = rolling_fut_cont(df, nb_cont=nb_cont, cont_thres=cont_thres, roll_mode=roll_mode)
+        df = load_processed_fut_by_product(prodcode,
+                                           start_date=sdate,
+                                           end_date=end_date,
+                                           freq='d',
+                                           **roll_kwargs)
+        roll_map, daily_cont = rolling_fut_cont(df, nb_cont=nb_cont,
+                                                cont_thres=cont_thres,
+                                                roll_mode=roll_mode,
+                                                curr_roll=curr_roll)
         if len(roll_map) == 0:
             print(f"empty roll map, skipping {prodcode}\n")
             continue
-        roll_map = roll_map.reset_index()
-        roll_map.columns = [str(col) for col in roll_map.columns]
-        if len(curr_roll) > 0:
-            last_roll = min(curr_roll['date'].iloc[-1], cutoff)
-            roll_map = curr_roll.append(roll_map[roll_map['date'] > last_roll], ignore_index=True)
-        if roll_map['1'].iloc[-1] is None:
-            roll_map['1'].iloc[-1] = misc.default_next_main_contract(roll_map['0'].iloc[-1], start_date, end_date)
-        flag = roll_map['1'].isna()
-        roll_map['1'].loc[flag] = roll_map['0'].loc[flag.shift(1).fillna(False)].values
-        roll_map = roll_map.set_index('date')
+        for idx in range(1, nb_cont):
+            if roll_map[str(idx)].iloc[-1] is None:
+                roll_map[str(idx)].iloc[-1] = misc.default_next_main_contract(roll_map[str(idx-1)].iloc[-1], start_date, end_date)
         roll_map.to_csv(filename)
 
 

@@ -266,7 +266,7 @@ def save_bars_to_wt_store(exchange_list=['DCE', 'CZCE', 'SHFE', 'INE', 'CFFEX'],
 
 
 def save_ticks_to_wt_store(
-        exchange_list=['DCE', 'CZCE', 'SHFE', 'INE', 'CFFEX'],
+        exchange_list=['DCE', 'CZCE', 'SHFE', 'INE', 'CFFEX', 'GFEX'],
         start_date=datetime.date(2000, 1, 1),
         end_date=misc.day_shift(datetime.date.today(), '-1b', misc.CHN_Holidays),
         dst_folder='../storage/his',
@@ -356,7 +356,7 @@ def combine_bars_wt_store(src_folder, dst_folder, target_folder, cutoff=None):
     else:
         update_flag = False
     for period in ['day', 'min1', 'min5', ]:
-        for exch in ['CFFEX', 'DCE', 'CZCE', 'SHFE', 'INE', ]:
+        for exch in ['CFFEX', 'DCE', 'CZCE', 'SHFE', 'INE', 'GFEX']:
             print(f'{period}-{exch}')
             src_path = '%s/%s/%s' % (src_folder, period, exch)
             file_list = [f for f in listdir(src_path) if isfile(join(src_path, f))]

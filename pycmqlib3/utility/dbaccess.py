@@ -461,7 +461,7 @@ def get_stockopt_map(underlying, cont_mths, strikes, conn = None):
     return out
 
 
-def update_contract_list_table(sdate, exch = ['DCE', 'CZCE', 'SHFE', 'CFFEX', 'INE'], default_margin = 0.08):
+def update_contract_list_table(sdate, exch = ['DCE', 'CZCE', 'SHFE', 'CFFEX', 'INE', 'GFEX'], default_margin = 0.08):
     conn = connect(**dbconfig)
     product_table = pd.read_sql("select * from trade_products where is_active=1", conn)
     product_table = product_table[product_table.exchange.isin(exch)]

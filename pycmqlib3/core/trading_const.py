@@ -66,6 +66,7 @@ class Exchange(Enum):
     CZCE = "CZCE"           # Zhengzhou Commodity Exchange
     DCE = "DCE"             # Dalian Commodity Exchange
     INE = "INE"             # Shanghai International Energy Exchange
+    GFEX = "GFEX"             # Guangzhou Future Exchange
     SSE = "SSE"             # Shanghai Stock Exchange
     SZSE = "SZSE"           # Shenzhen Stock Exchange
     SGE = "SGE"             # Shanghai Gold Exchange
