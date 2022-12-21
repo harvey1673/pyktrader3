@@ -23,7 +23,9 @@ exchangeMap[Exchange.SZSE.value] = 'SZ'
 exchangeMap[Exchange.CFFEX.value] = 'CFE'
 exchangeMap[Exchange.SHFE.value] = 'SHF'
 exchangeMap[Exchange.DCE.value] = 'DCE'
+exchangeMap[Exchange.GFEX.value] = 'GFEX'
 exchangeMap[Exchange.CZCE.value] = 'CZC'
+exchangeMap[Exchange.INE.value] = 'INE'
 exchangeMapReverse = {v: k for k, v in list(exchangeMap.items())}
 
 wsqParamMap = {}
@@ -128,7 +130,7 @@ class WindMdApi(object):
             symbolSplit = windSymbol.split('.')
             tick_data['InstrumentID'] = str(symbolSplit[0])
             tick_data['ExchangeID'] = exchangeMapReverse[symbolSplit[1]]
-            if tick_data['ExchangeID'] in ['DCE', 'SHFE', 'INE']:
+            if tick_data['ExchangeID'] in ['DCE', 'SHFE', 'INE', 'GFEX']:
                 tick_data['InstrumentID'] = tick_data['InstrumentID'].lower()
             tick_data['timestamp'] = datetime.datetime(2018,1,1,0,0,0)
             tick_data['Volume'] = 0

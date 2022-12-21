@@ -58,7 +58,8 @@ EXCHANGE_CTP2CMQ = {
     "SHFE": Exchange.SHFE,
     "CZCE": Exchange.CZCE,
     "DCE": Exchange.DCE,
-    "INE": Exchange.INE
+    "INE": Exchange.INE,
+    "GFEX": Exchange.GFEX,
 }
 
 PRODUCT_CTP2CMQ = {
@@ -371,7 +372,7 @@ class CtpGateway(GrossGateway):
     def rsp_qry_instrument(self, event):
         data = event.dict['data']
         last = event.dict['last']
-        if data['ProductClass'] in [THOST_FTDC_PC_Futures, THOST_FTDC_PC_Options] and data['ExchangeID'] in ['CZCE', 'DCE', 'SHFE', 'CFFEX', 'INE',]:
+        if data['ProductClass'] in [THOST_FTDC_PC_Futures, THOST_FTDC_PC_Options] and data['ExchangeID'] in ['CZCE', 'DCE', 'SHFE', 'CFFEX', 'INE', 'GFEX']:
             cont = {}
             cont['instID'] = data['InstrumentID']           
             margin_l = data['LongMarginRatio']

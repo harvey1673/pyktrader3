@@ -19,7 +19,7 @@ class PseudoAgent(object):
         if instID not in self.instruments:
             if exch in ["SSE", "SZSE", "NYSE", "NASDAQ", "HKSE"]:
                 self.instruments[instID] = Stock(instID)
-            elif exch in ["CFFEX", "SHFE", "DCE", "CZCE", "NYMEX", "GLOBEX", "COMEX", "ICE", "CME", "CBOT"]:
+            elif exch in ["CFFEX", "SHFE", "DCE", "CZCE", "INE", "GFEX", "NYMEX", "GLOBEX", "COMEX", "ICE", "CME", "CBOT"]:
                 self.instruments[instID] = Future(instID)
             self.instruments[instID].update_param(self.scur_day)
 

@@ -91,34 +91,35 @@ def load_processed_fut_by_product(prodcode, start_date=None, end_date=None, freq
     return xdf
 
 
-def rolling_fut_cont(xdf, nb_cont=2, cont_thres=10_000, roll_mode=1, curr_roll=None):
+def rolling_fut_cont(xdf, nb_cont=2, cont_thres=10_000, roll_mode=1, curr_roll=pd.DataFrame()):
     inst_list = xdf['instID'].unique()
     expiry_map = dict([(inst, misc.contract_expiry(inst, hols=misc.CHN_Holidays)) for inst in inst_list])
     expiry_inv_map = {str(v): k for k, v in expiry_map.items()}
     roll_df = pd.pivot_table(xdf, index=['date'], columns='expiry', values='roll_ind', aggfunc='first')
     inst_df = pd.pivot_table(xdf, index=['date'], columns='expiry', values='exp_str', aggfunc='first')
     daily_index = roll_df.index
-
     curr_list = []
     data_list = []
     date_list = []
-    if curr_roll is not None:
+
+    if len(curr_roll) > 0:
         alist = curr_roll.to_numpy()[-1]
         curr_date = alist[0]
         curr_list = alist[1:nb_cont + 1]
         roll_df = roll_df[roll_df.index > curr_date]
         inst_df = inst_df[inst_df.index > curr_date]
-    else:
-        curr_roll = pd.DataFrame()
 
     if roll_mode % 10 == 1:
         # roll roll_mode=1 find the top N threshold
-        thres = roll_df.apply(lambda row: min(row.nlargest(nb_cont + 2).values[-1], cont_thres), axis=1)
+        thres = roll_df.apply(lambda row: min(row.nlargest(nb_cont).values[-1], cont_thres), axis=1)
         inst_df = inst_df[roll_df.ge(thres, axis='rows')]
     inst_df = inst_df.apply(lambda x: pd.Series(x.dropna().values), axis=1)
     inst_df = inst_df.reset_index()
 
     for alist in inst_df.to_numpy():
+        cdate = alist[0]
+        clist = alist[1:nb_cont + 1]
+
         if len(curr_list) == 0:
             curr_date = alist[0]
             curr_list = alist[1:nb_cont + 1]
@@ -137,6 +138,7 @@ def rolling_fut_cont(xdf, nb_cont=2, cont_thres=10_000, roll_mode=1, curr_roll=N
                 curr_date = alist[0]
         data_list.append(np.array([expiry_inv_map[e] for e in curr_list]))
         date_list.append(curr_date)
+
     try:
         data_list = [np.pad(data, (0, nb_cont - len(data)), mode='constant', constant_values=(np.nan, np.nan)) for data in data_list]
         roll_map = pd.DataFrame(data_list, columns=[str(i) for i in range(nb_cont)], index=date_list)
@@ -256,29 +258,32 @@ def nearby_series(prodcode, start_date=None, end_date=None, shift_mode=1,
 def nearby(prodcode, n=1, start_date=None, end_date=None,
            freq='d', shift_mode=0,
            adj_field='close', calc_fields=['open', 'close', 'high', 'low'],
-           roll_config="C:/dev/wtdev/config/roll/nearby"):
+           roll_name="nearby",
+           config_loc="C:/dev/wtdev/config/roll/"):
     if end_date is None:
         end_date = datetime.date.today()
     if start_date is None:
         start_date = end_date - datetime.timedelta(days=365)
-    roll_file = roll_config + f'{n}.json'
+    start_date = pd.to_datetime(start_date)
+    end_date = pd.to_datetime(end_date)
+    roll_file = f'{config_loc}{roll_name}{n}.json'
     with open(roll_file, 'r') as infile:
         res = json.load(infile)
     exch = misc.prod2exch(prodcode)
     roll_map = pd.DataFrame.from_dict(res[exch][prodcode]).rename(columns={'to': 'instID'}).drop(columns=['from', 'oldclose', 'newclose'])
     roll_map['date'] = pd.to_datetime(roll_map['date'].astype(str), format='%Y%m%d')
-    roll_map['date'] = roll_map['date'].apply(lambda d: misc.day_shift(d, '-1b', misc.CHN_Holidays))
-    flag = (roll_map['date'].shift(-1) >= pd.to_datetime(start_date)) | (roll_map['date'] >= pd.to_datetime(start_date))
+    roll_map['date'] = roll_map['date'].apply(lambda d: misc.day_shift(d.date(), '-1b', misc.CHN_Holidays))
+    flag = (roll_map['date'].shift(-1) >= start_date) | (roll_map['date'] >= start_date)
     roll_map = roll_map[flag].set_index('date')
     daily_cont = roll_map.reindex(pd.bdate_range(start=roll_map.index[0],
                                                  end=end_date,
-                                                 holidays=misc.CHN_Holidays,
+                                                 holidays=[pd.to_datetime(hol) for hol in misc.CHN_Holidays],
                                                  freq='C')).fillna(method='ffill')
     daily_cont.index.name = 'date'
-    daily_cont = daily_cont[(daily_cont.index >= pd.to_datetime(start_date)) &
-                            (daily_cont.index <= pd.to_datetime(end_date))].reset_index()
+    daily_cont = daily_cont[(daily_cont.index >= start_date) &
+                            (daily_cont.index <= end_date)].reset_index()
     daily_cont['date'] = daily_cont['date'].dt.date
-    xdf = load_fut_by_product(prodcode, exch, start_date, end_date, freq=freq)
+    xdf = load_fut_by_product(prodcode, exch, start_date.date(), end_date.date(), freq=freq)
     xdf['expiry'] = xdf['instID'].apply(lambda x: misc.contract_expiry(x, hols=misc.CHN_Holidays))
     xdf['month'] = xdf['instID'].apply(lambda x: misc.inst2contmth(x)%100)
     if freq == 'd':
@@ -292,7 +297,7 @@ def nearby(prodcode, n=1, start_date=None, end_date=None,
         xdf['price_chg'] = xdf[adj_field].diff()
     xdf.loc[xdf['instID'] != xdf['instID'].shift(1), 'price_chg'] = 0
 
-    out_df = pd.merge(daily_cont, xdf, left_on=['date', 'instID'], right_on=['date', 'instID'], how='inner')
+    out_df = pd.merge(daily_cont, xdf, left_on=['date', 'instID'], right_on=['date', 'instID'], how='left')
     if shift_mode > 0:
         cum_adj = out_df.loc[::-1, 'price_chg'].cumsum().shift(1).fillna(0)[::-1]
         if shift_mode == 2:
