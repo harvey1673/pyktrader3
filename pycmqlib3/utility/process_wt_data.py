@@ -31,7 +31,7 @@ def convert_wt_data(df, cont, freq='d'):
     df = df.rename(columns = {'hold': 'openInterest'})
     df['instID'] = cont
     if freq == 'd':
-        col_list = ['instID', 'date', 'open', 'high', 'low', 'close', 'volume', 'openInterest']
+        col_list = ['instID', 'date', 'open', 'high', 'low', 'close', 'volume', 'openInterest', 'diff_oi']
     else:
         num_m = 1
         if len(freq)>1:
@@ -39,12 +39,12 @@ def convert_wt_data(df, cont, freq='d'):
         df['datetime'] = df['bartime'].astype('str').apply(lambda s: datetime.datetime.strptime(s, '%Y%m%d%H%M') -
                                                                      datetime.timedelta(minutes=num_m))
         df['min_id'] = df['datetime'].apply(misc.get_min_id)
-        col_list = ['instID', 'datetime', 'date', 'min_id', 'open', 'high', 'low', 'close', 'volume', 'openInterest']
+        col_list = ['instID', 'datetime', 'date', 'min_id', 'open', 'high', 'low', 'close', 'volume', 'openInterest', 'diff_oi']
     df = df[col_list]
     return df
 
 
-def load_fut_by_product(product, exch, start_date, end_date, freq = 'd', folder_loc='C:/dev/wtdev/storage/his'):
+def load_fut_by_product(product, exch, start_date, end_date, freq='d', folder_loc='C:/dev/wtdev/storage/his'):
     if end_date is None:
         end_date = datetime.date.today()
     if start_date is None:
@@ -74,7 +74,7 @@ def load_fut_by_product(product, exch, start_date, end_date, freq = 'd', folder_
         dst_df = dtHelper.read_dsb_bars(f'{src_path}/{file}')
         if dst_df:
             dst_df = dst_df.to_df()
-            dst_df = dst_df.rename(columns={'hold': 'openInterest'})
+            dst_df = dst_df.rename(columns={'hold': 'openInterest', 'diff': 'diff_oi'})
         else:
             continue
         dst_df = convert_wt_data(dst_df, cont, freq=freq)

@@ -264,28 +264,16 @@ def nearby(prodcode, n=1, start_date=None, end_date=None,
         end_date = datetime.date.today()
     if start_date is None:
         start_date = end_date - datetime.timedelta(days=365)
+    if isinstance(n, list):
+        nb_list = n
+    else:
+        nb_list = [n]
     start_date = pd.to_datetime(start_date)
     end_date = pd.to_datetime(end_date)
-    roll_file = f'{config_loc}{roll_name}{n}.json'
-    with open(roll_file, 'r') as infile:
-        res = json.load(infile)
     exch = misc.prod2exch(prodcode)
-    roll_map = pd.DataFrame.from_dict(res[exch][prodcode]).rename(columns={'to': 'instID'}).drop(columns=['from', 'oldclose', 'newclose'])
-    roll_map['date'] = pd.to_datetime(roll_map['date'].astype(str), format='%Y%m%d')
-    roll_map['date'] = roll_map['date'].apply(lambda d: misc.day_shift(d.date(), '-1b', misc.CHN_Holidays))
-    flag = (roll_map['date'].shift(-1) >= start_date) | (roll_map['date'] >= start_date)
-    roll_map = roll_map[flag].set_index('date')
-    daily_cont = roll_map.reindex(pd.bdate_range(start=roll_map.index[0],
-                                                 end=end_date,
-                                                 holidays=[pd.to_datetime(hol) for hol in misc.CHN_Holidays],
-                                                 freq='C')).fillna(method='ffill')
-    daily_cont.index.name = 'date'
-    daily_cont = daily_cont[(daily_cont.index >= start_date) &
-                            (daily_cont.index <= end_date)].reset_index()
-    daily_cont['date'] = daily_cont['date'].dt.date
     xdf = load_fut_by_product(prodcode, exch, start_date.date(), end_date.date(), freq=freq)
     xdf['expiry'] = xdf['instID'].apply(lambda x: misc.contract_expiry(x, hols=misc.CHN_Holidays))
-    xdf['month'] = xdf['instID'].apply(lambda x: misc.inst2contmth(x)%100)
+    xdf['month'] = xdf['instID'].apply(lambda x: misc.inst2contmth(x) % 100)
     if freq == 'd':
         index_cols = ['date']
     elif freq == 'm':
@@ -296,26 +284,47 @@ def nearby(prodcode, n=1, start_date=None, end_date=None,
     else:
         xdf['price_chg'] = xdf[adj_field].diff()
     xdf.loc[xdf['instID'] != xdf['instID'].shift(1), 'price_chg'] = 0
-
-    out_df = pd.merge(daily_cont, xdf, left_on=['date', 'instID'], right_on=['date', 'instID'], how='left')
-    if shift_mode > 0:
-        cum_adj = out_df.loc[::-1, 'price_chg'].cumsum().shift(1).fillna(0)[::-1]
-        if shift_mode == 2:
-            adj_price = out_df[adj_field].iloc[-1]/np.exp(cum_adj)
-            out_df['shift'] = np.log(adj_price) - np.log(out_df[adj_field])
-        else:
-            adj_price = out_df[adj_field].iloc[-1] - cum_adj
-            out_df['shift'] = adj_price - out_df[adj_field]
-
-        for cfield in calc_fields:
+    output = {}
+    for nb in nb_list:
+        roll_file = f'{config_loc}{roll_name}{nb}.json'
+        with open(roll_file, 'r') as infile:
+            res = json.load(infile)
+        roll_map = pd.DataFrame.from_dict(res[exch][prodcode]).rename(columns={'to': 'instID'}).drop(columns=['from', 'oldclose', 'newclose'])
+        roll_map['date'] = pd.to_datetime(roll_map['date'].astype(str), format='%Y%m%d')
+        roll_map['date'] = roll_map['date'].apply(lambda d: misc.day_shift(d.date(), '-1b', misc.CHN_Holidays))
+        flag = (roll_map['date'].shift(-1) >= start_date) | (roll_map['date'] >= start_date)
+        roll_map = roll_map[flag].set_index('date')
+        daily_cont = roll_map.reindex(pd.bdate_range(start=roll_map.index[0],
+                                                     end=end_date,
+                                                     holidays=[pd.to_datetime(hol) for hol in misc.CHN_Holidays],
+                                                     freq='C')).fillna(method='ffill')
+        daily_cont.index.name = 'date'
+        daily_cont = daily_cont[(daily_cont.index >= start_date) &
+                                (daily_cont.index <= end_date)].reset_index()
+        daily_cont['date'] = daily_cont['date'].dt.date
+        out_df = pd.merge(daily_cont, xdf, left_on=['date', 'instID'], right_on=['date', 'instID'], how='left')
+        if shift_mode > 0:
+            cum_adj = out_df.loc[::-1, 'price_chg'].cumsum().shift(1).fillna(0)[::-1]
             if shift_mode == 2:
-                out_df[cfield] = out_df[cfield] * np.exp(out_df['shift'])
+                adj_price = out_df[adj_field].iloc[-1]/np.exp(cum_adj)
+                out_df['shift'] = np.log(adj_price) - np.log(out_df[adj_field])
             else:
-                out_df[cfield] = out_df[cfield] + out_df['shift']
+                adj_price = out_df[adj_field].iloc[-1] - cum_adj
+                out_df['shift'] = adj_price - out_df[adj_field]
+
+            for cfield in calc_fields:
+                if shift_mode == 2:
+                    out_df[cfield] = out_df[cfield] * np.exp(out_df['shift'])
+                else:
+                    out_df[cfield] = out_df[cfield] + out_df['shift']
+        else:
+            out_df['shift'] = 0
+        out_df = out_df.set_index('date').rename(columns={'instID': 'contract'})
+        output[nb] = out_df
+    if isinstance(n, list):
+        return output
     else:
-        out_df['shift'] = 0
-    out_df = out_df.set_index('date').rename(columns={'instID': 'contract'})
-    return out_df
+        return output[n]
 
 # def _move_rows_np2(roll_index, col_idx, ds, nan_value = np.nan):
 #     print(ds)
