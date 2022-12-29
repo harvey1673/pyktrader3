@@ -31,7 +31,7 @@ class MetricsBase(object):
             aligned_return = returns.loc[first_index: last_index]
         else:
             aligned_return = returns.loc[first_index:]
-        
+
         holdings = holdings.reindex_like(aligned_return, method = 'ffill', limit = limits)
         date_range = holdings.index.intersection(aligned_return.index)
 

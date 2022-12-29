@@ -180,6 +180,12 @@ CHN_Holidays = [datetime.date(2000, 1, 3), datetime.date(2000, 1, 31), datetime.
                 datetime.date(2022, 5, 3), datetime.date(2022, 5, 4), datetime.date(2022, 6, 3), 
                 datetime.date(2022, 9, 12), datetime.date(2022, 10, 3), datetime.date(2022, 10, 4),
                 datetime.date(2022, 10, 5), datetime.date(2022, 10, 6), datetime.date(2022, 10, 7),
+                datetime.date(2023, 1, 2), datetime.date(2023, 1, 23), datetime.date(2023, 1, 24),
+                datetime.date(2023, 1, 25), datetime.date(2023, 1, 26), datetime.date(2023, 1, 27),
+                datetime.date(2023, 4, 5), datetime.date(2023, 5, 1), datetime.date(2023, 5, 2),
+                datetime.date(2023, 5, 3), datetime.date(2023, 6, 22), datetime.date(2023, 6, 23),
+                datetime.date(2023, 9, 29), datetime.date(2023, 10, 2), datetime.date(2023, 10, 3),
+                datetime.date(2023, 10, 4), datetime.date(2023, 10, 5), datetime.date(2023, 10, 6),
                 ]
 
 PLIO_Holidays = [datetime.date(2014, 1, 1),
