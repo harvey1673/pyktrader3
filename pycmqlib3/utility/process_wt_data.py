@@ -22,7 +22,7 @@ def assign(procession, buffer):
 def wt_time_to_min_id(wt_time: int = 0):
     hour = wt_time // 100
     minute = wt_time % 100
-    min_id = (hour + 6) % 24 * 100 + minute
+    min_id = ((hour + 6) % 24) * 100 + minute
     return min_id
 
 
