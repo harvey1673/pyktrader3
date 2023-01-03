@@ -94,6 +94,7 @@ def update_factor_db(xdf, field, config, dbtable='fut_fact_data', flavor='mysql'
         conn.dispose()
 
 def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule = '30b', flavor = 'mysql', dbtbl_prefix = ''):
+    col_list = ['open', 'high', 'low','close', 'volume', 'openInterest', 'contract', 'shift']
     update_start = start_date  # day_shift(end_date, '-3b')
     shift_mode = 1
     freq = 'd'
@@ -138,6 +139,7 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule 
         use_args['n'] = 1
         print("loading mkt = %s, nb = %s, args = %s" % (asset, str(use_args['n']), use_args))
         df = nearby(asset, **use_args)
+        df = df[col_list]
         if freq == 'm':
             df = cleanup_mindata(df, asset)
         # df['expiry'] = df['contract'].apply(lambda x: contract_expiry(x, CHN_Holidays))
@@ -147,6 +149,7 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule 
         use_args['n'] = 2
         print("loading mkt = %s, nb = %s, args = %s" % (asset, str(use_args['n']), use_args))
         xdf = nearby(asset, **use_args)
+        xdf = xdf[col_list]
         if freq == 'm':
             xdf = cleanup_mindata(xdf, asset)
         # xdf['expiry'] = xdf['contract'].apply(lambda x: contract_expiry(x, CHN_Holidays))

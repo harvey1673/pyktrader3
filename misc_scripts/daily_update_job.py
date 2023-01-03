@@ -110,11 +110,16 @@ def run_update(tday = datetime.date.today()):
     update_field = 'fut_daily'
     if update_field not in job_status:
         job_status[update_field] = {}
-    for exch in ["DCE", "CFFEX", "CZCE", "SHFE", "INE",]:
+    for exch in ["DCE", "CFFEX", "CZCE", "SHFE", "INE", "GFEX"]:
         try:
             if not job_status[update_field].get(exch, False):
-                update_hist_fut_daily(sdate, edate, exchanges = [exch], flavor = 'mysql', fut_table = 'fut_daily')
-                job_status[update_field][exch] = True
+                missing = update_hist_fut_daily(sdate, edate, exchanges = [exch], flavor = 'mysql', fut_table = 'fut_daily')
+                if len(missing) == 0:
+                    job_status[update_field][exch] = True
+                    print(f'{exch} is updated')
+                else:
+                    job_status[update_field][exch] = False
+                    print(f'{exch} has some issue {missing}')                
         except:
             job_status[update_field][exch] = False
             print("exch = %s EOD price is FAILED to update" % (exch))
