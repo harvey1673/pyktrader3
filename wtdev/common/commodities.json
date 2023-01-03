@@ -669,17 +669,17 @@
         }
     },
     "GFEX": {
-        "ssfz": {
+        "si": {
             "covermode": 0,
             "pricemode": 0,
             "category": 1,
             "trademode": 0,
-            "precision": 2,
-            "pricetick": 0.05,
-            "volscale": 100,
-            "name": "ÉÏÊÐ¸¨ÖúÖ¸Êý",
+            "precision": 0,
+            "pricetick": 5.0,
+            "volscale": 5,
+            "name": "å·¥ä¸šç¡…",
             "exchg": "GFEX",
-            "session": "",
+            "session": "FD0900",
             "holiday": "CHINA"
         }
     },
