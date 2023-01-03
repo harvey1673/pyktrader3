@@ -1,0 +1,5566 @@
+{
+    "CFFEX": {
+        "IC2301": {
+            "name": "中证5002301",
+            "code": "IC2301",
+            "exchg": "CFFEX",
+            "product": "IC",
+            "maxlimitqty": 20,
+            "maxmarketqty": 10
+        },
+        "IC2302": {
+            "name": "中证5002302",
+            "code": "IC2302",
+            "exchg": "CFFEX",
+            "product": "IC",
+            "maxlimitqty": 20,
+            "maxmarketqty": 10
+        },
+        "IC2303": {
+            "name": "中证5002303",
+            "code": "IC2303",
+            "exchg": "CFFEX",
+            "product": "IC",
+            "maxlimitqty": 20,
+            "maxmarketqty": 0
+        },
+        "IC2306": {
+            "name": "中证5002306",
+            "code": "IC2306",
+            "exchg": "CFFEX",
+            "product": "IC",
+            "maxlimitqty": 20,
+            "maxmarketqty": 0
+        },
+        "IF2301": {
+            "name": "沪深2301",
+            "code": "IF2301",
+            "exchg": "CFFEX",
+            "product": "IF",
+            "maxlimitqty": 20,
+            "maxmarketqty": 10
+        },
+        "IF2302": {
+            "name": "沪深2302",
+            "code": "IF2302",
+            "exchg": "CFFEX",
+            "product": "IF",
+            "maxlimitqty": 20,
+            "maxmarketqty": 10
+        },
+        "IF2303": {
+            "name": "沪深2303",
+            "code": "IF2303",
+            "exchg": "CFFEX",
+            "product": "IF",
+            "maxlimitqty": 20,
+            "maxmarketqty": 0
+        },
+        "IF2306": {
+            "name": "沪深2306",
+            "code": "IF2306",
+            "exchg": "CFFEX",
+            "product": "IF",
+            "maxlimitqty": 20,
+            "maxmarketqty": 0
+        },
+        "IH2301": {
+            "name": "上证2301",
+            "code": "IH2301",
+            "exchg": "CFFEX",
+            "product": "IH",
+            "maxlimitqty": 20,
+            "maxmarketqty": 10
+        },
+        "IH2302": {
+            "name": "上证2302",
+            "code": "IH2302",
+            "exchg": "CFFEX",
+            "product": "IH",
+            "maxlimitqty": 20,
+            "maxmarketqty": 10
+        },
+        "IH2303": {
+            "name": "上证2303",
+            "code": "IH2303",
+            "exchg": "CFFEX",
+            "product": "IH",
+            "maxlimitqty": 20,
+            "maxmarketqty": 0
+        },
+        "IH2306": {
+            "name": "上证2306",
+            "code": "IH2306",
+            "exchg": "CFFEX",
+            "product": "IH",
+            "maxlimitqty": 20,
+            "maxmarketqty": 0
+        },
+        "IM2301": {
+            "name": "中证10002301",
+            "code": "IM2301",
+            "exchg": "CFFEX",
+            "product": "IM",
+            "maxlimitqty": 20,
+            "maxmarketqty": 10
+        },
+        "IM2302": {
+            "name": "中证10002302",
+            "code": "IM2302",
+            "exchg": "CFFEX",
+            "product": "IM",
+            "maxlimitqty": 20,
+            "maxmarketqty": 10
+        },
+        "IM2303": {
+            "name": "中证10002303",
+            "code": "IM2303",
+            "exchg": "CFFEX",
+            "product": "IM",
+            "maxlimitqty": 20,
+            "maxmarketqty": 0
+        },
+        "IM2306": {
+            "name": "中证10002306",
+            "code": "IM2306",
+            "exchg": "CFFEX",
+            "product": "IM",
+            "maxlimitqty": 20,
+            "maxmarketqty": 0
+        },
+        "T2303": {
+            "name": "10年债2303",
+            "code": "T2303",
+            "exchg": "CFFEX",
+            "product": "T",
+            "maxlimitqty": 50,
+            "maxmarketqty": 30
+        },
+        "T2306": {
+            "name": "10年债2306",
+            "code": "T2306",
+            "exchg": "CFFEX",
+            "product": "T",
+            "maxlimitqty": 50,
+            "maxmarketqty": 0
+        },
+        "T2309": {
+            "name": "10年债2309",
+            "code": "T2309",
+            "exchg": "CFFEX",
+            "product": "T",
+            "maxlimitqty": 50,
+            "maxmarketqty": 0
+        },
+        "TF2303": {
+            "name": "5年债2303",
+            "code": "TF2303",
+            "exchg": "CFFEX",
+            "product": "TF",
+            "maxlimitqty": 50,
+            "maxmarketqty": 30
+        },
+        "TF2306": {
+            "name": "5年债2306",
+            "code": "TF2306",
+            "exchg": "CFFEX",
+            "product": "TF",
+            "maxlimitqty": 50,
+            "maxmarketqty": 0
+        },
+        "TF2309": {
+            "name": "5年债2309",
+            "code": "TF2309",
+            "exchg": "CFFEX",
+            "product": "TF",
+            "maxlimitqty": 50,
+            "maxmarketqty": 0
+        },
+        "TS2303": {
+            "name": "2年债2303",
+            "code": "TS2303",
+            "exchg": "CFFEX",
+            "product": "TS",
+            "maxlimitqty": 50,
+            "maxmarketqty": 30
+        },
+        "TS2306": {
+            "name": "2年债2306",
+            "code": "TS2306",
+            "exchg": "CFFEX",
+            "product": "TS",
+            "maxlimitqty": 50,
+            "maxmarketqty": 0
+        },
+        "TS2309": {
+            "name": "2年债2309",
+            "code": "TS2309",
+            "exchg": "CFFEX",
+            "product": "TS",
+            "maxlimitqty": 50,
+            "maxmarketqty": 0
+        }
+    },
+    "CZCE": {
+        "AP301": {
+            "name": "苹果301",
+            "code": "AP301",
+            "exchg": "CZCE",
+            "product": "AP",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "AP303": {
+            "name": "苹果303",
+            "code": "AP303",
+            "exchg": "CZCE",
+            "product": "AP",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "AP304": {
+            "name": "苹果304",
+            "code": "AP304",
+            "exchg": "CZCE",
+            "product": "AP",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "AP305": {
+            "name": "苹果305",
+            "code": "AP305",
+            "exchg": "CZCE",
+            "product": "AP",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "AP310": {
+            "name": "苹果310",
+            "code": "AP310",
+            "exchg": "CZCE",
+            "product": "AP",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "AP311": {
+            "name": "苹果311",
+            "code": "AP311",
+            "exchg": "CZCE",
+            "product": "AP",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "AP312": {
+            "name": "苹果312",
+            "code": "AP312",
+            "exchg": "CZCE",
+            "product": "AP",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "CF301": {
+            "name": "郑棉301",
+            "code": "CF301",
+            "exchg": "CZCE",
+            "product": "CF",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "CF303": {
+            "name": "郑棉303",
+            "code": "CF303",
+            "exchg": "CZCE",
+            "product": "CF",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "CF305": {
+            "name": "郑棉305",
+            "code": "CF305",
+            "exchg": "CZCE",
+            "product": "CF",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "CF307": {
+            "name": "郑棉307",
+            "code": "CF307",
+            "exchg": "CZCE",
+            "product": "CF",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "CF309": {
+            "name": "郑棉309",
+            "code": "CF309",
+            "exchg": "CZCE",
+            "product": "CF",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "CF311": {
+            "name": "郑棉311",
+            "code": "CF311",
+            "exchg": "CZCE",
+            "product": "CF",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "CJ301": {
+            "name": "红枣301",
+            "code": "CJ301",
+            "exchg": "CZCE",
+            "product": "CJ",
+            "maxlimitqty": 100,
+            "maxmarketqty": 20
+        },
+        "CJ303": {
+            "name": "红枣303",
+            "code": "CJ303",
+            "exchg": "CZCE",
+            "product": "CJ",
+            "maxlimitqty": 100,
+            "maxmarketqty": 20
+        },
+        "CJ305": {
+            "name": "红枣305",
+            "code": "CJ305",
+            "exchg": "CZCE",
+            "product": "CJ",
+            "maxlimitqty": 100,
+            "maxmarketqty": 20
+        },
+        "CJ307": {
+            "name": "红枣307",
+            "code": "CJ307",
+            "exchg": "CZCE",
+            "product": "CJ",
+            "maxlimitqty": 100,
+            "maxmarketqty": 20
+        },
+        "CJ309": {
+            "name": "红枣309",
+            "code": "CJ309",
+            "exchg": "CZCE",
+            "product": "CJ",
+            "maxlimitqty": 100,
+            "maxmarketqty": 20
+        },
+        "CJ312": {
+            "name": "红枣312",
+            "code": "CJ312",
+            "exchg": "CZCE",
+            "product": "CJ",
+            "maxlimitqty": 100,
+            "maxmarketqty": 20
+        },
+        "CY301": {
+            "name": "棉纱301",
+            "code": "CY301",
+            "exchg": "CZCE",
+            "product": "CY",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "CY302": {
+            "name": "棉纱302",
+            "code": "CY302",
+            "exchg": "CZCE",
+            "product": "CY",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "CY303": {
+            "name": "棉纱303",
+            "code": "CY303",
+            "exchg": "CZCE",
+            "product": "CY",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "CY304": {
+            "name": "棉纱304",
+            "code": "CY304",
+            "exchg": "CZCE",
+            "product": "CY",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "CY305": {
+            "name": "棉纱305",
+            "code": "CY305",
+            "exchg": "CZCE",
+            "product": "CY",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "CY306": {
+            "name": "棉纱306",
+            "code": "CY306",
+            "exchg": "CZCE",
+            "product": "CY",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "CY307": {
+            "name": "棉纱307",
+            "code": "CY307",
+            "exchg": "CZCE",
+            "product": "CY",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "CY308": {
+            "name": "棉纱308",
+            "code": "CY308",
+            "exchg": "CZCE",
+            "product": "CY",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "CY309": {
+            "name": "棉纱309",
+            "code": "CY309",
+            "exchg": "CZCE",
+            "product": "CY",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "CY310": {
+            "name": "棉纱310",
+            "code": "CY310",
+            "exchg": "CZCE",
+            "product": "CY",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "CY311": {
+            "name": "棉纱311",
+            "code": "CY311",
+            "exchg": "CZCE",
+            "product": "CY",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "CY312": {
+            "name": "棉纱312",
+            "code": "CY312",
+            "exchg": "CZCE",
+            "product": "CY",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "FG301": {
+            "name": "玻璃301",
+            "code": "FG301",
+            "exchg": "CZCE",
+            "product": "FG",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 500
+        },
+        "FG302": {
+            "name": "玻璃302",
+            "code": "FG302",
+            "exchg": "CZCE",
+            "product": "FG",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 500
+        },
+        "FG303": {
+            "name": "玻璃303",
+            "code": "FG303",
+            "exchg": "CZCE",
+            "product": "FG",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 500
+        },
+        "FG304": {
+            "name": "玻璃304",
+            "code": "FG304",
+            "exchg": "CZCE",
+            "product": "FG",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 500
+        },
+        "FG305": {
+            "name": "玻璃305",
+            "code": "FG305",
+            "exchg": "CZCE",
+            "product": "FG",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 500
+        },
+        "FG306": {
+            "name": "玻璃306",
+            "code": "FG306",
+            "exchg": "CZCE",
+            "product": "FG",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 500
+        },
+        "FG307": {
+            "name": "玻璃307",
+            "code": "FG307",
+            "exchg": "CZCE",
+            "product": "FG",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 500
+        },
+        "FG308": {
+            "name": "玻璃308",
+            "code": "FG308",
+            "exchg": "CZCE",
+            "product": "FG",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 500
+        },
+        "FG309": {
+            "name": "玻璃309",
+            "code": "FG309",
+            "exchg": "CZCE",
+            "product": "FG",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 500
+        },
+        "FG310": {
+            "name": "玻璃310",
+            "code": "FG310",
+            "exchg": "CZCE",
+            "product": "FG",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 500
+        },
+        "FG311": {
+            "name": "玻璃311",
+            "code": "FG311",
+            "exchg": "CZCE",
+            "product": "FG",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 500
+        },
+        "FG312": {
+            "name": "玻璃312",
+            "code": "FG312",
+            "exchg": "CZCE",
+            "product": "FG",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 500
+        },
+        "JR301": {
+            "name": "粳稻301",
+            "code": "JR301",
+            "exchg": "CZCE",
+            "product": "JR",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "JR303": {
+            "name": "粳稻303",
+            "code": "JR303",
+            "exchg": "CZCE",
+            "product": "JR",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "JR305": {
+            "name": "粳稻305",
+            "code": "JR305",
+            "exchg": "CZCE",
+            "product": "JR",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "JR307": {
+            "name": "粳稻307",
+            "code": "JR307",
+            "exchg": "CZCE",
+            "product": "JR",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "JR309": {
+            "name": "粳稻309",
+            "code": "JR309",
+            "exchg": "CZCE",
+            "product": "JR",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "JR311": {
+            "name": "粳稻311",
+            "code": "JR311",
+            "exchg": "CZCE",
+            "product": "JR",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "LR301": {
+            "name": "晚籼稻301",
+            "code": "LR301",
+            "exchg": "CZCE",
+            "product": "LR",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 500
+        },
+        "LR303": {
+            "name": "晚籼稻303",
+            "code": "LR303",
+            "exchg": "CZCE",
+            "product": "LR",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 500
+        },
+        "LR305": {
+            "name": "晚籼稻305",
+            "code": "LR305",
+            "exchg": "CZCE",
+            "product": "LR",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 500
+        },
+        "LR307": {
+            "name": "晚籼稻307",
+            "code": "LR307",
+            "exchg": "CZCE",
+            "product": "LR",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 500
+        },
+        "LR309": {
+            "name": "晚籼稻309",
+            "code": "LR309",
+            "exchg": "CZCE",
+            "product": "LR",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 500
+        },
+        "LR311": {
+            "name": "晚籼稻311",
+            "code": "LR311",
+            "exchg": "CZCE",
+            "product": "LR",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 500
+        },
+        "MA301": {
+            "name": "郑醇301",
+            "code": "MA301",
+            "exchg": "CZCE",
+            "product": "MA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "MA302": {
+            "name": "郑醇302",
+            "code": "MA302",
+            "exchg": "CZCE",
+            "product": "MA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "MA303": {
+            "name": "郑醇303",
+            "code": "MA303",
+            "exchg": "CZCE",
+            "product": "MA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "MA304": {
+            "name": "郑醇304",
+            "code": "MA304",
+            "exchg": "CZCE",
+            "product": "MA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "MA305": {
+            "name": "郑醇305",
+            "code": "MA305",
+            "exchg": "CZCE",
+            "product": "MA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "MA306": {
+            "name": "郑醇306",
+            "code": "MA306",
+            "exchg": "CZCE",
+            "product": "MA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "MA307": {
+            "name": "郑醇307",
+            "code": "MA307",
+            "exchg": "CZCE",
+            "product": "MA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "MA308": {
+            "name": "郑醇308",
+            "code": "MA308",
+            "exchg": "CZCE",
+            "product": "MA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "MA309": {
+            "name": "郑醇309",
+            "code": "MA309",
+            "exchg": "CZCE",
+            "product": "MA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "MA310": {
+            "name": "郑醇310",
+            "code": "MA310",
+            "exchg": "CZCE",
+            "product": "MA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "MA311": {
+            "name": "郑醇311",
+            "code": "MA311",
+            "exchg": "CZCE",
+            "product": "MA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "MA312": {
+            "name": "郑醇312",
+            "code": "MA312",
+            "exchg": "CZCE",
+            "product": "MA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "OI301": {
+            "name": "菜油301",
+            "code": "OI301",
+            "exchg": "CZCE",
+            "product": "OI",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 500
+        },
+        "OI303": {
+            "name": "菜油303",
+            "code": "OI303",
+            "exchg": "CZCE",
+            "product": "OI",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 500
+        },
+        "OI305": {
+            "name": "菜油305",
+            "code": "OI305",
+            "exchg": "CZCE",
+            "product": "OI",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 500
+        },
+        "OI307": {
+            "name": "菜油307",
+            "code": "OI307",
+            "exchg": "CZCE",
+            "product": "OI",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 500
+        },
+        "OI309": {
+            "name": "菜油309",
+            "code": "OI309",
+            "exchg": "CZCE",
+            "product": "OI",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 500
+        },
+        "OI311": {
+            "name": "菜油311",
+            "code": "OI311",
+            "exchg": "CZCE",
+            "product": "OI",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 500
+        },
+        "PF301": {
+            "name": "短纤301",
+            "code": "PF301",
+            "exchg": "CZCE",
+            "product": "PF",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "PF302": {
+            "name": "短纤302",
+            "code": "PF302",
+            "exchg": "CZCE",
+            "product": "PF",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "PF303": {
+            "name": "短纤303",
+            "code": "PF303",
+            "exchg": "CZCE",
+            "product": "PF",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "PF304": {
+            "name": "短纤304",
+            "code": "PF304",
+            "exchg": "CZCE",
+            "product": "PF",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "PF305": {
+            "name": "短纤305",
+            "code": "PF305",
+            "exchg": "CZCE",
+            "product": "PF",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "PF306": {
+            "name": "短纤306",
+            "code": "PF306",
+            "exchg": "CZCE",
+            "product": "PF",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "PF307": {
+            "name": "短纤307",
+            "code": "PF307",
+            "exchg": "CZCE",
+            "product": "PF",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "PF308": {
+            "name": "短纤308",
+            "code": "PF308",
+            "exchg": "CZCE",
+            "product": "PF",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "PF309": {
+            "name": "短纤309",
+            "code": "PF309",
+            "exchg": "CZCE",
+            "product": "PF",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "PF310": {
+            "name": "短纤310",
+            "code": "PF310",
+            "exchg": "CZCE",
+            "product": "PF",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "PF311": {
+            "name": "短纤311",
+            "code": "PF311",
+            "exchg": "CZCE",
+            "product": "PF",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "PF312": {
+            "name": "短纤312",
+            "code": "PF312",
+            "exchg": "CZCE",
+            "product": "PF",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "PK301": {
+            "name": "花生301",
+            "code": "PK301",
+            "exchg": "CZCE",
+            "product": "PK",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "PK303": {
+            "name": "花生303",
+            "code": "PK303",
+            "exchg": "CZCE",
+            "product": "PK",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "PK304": {
+            "name": "花生304",
+            "code": "PK304",
+            "exchg": "CZCE",
+            "product": "PK",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "PK310": {
+            "name": "花生310",
+            "code": "PK310",
+            "exchg": "CZCE",
+            "product": "PK",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "PK311": {
+            "name": "花生311",
+            "code": "PK311",
+            "exchg": "CZCE",
+            "product": "PK",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "PK312": {
+            "name": "花生312",
+            "code": "PK312",
+            "exchg": "CZCE",
+            "product": "PK",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "PM301": {
+            "name": "普麦301",
+            "code": "PM301",
+            "exchg": "CZCE",
+            "product": "PM",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "PM303": {
+            "name": "普麦303",
+            "code": "PM303",
+            "exchg": "CZCE",
+            "product": "PM",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "PM305": {
+            "name": "普麦305",
+            "code": "PM305",
+            "exchg": "CZCE",
+            "product": "PM",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "PM307": {
+            "name": "普麦307",
+            "code": "PM307",
+            "exchg": "CZCE",
+            "product": "PM",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "PM309": {
+            "name": "普麦309",
+            "code": "PM309",
+            "exchg": "CZCE",
+            "product": "PM",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "PM311": {
+            "name": "普麦311",
+            "code": "PM311",
+            "exchg": "CZCE",
+            "product": "PM",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "RI301": {
+            "name": "早籼稻301",
+            "code": "RI301",
+            "exchg": "CZCE",
+            "product": "RI",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 500
+        },
+        "RI303": {
+            "name": "早籼稻303",
+            "code": "RI303",
+            "exchg": "CZCE",
+            "product": "RI",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 500
+        },
+        "RI305": {
+            "name": "早籼稻305",
+            "code": "RI305",
+            "exchg": "CZCE",
+            "product": "RI",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 500
+        },
+        "RI307": {
+            "name": "早籼稻307",
+            "code": "RI307",
+            "exchg": "CZCE",
+            "product": "RI",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 500
+        },
+        "RI309": {
+            "name": "早籼稻309",
+            "code": "RI309",
+            "exchg": "CZCE",
+            "product": "RI",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 500
+        },
+        "RI311": {
+            "name": "早籼稻311",
+            "code": "RI311",
+            "exchg": "CZCE",
+            "product": "RI",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 500
+        },
+        "RM301": {
+            "name": "菜粕301",
+            "code": "RM301",
+            "exchg": "CZCE",
+            "product": "RM",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "RM303": {
+            "name": "菜粕303",
+            "code": "RM303",
+            "exchg": "CZCE",
+            "product": "RM",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "RM305": {
+            "name": "菜粕305",
+            "code": "RM305",
+            "exchg": "CZCE",
+            "product": "RM",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "RM307": {
+            "name": "菜粕307",
+            "code": "RM307",
+            "exchg": "CZCE",
+            "product": "RM",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "RM308": {
+            "name": "菜粕308",
+            "code": "RM308",
+            "exchg": "CZCE",
+            "product": "RM",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "RM309": {
+            "name": "菜粕309",
+            "code": "RM309",
+            "exchg": "CZCE",
+            "product": "RM",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "RM311": {
+            "name": "菜粕311",
+            "code": "RM311",
+            "exchg": "CZCE",
+            "product": "RM",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "RS307": {
+            "name": "菜籽307",
+            "code": "RS307",
+            "exchg": "CZCE",
+            "product": "RS",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "RS308": {
+            "name": "菜籽308",
+            "code": "RS308",
+            "exchg": "CZCE",
+            "product": "RS",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "RS309": {
+            "name": "菜籽309",
+            "code": "RS309",
+            "exchg": "CZCE",
+            "product": "RS",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "RS311": {
+            "name": "菜籽311",
+            "code": "RS311",
+            "exchg": "CZCE",
+            "product": "RS",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "SA301": {
+            "name": "纯碱301",
+            "code": "SA301",
+            "exchg": "CZCE",
+            "product": "SA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SA302": {
+            "name": "纯碱302",
+            "code": "SA302",
+            "exchg": "CZCE",
+            "product": "SA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SA303": {
+            "name": "纯碱303",
+            "code": "SA303",
+            "exchg": "CZCE",
+            "product": "SA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SA304": {
+            "name": "纯碱304",
+            "code": "SA304",
+            "exchg": "CZCE",
+            "product": "SA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SA305": {
+            "name": "纯碱305",
+            "code": "SA305",
+            "exchg": "CZCE",
+            "product": "SA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SA306": {
+            "name": "纯碱306",
+            "code": "SA306",
+            "exchg": "CZCE",
+            "product": "SA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SA307": {
+            "name": "纯碱307",
+            "code": "SA307",
+            "exchg": "CZCE",
+            "product": "SA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SA308": {
+            "name": "纯碱308",
+            "code": "SA308",
+            "exchg": "CZCE",
+            "product": "SA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SA309": {
+            "name": "纯碱309",
+            "code": "SA309",
+            "exchg": "CZCE",
+            "product": "SA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SA310": {
+            "name": "纯碱310",
+            "code": "SA310",
+            "exchg": "CZCE",
+            "product": "SA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SA311": {
+            "name": "纯碱311",
+            "code": "SA311",
+            "exchg": "CZCE",
+            "product": "SA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SA312": {
+            "name": "纯碱312",
+            "code": "SA312",
+            "exchg": "CZCE",
+            "product": "SA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SF301": {
+            "name": "硅铁301",
+            "code": "SF301",
+            "exchg": "CZCE",
+            "product": "SF",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SF302": {
+            "name": "硅铁302",
+            "code": "SF302",
+            "exchg": "CZCE",
+            "product": "SF",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SF303": {
+            "name": "硅铁303",
+            "code": "SF303",
+            "exchg": "CZCE",
+            "product": "SF",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SF304": {
+            "name": "硅铁304",
+            "code": "SF304",
+            "exchg": "CZCE",
+            "product": "SF",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SF305": {
+            "name": "硅铁305",
+            "code": "SF305",
+            "exchg": "CZCE",
+            "product": "SF",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SF306": {
+            "name": "硅铁306",
+            "code": "SF306",
+            "exchg": "CZCE",
+            "product": "SF",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SF307": {
+            "name": "硅铁307",
+            "code": "SF307",
+            "exchg": "CZCE",
+            "product": "SF",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SF308": {
+            "name": "硅铁308",
+            "code": "SF308",
+            "exchg": "CZCE",
+            "product": "SF",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SF309": {
+            "name": "硅铁309",
+            "code": "SF309",
+            "exchg": "CZCE",
+            "product": "SF",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SF310": {
+            "name": "硅铁310",
+            "code": "SF310",
+            "exchg": "CZCE",
+            "product": "SF",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SF311": {
+            "name": "硅铁311",
+            "code": "SF311",
+            "exchg": "CZCE",
+            "product": "SF",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SF312": {
+            "name": "硅铁312",
+            "code": "SF312",
+            "exchg": "CZCE",
+            "product": "SF",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SM301": {
+            "name": "锰硅301",
+            "code": "SM301",
+            "exchg": "CZCE",
+            "product": "SM",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SM302": {
+            "name": "锰硅302",
+            "code": "SM302",
+            "exchg": "CZCE",
+            "product": "SM",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SM303": {
+            "name": "锰硅303",
+            "code": "SM303",
+            "exchg": "CZCE",
+            "product": "SM",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SM304": {
+            "name": "锰硅304",
+            "code": "SM304",
+            "exchg": "CZCE",
+            "product": "SM",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SM305": {
+            "name": "锰硅305",
+            "code": "SM305",
+            "exchg": "CZCE",
+            "product": "SM",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SM306": {
+            "name": "锰硅306",
+            "code": "SM306",
+            "exchg": "CZCE",
+            "product": "SM",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SM307": {
+            "name": "锰硅307",
+            "code": "SM307",
+            "exchg": "CZCE",
+            "product": "SM",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SM308": {
+            "name": "锰硅308",
+            "code": "SM308",
+            "exchg": "CZCE",
+            "product": "SM",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SM309": {
+            "name": "锰硅309",
+            "code": "SM309",
+            "exchg": "CZCE",
+            "product": "SM",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SM310": {
+            "name": "锰硅310",
+            "code": "SM310",
+            "exchg": "CZCE",
+            "product": "SM",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SM311": {
+            "name": "锰硅311",
+            "code": "SM311",
+            "exchg": "CZCE",
+            "product": "SM",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SM312": {
+            "name": "锰硅312",
+            "code": "SM312",
+            "exchg": "CZCE",
+            "product": "SM",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SR301": {
+            "name": "白糖301",
+            "code": "SR301",
+            "exchg": "CZCE",
+            "product": "SR",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SR303": {
+            "name": "白糖303",
+            "code": "SR303",
+            "exchg": "CZCE",
+            "product": "SR",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SR305": {
+            "name": "白糖305",
+            "code": "SR305",
+            "exchg": "CZCE",
+            "product": "SR",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SR307": {
+            "name": "白糖307",
+            "code": "SR307",
+            "exchg": "CZCE",
+            "product": "SR",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SR309": {
+            "name": "白糖309",
+            "code": "SR309",
+            "exchg": "CZCE",
+            "product": "SR",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "SR311": {
+            "name": "白糖311",
+            "code": "SR311",
+            "exchg": "CZCE",
+            "product": "SR",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "TA301": {
+            "name": "PTA301",
+            "code": "TA301",
+            "exchg": "CZCE",
+            "product": "TA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "TA302": {
+            "name": "PTA302",
+            "code": "TA302",
+            "exchg": "CZCE",
+            "product": "TA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "TA303": {
+            "name": "PTA303",
+            "code": "TA303",
+            "exchg": "CZCE",
+            "product": "TA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "TA304": {
+            "name": "PTA304",
+            "code": "TA304",
+            "exchg": "CZCE",
+            "product": "TA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "TA305": {
+            "name": "PTA305",
+            "code": "TA305",
+            "exchg": "CZCE",
+            "product": "TA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "TA306": {
+            "name": "PTA306",
+            "code": "TA306",
+            "exchg": "CZCE",
+            "product": "TA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "TA307": {
+            "name": "PTA307",
+            "code": "TA307",
+            "exchg": "CZCE",
+            "product": "TA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "TA308": {
+            "name": "PTA308",
+            "code": "TA308",
+            "exchg": "CZCE",
+            "product": "TA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "TA309": {
+            "name": "PTA309",
+            "code": "TA309",
+            "exchg": "CZCE",
+            "product": "TA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "TA310": {
+            "name": "PTA310",
+            "code": "TA310",
+            "exchg": "CZCE",
+            "product": "TA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "TA311": {
+            "name": "PTA311",
+            "code": "TA311",
+            "exchg": "CZCE",
+            "product": "TA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "TA312": {
+            "name": "PTA312",
+            "code": "TA312",
+            "exchg": "CZCE",
+            "product": "TA",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "UR301": {
+            "name": "尿素301",
+            "code": "UR301",
+            "exchg": "CZCE",
+            "product": "UR",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "UR302": {
+            "name": "尿素302",
+            "code": "UR302",
+            "exchg": "CZCE",
+            "product": "UR",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "UR303": {
+            "name": "尿素303",
+            "code": "UR303",
+            "exchg": "CZCE",
+            "product": "UR",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "UR304": {
+            "name": "尿素304",
+            "code": "UR304",
+            "exchg": "CZCE",
+            "product": "UR",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "UR305": {
+            "name": "尿素305",
+            "code": "UR305",
+            "exchg": "CZCE",
+            "product": "UR",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "UR306": {
+            "name": "尿素306",
+            "code": "UR306",
+            "exchg": "CZCE",
+            "product": "UR",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "UR307": {
+            "name": "尿素307",
+            "code": "UR307",
+            "exchg": "CZCE",
+            "product": "UR",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "UR308": {
+            "name": "尿素308",
+            "code": "UR308",
+            "exchg": "CZCE",
+            "product": "UR",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "UR309": {
+            "name": "尿素309",
+            "code": "UR309",
+            "exchg": "CZCE",
+            "product": "UR",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "UR310": {
+            "name": "尿素310",
+            "code": "UR310",
+            "exchg": "CZCE",
+            "product": "UR",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "UR311": {
+            "name": "尿素311",
+            "code": "UR311",
+            "exchg": "CZCE",
+            "product": "UR",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "UR312": {
+            "name": "尿素312",
+            "code": "UR312",
+            "exchg": "CZCE",
+            "product": "UR",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "WH301": {
+            "name": "郑麦301",
+            "code": "WH301",
+            "exchg": "CZCE",
+            "product": "WH",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "WH303": {
+            "name": "郑麦303",
+            "code": "WH303",
+            "exchg": "CZCE",
+            "product": "WH",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "WH305": {
+            "name": "郑麦305",
+            "code": "WH305",
+            "exchg": "CZCE",
+            "product": "WH",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "WH307": {
+            "name": "郑麦307",
+            "code": "WH307",
+            "exchg": "CZCE",
+            "product": "WH",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "WH309": {
+            "name": "郑麦309",
+            "code": "WH309",
+            "exchg": "CZCE",
+            "product": "WH",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "WH311": {
+            "name": "郑麦311",
+            "code": "WH311",
+            "exchg": "CZCE",
+            "product": "WH",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 200
+        },
+        "ZC301": {
+            "name": "郑煤301",
+            "code": "ZC301",
+            "exchg": "CZCE",
+            "product": "ZC",
+            "maxlimitqty": 50,
+            "maxmarketqty": 10
+        },
+        "ZC302": {
+            "name": "郑煤302",
+            "code": "ZC302",
+            "exchg": "CZCE",
+            "product": "ZC",
+            "maxlimitqty": 50,
+            "maxmarketqty": 10
+        },
+        "ZC303": {
+            "name": "郑煤303",
+            "code": "ZC303",
+            "exchg": "CZCE",
+            "product": "ZC",
+            "maxlimitqty": 50,
+            "maxmarketqty": 10
+        },
+        "ZC304": {
+            "name": "郑煤304",
+            "code": "ZC304",
+            "exchg": "CZCE",
+            "product": "ZC",
+            "maxlimitqty": 50,
+            "maxmarketqty": 10
+        },
+        "ZC305": {
+            "name": "郑煤305",
+            "code": "ZC305",
+            "exchg": "CZCE",
+            "product": "ZC",
+            "maxlimitqty": 50,
+            "maxmarketqty": 10
+        },
+        "ZC306": {
+            "name": "郑煤306",
+            "code": "ZC306",
+            "exchg": "CZCE",
+            "product": "ZC",
+            "maxlimitqty": 50,
+            "maxmarketqty": 10
+        },
+        "ZC307": {
+            "name": "郑煤307",
+            "code": "ZC307",
+            "exchg": "CZCE",
+            "product": "ZC",
+            "maxlimitqty": 50,
+            "maxmarketqty": 10
+        },
+        "ZC308": {
+            "name": "郑煤308",
+            "code": "ZC308",
+            "exchg": "CZCE",
+            "product": "ZC",
+            "maxlimitqty": 50,
+            "maxmarketqty": 10
+        },
+        "ZC309": {
+            "name": "郑煤309",
+            "code": "ZC309",
+            "exchg": "CZCE",
+            "product": "ZC",
+            "maxlimitqty": 50,
+            "maxmarketqty": 10
+        },
+        "ZC310": {
+            "name": "郑煤310",
+            "code": "ZC310",
+            "exchg": "CZCE",
+            "product": "ZC",
+            "maxlimitqty": 50,
+            "maxmarketqty": 10
+        },
+        "ZC311": {
+            "name": "郑煤311",
+            "code": "ZC311",
+            "exchg": "CZCE",
+            "product": "ZC",
+            "maxlimitqty": 50,
+            "maxmarketqty": 10
+        },
+        "ZC312": {
+            "name": "郑煤312",
+            "code": "ZC312",
+            "exchg": "CZCE",
+            "product": "ZC",
+            "maxlimitqty": 50,
+            "maxmarketqty": 10
+        }
+    },
+    "DCE": {
+        "a2301": {
+            "name": "豆一2301",
+            "code": "a2301",
+            "exchg": "DCE",
+            "product": "a",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "a2303": {
+            "name": "豆一2303",
+            "code": "a2303",
+            "exchg": "DCE",
+            "product": "a",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "a2305": {
+            "name": "豆一2305",
+            "code": "a2305",
+            "exchg": "DCE",
+            "product": "a",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "a2307": {
+            "name": "豆一2307",
+            "code": "a2307",
+            "exchg": "DCE",
+            "product": "a",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "a2309": {
+            "name": "豆一2309",
+            "code": "a2309",
+            "exchg": "DCE",
+            "product": "a",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "a2311": {
+            "name": "豆一2311",
+            "code": "a2311",
+            "exchg": "DCE",
+            "product": "a",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "b2301": {
+            "name": "豆二2301",
+            "code": "b2301",
+            "exchg": "DCE",
+            "product": "b",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "b2302": {
+            "name": "豆二2302",
+            "code": "b2302",
+            "exchg": "DCE",
+            "product": "b",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "b2303": {
+            "name": "豆二2303",
+            "code": "b2303",
+            "exchg": "DCE",
+            "product": "b",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "b2304": {
+            "name": "豆二2304",
+            "code": "b2304",
+            "exchg": "DCE",
+            "product": "b",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "b2305": {
+            "name": "豆二2305",
+            "code": "b2305",
+            "exchg": "DCE",
+            "product": "b",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "b2306": {
+            "name": "豆二2306",
+            "code": "b2306",
+            "exchg": "DCE",
+            "product": "b",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "b2307": {
+            "name": "豆二2307",
+            "code": "b2307",
+            "exchg": "DCE",
+            "product": "b",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "b2308": {
+            "name": "豆二2308",
+            "code": "b2308",
+            "exchg": "DCE",
+            "product": "b",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "b2309": {
+            "name": "豆二2309",
+            "code": "b2309",
+            "exchg": "DCE",
+            "product": "b",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "b2310": {
+            "name": "豆二2310",
+            "code": "b2310",
+            "exchg": "DCE",
+            "product": "b",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "b2311": {
+            "name": "豆二2311",
+            "code": "b2311",
+            "exchg": "DCE",
+            "product": "b",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "b2312": {
+            "name": "豆二2312",
+            "code": "b2312",
+            "exchg": "DCE",
+            "product": "b",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "bb2301": {
+            "name": "胶板2301",
+            "code": "bb2301",
+            "exchg": "DCE",
+            "product": "bb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "bb2302": {
+            "name": "胶板2302",
+            "code": "bb2302",
+            "exchg": "DCE",
+            "product": "bb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "bb2303": {
+            "name": "胶板2303",
+            "code": "bb2303",
+            "exchg": "DCE",
+            "product": "bb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "bb2304": {
+            "name": "胶板2304",
+            "code": "bb2304",
+            "exchg": "DCE",
+            "product": "bb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "bb2305": {
+            "name": "胶板2305",
+            "code": "bb2305",
+            "exchg": "DCE",
+            "product": "bb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "bb2306": {
+            "name": "胶板2306",
+            "code": "bb2306",
+            "exchg": "DCE",
+            "product": "bb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "bb2307": {
+            "name": "胶板2307",
+            "code": "bb2307",
+            "exchg": "DCE",
+            "product": "bb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "bb2308": {
+            "name": "胶板2308",
+            "code": "bb2308",
+            "exchg": "DCE",
+            "product": "bb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "bb2309": {
+            "name": "胶板2309",
+            "code": "bb2309",
+            "exchg": "DCE",
+            "product": "bb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "bb2310": {
+            "name": "胶板2310",
+            "code": "bb2310",
+            "exchg": "DCE",
+            "product": "bb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "bb2311": {
+            "name": "胶板2311",
+            "code": "bb2311",
+            "exchg": "DCE",
+            "product": "bb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "bb2312": {
+            "name": "胶板2312",
+            "code": "bb2312",
+            "exchg": "DCE",
+            "product": "bb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "c2301": {
+            "name": "玉米2301",
+            "code": "c2301",
+            "exchg": "DCE",
+            "product": "c",
+            "maxlimitqty": 2000,
+            "maxmarketqty": 2000
+        },
+        "c2303": {
+            "name": "玉米2303",
+            "code": "c2303",
+            "exchg": "DCE",
+            "product": "c",
+            "maxlimitqty": 2000,
+            "maxmarketqty": 2000
+        },
+        "c2305": {
+            "name": "玉米2305",
+            "code": "c2305",
+            "exchg": "DCE",
+            "product": "c",
+            "maxlimitqty": 2000,
+            "maxmarketqty": 2000
+        },
+        "c2307": {
+            "name": "玉米2307",
+            "code": "c2307",
+            "exchg": "DCE",
+            "product": "c",
+            "maxlimitqty": 2000,
+            "maxmarketqty": 2000
+        },
+        "c2309": {
+            "name": "玉米2309",
+            "code": "c2309",
+            "exchg": "DCE",
+            "product": "c",
+            "maxlimitqty": 2000,
+            "maxmarketqty": 2000
+        },
+        "c2311": {
+            "name": "玉米2311",
+            "code": "c2311",
+            "exchg": "DCE",
+            "product": "c",
+            "maxlimitqty": 2000,
+            "maxmarketqty": 2000
+        },
+        "cs2301": {
+            "name": "淀粉2301",
+            "code": "cs2301",
+            "exchg": "DCE",
+            "product": "cs",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "cs2303": {
+            "name": "淀粉2303",
+            "code": "cs2303",
+            "exchg": "DCE",
+            "product": "cs",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "cs2305": {
+            "name": "淀粉2305",
+            "code": "cs2305",
+            "exchg": "DCE",
+            "product": "cs",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "cs2307": {
+            "name": "淀粉2307",
+            "code": "cs2307",
+            "exchg": "DCE",
+            "product": "cs",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "cs2309": {
+            "name": "淀粉2309",
+            "code": "cs2309",
+            "exchg": "DCE",
+            "product": "cs",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "cs2311": {
+            "name": "淀粉2311",
+            "code": "cs2311",
+            "exchg": "DCE",
+            "product": "cs",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "eb2301": {
+            "name": "苯乙烯2301",
+            "code": "eb2301",
+            "exchg": "DCE",
+            "product": "eb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "eb2302": {
+            "name": "苯乙烯2302",
+            "code": "eb2302",
+            "exchg": "DCE",
+            "product": "eb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "eb2303": {
+            "name": "苯乙烯2303",
+            "code": "eb2303",
+            "exchg": "DCE",
+            "product": "eb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "eb2304": {
+            "name": "苯乙烯2304",
+            "code": "eb2304",
+            "exchg": "DCE",
+            "product": "eb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "eb2305": {
+            "name": "苯乙烯2305",
+            "code": "eb2305",
+            "exchg": "DCE",
+            "product": "eb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "eb2306": {
+            "name": "苯乙烯2306",
+            "code": "eb2306",
+            "exchg": "DCE",
+            "product": "eb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "eb2307": {
+            "name": "苯乙烯2307",
+            "code": "eb2307",
+            "exchg": "DCE",
+            "product": "eb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "eb2308": {
+            "name": "苯乙烯2308",
+            "code": "eb2308",
+            "exchg": "DCE",
+            "product": "eb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "eb2309": {
+            "name": "苯乙烯2309",
+            "code": "eb2309",
+            "exchg": "DCE",
+            "product": "eb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "eb2310": {
+            "name": "苯乙烯2310",
+            "code": "eb2310",
+            "exchg": "DCE",
+            "product": "eb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "eb2311": {
+            "name": "苯乙烯2311",
+            "code": "eb2311",
+            "exchg": "DCE",
+            "product": "eb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "eb2312": {
+            "name": "苯乙烯2312",
+            "code": "eb2312",
+            "exchg": "DCE",
+            "product": "eb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "eg2301": {
+            "name": "乙二醇2301",
+            "code": "eg2301",
+            "exchg": "DCE",
+            "product": "eg",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "eg2302": {
+            "name": "乙二醇2302",
+            "code": "eg2302",
+            "exchg": "DCE",
+            "product": "eg",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "eg2303": {
+            "name": "乙二醇2303",
+            "code": "eg2303",
+            "exchg": "DCE",
+            "product": "eg",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "eg2304": {
+            "name": "乙二醇2304",
+            "code": "eg2304",
+            "exchg": "DCE",
+            "product": "eg",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "eg2305": {
+            "name": "乙二醇2305",
+            "code": "eg2305",
+            "exchg": "DCE",
+            "product": "eg",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "eg2306": {
+            "name": "乙二醇2306",
+            "code": "eg2306",
+            "exchg": "DCE",
+            "product": "eg",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "eg2307": {
+            "name": "乙二醇2307",
+            "code": "eg2307",
+            "exchg": "DCE",
+            "product": "eg",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "eg2308": {
+            "name": "乙二醇2308",
+            "code": "eg2308",
+            "exchg": "DCE",
+            "product": "eg",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "eg2309": {
+            "name": "乙二醇2309",
+            "code": "eg2309",
+            "exchg": "DCE",
+            "product": "eg",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "eg2310": {
+            "name": "乙二醇2310",
+            "code": "eg2310",
+            "exchg": "DCE",
+            "product": "eg",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "eg2311": {
+            "name": "乙二醇2311",
+            "code": "eg2311",
+            "exchg": "DCE",
+            "product": "eg",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "eg2312": {
+            "name": "乙二醇2312",
+            "code": "eg2312",
+            "exchg": "DCE",
+            "product": "eg",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "fb2301": {
+            "name": "纤板2301",
+            "code": "fb2301",
+            "exchg": "DCE",
+            "product": "fb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "fb2302": {
+            "name": "纤板2302",
+            "code": "fb2302",
+            "exchg": "DCE",
+            "product": "fb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "fb2303": {
+            "name": "纤板2303",
+            "code": "fb2303",
+            "exchg": "DCE",
+            "product": "fb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "fb2304": {
+            "name": "纤板2304",
+            "code": "fb2304",
+            "exchg": "DCE",
+            "product": "fb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "fb2305": {
+            "name": "纤板2305",
+            "code": "fb2305",
+            "exchg": "DCE",
+            "product": "fb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "fb2306": {
+            "name": "纤板2306",
+            "code": "fb2306",
+            "exchg": "DCE",
+            "product": "fb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "fb2307": {
+            "name": "纤板2307",
+            "code": "fb2307",
+            "exchg": "DCE",
+            "product": "fb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "fb2308": {
+            "name": "纤板2308",
+            "code": "fb2308",
+            "exchg": "DCE",
+            "product": "fb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "fb2309": {
+            "name": "纤板2309",
+            "code": "fb2309",
+            "exchg": "DCE",
+            "product": "fb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "fb2310": {
+            "name": "纤板2310",
+            "code": "fb2310",
+            "exchg": "DCE",
+            "product": "fb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "fb2311": {
+            "name": "纤板2311",
+            "code": "fb2311",
+            "exchg": "DCE",
+            "product": "fb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "fb2312": {
+            "name": "纤板2312",
+            "code": "fb2312",
+            "exchg": "DCE",
+            "product": "fb",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "i2301": {
+            "name": "铁矿石2301",
+            "code": "i2301",
+            "exchg": "DCE",
+            "product": "i",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "i2302": {
+            "name": "铁矿石2302",
+            "code": "i2302",
+            "exchg": "DCE",
+            "product": "i",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "i2303": {
+            "name": "铁矿石2303",
+            "code": "i2303",
+            "exchg": "DCE",
+            "product": "i",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "i2304": {
+            "name": "铁矿石2304",
+            "code": "i2304",
+            "exchg": "DCE",
+            "product": "i",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "i2305": {
+            "name": "铁矿石2305",
+            "code": "i2305",
+            "exchg": "DCE",
+            "product": "i",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "i2306": {
+            "name": "铁矿石2306",
+            "code": "i2306",
+            "exchg": "DCE",
+            "product": "i",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "i2307": {
+            "name": "铁矿石2307",
+            "code": "i2307",
+            "exchg": "DCE",
+            "product": "i",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "i2308": {
+            "name": "铁矿石2308",
+            "code": "i2308",
+            "exchg": "DCE",
+            "product": "i",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "i2309": {
+            "name": "铁矿石2309",
+            "code": "i2309",
+            "exchg": "DCE",
+            "product": "i",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "i2310": {
+            "name": "铁矿石2310",
+            "code": "i2310",
+            "exchg": "DCE",
+            "product": "i",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "i2311": {
+            "name": "铁矿石2311",
+            "code": "i2311",
+            "exchg": "DCE",
+            "product": "i",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "i2312": {
+            "name": "铁矿石2312",
+            "code": "i2312",
+            "exchg": "DCE",
+            "product": "i",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "j2301": {
+            "name": "焦炭2301",
+            "code": "j2301",
+            "exchg": "DCE",
+            "product": "j",
+            "maxlimitqty": 500,
+            "maxmarketqty": 500
+        },
+        "j2302": {
+            "name": "焦炭2302",
+            "code": "j2302",
+            "exchg": "DCE",
+            "product": "j",
+            "maxlimitqty": 500,
+            "maxmarketqty": 500
+        },
+        "j2303": {
+            "name": "焦炭2303",
+            "code": "j2303",
+            "exchg": "DCE",
+            "product": "j",
+            "maxlimitqty": 500,
+            "maxmarketqty": 500
+        },
+        "j2304": {
+            "name": "焦炭2304",
+            "code": "j2304",
+            "exchg": "DCE",
+            "product": "j",
+            "maxlimitqty": 500,
+            "maxmarketqty": 500
+        },
+        "j2305": {
+            "name": "焦炭2305",
+            "code": "j2305",
+            "exchg": "DCE",
+            "product": "j",
+            "maxlimitqty": 500,
+            "maxmarketqty": 500
+        },
+        "j2306": {
+            "name": "焦炭2306",
+            "code": "j2306",
+            "exchg": "DCE",
+            "product": "j",
+            "maxlimitqty": 500,
+            "maxmarketqty": 500
+        },
+        "j2307": {
+            "name": "焦炭2307",
+            "code": "j2307",
+            "exchg": "DCE",
+            "product": "j",
+            "maxlimitqty": 500,
+            "maxmarketqty": 500
+        },
+        "j2308": {
+            "name": "焦炭2308",
+            "code": "j2308",
+            "exchg": "DCE",
+            "product": "j",
+            "maxlimitqty": 500,
+            "maxmarketqty": 500
+        },
+        "j2309": {
+            "name": "焦炭2309",
+            "code": "j2309",
+            "exchg": "DCE",
+            "product": "j",
+            "maxlimitqty": 500,
+            "maxmarketqty": 500
+        },
+        "j2310": {
+            "name": "焦炭2310",
+            "code": "j2310",
+            "exchg": "DCE",
+            "product": "j",
+            "maxlimitqty": 500,
+            "maxmarketqty": 500
+        },
+        "j2311": {
+            "name": "焦炭2311",
+            "code": "j2311",
+            "exchg": "DCE",
+            "product": "j",
+            "maxlimitqty": 500,
+            "maxmarketqty": 500
+        },
+        "j2312": {
+            "name": "焦炭2312",
+            "code": "j2312",
+            "exchg": "DCE",
+            "product": "j",
+            "maxlimitqty": 500,
+            "maxmarketqty": 500
+        },
+        "jd2301": {
+            "name": "鸡蛋2301",
+            "code": "jd2301",
+            "exchg": "DCE",
+            "product": "jd",
+            "maxlimitqty": 300,
+            "maxmarketqty": 300
+        },
+        "jd2302": {
+            "name": "鸡蛋2302",
+            "code": "jd2302",
+            "exchg": "DCE",
+            "product": "jd",
+            "maxlimitqty": 300,
+            "maxmarketqty": 300
+        },
+        "jd2303": {
+            "name": "鸡蛋2303",
+            "code": "jd2303",
+            "exchg": "DCE",
+            "product": "jd",
+            "maxlimitqty": 300,
+            "maxmarketqty": 300
+        },
+        "jd2304": {
+            "name": "鸡蛋2304",
+            "code": "jd2304",
+            "exchg": "DCE",
+            "product": "jd",
+            "maxlimitqty": 300,
+            "maxmarketqty": 300
+        },
+        "jd2305": {
+            "name": "鸡蛋2305",
+            "code": "jd2305",
+            "exchg": "DCE",
+            "product": "jd",
+            "maxlimitqty": 300,
+            "maxmarketqty": 300
+        },
+        "jd2306": {
+            "name": "鸡蛋2306",
+            "code": "jd2306",
+            "exchg": "DCE",
+            "product": "jd",
+            "maxlimitqty": 300,
+            "maxmarketqty": 300
+        },
+        "jd2307": {
+            "name": "鸡蛋2307",
+            "code": "jd2307",
+            "exchg": "DCE",
+            "product": "jd",
+            "maxlimitqty": 300,
+            "maxmarketqty": 300
+        },
+        "jd2308": {
+            "name": "鸡蛋2308",
+            "code": "jd2308",
+            "exchg": "DCE",
+            "product": "jd",
+            "maxlimitqty": 300,
+            "maxmarketqty": 300
+        },
+        "jd2309": {
+            "name": "鸡蛋2309",
+            "code": "jd2309",
+            "exchg": "DCE",
+            "product": "jd",
+            "maxlimitqty": 300,
+            "maxmarketqty": 300
+        },
+        "jd2310": {
+            "name": "鸡蛋2310",
+            "code": "jd2310",
+            "exchg": "DCE",
+            "product": "jd",
+            "maxlimitqty": 300,
+            "maxmarketqty": 300
+        },
+        "jd2311": {
+            "name": "鸡蛋2311",
+            "code": "jd2311",
+            "exchg": "DCE",
+            "product": "jd",
+            "maxlimitqty": 300,
+            "maxmarketqty": 300
+        },
+        "jd2312": {
+            "name": "鸡蛋2312",
+            "code": "jd2312",
+            "exchg": "DCE",
+            "product": "jd",
+            "maxlimitqty": 300,
+            "maxmarketqty": 300
+        },
+        "jm2301": {
+            "name": "焦煤2301",
+            "code": "jm2301",
+            "exchg": "DCE",
+            "product": "jm",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "jm2302": {
+            "name": "焦煤2302",
+            "code": "jm2302",
+            "exchg": "DCE",
+            "product": "jm",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "jm2303": {
+            "name": "焦煤2303",
+            "code": "jm2303",
+            "exchg": "DCE",
+            "product": "jm",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "jm2304": {
+            "name": "焦煤2304",
+            "code": "jm2304",
+            "exchg": "DCE",
+            "product": "jm",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "jm2305": {
+            "name": "焦煤2305",
+            "code": "jm2305",
+            "exchg": "DCE",
+            "product": "jm",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "jm2306": {
+            "name": "焦煤2306",
+            "code": "jm2306",
+            "exchg": "DCE",
+            "product": "jm",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "jm2307": {
+            "name": "焦煤2307",
+            "code": "jm2307",
+            "exchg": "DCE",
+            "product": "jm",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "jm2308": {
+            "name": "焦煤2308",
+            "code": "jm2308",
+            "exchg": "DCE",
+            "product": "jm",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "jm2309": {
+            "name": "焦煤2309",
+            "code": "jm2309",
+            "exchg": "DCE",
+            "product": "jm",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "jm2310": {
+            "name": "焦煤2310",
+            "code": "jm2310",
+            "exchg": "DCE",
+            "product": "jm",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "jm2311": {
+            "name": "焦煤2311",
+            "code": "jm2311",
+            "exchg": "DCE",
+            "product": "jm",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "jm2312": {
+            "name": "焦煤2312",
+            "code": "jm2312",
+            "exchg": "DCE",
+            "product": "jm",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "l2301": {
+            "name": "塑料2301",
+            "code": "l2301",
+            "exchg": "DCE",
+            "product": "l",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "l2302": {
+            "name": "塑料2302",
+            "code": "l2302",
+            "exchg": "DCE",
+            "product": "l",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "l2303": {
+            "name": "塑料2303",
+            "code": "l2303",
+            "exchg": "DCE",
+            "product": "l",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "l2304": {
+            "name": "塑料2304",
+            "code": "l2304",
+            "exchg": "DCE",
+            "product": "l",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "l2305": {
+            "name": "塑料2305",
+            "code": "l2305",
+            "exchg": "DCE",
+            "product": "l",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "l2306": {
+            "name": "塑料2306",
+            "code": "l2306",
+            "exchg": "DCE",
+            "product": "l",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "l2307": {
+            "name": "塑料2307",
+            "code": "l2307",
+            "exchg": "DCE",
+            "product": "l",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "l2308": {
+            "name": "塑料2308",
+            "code": "l2308",
+            "exchg": "DCE",
+            "product": "l",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "l2309": {
+            "name": "塑料2309",
+            "code": "l2309",
+            "exchg": "DCE",
+            "product": "l",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "l2310": {
+            "name": "塑料2310",
+            "code": "l2310",
+            "exchg": "DCE",
+            "product": "l",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "l2311": {
+            "name": "塑料2311",
+            "code": "l2311",
+            "exchg": "DCE",
+            "product": "l",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "l2312": {
+            "name": "塑料2312",
+            "code": "l2312",
+            "exchg": "DCE",
+            "product": "l",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "lh2301": {
+            "name": "生猪2301",
+            "code": "lh2301",
+            "exchg": "DCE",
+            "product": "lh",
+            "maxlimitqty": 50,
+            "maxmarketqty": 50
+        },
+        "lh2303": {
+            "name": "生猪2303",
+            "code": "lh2303",
+            "exchg": "DCE",
+            "product": "lh",
+            "maxlimitqty": 50,
+            "maxmarketqty": 50
+        },
+        "lh2305": {
+            "name": "生猪2305",
+            "code": "lh2305",
+            "exchg": "DCE",
+            "product": "lh",
+            "maxlimitqty": 50,
+            "maxmarketqty": 50
+        },
+        "lh2307": {
+            "name": "生猪2307",
+            "code": "lh2307",
+            "exchg": "DCE",
+            "product": "lh",
+            "maxlimitqty": 50,
+            "maxmarketqty": 50
+        },
+        "lh2309": {
+            "name": "生猪2309",
+            "code": "lh2309",
+            "exchg": "DCE",
+            "product": "lh",
+            "maxlimitqty": 50,
+            "maxmarketqty": 50
+        },
+        "lh2311": {
+            "name": "生猪2311",
+            "code": "lh2311",
+            "exchg": "DCE",
+            "product": "lh",
+            "maxlimitqty": 50,
+            "maxmarketqty": 50
+        },
+        "m2301": {
+            "name": "豆粕2301",
+            "code": "m2301",
+            "exchg": "DCE",
+            "product": "m",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "m2303": {
+            "name": "豆粕2303",
+            "code": "m2303",
+            "exchg": "DCE",
+            "product": "m",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "m2305": {
+            "name": "豆粕2305",
+            "code": "m2305",
+            "exchg": "DCE",
+            "product": "m",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "m2307": {
+            "name": "豆粕2307",
+            "code": "m2307",
+            "exchg": "DCE",
+            "product": "m",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "m2308": {
+            "name": "豆粕2308",
+            "code": "m2308",
+            "exchg": "DCE",
+            "product": "m",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "m2309": {
+            "name": "豆粕2309",
+            "code": "m2309",
+            "exchg": "DCE",
+            "product": "m",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "m2311": {
+            "name": "豆粕2311",
+            "code": "m2311",
+            "exchg": "DCE",
+            "product": "m",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "m2312": {
+            "name": "豆粕2312",
+            "code": "m2312",
+            "exchg": "DCE",
+            "product": "m",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "p2301": {
+            "name": "棕榈油2301",
+            "code": "p2301",
+            "exchg": "DCE",
+            "product": "p",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "p2302": {
+            "name": "棕榈油2302",
+            "code": "p2302",
+            "exchg": "DCE",
+            "product": "p",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "p2303": {
+            "name": "棕榈油2303",
+            "code": "p2303",
+            "exchg": "DCE",
+            "product": "p",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "p2304": {
+            "name": "棕榈油2304",
+            "code": "p2304",
+            "exchg": "DCE",
+            "product": "p",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "p2305": {
+            "name": "棕榈油2305",
+            "code": "p2305",
+            "exchg": "DCE",
+            "product": "p",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "p2306": {
+            "name": "棕榈油2306",
+            "code": "p2306",
+            "exchg": "DCE",
+            "product": "p",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "p2307": {
+            "name": "棕榈油2307",
+            "code": "p2307",
+            "exchg": "DCE",
+            "product": "p",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "p2308": {
+            "name": "棕榈油2308",
+            "code": "p2308",
+            "exchg": "DCE",
+            "product": "p",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "p2309": {
+            "name": "棕榈油2309",
+            "code": "p2309",
+            "exchg": "DCE",
+            "product": "p",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "p2310": {
+            "name": "棕榈油2310",
+            "code": "p2310",
+            "exchg": "DCE",
+            "product": "p",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "p2311": {
+            "name": "棕榈油2311",
+            "code": "p2311",
+            "exchg": "DCE",
+            "product": "p",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "p2312": {
+            "name": "棕榈油2312",
+            "code": "p2312",
+            "exchg": "DCE",
+            "product": "p",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "pg2301": {
+            "name": "液化气2301",
+            "code": "pg2301",
+            "exchg": "DCE",
+            "product": "pg",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "pg2302": {
+            "name": "液化气2302",
+            "code": "pg2302",
+            "exchg": "DCE",
+            "product": "pg",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "pg2303": {
+            "name": "液化气2303",
+            "code": "pg2303",
+            "exchg": "DCE",
+            "product": "pg",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "pg2304": {
+            "name": "液化气2304",
+            "code": "pg2304",
+            "exchg": "DCE",
+            "product": "pg",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "pg2305": {
+            "name": "液化气2305",
+            "code": "pg2305",
+            "exchg": "DCE",
+            "product": "pg",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "pg2306": {
+            "name": "液化气2306",
+            "code": "pg2306",
+            "exchg": "DCE",
+            "product": "pg",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "pg2307": {
+            "name": "液化气2307",
+            "code": "pg2307",
+            "exchg": "DCE",
+            "product": "pg",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "pg2308": {
+            "name": "液化气2308",
+            "code": "pg2308",
+            "exchg": "DCE",
+            "product": "pg",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "pg2309": {
+            "name": "液化气2309",
+            "code": "pg2309",
+            "exchg": "DCE",
+            "product": "pg",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "pg2310": {
+            "name": "液化气2310",
+            "code": "pg2310",
+            "exchg": "DCE",
+            "product": "pg",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "pg2311": {
+            "name": "液化气2311",
+            "code": "pg2311",
+            "exchg": "DCE",
+            "product": "pg",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "pg2312": {
+            "name": "液化气2312",
+            "code": "pg2312",
+            "exchg": "DCE",
+            "product": "pg",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "pp2301": {
+            "name": "聚丙烯2301",
+            "code": "pp2301",
+            "exchg": "DCE",
+            "product": "pp",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "pp2302": {
+            "name": "聚丙烯2302",
+            "code": "pp2302",
+            "exchg": "DCE",
+            "product": "pp",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "pp2303": {
+            "name": "聚丙烯2303",
+            "code": "pp2303",
+            "exchg": "DCE",
+            "product": "pp",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "pp2304": {
+            "name": "聚丙烯2304",
+            "code": "pp2304",
+            "exchg": "DCE",
+            "product": "pp",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "pp2305": {
+            "name": "聚丙烯2305",
+            "code": "pp2305",
+            "exchg": "DCE",
+            "product": "pp",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "pp2306": {
+            "name": "聚丙烯2306",
+            "code": "pp2306",
+            "exchg": "DCE",
+            "product": "pp",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "pp2307": {
+            "name": "聚丙烯2307",
+            "code": "pp2307",
+            "exchg": "DCE",
+            "product": "pp",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "pp2308": {
+            "name": "聚丙烯2308",
+            "code": "pp2308",
+            "exchg": "DCE",
+            "product": "pp",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "pp2309": {
+            "name": "聚丙烯2309",
+            "code": "pp2309",
+            "exchg": "DCE",
+            "product": "pp",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "pp2310": {
+            "name": "聚丙烯2310",
+            "code": "pp2310",
+            "exchg": "DCE",
+            "product": "pp",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "pp2311": {
+            "name": "聚丙烯2311",
+            "code": "pp2311",
+            "exchg": "DCE",
+            "product": "pp",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "pp2312": {
+            "name": "聚丙烯2312",
+            "code": "pp2312",
+            "exchg": "DCE",
+            "product": "pp",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "rr2301": {
+            "name": "粳米2301",
+            "code": "rr2301",
+            "exchg": "DCE",
+            "product": "rr",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "rr2302": {
+            "name": "粳米2302",
+            "code": "rr2302",
+            "exchg": "DCE",
+            "product": "rr",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "rr2303": {
+            "name": "粳米2303",
+            "code": "rr2303",
+            "exchg": "DCE",
+            "product": "rr",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "rr2304": {
+            "name": "粳米2304",
+            "code": "rr2304",
+            "exchg": "DCE",
+            "product": "rr",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "rr2305": {
+            "name": "粳米2305",
+            "code": "rr2305",
+            "exchg": "DCE",
+            "product": "rr",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "rr2306": {
+            "name": "粳米2306",
+            "code": "rr2306",
+            "exchg": "DCE",
+            "product": "rr",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "rr2307": {
+            "name": "粳米2307",
+            "code": "rr2307",
+            "exchg": "DCE",
+            "product": "rr",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "rr2308": {
+            "name": "粳米2308",
+            "code": "rr2308",
+            "exchg": "DCE",
+            "product": "rr",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "rr2309": {
+            "name": "粳米2309",
+            "code": "rr2309",
+            "exchg": "DCE",
+            "product": "rr",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "rr2310": {
+            "name": "粳米2310",
+            "code": "rr2310",
+            "exchg": "DCE",
+            "product": "rr",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "rr2311": {
+            "name": "粳米2311",
+            "code": "rr2311",
+            "exchg": "DCE",
+            "product": "rr",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "rr2312": {
+            "name": "粳米2312",
+            "code": "rr2312",
+            "exchg": "DCE",
+            "product": "rr",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "v2301": {
+            "name": "PVC2301",
+            "code": "v2301",
+            "exchg": "DCE",
+            "product": "v",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "v2302": {
+            "name": "PVC2302",
+            "code": "v2302",
+            "exchg": "DCE",
+            "product": "v",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "v2303": {
+            "name": "PVC2303",
+            "code": "v2303",
+            "exchg": "DCE",
+            "product": "v",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "v2304": {
+            "name": "PVC2304",
+            "code": "v2304",
+            "exchg": "DCE",
+            "product": "v",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "v2305": {
+            "name": "PVC2305",
+            "code": "v2305",
+            "exchg": "DCE",
+            "product": "v",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "v2306": {
+            "name": "PVC2306",
+            "code": "v2306",
+            "exchg": "DCE",
+            "product": "v",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "v2307": {
+            "name": "PVC2307",
+            "code": "v2307",
+            "exchg": "DCE",
+            "product": "v",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "v2308": {
+            "name": "PVC2308",
+            "code": "v2308",
+            "exchg": "DCE",
+            "product": "v",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "v2309": {
+            "name": "PVC2309",
+            "code": "v2309",
+            "exchg": "DCE",
+            "product": "v",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "v2310": {
+            "name": "PVC2310",
+            "code": "v2310",
+            "exchg": "DCE",
+            "product": "v",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "v2311": {
+            "name": "PVC2311",
+            "code": "v2311",
+            "exchg": "DCE",
+            "product": "v",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "v2312": {
+            "name": "PVC2312",
+            "code": "v2312",
+            "exchg": "DCE",
+            "product": "v",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "y2301": {
+            "name": "豆油2301",
+            "code": "y2301",
+            "exchg": "DCE",
+            "product": "y",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "y2303": {
+            "name": "豆油2303",
+            "code": "y2303",
+            "exchg": "DCE",
+            "product": "y",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "y2305": {
+            "name": "豆油2305",
+            "code": "y2305",
+            "exchg": "DCE",
+            "product": "y",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "y2307": {
+            "name": "豆油2307",
+            "code": "y2307",
+            "exchg": "DCE",
+            "product": "y",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "y2308": {
+            "name": "豆油2308",
+            "code": "y2308",
+            "exchg": "DCE",
+            "product": "y",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "y2309": {
+            "name": "豆油2309",
+            "code": "y2309",
+            "exchg": "DCE",
+            "product": "y",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "y2311": {
+            "name": "豆油2311",
+            "code": "y2311",
+            "exchg": "DCE",
+            "product": "y",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "y2312": {
+            "name": "豆油2312",
+            "code": "y2312",
+            "exchg": "DCE",
+            "product": "y",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        }
+    },
+    "GFEX": {
+        "si2308": {
+            "name": "工业硅2308",
+            "code": "si2308",
+            "exchg": "GFEX",
+            "product": "si",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "si2309": {
+            "name": "工业硅2309",
+            "code": "si2309",
+            "exchg": "GFEX",
+            "product": "si",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "si2310": {
+            "name": "工业硅2310",
+            "code": "si2310",
+            "exchg": "GFEX",
+            "product": "si",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "si2311": {
+            "name": "工业硅2311",
+            "code": "si2311",
+            "exchg": "GFEX",
+            "product": "si",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        },
+        "si2312": {
+            "name": "工业硅2312",
+            "code": "si2312",
+            "exchg": "GFEX",
+            "product": "si",
+            "maxlimitqty": 1000,
+            "maxmarketqty": 1000
+        }
+    },
+    "INE": {
+        "bc2301": {
+            "name": "国际铜2301",
+            "code": "bc2301",
+            "exchg": "INE",
+            "product": "bc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "bc2302": {
+            "name": "国际铜2302",
+            "code": "bc2302",
+            "exchg": "INE",
+            "product": "bc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "bc2303": {
+            "name": "国际铜2303",
+            "code": "bc2303",
+            "exchg": "INE",
+            "product": "bc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "bc2304": {
+            "name": "国际铜2304",
+            "code": "bc2304",
+            "exchg": "INE",
+            "product": "bc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "bc2305": {
+            "name": "国际铜2305",
+            "code": "bc2305",
+            "exchg": "INE",
+            "product": "bc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "bc2306": {
+            "name": "国际铜2306",
+            "code": "bc2306",
+            "exchg": "INE",
+            "product": "bc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "bc2307": {
+            "name": "国际铜2307",
+            "code": "bc2307",
+            "exchg": "INE",
+            "product": "bc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "bc2308": {
+            "name": "国际铜2308",
+            "code": "bc2308",
+            "exchg": "INE",
+            "product": "bc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "bc2309": {
+            "name": "国际铜2309",
+            "code": "bc2309",
+            "exchg": "INE",
+            "product": "bc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "bc2310": {
+            "name": "国际铜2310",
+            "code": "bc2310",
+            "exchg": "INE",
+            "product": "bc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "bc2311": {
+            "name": "国际铜2311",
+            "code": "bc2311",
+            "exchg": "INE",
+            "product": "bc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "bc2312": {
+            "name": "国际铜2312",
+            "code": "bc2312",
+            "exchg": "INE",
+            "product": "bc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "lu2302": {
+            "name": "低硫油2302",
+            "code": "lu2302",
+            "exchg": "INE",
+            "product": "lu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "lu2303": {
+            "name": "低硫油2303",
+            "code": "lu2303",
+            "exchg": "INE",
+            "product": "lu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "lu2304": {
+            "name": "低硫油2304",
+            "code": "lu2304",
+            "exchg": "INE",
+            "product": "lu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "lu2305": {
+            "name": "低硫油2305",
+            "code": "lu2305",
+            "exchg": "INE",
+            "product": "lu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "lu2306": {
+            "name": "低硫油2306",
+            "code": "lu2306",
+            "exchg": "INE",
+            "product": "lu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "lu2307": {
+            "name": "低硫油2307",
+            "code": "lu2307",
+            "exchg": "INE",
+            "product": "lu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "lu2308": {
+            "name": "低硫油2308",
+            "code": "lu2308",
+            "exchg": "INE",
+            "product": "lu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "lu2309": {
+            "name": "低硫油2309",
+            "code": "lu2309",
+            "exchg": "INE",
+            "product": "lu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "lu2310": {
+            "name": "低硫油2310",
+            "code": "lu2310",
+            "exchg": "INE",
+            "product": "lu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "lu2311": {
+            "name": "低硫油2311",
+            "code": "lu2311",
+            "exchg": "INE",
+            "product": "lu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "lu2312": {
+            "name": "低硫油2312",
+            "code": "lu2312",
+            "exchg": "INE",
+            "product": "lu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "lu2401": {
+            "name": "低硫油2401",
+            "code": "lu2401",
+            "exchg": "INE",
+            "product": "lu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "nr2301": {
+            "name": "20胶2301",
+            "code": "nr2301",
+            "exchg": "INE",
+            "product": "nr",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "nr2302": {
+            "name": "20胶2302",
+            "code": "nr2302",
+            "exchg": "INE",
+            "product": "nr",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "nr2303": {
+            "name": "20胶2303",
+            "code": "nr2303",
+            "exchg": "INE",
+            "product": "nr",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "nr2304": {
+            "name": "20胶2304",
+            "code": "nr2304",
+            "exchg": "INE",
+            "product": "nr",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "nr2305": {
+            "name": "20胶2305",
+            "code": "nr2305",
+            "exchg": "INE",
+            "product": "nr",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "nr2306": {
+            "name": "20胶2306",
+            "code": "nr2306",
+            "exchg": "INE",
+            "product": "nr",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "nr2307": {
+            "name": "20胶2307",
+            "code": "nr2307",
+            "exchg": "INE",
+            "product": "nr",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "nr2308": {
+            "name": "20胶2308",
+            "code": "nr2308",
+            "exchg": "INE",
+            "product": "nr",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "nr2309": {
+            "name": "20胶2309",
+            "code": "nr2309",
+            "exchg": "INE",
+            "product": "nr",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "nr2310": {
+            "name": "20胶2310",
+            "code": "nr2310",
+            "exchg": "INE",
+            "product": "nr",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "nr2311": {
+            "name": "20胶2311",
+            "code": "nr2311",
+            "exchg": "INE",
+            "product": "nr",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "nr2312": {
+            "name": "20胶2312",
+            "code": "nr2312",
+            "exchg": "INE",
+            "product": "nr",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sc2302": {
+            "name": "原油2302",
+            "code": "sc2302",
+            "exchg": "INE",
+            "product": "sc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sc2303": {
+            "name": "原油2303",
+            "code": "sc2303",
+            "exchg": "INE",
+            "product": "sc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sc2304": {
+            "name": "原油2304",
+            "code": "sc2304",
+            "exchg": "INE",
+            "product": "sc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sc2305": {
+            "name": "原油2305",
+            "code": "sc2305",
+            "exchg": "INE",
+            "product": "sc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sc2306": {
+            "name": "原油2306",
+            "code": "sc2306",
+            "exchg": "INE",
+            "product": "sc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sc2307": {
+            "name": "原油2307",
+            "code": "sc2307",
+            "exchg": "INE",
+            "product": "sc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sc2308": {
+            "name": "原油2308",
+            "code": "sc2308",
+            "exchg": "INE",
+            "product": "sc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sc2309": {
+            "name": "原油2309",
+            "code": "sc2309",
+            "exchg": "INE",
+            "product": "sc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sc2310": {
+            "name": "原油2310",
+            "code": "sc2310",
+            "exchg": "INE",
+            "product": "sc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sc2311": {
+            "name": "原油2311",
+            "code": "sc2311",
+            "exchg": "INE",
+            "product": "sc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sc2312": {
+            "name": "原油2312",
+            "code": "sc2312",
+            "exchg": "INE",
+            "product": "sc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sc2401": {
+            "name": "原油2401",
+            "code": "sc2401",
+            "exchg": "INE",
+            "product": "sc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sc2403": {
+            "name": "原油2403",
+            "code": "sc2403",
+            "exchg": "INE",
+            "product": "sc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sc2406": {
+            "name": "原油2406",
+            "code": "sc2406",
+            "exchg": "INE",
+            "product": "sc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sc2409": {
+            "name": "原油2409",
+            "code": "sc2409",
+            "exchg": "INE",
+            "product": "sc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sc2412": {
+            "name": "原油2412",
+            "code": "sc2412",
+            "exchg": "INE",
+            "product": "sc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sc2503": {
+            "name": "原油2503",
+            "code": "sc2503",
+            "exchg": "INE",
+            "product": "sc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sc2506": {
+            "name": "原油2506",
+            "code": "sc2506",
+            "exchg": "INE",
+            "product": "sc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sc2509": {
+            "name": "原油2509",
+            "code": "sc2509",
+            "exchg": "INE",
+            "product": "sc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sc2512": {
+            "name": "原油2512",
+            "code": "sc2512",
+            "exchg": "INE",
+            "product": "sc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        }
+    },
+    "SHFE": {
+        "ag2301": {
+            "name": "沪银2301",
+            "code": "ag2301",
+            "exchg": "SHFE",
+            "product": "ag",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ag2302": {
+            "name": "沪银2302",
+            "code": "ag2302",
+            "exchg": "SHFE",
+            "product": "ag",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ag2303": {
+            "name": "沪银2303",
+            "code": "ag2303",
+            "exchg": "SHFE",
+            "product": "ag",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ag2304": {
+            "name": "沪银2304",
+            "code": "ag2304",
+            "exchg": "SHFE",
+            "product": "ag",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ag2305": {
+            "name": "沪银2305",
+            "code": "ag2305",
+            "exchg": "SHFE",
+            "product": "ag",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ag2306": {
+            "name": "沪银2306",
+            "code": "ag2306",
+            "exchg": "SHFE",
+            "product": "ag",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ag2307": {
+            "name": "沪银2307",
+            "code": "ag2307",
+            "exchg": "SHFE",
+            "product": "ag",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ag2308": {
+            "name": "沪银2308",
+            "code": "ag2308",
+            "exchg": "SHFE",
+            "product": "ag",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ag2309": {
+            "name": "沪银2309",
+            "code": "ag2309",
+            "exchg": "SHFE",
+            "product": "ag",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ag2310": {
+            "name": "沪银2310",
+            "code": "ag2310",
+            "exchg": "SHFE",
+            "product": "ag",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ag2311": {
+            "name": "沪银2311",
+            "code": "ag2311",
+            "exchg": "SHFE",
+            "product": "ag",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ag2312": {
+            "name": "沪银2312",
+            "code": "ag2312",
+            "exchg": "SHFE",
+            "product": "ag",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "al2301": {
+            "name": "沪铝2301",
+            "code": "al2301",
+            "exchg": "SHFE",
+            "product": "al",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "al2302": {
+            "name": "沪铝2302",
+            "code": "al2302",
+            "exchg": "SHFE",
+            "product": "al",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "al2303": {
+            "name": "沪铝2303",
+            "code": "al2303",
+            "exchg": "SHFE",
+            "product": "al",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "al2304": {
+            "name": "沪铝2304",
+            "code": "al2304",
+            "exchg": "SHFE",
+            "product": "al",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "al2305": {
+            "name": "沪铝2305",
+            "code": "al2305",
+            "exchg": "SHFE",
+            "product": "al",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "al2306": {
+            "name": "沪铝2306",
+            "code": "al2306",
+            "exchg": "SHFE",
+            "product": "al",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "al2307": {
+            "name": "沪铝2307",
+            "code": "al2307",
+            "exchg": "SHFE",
+            "product": "al",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "al2308": {
+            "name": "沪铝2308",
+            "code": "al2308",
+            "exchg": "SHFE",
+            "product": "al",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "al2309": {
+            "name": "沪铝2309",
+            "code": "al2309",
+            "exchg": "SHFE",
+            "product": "al",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "al2310": {
+            "name": "沪铝2310",
+            "code": "al2310",
+            "exchg": "SHFE",
+            "product": "al",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "al2311": {
+            "name": "沪铝2311",
+            "code": "al2311",
+            "exchg": "SHFE",
+            "product": "al",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "al2312": {
+            "name": "沪铝2312",
+            "code": "al2312",
+            "exchg": "SHFE",
+            "product": "al",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "au2301": {
+            "name": "沪金2301",
+            "code": "au2301",
+            "exchg": "SHFE",
+            "product": "au",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "au2302": {
+            "name": "沪金2302",
+            "code": "au2302",
+            "exchg": "SHFE",
+            "product": "au",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "au2303": {
+            "name": "沪金2303",
+            "code": "au2303",
+            "exchg": "SHFE",
+            "product": "au",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "au2304": {
+            "name": "沪金2304",
+            "code": "au2304",
+            "exchg": "SHFE",
+            "product": "au",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "au2306": {
+            "name": "沪金2306",
+            "code": "au2306",
+            "exchg": "SHFE",
+            "product": "au",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "au2308": {
+            "name": "沪金2308",
+            "code": "au2308",
+            "exchg": "SHFE",
+            "product": "au",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "au2310": {
+            "name": "沪金2310",
+            "code": "au2310",
+            "exchg": "SHFE",
+            "product": "au",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "au2312": {
+            "name": "沪金2312",
+            "code": "au2312",
+            "exchg": "SHFE",
+            "product": "au",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "bu2301": {
+            "name": "沥青2301",
+            "code": "bu2301",
+            "exchg": "SHFE",
+            "product": "bu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "bu2302": {
+            "name": "沥青2302",
+            "code": "bu2302",
+            "exchg": "SHFE",
+            "product": "bu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "bu2303": {
+            "name": "沥青2303",
+            "code": "bu2303",
+            "exchg": "SHFE",
+            "product": "bu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "bu2304": {
+            "name": "沥青2304",
+            "code": "bu2304",
+            "exchg": "SHFE",
+            "product": "bu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "bu2305": {
+            "name": "沥青2305",
+            "code": "bu2305",
+            "exchg": "SHFE",
+            "product": "bu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "bu2306": {
+            "name": "沥青2306",
+            "code": "bu2306",
+            "exchg": "SHFE",
+            "product": "bu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "bu2307": {
+            "name": "沥青2307",
+            "code": "bu2307",
+            "exchg": "SHFE",
+            "product": "bu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "bu2308": {
+            "name": "沥青2308",
+            "code": "bu2308",
+            "exchg": "SHFE",
+            "product": "bu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "bu2309": {
+            "name": "沥青2309",
+            "code": "bu2309",
+            "exchg": "SHFE",
+            "product": "bu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "bu2310": {
+            "name": "沥青2310",
+            "code": "bu2310",
+            "exchg": "SHFE",
+            "product": "bu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "bu2311": {
+            "name": "沥青2311",
+            "code": "bu2311",
+            "exchg": "SHFE",
+            "product": "bu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "bu2312": {
+            "name": "沥青2312",
+            "code": "bu2312",
+            "exchg": "SHFE",
+            "product": "bu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "bu2403": {
+            "name": "沥青2403",
+            "code": "bu2403",
+            "exchg": "SHFE",
+            "product": "bu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "bu2406": {
+            "name": "沥青2406",
+            "code": "bu2406",
+            "exchg": "SHFE",
+            "product": "bu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "bu2409": {
+            "name": "沥青2409",
+            "code": "bu2409",
+            "exchg": "SHFE",
+            "product": "bu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "bu2412": {
+            "name": "沥青2412",
+            "code": "bu2412",
+            "exchg": "SHFE",
+            "product": "bu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "cu2301": {
+            "name": "沪铜2301",
+            "code": "cu2301",
+            "exchg": "SHFE",
+            "product": "cu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "cu2302": {
+            "name": "沪铜2302",
+            "code": "cu2302",
+            "exchg": "SHFE",
+            "product": "cu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "cu2303": {
+            "name": "沪铜2303",
+            "code": "cu2303",
+            "exchg": "SHFE",
+            "product": "cu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "cu2304": {
+            "name": "沪铜2304",
+            "code": "cu2304",
+            "exchg": "SHFE",
+            "product": "cu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "cu2305": {
+            "name": "沪铜2305",
+            "code": "cu2305",
+            "exchg": "SHFE",
+            "product": "cu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "cu2306": {
+            "name": "沪铜2306",
+            "code": "cu2306",
+            "exchg": "SHFE",
+            "product": "cu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "cu2307": {
+            "name": "沪铜2307",
+            "code": "cu2307",
+            "exchg": "SHFE",
+            "product": "cu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "cu2308": {
+            "name": "沪铜2308",
+            "code": "cu2308",
+            "exchg": "SHFE",
+            "product": "cu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "cu2309": {
+            "name": "沪铜2309",
+            "code": "cu2309",
+            "exchg": "SHFE",
+            "product": "cu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "cu2310": {
+            "name": "沪铜2310",
+            "code": "cu2310",
+            "exchg": "SHFE",
+            "product": "cu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "cu2311": {
+            "name": "沪铜2311",
+            "code": "cu2311",
+            "exchg": "SHFE",
+            "product": "cu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "cu2312": {
+            "name": "沪铜2312",
+            "code": "cu2312",
+            "exchg": "SHFE",
+            "product": "cu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "fu2302": {
+            "name": "燃油2302",
+            "code": "fu2302",
+            "exchg": "SHFE",
+            "product": "fu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "fu2303": {
+            "name": "燃油2303",
+            "code": "fu2303",
+            "exchg": "SHFE",
+            "product": "fu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "fu2304": {
+            "name": "燃油2304",
+            "code": "fu2304",
+            "exchg": "SHFE",
+            "product": "fu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "fu2305": {
+            "name": "燃油2305",
+            "code": "fu2305",
+            "exchg": "SHFE",
+            "product": "fu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "fu2306": {
+            "name": "燃油2306",
+            "code": "fu2306",
+            "exchg": "SHFE",
+            "product": "fu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "fu2307": {
+            "name": "燃油2307",
+            "code": "fu2307",
+            "exchg": "SHFE",
+            "product": "fu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "fu2308": {
+            "name": "燃油2308",
+            "code": "fu2308",
+            "exchg": "SHFE",
+            "product": "fu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "fu2309": {
+            "name": "燃油2309",
+            "code": "fu2309",
+            "exchg": "SHFE",
+            "product": "fu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "fu2310": {
+            "name": "燃油2310",
+            "code": "fu2310",
+            "exchg": "SHFE",
+            "product": "fu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "fu2311": {
+            "name": "燃油2311",
+            "code": "fu2311",
+            "exchg": "SHFE",
+            "product": "fu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "fu2312": {
+            "name": "燃油2312",
+            "code": "fu2312",
+            "exchg": "SHFE",
+            "product": "fu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "fu2401": {
+            "name": "燃油2401",
+            "code": "fu2401",
+            "exchg": "SHFE",
+            "product": "fu",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "hc2301": {
+            "name": "热卷2301",
+            "code": "hc2301",
+            "exchg": "SHFE",
+            "product": "hc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "hc2302": {
+            "name": "热卷2302",
+            "code": "hc2302",
+            "exchg": "SHFE",
+            "product": "hc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "hc2303": {
+            "name": "热卷2303",
+            "code": "hc2303",
+            "exchg": "SHFE",
+            "product": "hc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "hc2304": {
+            "name": "热卷2304",
+            "code": "hc2304",
+            "exchg": "SHFE",
+            "product": "hc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "hc2305": {
+            "name": "热卷2305",
+            "code": "hc2305",
+            "exchg": "SHFE",
+            "product": "hc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "hc2306": {
+            "name": "热卷2306",
+            "code": "hc2306",
+            "exchg": "SHFE",
+            "product": "hc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "hc2307": {
+            "name": "热卷2307",
+            "code": "hc2307",
+            "exchg": "SHFE",
+            "product": "hc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "hc2308": {
+            "name": "热卷2308",
+            "code": "hc2308",
+            "exchg": "SHFE",
+            "product": "hc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "hc2309": {
+            "name": "热卷2309",
+            "code": "hc2309",
+            "exchg": "SHFE",
+            "product": "hc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "hc2310": {
+            "name": "热卷2310",
+            "code": "hc2310",
+            "exchg": "SHFE",
+            "product": "hc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "hc2311": {
+            "name": "热卷2311",
+            "code": "hc2311",
+            "exchg": "SHFE",
+            "product": "hc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "hc2312": {
+            "name": "热卷2312",
+            "code": "hc2312",
+            "exchg": "SHFE",
+            "product": "hc",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ni2301": {
+            "name": "沪镍2301",
+            "code": "ni2301",
+            "exchg": "SHFE",
+            "product": "ni",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ni2302": {
+            "name": "沪镍2302",
+            "code": "ni2302",
+            "exchg": "SHFE",
+            "product": "ni",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ni2303": {
+            "name": "沪镍2303",
+            "code": "ni2303",
+            "exchg": "SHFE",
+            "product": "ni",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ni2304": {
+            "name": "沪镍2304",
+            "code": "ni2304",
+            "exchg": "SHFE",
+            "product": "ni",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ni2305": {
+            "name": "沪镍2305",
+            "code": "ni2305",
+            "exchg": "SHFE",
+            "product": "ni",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ni2306": {
+            "name": "沪镍2306",
+            "code": "ni2306",
+            "exchg": "SHFE",
+            "product": "ni",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ni2307": {
+            "name": "沪镍2307",
+            "code": "ni2307",
+            "exchg": "SHFE",
+            "product": "ni",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ni2308": {
+            "name": "沪镍2308",
+            "code": "ni2308",
+            "exchg": "SHFE",
+            "product": "ni",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ni2309": {
+            "name": "沪镍2309",
+            "code": "ni2309",
+            "exchg": "SHFE",
+            "product": "ni",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ni2310": {
+            "name": "沪镍2310",
+            "code": "ni2310",
+            "exchg": "SHFE",
+            "product": "ni",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ni2311": {
+            "name": "沪镍2311",
+            "code": "ni2311",
+            "exchg": "SHFE",
+            "product": "ni",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ni2312": {
+            "name": "沪镍2312",
+            "code": "ni2312",
+            "exchg": "SHFE",
+            "product": "ni",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "pb2301": {
+            "name": "沪铅2301",
+            "code": "pb2301",
+            "exchg": "SHFE",
+            "product": "pb",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "pb2302": {
+            "name": "沪铅2302",
+            "code": "pb2302",
+            "exchg": "SHFE",
+            "product": "pb",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "pb2303": {
+            "name": "沪铅2303",
+            "code": "pb2303",
+            "exchg": "SHFE",
+            "product": "pb",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "pb2304": {
+            "name": "沪铅2304",
+            "code": "pb2304",
+            "exchg": "SHFE",
+            "product": "pb",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "pb2305": {
+            "name": "沪铅2305",
+            "code": "pb2305",
+            "exchg": "SHFE",
+            "product": "pb",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "pb2306": {
+            "name": "沪铅2306",
+            "code": "pb2306",
+            "exchg": "SHFE",
+            "product": "pb",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "pb2307": {
+            "name": "沪铅2307",
+            "code": "pb2307",
+            "exchg": "SHFE",
+            "product": "pb",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "pb2308": {
+            "name": "沪铅2308",
+            "code": "pb2308",
+            "exchg": "SHFE",
+            "product": "pb",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "pb2309": {
+            "name": "沪铅2309",
+            "code": "pb2309",
+            "exchg": "SHFE",
+            "product": "pb",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "pb2310": {
+            "name": "沪铅2310",
+            "code": "pb2310",
+            "exchg": "SHFE",
+            "product": "pb",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "pb2311": {
+            "name": "沪铅2311",
+            "code": "pb2311",
+            "exchg": "SHFE",
+            "product": "pb",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "pb2312": {
+            "name": "沪铅2312",
+            "code": "pb2312",
+            "exchg": "SHFE",
+            "product": "pb",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "rb2301": {
+            "name": "螺纹2301",
+            "code": "rb2301",
+            "exchg": "SHFE",
+            "product": "rb",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "rb2302": {
+            "name": "螺纹2302",
+            "code": "rb2302",
+            "exchg": "SHFE",
+            "product": "rb",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "rb2303": {
+            "name": "螺纹2303",
+            "code": "rb2303",
+            "exchg": "SHFE",
+            "product": "rb",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "rb2304": {
+            "name": "螺纹2304",
+            "code": "rb2304",
+            "exchg": "SHFE",
+            "product": "rb",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "rb2305": {
+            "name": "螺纹2305",
+            "code": "rb2305",
+            "exchg": "SHFE",
+            "product": "rb",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "rb2306": {
+            "name": "螺纹2306",
+            "code": "rb2306",
+            "exchg": "SHFE",
+            "product": "rb",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "rb2307": {
+            "name": "螺纹2307",
+            "code": "rb2307",
+            "exchg": "SHFE",
+            "product": "rb",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "rb2308": {
+            "name": "螺纹2308",
+            "code": "rb2308",
+            "exchg": "SHFE",
+            "product": "rb",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "rb2309": {
+            "name": "螺纹2309",
+            "code": "rb2309",
+            "exchg": "SHFE",
+            "product": "rb",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "rb2310": {
+            "name": "螺纹2310",
+            "code": "rb2310",
+            "exchg": "SHFE",
+            "product": "rb",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "rb2311": {
+            "name": "螺纹2311",
+            "code": "rb2311",
+            "exchg": "SHFE",
+            "product": "rb",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "rb2312": {
+            "name": "螺纹2312",
+            "code": "rb2312",
+            "exchg": "SHFE",
+            "product": "rb",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ru2301": {
+            "name": "橡胶2301",
+            "code": "ru2301",
+            "exchg": "SHFE",
+            "product": "ru",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ru2303": {
+            "name": "橡胶2303",
+            "code": "ru2303",
+            "exchg": "SHFE",
+            "product": "ru",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ru2304": {
+            "name": "橡胶2304",
+            "code": "ru2304",
+            "exchg": "SHFE",
+            "product": "ru",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ru2305": {
+            "name": "橡胶2305",
+            "code": "ru2305",
+            "exchg": "SHFE",
+            "product": "ru",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ru2306": {
+            "name": "橡胶2306",
+            "code": "ru2306",
+            "exchg": "SHFE",
+            "product": "ru",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ru2307": {
+            "name": "橡胶2307",
+            "code": "ru2307",
+            "exchg": "SHFE",
+            "product": "ru",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ru2308": {
+            "name": "橡胶2308",
+            "code": "ru2308",
+            "exchg": "SHFE",
+            "product": "ru",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ru2309": {
+            "name": "橡胶2309",
+            "code": "ru2309",
+            "exchg": "SHFE",
+            "product": "ru",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ru2310": {
+            "name": "橡胶2310",
+            "code": "ru2310",
+            "exchg": "SHFE",
+            "product": "ru",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ru2311": {
+            "name": "橡胶2311",
+            "code": "ru2311",
+            "exchg": "SHFE",
+            "product": "ru",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sn2301": {
+            "name": "沪锡2301",
+            "code": "sn2301",
+            "exchg": "SHFE",
+            "product": "sn",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sn2302": {
+            "name": "沪锡2302",
+            "code": "sn2302",
+            "exchg": "SHFE",
+            "product": "sn",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sn2303": {
+            "name": "沪锡2303",
+            "code": "sn2303",
+            "exchg": "SHFE",
+            "product": "sn",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sn2304": {
+            "name": "沪锡2304",
+            "code": "sn2304",
+            "exchg": "SHFE",
+            "product": "sn",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sn2305": {
+            "name": "沪锡2305",
+            "code": "sn2305",
+            "exchg": "SHFE",
+            "product": "sn",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sn2306": {
+            "name": "沪锡2306",
+            "code": "sn2306",
+            "exchg": "SHFE",
+            "product": "sn",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sn2307": {
+            "name": "沪锡2307",
+            "code": "sn2307",
+            "exchg": "SHFE",
+            "product": "sn",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sn2308": {
+            "name": "沪锡2308",
+            "code": "sn2308",
+            "exchg": "SHFE",
+            "product": "sn",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sn2309": {
+            "name": "沪锡2309",
+            "code": "sn2309",
+            "exchg": "SHFE",
+            "product": "sn",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sn2310": {
+            "name": "沪锡2310",
+            "code": "sn2310",
+            "exchg": "SHFE",
+            "product": "sn",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sn2311": {
+            "name": "沪锡2311",
+            "code": "sn2311",
+            "exchg": "SHFE",
+            "product": "sn",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sn2312": {
+            "name": "沪锡2312",
+            "code": "sn2312",
+            "exchg": "SHFE",
+            "product": "sn",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sp2301": {
+            "name": "纸浆2301",
+            "code": "sp2301",
+            "exchg": "SHFE",
+            "product": "sp",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sp2302": {
+            "name": "纸浆2302",
+            "code": "sp2302",
+            "exchg": "SHFE",
+            "product": "sp",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sp2303": {
+            "name": "纸浆2303",
+            "code": "sp2303",
+            "exchg": "SHFE",
+            "product": "sp",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sp2304": {
+            "name": "纸浆2304",
+            "code": "sp2304",
+            "exchg": "SHFE",
+            "product": "sp",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sp2305": {
+            "name": "纸浆2305",
+            "code": "sp2305",
+            "exchg": "SHFE",
+            "product": "sp",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sp2306": {
+            "name": "纸浆2306",
+            "code": "sp2306",
+            "exchg": "SHFE",
+            "product": "sp",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sp2307": {
+            "name": "纸浆2307",
+            "code": "sp2307",
+            "exchg": "SHFE",
+            "product": "sp",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sp2308": {
+            "name": "纸浆2308",
+            "code": "sp2308",
+            "exchg": "SHFE",
+            "product": "sp",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sp2309": {
+            "name": "纸浆2309",
+            "code": "sp2309",
+            "exchg": "SHFE",
+            "product": "sp",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sp2310": {
+            "name": "纸浆2310",
+            "code": "sp2310",
+            "exchg": "SHFE",
+            "product": "sp",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sp2311": {
+            "name": "纸浆2311",
+            "code": "sp2311",
+            "exchg": "SHFE",
+            "product": "sp",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "sp2312": {
+            "name": "纸浆2312",
+            "code": "sp2312",
+            "exchg": "SHFE",
+            "product": "sp",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ss2301": {
+            "name": "不锈钢2301",
+            "code": "ss2301",
+            "exchg": "SHFE",
+            "product": "ss",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ss2302": {
+            "name": "不锈钢2302",
+            "code": "ss2302",
+            "exchg": "SHFE",
+            "product": "ss",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ss2303": {
+            "name": "不锈钢2303",
+            "code": "ss2303",
+            "exchg": "SHFE",
+            "product": "ss",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ss2304": {
+            "name": "不锈钢2304",
+            "code": "ss2304",
+            "exchg": "SHFE",
+            "product": "ss",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ss2305": {
+            "name": "不锈钢2305",
+            "code": "ss2305",
+            "exchg": "SHFE",
+            "product": "ss",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ss2306": {
+            "name": "不锈钢2306",
+            "code": "ss2306",
+            "exchg": "SHFE",
+            "product": "ss",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ss2307": {
+            "name": "不锈钢2307",
+            "code": "ss2307",
+            "exchg": "SHFE",
+            "product": "ss",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ss2308": {
+            "name": "不锈钢2308",
+            "code": "ss2308",
+            "exchg": "SHFE",
+            "product": "ss",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ss2309": {
+            "name": "不锈钢2309",
+            "code": "ss2309",
+            "exchg": "SHFE",
+            "product": "ss",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ss2310": {
+            "name": "不锈钢2310",
+            "code": "ss2310",
+            "exchg": "SHFE",
+            "product": "ss",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ss2311": {
+            "name": "不锈钢2311",
+            "code": "ss2311",
+            "exchg": "SHFE",
+            "product": "ss",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "ss2312": {
+            "name": "不锈钢2312",
+            "code": "ss2312",
+            "exchg": "SHFE",
+            "product": "ss",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "wr2301": {
+            "name": "线材2301",
+            "code": "wr2301",
+            "exchg": "SHFE",
+            "product": "wr",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "wr2302": {
+            "name": "线材2302",
+            "code": "wr2302",
+            "exchg": "SHFE",
+            "product": "wr",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "wr2303": {
+            "name": "线材2303",
+            "code": "wr2303",
+            "exchg": "SHFE",
+            "product": "wr",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "wr2304": {
+            "name": "线材2304",
+            "code": "wr2304",
+            "exchg": "SHFE",
+            "product": "wr",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "wr2305": {
+            "name": "线材2305",
+            "code": "wr2305",
+            "exchg": "SHFE",
+            "product": "wr",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "wr2306": {
+            "name": "线材2306",
+            "code": "wr2306",
+            "exchg": "SHFE",
+            "product": "wr",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "wr2307": {
+            "name": "线材2307",
+            "code": "wr2307",
+            "exchg": "SHFE",
+            "product": "wr",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "wr2308": {
+            "name": "线材2308",
+            "code": "wr2308",
+            "exchg": "SHFE",
+            "product": "wr",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "wr2309": {
+            "name": "线材2309",
+            "code": "wr2309",
+            "exchg": "SHFE",
+            "product": "wr",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "wr2310": {
+            "name": "线材2310",
+            "code": "wr2310",
+            "exchg": "SHFE",
+            "product": "wr",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "wr2311": {
+            "name": "线材2311",
+            "code": "wr2311",
+            "exchg": "SHFE",
+            "product": "wr",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "wr2312": {
+            "name": "线材2312",
+            "code": "wr2312",
+            "exchg": "SHFE",
+            "product": "wr",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "zn2301": {
+            "name": "沪锌2301",
+            "code": "zn2301",
+            "exchg": "SHFE",
+            "product": "zn",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "zn2302": {
+            "name": "沪锌2302",
+            "code": "zn2302",
+            "exchg": "SHFE",
+            "product": "zn",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "zn2303": {
+            "name": "沪锌2303",
+            "code": "zn2303",
+            "exchg": "SHFE",
+            "product": "zn",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "zn2304": {
+            "name": "沪锌2304",
+            "code": "zn2304",
+            "exchg": "SHFE",
+            "product": "zn",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "zn2305": {
+            "name": "沪锌2305",
+            "code": "zn2305",
+            "exchg": "SHFE",
+            "product": "zn",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "zn2306": {
+            "name": "沪锌2306",
+            "code": "zn2306",
+            "exchg": "SHFE",
+            "product": "zn",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "zn2307": {
+            "name": "沪锌2307",
+            "code": "zn2307",
+            "exchg": "SHFE",
+            "product": "zn",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "zn2308": {
+            "name": "沪锌2308",
+            "code": "zn2308",
+            "exchg": "SHFE",
+            "product": "zn",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "zn2309": {
+            "name": "沪锌2309",
+            "code": "zn2309",
+            "exchg": "SHFE",
+            "product": "zn",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "zn2310": {
+            "name": "沪锌2310",
+            "code": "zn2310",
+            "exchg": "SHFE",
+            "product": "zn",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "zn2311": {
+            "name": "沪锌2311",
+            "code": "zn2311",
+            "exchg": "SHFE",
+            "product": "zn",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        },
+        "zn2312": {
+            "name": "沪锌2312",
+            "code": "zn2312",
+            "exchg": "SHFE",
+            "product": "zn",
+            "maxlimitqty": 500,
+            "maxmarketqty": 30
+        }
+    }
+}

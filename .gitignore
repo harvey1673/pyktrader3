@@ -9,7 +9,6 @@ dist/
 process/
 bktest/.ipynb_checkpoints/
 *.csv
-*.json
 *.pyd
 .bak
 
