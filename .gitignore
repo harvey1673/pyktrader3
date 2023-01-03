@@ -10,7 +10,7 @@ process/
 bktest/.ipynb_checkpoints/
 *.csv
 *.pyd
-.bak
+*.bak
 
 # Compiled Java class files
 *.class
