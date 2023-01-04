@@ -1,5 +1,5 @@
-from wtpy import BaseSelStrategy
-from wtpy import SelContext
+from wtpy import BaseCtaStrategy
+from wtpy import CtaContext
 import numpy as np
 import pandas as pd
 import datetime
@@ -10,30 +10,18 @@ from pycmqlib3.analytics.data_handler import ATR
 from pycmqlib3.utility.process_wt_data import wt_time_to_min_id
 
 
-class StraFactorPortSel(BaseSelStrategy):
-    def __init__(self, config_file):
+class StraPortTrader(BaseCtaStrategy):
+    def __init__(self, name, pos_loc='C:/dev/pyktrader3/process/'):
+        BaseCtaStrategy.__init__(self, name)
+        config_file = f'{pos_loc}settings/{name}.json'
         with open(config_file, 'r') as fp:
             strat_conf = json.load(fp)
-        strat_args = strat_conf.get('config', {'name': 'test'})
-        BaseSelStrategy.__init__(self, strat_args['name'])
+        strat_args = strat_conf['config']
         assets = strat_args['assets']
         num_assets = len(assets)
-        self.__vol_weight = [1.0] * num_assets
         self.__prod_list = [''] * num_assets
         self.__codes = [''] * num_assets
         self.__prev_codes = [''] * num_assets
-        self.__atr = [np.nan] * num_assets
-        self.__target_pos = [0] * num_assets
-        config_keys = ['factor_repo', 'vol_win',
-                       'fact_db_table',
-                       'exec_bar_list',
-                       'pos_scaler',
-                       'freq',
-                       'hist_fact_lookback',
-                       'roll_label']
-        d = self.__dict__
-        for key in config_keys:
-            d['__'+key] = strat_args[key]
         for idx, asset_dict in enumerate(assets):
             under = asset_dict["underliers"][0]
             prev_under = asset_dict["prev_underliers"][0]
@@ -42,15 +30,15 @@ class StraFactorPortSel(BaseSelStrategy):
             self.__codes[idx] = exch + '.' + under
             if len(prev_under) > 0:
                 self.__prev_codes[idx] = exch + '.' + prev_under
-        self.__factor_data = {}
         self.__pos_sum = pd.DataFrame()
+        self.___pos = [0] * num_assets
 
-    def on_init(self, context: SelContext):
+    def on_init(self, context: CtaContext):
         for code in self.__codes:
             context.stra_prepare_bars(code, 'd1', self.__vol_win + 10, isMain=False)
             context.stra_prepare_bars(code, 'm1', 10, isMain=True)
 
-    def load_fact_data(self, context: SelContext):
+    def load_fact_data(self, context: CtaContext):
         cur_date = context.stra_get_date()
         end_date = datetime.date(cur_date // 10000,
                                  (cur_date % 10000)//100,
@@ -136,7 +124,7 @@ class StraFactorPortSel(BaseSelStrategy):
                 self.__target_pos[idx] = int(net_pos[prodcode] * self.__vol_weight[idx] +
                                              (0.5 if net_pos[prodcode] > 0 else -0.5))
 
-    def on_session_begin(self, context:SelContext, curTDate:int):
+    def on_session_begin(self, context:CtaContext, curTDate:int):
         for idx, code in enumerate(self.__codes):
             pInfo = context.stra_get_comminfo(code)
             vol_scale = pInfo.volscale
@@ -145,7 +133,7 @@ class StraFactorPortSel(BaseSelStrategy):
             self.__atr[idx] = ATR(daily_bars, self.__vol_win).iloc[-1]
             self.__vol_weight[idx] = self.__pos_scaler/self.__atr[idx]/vol_scale
 
-    def on_calculate(self, context: SelContext):
+    def on_calculate(self, context: CtaContext):
         cur_time = context.stra_get_time()
         cur_min = wt_time_to_min_id(cur_time)
         if cur_min in [301, 1501]:
@@ -169,8 +157,8 @@ class StraFactorPortSel(BaseSelStrategy):
                 context.stra_log_text(f"adjust position for {code} from {cur_pos} to {target_pos}")
             continue
 
-    def on_tick(self, context: SelContext, code: str, newTick: dict):
+    def on_tick(self, context: CtaContext, code: str, newTick: dict):
         return
 
-    def on_bar(self, context: SelContext, code: str, period: str, newBar: dict):
+    def on_bar(self, context: CtaContext, code: str, period: str, newBar: dict):
         return

@@ -29,7 +29,9 @@ class StraOpenBreak(BaseCtaStrategy):
         self.__split_mode = split_mode
         self.__run_period = run_period
         self.__look_back = look_back
-        self.__cleartimes = cleartimes
+        self.__cleartimes = []
+        if close_tday:
+            self.__cleartimes = cleartimes
         self.__minlist = []
         self.__bar_cnt = max(self.__look_back, 4) + 4
         if 's' in split_mode:
@@ -111,6 +113,7 @@ class StraOpenBreak(BaseCtaStrategy):
         df_bars = context.stra_get_bars(self.__theCode, self.__run_period, 10, isMain=True)
         highpx = df_bars.highs[-1]
         lowpx = df_bars.lows[-1]
+        closepx = df_bars.closes[-1]
         if np.isnan(self.__open):
             self.__open = df_bars.opens[-1]
         upper_bound = self.__open + self.__ratio * self.__rng
@@ -128,10 +131,12 @@ class StraOpenBreak(BaseCtaStrategy):
                     return
         if (curPos <= 0) and (highpx >= upper_bound):
             context.stra_set_position(code, self.__trade_unit * trdUnit, 'enterlong')
-            context.stra_log_text("向上突破%.2f>=%.2f，多仓进场" % (highpx, upper_bound))
+            context.stra_log_text("向上突破%.2f>=%.2f，多仓进场: open=%.2f,rng=%.2f, close=%.2f" %
+                                  (highpx, upper_bound, self.__open, self.__rng, closepx))
         elif (curPos >= 0) and (lowpx <= lower_bound):
             context.stra_set_position(code, -self.__trade_unit * trdUnit, 'entershort')
-            context.stra_log_text("向下突破%.2f<=%.2f，空仓进场" % (lowpx, lower_bound))
+            context.stra_log_text("向下突破%.2f<=%.2f，空仓进场: open=%.2f,rng=%.2f, close=%.2f" %
+                                  (lowpx, lower_bound, self.__open, self.__rng, closepx))
         return
 
     def on_bar(self, context:CtaContext, code:str, period:str, newBar:dict):
