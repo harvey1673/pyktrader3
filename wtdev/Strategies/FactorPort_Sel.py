@@ -46,9 +46,12 @@ class StraFactorPortSel(BaseSelStrategy):
         self.__pos_sum = pd.DataFrame()
 
     def on_init(self, context: SelContext):
-        for code in self.__codes:
+        for idx, code in enumerate(self.__codes):
             context.stra_prepare_bars(code, 'd1', self.__vol_win + 10, isMain=False)
-            context.stra_prepare_bars(code, 'm1', 10, isMain=True)
+            if idx == 0:
+                context.stra_prepare_bars(code, 'm1', 10, isMain=True)
+            else:
+                context.stra_prepare_bars(code, 'm1', 10, isMain=False)
 
     def load_fact_data(self, context: SelContext):
         cur_date = context.stra_get_date()

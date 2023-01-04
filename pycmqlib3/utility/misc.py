@@ -472,7 +472,7 @@ def read_holidays_from_json(filename = 'C:/dev/akshare/akshare/file_fold/calenda
     return hols
 
 
-def get_hols_from_json(filename='../../wtdev/common/holidays.json', key='CHINA'):
+def get_hols_from_json(filename='C:/dev/pyktrader3/wtdev/common/holidays.json', key='CHINA'):
     f = open(filename)
     hols_dict = json.load(f)
     hols = hols_dict[key]
