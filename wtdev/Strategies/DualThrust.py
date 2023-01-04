@@ -50,13 +50,16 @@ class StraDualThrust(BaseCtaStrategy):
         df_bars = context.stra_get_bars(self.__theCode, self.__period, 10, isMain=True)
         highpx = df_bars.highs[-1]
         lowpx = df_bars.lows[-1]
+        closepx = df_bars.closes[-1]
         curPos = context.stra_get_position(code) / trdUnit
         if (curPos <= 0) and (highpx >= upper_bound):
             context.stra_set_position(code, 1 * trdUnit, 'enterlong')
-            context.stra_log_text("向上突破%.2f>=%.2f，多仓进场" % (highpx, upper_bound))
+            context.stra_log_text("向上突破%.2f>=%.2f，多仓进场: open=%.2f,rng=%.2f, close=%.2f" %
+                                  (highpx, upper_bound, openpx, self.__rng, closepx))
         elif (curPos >= 0) and (lowpx <= lower_bound):
             context.stra_set_position(code, -1 * trdUnit, 'entershort')
-            context.stra_log_text("向下突破%.2f<=%.2f，空仓进场" % (lowpx, lower_bound))
+            context.stra_log_text("向下突破%.2f<=%.2f，空仓进场: open=%.2f,rng=%.2f, close=%.2f" %
+                                  (lowpx, lower_bound, openpx, self.__rng, closepx))
         return
 
     def on_bar(self, context:CtaContext, stdCode:str, period:str, newBar:dict):
