@@ -43,6 +43,7 @@ class StraFactorPortSel(BaseSelStrategy):
             if len(prev_under) > 0:
                 self.__prev_codes[idx] = exch + '.' + prev_under
         self.__factor_data = {}
+        self.__factor_pos = {}
         self.__pos_sum = pd.DataFrame()
 
     def on_init(self, context: SelContext):
@@ -82,7 +83,7 @@ class StraFactorPortSel(BaseSelStrategy):
             rebal_freq = self.__factor_repo[fact]['rebal']
             weight = self.__factor_repo[fact]['weight']
             self.__factor_pos[fact] = pd.DataFrame(index=self.__fact_data[fact].index,
-                                                   columns=self.fact_data[fact].columns)
+                                                   columns=self.__fact_data[fact].columns)
             if self.__factor_repo[fact]['type'] == 'pos':
                 self.__factor_pos[fact] = self.__fact_data[fact].copy()
             elif self.__factor_repo[fact]['type'] == 'ts':
