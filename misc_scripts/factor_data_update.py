@@ -4,9 +4,8 @@ import json
 import datetime
 import copy
 from sqlalchemy import create_engine
-from pycmqlib3.utility.dbaccess import dbconfig, mysql_replace_into, connect
-from pycmqlib3.utility.misc import nearby, cleanup_mindata, prod2exch, inst2contmth, \
-    CHN_Holidays, contract_expiry, day_shift, sign
+from pycmqlib3.utility.dbaccess import dbconfig, mysql_replace_into, connect, load_factor_data
+from pycmqlib3.utility.misc import nearby, cleanup_mindata, prod2exch, inst2contmth, day_shift, sign
 import pycmqlib3.analytics.data_handler as dh
 
 ferrous_products_mkts = ['rb', 'hc', 'i', 'j', 'jm']
@@ -66,6 +65,7 @@ sim_start_dict = {'c': datetime.date(2011, 1, 1), 'm': datetime.date(2011, 1, 1)
 
 field_list = ['open', 'high', 'low', 'close', 'volume', 'openInterest', 'contract', 'shift']
 
+
 def update_factor_db(xdf, field, config, dbtable='fut_fact_data', flavor='mysql', start_date=None, end_date=None):
     df = xdf.copy()
     for key in config:
@@ -93,9 +93,10 @@ def update_factor_db(xdf, field, config, dbtable='fut_fact_data', flavor='mysql'
     if flavor == 'mysql':
         conn.dispose()
 
-def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule = '30b', flavor = 'mysql', dbtbl_prefix = ''):
+
+def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule='30b', flavor='mysql', dbtbl_prefix=''):
     col_list = ['open', 'high', 'low','close', 'volume', 'openInterest', 'contract', 'shift']
-    update_start = start_date  # day_shift(end_date, '-3b')
+    update_start = day_shift(end_date, '-5b')
     shift_mode = 1
     freq = 'd'
     args = {'roll_rule': '-' + roll_rule, 'freq': freq, 'shift_mode': shift_mode, 'dbtbl_prefix': dbtbl_prefix}
@@ -108,7 +109,7 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule 
     precious_args = {'roll_rule': '-15b', 'freq': freq, 'shift_mode': shift_mode, 'dbtbl_prefix': dbtbl_prefix}
 
     fact_config = {}
-    fact_config['roll_label'] = 'CAL_%s' % ('30b')
+    fact_config['roll_label'] = 'CAL_%s' % roll_rule
     if freq == 'd':
         fact_config['freq'] = 's1'
     else:
@@ -145,7 +146,8 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule 
         # df['expiry'] = df['contract'].apply(lambda x: contract_expiry(x, CHN_Holidays))
         df['contmth'] = df['contract'].apply(lambda x: inst2contmth(x))
         df['mth'] = df['contmth'].apply(lambda x: x // 100 * 12 + x % 100)
-
+        vol_win = 20
+        df['atr'] = dh.ATR(df, vol_win).fillna(method='bfill')
         use_args['n'] = 2
         print("loading mkt = %s, nb = %s, args = %s" % (asset, str(use_args['n']), use_args))
         xdf = nearby(asset, **use_args)
@@ -176,8 +178,8 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule 
             xdf['logret_2'] = np.log(xdf['close_2']) - np.log(xdf['close_2'].shift(1))
         xdf['baslr'] = xdf['logret'] - xdf['logret_2']
         xdf.index.name = 'date'
-        for field in ['logret', 'baslr', 'ryield']:
-            update_factor_db(xdf, field, fact_config, start_date=update_start, end_date=end_date, flavor = flavor)
+        for field in ['logret', 'baslr', 'ryield', 'atr']:
+            update_factor_db(xdf, field, fact_config, start_date=update_start, end_date=end_date, flavor=flavor)
         for scen in scenarios:
             sim_name = scen[0]
             run_mode = data_field = scen[1]
@@ -271,12 +273,109 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule 
                 factor_repo[fact_name]['param'] = params
                 factor_repo[fact_name]['weight'] = weight 
             try:
-                update_factor_db(xdf, fact_name, fact_config, start_date=update_start, end_date=end_date, flavor = flavor)
+                update_factor_db(xdf, fact_name, fact_config, start_date=update_start, end_date=end_date, flavor=flavor)
             except:
                 continue
     return factor_repo
 
-def create_strat_json(product_list, freq, roll_rule, factor_repo, filename= "C:\\dev\\data\\MM_FACT_PORT.json", name = 'default'):
+
+def generate_daily_position(cur_date, prod_list, factor_repo,
+                            roll_label='30b',
+                            freq='s1',
+                            weight=[],
+                            fact_db_table='fut_fact_data',
+                            hist_fact_lookback=100):
+    fact_data = {}
+    factor_pos = {}
+    target_pos = {}
+    if len(weight) == 0:
+        weight = [1.0] * len(prod_list)
+    start_date = day_shift(cur_date, '-%sb' % (str(hist_fact_lookback)))
+    fact_list = list(set([factor_repo[fact]['name'] for fact in factor_repo.keys()]))
+    df = load_factor_data(prod_list,
+                          factor_list=fact_list,
+                          roll_label=roll_label,
+                          start=start_date,
+                          end=cur_date,
+                          freq=freq,
+                          db_table=fact_db_table)
+    for fact in factor_repo:
+        xdf = pd.pivot_table(df[df['fact_name'] == factor_repo[fact]['name']],
+                             values='fact_val',
+                             index=['date', 'serial_key'],
+                             columns=['product_code'],
+                             aggfunc='last')
+        for prod in prod_list:
+            if prod not in xdf.columns:
+                xdf[prod] = np.nan
+        fact_data[fact] = xdf[prod_list]
+    pos_sum = pd.DataFrame()
+    for fact in factor_repo:
+        rebal_freq = factor_repo[fact]['rebal']
+        weight = factor_repo[fact]['weight']
+        factor_pos[fact] = pd.DataFrame(index=fact_data[fact].index,
+                                        columns=fact_data[fact].columns)
+        if factor_repo[fact]['type'] == 'pos':
+            factor_pos[fact] = fact_data[fact].copy()
+        elif factor_repo[fact]['type'] == 'ts':
+            rebal_ts = pd.Series(range(len(fact_data[fact].index)),
+                                 index=fact_data[fact].index)
+            for rebal_idx in range(rebal_freq):
+                flag = rebal_ts % rebal_freq == rebal_idx
+                long_pos = pd.Series(np.nan, index=fact_data[fact].index)
+                short_pos = pd.Series(np.nan, index=fact_data[fact].index)
+                for asset in prod_list:
+                    pflag = (fact_data[fact][asset] >= 0.0)
+                    nflag = (fact_data[fact][asset] <= 0.0)
+                    long_pos[flag & pflag] = fact_data[fact][asset][flag & pflag]
+                    long_pos[flag & (~pflag)] = 0.0
+                    long_pos[flag] = long_pos[flag].fillna(method='ffill').fillna(0.0)
+                    short_pos[flag & nflag] = fact_data[fact][asset][flag & nflag]
+                    short_pos[flag & (~nflag)] = 0.0
+                    short_pos[flag] = short_pos[flag].fillna(method='ffill').fillna(0.0)
+                    factor_pos[fact].loc[flag, asset] = long_pos[flag] + short_pos[flag]
+        elif factor_repo[fact]['type'] == 'xs':
+            lower_rank = int(len(prod_list) * factor_repo[fact]['threshold']) + 1
+            upper_rank = len(prod_list) - int(len(prod_list) * factor_repo[fact]['threshold'])
+            rank_df = fact_data[fact].rank(axis=1)
+            rebal_ts = pd.Series(range(len(fact_data[fact].index)),
+                                 index=fact_data[fact].index)
+            for rebal_idx in range(rebal_freq):
+                flag = rebal_ts % rebal_freq == rebal_idx
+                long_pos = pd.Series(np.nan, index=fact_data[fact].index)
+                short_pos = pd.Series(np.nan, index=fact_data[fact].index)
+                for asset in prod_list:
+                    pflag = (rank_df[asset] > upper_rank)
+                    nflag = (rank_df[asset] < lower_rank)
+                    long_pos[flag & pflag] = 1.0
+                    long_pos[flag & (~pflag)] = 0.0
+                    long_pos[flag] = long_pos[flag].fillna(method='ffill').fillna(0.0)
+                    short_pos[flag & nflag] = -1.0
+                    short_pos[flag & (~nflag)] = 0.0
+                    short_pos[flag] = short_pos[flag].fillna(method='ffill').fillna(0.0)
+                    factor_pos[fact].loc[flag, asset] = long_pos[flag] + short_pos[flag]
+            factor_pos[fact] = factor_pos[fact].fillna(0.0)
+        fact_pos = pd.Series(factor_pos[fact].iloc[-rebal_freq:, :].sum()/rebal_freq * weight,
+                             name=fact)
+        pos_sum = pos_sum.append(fact_pos)
+    pos_sum = pos_sum[prod_list].round(2)
+    net_pos = pos_sum.sum()
+    for idx, prodcode in enumerate(prod_list):
+        if prodcode == 'CJ':
+            target_pos[prodcode] = int((net_pos[prodcode] * weight[idx]/4 +
+                                          (0.5 if net_pos[prodcode] > 0 else -0.5)))*4
+        elif prodcode == 'ZC':
+            target_pos[prodcode] = int((net_pos[prodcode] * weight[idx]/2 +
+                                          (0.5 if net_pos[prodcode] > 0 else -0.5)))*2
+        else:
+            target_pos[prodcode] = int(net_pos[prodcode] * weight[idx] +
+                                         (0.5 if net_pos[prodcode] > 0 else -0.5))
+    return target_pos, pos_sum
+
+
+def create_strat_json(product_list, freq, roll_rule, factor_repo,
+                      filename="C:\\dev\\data\\MM_FACT_PORT.json",
+                      name='default'):
     strat_data = {}
     strat_data["class"] = "pycmqlib3.strategy.strat_factor_port.FactorPortTrader"
     strat_config = {}

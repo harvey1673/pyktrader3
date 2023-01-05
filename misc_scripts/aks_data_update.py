@@ -12,18 +12,20 @@ from akshare.futures.cot import get_dce_rank_table, \
 from akshare.futures import cons
 chn_calendar = cons.get_calendar()
 
-def generate_calendar_json(start_date, end_date, filename, hols = CHN_Holidays, date_for = "%Y%m%d"):
+
+def generate_calendar_json(start_date, end_date, filename, date_for="%Y%m%d"):
     d = start_date
     dlist = []
     while d <= end_date:
-        if is_workday(d, calendar = 'CHN'):
+        if is_workday(d, calendar='CHN'):
             dlist.append(datetime.datetime.strftime(d, date_for))
         d = d + datetime.timedelta(days=1)    
     outfile = open(filename, "w")
     outfile.write(json.dumps(dlist, indent=4))
     outfile.close()
-    
-def update_spot_daily(start_date = datetime.date.today(), end_date = datetime.date.today(), flavor = 'mysql'):
+
+
+def update_spot_daily(start_date=datetime.date.today(), end_date=datetime.date.today(), flavor='mysql'):
     dce_mkt = cons.market_exchange_symbols['dce']
     shfe_mkt = cons.market_exchange_symbols['shfe']
     df = ak.futures_spot_price_daily(start_date, end_date)
@@ -34,10 +36,12 @@ def update_spot_daily(start_date = datetime.date.today(), end_date = datetime.da
     df['close'] = df['spot_price']
     save_data('spot_daily', df[['spotID', 'date', 'close']], flavor = flavor)
 
-def update_hist_fut_daily(start_date = datetime.date.today(), \
-                          end_date = datetime.date.today(), \
-                          exchanges = ['DCE', 'SHFE', 'CZCE', 'CFFEX', 'INE'], \
-                          flavor = 'mysql', fut_table = 'fut_daily'):
+
+def update_hist_fut_daily(start_date=datetime.date.today(),
+                          end_date=datetime.date.today(),
+                          exchanges=['DCE', 'SHFE', 'CZCE', 'CFFEX', 'INE', 'GFEX'],
+                          flavor='mysql',
+                          fut_table='fut_daily'):
     exl_list = []
     while start_date <= end_date:
         for exch in exchanges:
@@ -58,7 +62,7 @@ def update_hist_fut_daily(start_date = datetime.date.today(), \
                 df.rename(columns = {'symbol': 'instID', 'open_interest': 'openInterest'}, inplace=True)
                 df['instID'] = df['instID'].apply(lambda x: instID_adjust(x, exch, end_date))
                 xdf = df[['instID', 'exch', 'date', 'open', 'high', 'low', 'close', 'settle', 'volume', 'openInterest']]
-                save_data(fut_table, xdf, flavor = flavor)
+                save_data(fut_table, xdf, flavor=flavor)
             else:
                 print('no data for exch = %s, date = %s' % (exch, end_date))
                 exl_list.append((exch, end_date))
@@ -66,15 +70,18 @@ def update_hist_fut_daily(start_date = datetime.date.today(), \
         end_date = day_shift(end_date, '-1b', CHN_Holidays)
     return exl_list
 
-def update_sgx_daily(start_date = datetime.date.today(), end_date = datetime.date.today(), flavor = 'mysql', freq = 1, dbtable = 'fut_daily'):
+
+def update_sgx_daily(start_date=datetime.date.today(), end_date=datetime.date.today(),
+                     flavor='mysql', freq=1, dbtable='fut_daily'):
     exl_list = []
     while start_date <= end_date:
         df = ak.futures_sgx_daily(trade_date = start_date.strftime("%Y-%m-%d"), recent_day = freq)
         save_data(dbtable, df, flavor=flavor)
         start_date = day_shift(start_date, str(freq) + 'b')
 
-def update_rank_table(start_date = datetime.date.today(), end_date = datetime.date.today(), 
-                        exch_list = ['DCE', 'CZCE', 'SHFE', 'CFFEX'], flavor = 'mysql'):
+
+def update_rank_table(start_date=datetime.date.today(), end_date=datetime.date.today(),
+                        exch_list=['DCE', 'CZCE', 'SHFE', 'CFFEX'], flavor='mysql'):
     var_dict = {}
     exch_func = {}
     product_list = []
@@ -199,7 +206,8 @@ def update_rank_table(start_date = datetime.date.today(), end_date = datetime.da
         run_d -= datetime.timedelta(days=1)
     return excl_dates
 
-def update_exch_receipt_table(start_date, end_date, flavor = 'mysql'):
+
+def update_exch_receipt_table(start_date, end_date, flavor='mysql'):
     run_d = end_date
     excl_dates = []
     while run_d >= start_date:        
@@ -221,7 +229,8 @@ def update_exch_receipt_table(start_date, end_date, flavor = 'mysql'):
         run_d -= datetime.timedelta(days=1)
     return excl_dates
 
-def update_exch_inv_table(start_date, end_date, flavor = 'mysql'):
+
+def update_exch_inv_table(start_date, end_date, flavor='mysql'):
     excl_dates = []
     s_date = end_date - datetime.timedelta(days = end_date.weekday())    
     while s_date >= start_date - datetime.timedelta(days = start_date.weekday()):
