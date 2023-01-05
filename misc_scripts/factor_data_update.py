@@ -5,7 +5,7 @@ import datetime
 import copy
 from sqlalchemy import create_engine
 from pycmqlib3.utility.dbaccess import dbconfig, mysql_replace_into, connect, load_factor_data
-from pycmqlib3.utility.misc import nearby, cleanup_mindata, prod2exch, inst2contmth, day_shift, sign
+from pycmqlib3.utility.misc import nearby, cleanup_mindata, prod2exch, inst2contmth, day_shift, sign, product_lotsize
 import pycmqlib3.analytics.data_handler as dh
 
 ferrous_products_mkts = ['rb', 'hc', 'i', 'j', 'jm']
@@ -280,25 +280,30 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule=
 
 
 def generate_daily_position(cur_date, prod_list, factor_repo,
-                            roll_label='30b',
+                            roll_label='CAL_30b',
                             freq='s1',
-                            weight=[],
+                            pos_scaler=1000,
                             fact_db_table='fut_fact_data',
                             hist_fact_lookback=100):
     fact_data = {}
     factor_pos = {}
     target_pos = {}
-    if len(weight) == 0:
-        weight = [1.0] * len(prod_list)
+    vol_weight = [1.0] * len(prod_list)
     start_date = day_shift(cur_date, '-%sb' % (str(hist_fact_lookback)))
     fact_list = list(set([factor_repo[fact]['name'] for fact in factor_repo.keys()]))
     df = load_factor_data(prod_list,
-                          factor_list=fact_list,
+                          factor_list=fact_list+['atr'],
                           roll_label=roll_label,
                           start=start_date,
                           end=cur_date,
                           freq=freq,
                           db_table=fact_db_table)
+    atr_df = pd.pivot_table(df[df['fact_name'] == 'atr'], values='fact_val',
+                            index=['date', 'serial_key'],
+                            columns=['product_code'],
+                            aggfunc='last')
+    for idx, prod in enumerate(prod_list):
+        vol_weight[idx] = vol_weight[idx]*pos_scaler/(atr_df[prod].iloc[-1]*product_lotsize[prod])
     for fact in factor_repo:
         xdf = pd.pivot_table(df[df['fact_name'] == factor_repo[fact]['name']],
                              values='fact_val',
@@ -362,13 +367,13 @@ def generate_daily_position(cur_date, prod_list, factor_repo,
     net_pos = pos_sum.sum()
     for idx, prodcode in enumerate(prod_list):
         if prodcode == 'CJ':
-            target_pos[prodcode] = int((net_pos[prodcode] * weight[idx]/4 +
-                                          (0.5 if net_pos[prodcode] > 0 else -0.5)))*4
+            target_pos[prodcode] = int((net_pos[prodcode] * vol_weight[idx]/4 +
+                                          (0.5 if net_pos.loc[prodcode] > 0 else -0.5)))*4
         elif prodcode == 'ZC':
-            target_pos[prodcode] = int((net_pos[prodcode] * weight[idx]/2 +
+            target_pos[prodcode] = int((net_pos[prodcode] * vol_weight[idx]/2 +
                                           (0.5 if net_pos[prodcode] > 0 else -0.5)))*2
         else:
-            target_pos[prodcode] = int(net_pos[prodcode] * weight[idx] +
+            target_pos[prodcode] = int(net_pos[prodcode] * vol_weight[idx] +
                                          (0.5 if net_pos[prodcode] > 0 else -0.5))
     return target_pos, pos_sum
 
