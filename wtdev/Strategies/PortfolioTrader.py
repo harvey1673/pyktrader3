@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import datetime
 import json
-from pycmqlib3.utility.misc import inst2exch, inst2product
+from pycmqlib3.utility.misc import inst2exch, inst2product, inst2contmth
 from pycmqlib3.utility.process_wt_data import wt_time_to_min_id
 
 
@@ -32,11 +32,14 @@ class StraPortTrader(BaseCtaStrategy):
                 prev_under = asset_dict["prev_underliers"][0]
             else:
                 prev_under = ''
-            self.__prod_list[idx] = inst2product(under)
+            prod = inst2product(under)
+            self.__prod_list[idx] = prod
             exch = inst2exch(under)
-            self.__codes[idx] = exch + '.' + under
+            contmth = inst2contmth(under) % 10000
+            self.__codes[idx] = '.'.join([exch, prod, str(contmth)])
             if len(prev_under) > 0:
-                self.__prev_codes[idx] = exch + '.' + prev_under
+                contmth = inst2contmth(prev_under) % 10000
+                self.__prev_codes[idx] = '.'.join([exch, prod, str(contmth)])
 
     def on_init(self, context: CtaContext):
         for idx, code in enumerate(self.__codes):
@@ -55,17 +58,18 @@ class StraPortTrader(BaseCtaStrategy):
             pos_dict = json.load(fp)
         for idx, prod in enumerate(self.__prod_list):
             self.__target_pos[idx] = pos_dict.get(prod, 0)
+            context.stra_log_text("product=%s, contract=%s, target=%s" % (prod, self.__codes[idx], self.__target_pos[idx]))
 
     def on_session_begin(self, context:CtaContext, curTDate:int):
         self.reload_position(context)
 
     def on_calculate(self, context: CtaContext):
-        cur_time = context.stra_get_time()
-        cur_min = wt_time_to_min_id(cur_time)
-        if cur_min in self.__reload_times:
+        cur_time = context.stra_get_time()        
+        if cur_time in self.__reload_times:
             self.reload_position(context)
-        if cur_min not in self.__exec_times:
+        if cur_time not in self.__exec_times:
             return
+        context.stra_log_text("Executing the target position for %s" % cur_time)
         for idx, code in enumerate(self.__codes):
             sInfo = context.stra_get_sessinfo(code)
             if not sInfo.isInTradingTime(cur_time):
