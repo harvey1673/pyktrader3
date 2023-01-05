@@ -45,7 +45,8 @@ commod_mkts = ['rb', 'hc', 'i', 'j', 'jm', 'ru', 'FG', 'cu', 'al', 'zn', 'pb', '
                'MA', 'SR', 'cs', 'TF', 'lu', 'fu']
 
 port_pos_config = [
-    ('PT_FACTPORT1', 'C:/dev/pyktrader3/process/paper_sim1/', '30b',),
+    ('PT_FACTPORT2', 'C:/dev/pyktrader3/process/pt_test2/', 4600, 'CAL_30b', 's1'),
+    ('PT_FACTPORT3', 'C:/dev/pyktrader3/process/pt_test3/', 4600, 'CAL_30b', 's1'),
 ]
 
 scenarios_all = [
@@ -135,10 +136,9 @@ def run_update(tday=datetime.date.today()):
     update_field = 'fact_repo'
     if update_field not in job_status:
         job_status[update_field] = {}
-
     for (fact_key, fact_mkts, scenarios) in [('commod_all', commod_mkts, scenarios_all), ]:
         try:
-            if not job_status[update_field].get(exch, False):
+            if not job_status[update_field].get(fact_key, False):
                 _ = update_factor_data(fact_mkts, scenarios, start_date, edate, roll_rule='30b')
                 job_status[update_field][fact_key] = True
         except:
@@ -148,7 +148,9 @@ def run_update(tday=datetime.date.today()):
     update_field = 'fact_pos_file'
     if update_field not in job_status:
         job_status[update_field] = {}
-    for (port_name, pos_loc, roll, freq) in port_pos_config:
+    for (port_name, pos_loc, pos_scaler, roll, freq) in port_pos_config:
+        if job_status[update_field][port_name]:
+            continue
         config_file = f'{pos_loc}settings/{port_name}.json'
         with open(config_file, 'r') as fp:
             strat_conf = json.load(fp)
@@ -156,19 +158,21 @@ def run_update(tday=datetime.date.today()):
         assets = strat_args['assets']
         factor_repo = strat_args['factor_repo']
         product_list = []
-        for idx, asset_dict in enumerate(assets):
-            under = asset_dict["underliers"][idx]
+        for asset_dict in assets:
+            under = asset_dict["underliers"][0]
             product = inst2product(under)
             product_list.append(product)
         try:
             target_pos, pos_sum = generate_daily_position(edate, product_list, factor_repo,
-                                                          roll_label=roll,
-                                                          freq=freq,
-                                                          hist_fact_lookback=40)
-            pos_date = day_shift(edate, '1b', CHN_Holidays).strftime('%y%m%d')
+                                                            roll_label=roll,
+                                                            pos_scaler=pos_scaler,
+                                                            freq=freq,
+                                                            hist_fact_lookback=20)
+            pos_date = day_shift(edate, '1b', CHN_Holidays).strftime('%Y%m%d')
             posfile = '%s%s_%s.json' % (pos_loc, port_name, pos_date)
             with open(posfile, 'w') as ofile:
                 json.dump(target_pos, ofile, indent=4)
+            pos_sum.index.name = 'factor'
             pos_sum.to_csv('%spos_by_strat_%s_%s.csv' % (pos_loc, port_name, pos_date))
             job_status[update_field][port_name] = True
         except:
