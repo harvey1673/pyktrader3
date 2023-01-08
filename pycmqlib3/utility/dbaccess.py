@@ -578,10 +578,29 @@ def load_daily_data_to_df(cnx, dbtable, inst, d_start, d_end, index_col='date', 
 
 
 def query_data_to_df(cnx, dbtable, filter, fields):
-    stmt = "select {variables} from {table} where {filter} order by date".format(variables = fields,
-                                                                                 table = dbtable,
-                                                                                 filter = filter)
+    stmt = "select {variables} from {table} where {filter} order by date".format(variables=fields,
+                                                                                 table=dbtable,
+                                                                                 filter=filter)
     df = pd.io.sql.read_sql(stmt, cnx)
+    return df
+
+
+def get_fut_daily_from_db(curr_date, exchanges=['DCE', 'SHFE', 'CZCE', 'CFFEX', 'INE', 'GFEX']):
+    cnx = connect(**dbconfig)
+    query = "date='%s' and exch in (%s)" % (curr_date.strftime("%Y-%m-%d"), ','.join(["'%s'" % exch for exch in exchanges]))
+    fields = ['instID', 'exch', 'date', 'open', 'high', 'low', 'close', 'settle', 'volume', 'openInterest']
+    df = query_data_to_df(cnx, 'fut_daily', query, fields=','.join(fields))
+    df[['open', 'high', 'low', 'close', 'volume', 'openInterest']].fillna(0, inplace=True)
+    df = df[df['volume'] > 0]
+    df = df.rename(columns={'exch': 'exchg', 'instID': 'code', 'openInterest': 'openinterest'})
+    df['date'] = df['date'].apply(lambda x: x.strftime('%Y%m%d'))
+    df['product'] = df['code'].map(misc.inst2product)
+    df['multiple'] = df['product'].map(misc.product_lotsize)
+    df['lowerlimit'] = 0
+    df['upperlimit'] = 0
+    flag = df['settle'].isna()
+    df.loc[flag, 'settle'] = df.loc[flag, 'close'].values
+    df['turnover'] = df['multiple'] * df['settle'] * df['volume']
     return df
 
 
