@@ -100,6 +100,12 @@ scenarios_all = [
             ]
 
 
+
+def save_status(filename, job_status):
+    with open(filename, 'w') as ofile:
+        json.dump(job_status, ofile, indent=4)
+
+
 def run_update(tday=datetime.date.today()):
     edate = min(datetime.date.today(), tday)     
     if not is_workday(edate, 'CHN'):
@@ -128,8 +134,8 @@ def run_update(tday=datetime.date.today()):
                     print(f'{exch} has some issue {missing}')                
         except:
             job_status[update_field][exch] = False
-            print("exch = %s EOD price is FAILED to update" % (exch))
-
+            print("exch = %s EOD price is FAILED to update" % (exch))    
+        save_status(filename, job_status)
     #update_hist_fut_daily(sdate, tday, exchanges = ["DCE", "CFFEX", "CZCE", "SHFE", "INE", ], flavor = 'mysql', fut_table = 'fut_daily')
     print('updating factor data calculation...')
     start_date = day_shift(edate, '-30m')
@@ -144,12 +150,13 @@ def run_update(tday=datetime.date.today()):
         except:
             job_status[update_field][fact_key] = False
             print("fact_key = %s is FAILED to update" % (fact_key))
+        save_status(filename, job_status)
     print('updating factor strategy position...')
     update_field = 'fact_pos_file'
     if update_field not in job_status:
         job_status[update_field] = {}
     for (port_name, pos_loc, pos_scaler, roll, freq) in port_pos_config:
-        if job_status[update_field][port_name]:
+        if job_status[update_field].get(port_name, False):
             continue
         config_file = f'{pos_loc}settings/{port_name}.json'
         with open(config_file, 'r') as fp:
@@ -177,6 +184,7 @@ def run_update(tday=datetime.date.today()):
             job_status[update_field][port_name] = True
         except:
             job_status[update_field][port_name] = False
+        save_status(filename, job_status)
 
     sdate = day_shift(tday, '-1b', CHN_Holidays)
     for (update_field, update_func, ref_text) in [('exch_receipt', update_exch_receipt_table, 'exch receipt'), \
@@ -191,8 +199,7 @@ def run_update(tday=datetime.date.today()):
         except:
             job_status[update_field] = False
             print("update_field = %s is FAILED to update" % (update_field))
-    with open(filename, 'w') as ofile:
-        json.dump(job_status, ofile, indent=4)
+        save_status(filename, job_status)
 
 
 if __name__=="__main__":    
