@@ -5,7 +5,7 @@ import json
 import pandas as pd
 import numpy as np
 import itertools
-from pycmqlib3.utility.dbaccess import save_data
+from pycmqlib3.utility.dbaccess import save_data, get_fut_daily_from_db
 from pycmqlib3.utility.misc import CHN_Holidays, day_shift, is_workday, product_code, instID_adjust, inst2product
 from akshare.futures.cot import get_dce_rank_table, \
                                 get_czce_rank_table, get_shfe_rank_table, get_cffex_rank_table
@@ -46,14 +46,14 @@ def update_hist_fut_daily(start_date=datetime.date.today(),
     while start_date <= end_date:
         for exch in exchanges:
             print("exch = %s, date=%s" % (exch, end_date))
-            df = ak.get_futures_daily(start_date=end_date, end_date=end_date, market = exch)
+            df = ak.get_futures_daily(start_date=end_date, end_date=end_date, market=exch)
             if (df is not None) and (len(df) > 0):
                 df = df[df['close'].apply(lambda x: pd.api.types.is_number(x))]
                 df = df[df['open'].apply(lambda x: pd.api.types.is_number(x))]
                 df = df[df['volume'].apply(lambda x: pd.api.types.is_number(x))]
                 df = df[df['volume'] > 0]
                 df['date'] = df['date'].apply(lambda x: datetime.datetime.strptime(str(x), "%Y%m%d").date())
-                if exch in ['DCE', 'SHFE', 'INE']:
+                if exch in ['DCE', 'SHFE', 'INE', 'GFEX']:
                     df['symbol'] = df['symbol'].apply(lambda x: x.lower())
                     df['variety'] = df['variety'].apply(lambda x: x.lower())
                 #if exch == 'SHFE':
@@ -71,9 +71,57 @@ def update_hist_fut_daily(start_date=datetime.date.today(),
     return exl_list
 
 
+def get_fut_daily_from_web(curr_date, exchanges=['DCE', 'SHFE', 'CZCE', 'CFFEX', 'INE', 'GFEX']):
+    xdf = pd.DataFrame()
+    for exch in exchanges:
+        df = ak.get_futures_daily(start_date=curr_date, end_date=curr_date, market=exch)
+        if (df is not None) and (len(df) > 0):
+            df['exchg'] = exch
+            df = df[df['close'].apply(lambda x: pd.api.types.is_number(x))]
+            df = df[df['open'].apply(lambda x: pd.api.types.is_number(x))]
+            df = df[df['volume'].apply(lambda x: pd.api.types.is_number(x))]
+            df = df[(df['volume'] > 0) & (df['symbol'].str.len() < 8)]
+            if exch in ['DCE', 'SHFE', 'INE', 'GFEX', ]:
+                df['symbol'] = df['symbol'].apply(lambda x: x.lower())
+                df['variety'] = df['variety'].apply(lambda x: x.lower())
+            xdf = xdf.append(df)
+    xdf['upperlimit'] = 0
+    xdf['lowerlimit'] = 0
+    xdf = xdf.rename(columns={'open_interest': 'openinterest', 'symbol': 'code', 'variety': 'product'})
+    return xdf
+
+
+def save_market_snapshot(start_date=datetime.date.today(),
+                    end_date=datetime.date.today(),
+                    exchanges=['DCE', 'SHFE', 'CZCE', 'CFFEX', 'INE', 'GFEX'],
+                    folder='C:/dev/wtdev/storage/his/snapshot',
+                    source='db'):
+    cols = ['date', 'exchg', 'code', 'open', 'high', 'low', 'close', 'settle', 'volume', 'turnover',
+            'openinterest', 'upperlimit', 'lowerlimit', 'preclose', 'presettle', 'preinterest']
+    sdate = day_shift(start_date, '-1b', CHN_Holidays)
+    while sdate <= end_date:
+        print('updating for date=%s' % sdate.strftime("%Y%m%d"))
+        if source == 'web':
+            xdf = get_fut_daily_from_web(sdate, exchanges=exchanges)
+        elif source == 'db':
+            xdf = get_fut_daily_from_db(sdate, exchanges=exchanges)
+        else:
+            print('unsupported source %s, should be db or web.' % source)
+            return
+        prev_xdf = xdf[['code', 'close', 'settle', 'openinterest']].rename(
+                            columns={'close': 'preclose',
+                                     'settle': 'presettle',
+                                     'openinterest': 'preinterest', })
+        if sdate >= start_date:
+            xdf = xdf.merge(prev_xdf, on=['code'], how='left')
+            xdf[['preclose', 'presettle', 'preinterest']].fillna(0, inplace=True)
+            sdate_str = sdate.strftime("%Y%m%d")
+            xdf[cols].to_csv(f'{folder}/{sdate_str}.csv', index=False)
+        sdate = day_shift(sdate, '1b', CHN_Holidays)
+
+
 def update_sgx_daily(start_date=datetime.date.today(), end_date=datetime.date.today(),
                      flavor='mysql', freq=1, dbtable='fut_daily'):
-    exl_list = []
     while start_date <= end_date:
         df = ak.futures_sgx_daily(trade_date = start_date.strftime("%Y-%m-%d"), recent_day = freq)
         save_data(dbtable, df, flavor=flavor)
