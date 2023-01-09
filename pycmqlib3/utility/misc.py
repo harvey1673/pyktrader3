@@ -489,7 +489,7 @@ def update_holidays_from_aks(filename='C:/dev/akshare/akshare/file_fold/calendar
 def get_hols_from_json(filename='C:/dev/pyktrader3/wtdev/common/holidays.json', key='CHINA'):
     f = open(filename)
     hols_dict = json.load(f)
-    hols = hols_dict[key]
+    hols = hols_dict.get(key, [])
     hols = [datetime.datetime.strptime(hol, "%Y%m%d").date() for hol in hols]
     return hols
 
