@@ -6,6 +6,7 @@ import subprocess
 import smtplib
 from email.mime.text import MIMEText
 
+
 def send_email_w_outlook(recepient, subject, body_text = '', attach_files = [], html_text = ''):
     pythoncom.CoInitialize()
     outlook = win32.Dispatch('outlook.application')
@@ -24,12 +25,14 @@ def send_email_w_outlook(recepient, subject, body_text = '', attach_files = [], 
             mail.Attachments.Add(Source = afile)
     mail.send
 
+
 def open_outlook():
     try:
         subprocess.call(['C:\Program Files (x86)\Microsoft Office\Office15\Outlook.exe'])
         os.system("C:\Program Files (x86)\Microsoft Office\Office15\Outlook.exe");
     except:
         print("Outlook didn't open successfully")
+
 
 def send_email_by_outlook(recepient, subject, body_text = '', attach_files = [], html_text = ''):
     for item in psutil.pids():
@@ -46,6 +49,7 @@ def send_email_by_outlook(recepient, subject, body_text = '', attach_files = [],
         open_outlook()
     send_email_w_outlook(recepient, subject, body_text, attach_files, html_text)
 
+
 def send_email_by_smtp(mail_account, to_list, sub, content):
     mail_host = mail_account['host']
     mail_user = mail_account['user']
@@ -55,7 +59,7 @@ def send_email_by_smtp(mail_account, to_list, sub, content):
     msg['From'] = mail_user
     msg['To'] = ';'.join(to_list)
     try:
-        smtp = smtplib.SMTP(mail_host, 587)
+        smtp = smtplib.SMTP(mail_host, mail_account['port'])
         # smtp.ehlo()
         smtp.starttls()
         # smtp.ehlo()

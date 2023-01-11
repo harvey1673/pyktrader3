@@ -1,17 +1,12 @@
-'''
-Descripttion: Automatically generated file comment
-version: 
-Author: Wesley
-Date: 2021-08-23 09:38:05
-LastEditors: Wesley
-LastEditTime: 2021-08-23 15:06:29
-'''
 from wtpy.apps import WtHotPicker, WtCacheMonExchg, WtCacheMonSS, WtMailNotifier
+import os
+from shutil import copyfile
 import json
 import datetime
 import logging
+from pycmqlib3.utility.sec_bits import EMAIL_HOTMAIL
 
-logging.basicConfig(filename='hotsel.log', level=logging.INFO, filemode="w", 
+logging.basicConfig(filename='hotsel.log', level=logging.INFO, filemode="w",
     format='[%(asctime)s - %(levelname)s] %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S')
 
@@ -53,8 +48,9 @@ def rebuild_hot_rules(start_date, end_date,
 
 
 def daily_hot_rules(end_date=None,
-                    files=["hots.json", "seconds.json"],
-                    snapshot_loc="C:/dev/wtdev/storage/his/snapshot/"):
+                    files={'loc': './', 'hot': 'hots.json', 'sec': 'seconds.json', 'marker': 'marker.json'},
+                    snapshot_loc="C:/dev/wtdev/storage/his/snapshot/",
+                    notify=False):
     # 增量更新主力合约切换规则
     if snapshot_loc:
         # 从datakit落地的行情快照直接读取
@@ -63,16 +59,28 @@ def daily_hot_rules(end_date=None,
         # 从交易所官网拉取行情快照
         cacher = WtCacheMonExchg()
 
-    picker = WtHotPicker(hotFile=files[0], secFile=files[1])
+    picker = WtHotPicker(files)
     picker.set_cacher(cacher)
-
-    # notifier = WtMailNotifier(user="yourmailaddr", pwd="yourmailpwd", host="smtp.exmail.qq.com", port=465, isSSL=True)
-    # notifier.add_receiver(name="receiver1", addr="receiver1@qq.com")
-    # picker.set_mail_notifier(notifier)
-
+    if notify:
+        notifier = WtMailNotifier(user=EMAIL_HOTMAIL['user'],
+                                  pwd=EMAIL_HOTMAIL['passwd'],
+                                  host=EMAIL_HOTMAIL['host'],
+                                  port=EMAIL_HOTMAIL['port'],
+                                  isSSL=False)
+        notifier.add_receiver(addr="harvey_wwu@yahoo.com")
+        picker.set_mail_notifier(notifier)
     picker.execute_increment(end_date)
 
 
 if __name__ == "__main__":
-    rebuild_hot_rules()
+    files = {'loc': 'C:/dev/wtdev/hotpicker/', 'hot': 'hots.json', 'sec': 'seconds.json', 'marker': 'marker.json'}
+    daily_hot_rules(files=files, notify=True)
+    prod_loc = 'C:/dev/wtdev/common/'
+    for file in ['hots', 'seconds']:
+        try:
+            os.rename(f'{prod_loc}{file}.json', f'{prod_loc}{file}_old.json')
+        except WindowsError:
+            os.remove(f'{prod_loc}{file}_old.json')
+            os.rename(f'{prod_loc}{file}.json', f'{prod_loc}{file}_old.json')
+        copyfile('%s%s.json' % (files['loc'], file), '%s%s.json' % (prod_loc, file))
     input("press enter key to exit\n")
