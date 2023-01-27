@@ -5,6 +5,7 @@ import json
 import datetime
 import logging
 from pycmqlib3.utility.sec_bits import EMAIL_HOTMAIL
+from pycmqlib3.utility import update_contract_roll
 
 logging.basicConfig(filename='hotsel.log', level=logging.INFO, filemode="w",
     format='[%(asctime)s - %(levelname)s] %(message)s',
@@ -74,13 +75,23 @@ def daily_hot_rules(end_date=None,
 
 if __name__ == "__main__":
     files = {'loc': 'C:/dev/wtdev/hotpicker/', 'hot': 'hots.json', 'sec': 'seconds.json', 'marker': 'marker.json'}
-    daily_hot_rules(files=files, notify=True)
+    daily_hot_rules(files=files, notify=False)
     prod_loc = 'C:/dev/wtdev/common/'
-    for file in ['hots', 'seconds']:
+    for file in ['hots', 'seconds', ]:
         try:
             os.rename(f'{prod_loc}{file}.json', f'{prod_loc}{file}_old.json')
         except WindowsError:
             os.remove(f'{prod_loc}{file}_old.json')
             os.rename(f'{prod_loc}{file}.json', f'{prod_loc}{file}_old.json')
         copyfile('%s%s.json' % (files['loc'], file), '%s%s.json' % (prod_loc, file))
+
+    name_map = {
+        'hots': 'hot1',
+        'seconds': 'hot2',
+    }
+    config_loc = 'C:/dev/wtdev/config/'
+    for file in ['hots', 'seconds']:
+        copyfile('%s%s.json' % (files['loc'], file), '%s%s.json' % (config_loc, name_map[file]))
+
+    update_contract_roll.run()
     input("press enter key to exit\n")
