@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import datetime
-
 import numpy as np
 import math
 from numpy.lib.recfunctions import append_fields
@@ -8,6 +7,20 @@ from collections import OrderedDict
 import pandas as pd
 import scipy.stats as stats
 import scipy.signal as signal
+from numpy.lib.stride_tricks import sliding_window_view
+
+
+def rolling_percentile(ts, win = 100, direction = 'max'):
+    data = ts.to_numpy()
+    sw = sliding_window_view(data, win, axis=0).T
+    scores_np = np.empty(len(ts))
+    scores_np.fill(np.nan)
+    scores_np[(win-1):] = ((sw <= sw[-1:, ...]).sum(axis=0).T / sw.shape[0]).flatten()
+    scores_np_ts = pd.Series(scores_np, index = ts.index)
+    if direction == 'min':
+        scores_np_ts = 1 - scores_np_ts
+    return scores_np_ts
+
 
 def response_curve(y, response='linear', param=1):
     ''' response curve to apply to a signal, either string or a 1D function f(x)'''
@@ -44,10 +57,12 @@ def response_curve(y, response='linear', param=1):
         raise Exception('unknown response curve')
     return out
 
+
 def conv_date(d):
     if type(d).__name__ == 'datetime64':
         d = pd.to_datetime(str(d)).date()
     return d
+
 
 def date_datetime64(d):
     if type(d).__name__ == 'datetime64':
@@ -56,6 +71,7 @@ def date_datetime64(d):
     if type(d).__name__ == 'date':
         dt = datetime.datetime.combine(d, datetime.time(0,0,0))
     return np.datetime64(dt)
+
 
 class DynamicRecArray(object):
     def __init__(self, dtype = [], dataframe = None, size_ratio = 1.5, nlen = 100):
@@ -145,10 +161,12 @@ class DynamicRecArray(object):
     @property
     def data(self):
         return self._data[:self.length]
-        
+
+
 def ohlcsum(df):
     return pd.Series([df.index[0], df['open'][0], df['high'].max(), df['low'].min(), df['close'][-1], df['volume'].sum()],
                   index = ['datetime', 'open','high','low','close','volume'])
+
 
 def min_freq_group(mdf, freq = 5, index_col = 'datetime'):
     if index_col == None:
@@ -161,6 +179,7 @@ def min_freq_group(mdf, freq = 5, index_col = 'datetime'):
         xdf = xdf.set_index('datetime')
     return xdf
 
+
 def min2daily(df, extra_cols = []):
     ts = [df.index[0], df['min_id'][-1], df['open'][0], df['high'].max(), df['low'].min(), df['close'][-1], df['volume'].sum(), df['openInterest'][-1]]
     col_idx = ['datetime', 'min_id', 'open','high','low','close','volume', 'openInterest']
@@ -168,6 +187,7 @@ def min2daily(df, extra_cols = []):
         ts.append(df[col][-1])
         col_idx.append(col)
     return pd.Series(ts, index = col_idx)
+
 
 def day_split(mdf, minlist = [1500], index_col = 'datetime', extra_cols = [], group_func = min2daily):
     min_func = lambda df: group_func(df, extra_cols)
@@ -182,6 +202,7 @@ def day_split(mdf, minlist = [1500], index_col = 'datetime', extra_cols = [], gr
         xdf = xdf.set_index('datetime')
     #xdf = xdf.sort_values(by=['date', 'min_id'])
     return xdf
+
 
 def day_split1(df, minlist = [1500], index_col = 'datetime'):
     if index_col != None:
@@ -218,6 +239,7 @@ def day_split1(df, minlist = [1500], index_col = 'datetime'):
     #xdf = xdf.sort_values(by=['date', 'min_id'])
     return xdf
 
+
 def index_slice(df, slice_index = ['date', 'min_id'], index_col = 'datetime'):
     if index_col != None:
         df = df.reset_index()
@@ -249,6 +271,7 @@ def index_slice(df, slice_index = ['date', 'min_id'], index_col = 'datetime'):
     #xdf = xdf.sort_values(by=['date', 'min_id'])
     return xdf
 
+
 def array_split_by_bar(darr, split_list = [300, 1500, 2100], field = 'min_id'):
     s_idx = 0
     sparr = DynamicRecArray(dtype = darr.dtype)
@@ -265,6 +288,7 @@ def array_split_by_bar(darr, split_list = [300, 1500, 2100], field = 'min_id'):
             s_idx = i+1
     return sparr
 
+
 def bar_conv_func(min_ts, bar_shift = []):
     if type(min_ts).__name__ == 'Series':
         bar_ts = (min_ts/100).astype('int') * 60 + min_ts % 100
@@ -278,6 +302,7 @@ def bar_conv_func(min_ts, bar_shift = []):
                 bar_id += pair[1]
         return bar_id
 
+
 def bar_conv_func2(min_ts):
     if type(min_ts).__name__ == 'Series':
         bar_ts = (min_ts/100).astype('int') * 60 + min_ts % 100
@@ -285,6 +310,7 @@ def bar_conv_func2(min_ts):
     else:
         bar_id = int(min_ts/100) * 60 + min_ts % 100
         return bar_id
+
 
 def conv_ohlc_freq(mdf, freq, index_col = 'datetime', bar_func = bar_conv_func2, extra_cols = [], group_func = min2daily):
     df = mdf
@@ -305,6 +331,7 @@ def conv_ohlc_freq(mdf, freq, index_col = 'datetime', bar_func = bar_conv_func2,
         if index_col == 'datetime':
             res.set_index(index_col, inplace = True)
     return res
+
 
 def conv_ohlc_freq1(mdf, freq, index_col = 'datetime', bar_func = bar_conv_func2):
     df = mdf
@@ -345,17 +372,22 @@ def conv_ohlc_freq1(mdf, freq, index_col = 'datetime', bar_func = bar_conv_func2
         res.set_index(index_col, inplace = True)
     return res
 
+
 def crossover(ts, value = 0, direction = 1):
     return ((ts[-1] - value)*direction>0) and ((ts[-2] - value)*direction<0)
+
 
 def CROSSOVER(ts, value = 0, direction = 1):
     return ((ts - value)*direction > 0) & ((ts.shift(1) - value)*direction < 0)
 
+
 def crossover2(ts1, ts2, value = 0, direction = 1):
     return ((ts1[-1] - ts2[-1] - value) * direction>0) and ((ts1[-2] - ts2[-2] - value) * direction<0)
 
+
 def CROSSOVER2(ts1, ts2, value = 0, direction = 1):
     return ((ts1 - ts2 - value) * direction > 0) & ((ts1.shift(1) - ts2.shift(1) - value) * direction < 0)
+
 
 def TR(df, prefix = ''):
     tr_df = pd.concat([df[prefix + 'high'] - df[prefix + 'close'], \
@@ -365,16 +397,19 @@ def TR(df, prefix = ''):
     ts_tr = pd.Series(tr_df.max(1), name=prefix + 'TR')
     return ts_tr
 
+
 def tr(df, prefix = ''):
     if np.isnan(df[prefix + 'TR'][-1]):
         df[prefix + 'TR'][-1] = max(df[prefix + 'high'][-1]-df[prefix + 'low'][-1], \
                                     abs(df[prefix + 'high'][-1] - df[prefix + 'close'][-2]), \
                                     abs(df[prefix + 'low'][-1] - df[prefix + 'close'][-2]))
 
+
 def CMI(df, n, prefix = ''):
     ts = pd.Series(abs(float(df[prefix + 'close'] - df[prefix + 'close'].shift(n)))/\
                    (df[prefix + 'high'].rolling(n).max() - df[prefix + 'low'].rolling(n).min())*100, name=prefix + 'CMI'+str(n))
     return ts
+
 
 def cmi(df, n, prefix = ''):
     key = prefix + 'CMI'+str(n)
@@ -384,11 +419,13 @@ def cmi(df, n, prefix = ''):
     else:
         df[key][-1] = np.nan
 
+
 def EFF_RATIO(df, n, field = 'close', prefix = ''):
     er = pd.Series(abs(float(df[prefix + field] - df[prefix + field].shift(n)))/\
                    (abs(df[prefix + field] - df[prefix + field].shift(1)).rolling(n).sum()) * 100.0, \
                    name = prefix + 'ER_' + str(n))
     return er
+
 
 def PRICE_DENSITY(df, n, prefix = ''):
     price_den = pd.Series(float((df[prefix + 'high']-df[prefix + 'low']).rolling(n).sum())/\
@@ -396,11 +433,13 @@ def PRICE_DENSITY(df, n, prefix = ''):
         name = prefix + 'PRICEDEN_' + str(n))
     return price_den
 
+
 def ATR(df, n = 20, prefix = ''):
     tr = TR(df, prefix = prefix)
     ts_atr = tr.ewm(span=n,  min_periods = n-1, adjust = False).mean()
     ts_atr.name = prefix + 'ATR'+str(n)
     return ts_atr
+
 
 def atr(df, n = 20, prefix = ''):
     new_tr = max(df[prefix + 'high'][-1]-df[prefix + 'low'][-1], \
@@ -409,28 +448,35 @@ def atr(df, n = 20, prefix = ''):
     alpha = 2.0/(n+1)
     df[prefix + 'ATR'+str(n)][-1] = df[prefix + 'ATR'+str(n)][-2] * (1-alpha) + alpha * new_tr
 
+
 def MA(df, n, field = 'close', prefix = ''):
     return pd.Series(df[prefix + field].rolling(n).mean(), name = prefix + 'MA_' + field.upper() + '_' + str(n), index = df.index)
+
 
 def ma(df, n, field = 'close', prefix = ''):
     key = prefix + 'MA_' + field.upper() + '_' + str(n)
     df[key][-1] = df[key][-2] + float(df[prefix + field][-1] - df[prefix + field][-1-n])/n
 
+
 def STDEV(df, n, field = 'close', prefix = ''):
     return pd.Series(df[prefix + field].rolling(n).std(), name = prefix + 'STDEV_' + field.upper() + '_' + str(n))
 
+
 def stdev(df, n, field = 'close', prefix = ''):
     df[prefix + 'STDEV_' + field.upper() + '_' + str(n)][-1] = np.std(df[field][-n:])
+
 
 def BSTDEV(df, n, field = 'close', prefix = ''):
     return pd.Series((df[prefix + field].rolling(n).var() \
         + df[prefix + field].rolling(n).mean()**2)**(1/2), \
         name = prefix + 'BSTDEV_' + field.upper() + '_' + str(n))
 
+
 def SMAVAR(df, n, field = 'close', prefix = ''):
     ma_ts = MA(df, n, field, prefix = prefix)
     var_ts = pd.Series((df[prefix + field]**2).rolling(n).mean() - ma_ts**2, name = prefix + 'SVAR_' + field.upper() + '_' + str(n))
     return pd.concat([ma_ts, var_ts], sort = False, join='outer', axis=1)
+
 
 def smavar(df, n, field = 'close', prefix = ''):
     ma(df, n, field, prefix = prefix)
@@ -439,15 +485,18 @@ def smavar(df, n, field = 'close', prefix = ''):
     df[key_var][-1] = df[key_var][-2] + df[key_ma][-1-n]**2 - df[key_ma][-1]**2 \
                       + float(df[prefix + field][-1]**2 - df[prefix + field][-1-n]**2)/n
 
+
 #Exponential Moving Average
 def EMA(df, n, field = 'close', prefix = ''):
     return pd.Series(df[prefix + field].ewm(span = n).mean(), \
                      name = prefix + 'EMA_' + field.upper() + '_' + str(n), index = df.index)
 
+
 def ema(df, n, field =  'close', prefix = ''):
     key = prefix + 'EMA_' + field.upper() + '_' + str(n)
     alpha = 2.0/(n+1)
     df[key][-1] = df[key][-2] * (1-alpha) + df[prefix + field][-1] * alpha
+
 
 def EMAVAR(df, n, field = 'close', prefix = ''):
     ema_ts = EMA(df, n, field, prefix = prefix)
@@ -457,6 +506,7 @@ def EMAVAR(df, n, field = 'close', prefix = ''):
                         name = prefix + 'EVAR_' + field.upper() + '_' + str(n), index = df.index)
     return pd.concat([ema_ts, evar_ts], sort = False, join='outer', axis=1)
 
+
 def emavar(df, n ,field = 'close', prefix = ''):
     ema(df, n, field, prefix = prefix)
     alpha = 2.0 / (n + 1)
@@ -465,17 +515,21 @@ def emavar(df, n ,field = 'close', prefix = ''):
     df[key_var][-1] = (1-alpha) * ( df[key_var][-2] \
                     + alpha * ((df[prefix + field][-1] - df[key_ema][-2])**2))
 
+
 #Momentum
 def MOM(df, n, prefix = ''):
     return pd.Series(df[prefix + 'close'].diff(n), name = prefix + 'Momentum' + str(n))#Rate of Change
+
 
 def ROC(df, n, field = 'close', prefix = ''):
     return pd.Series(df[prefix + field].astype('float')/df[prefix + field].shift(n) - 1, \
                      name = 'ROC_' + field.upper()+ '_'  + str(n))
 
+
 def roc(df, n, field = 'close', prefix = ''):
     key = prefix + 'ROC_' + field.upper() + '_' + str(n)
     df[key][-1] = float(df[prefix + field][-1])/df[prefix + field][-1-n] - 1.0
+
 
 #Bollinger Bands
 def BBANDS(df, n, k = 2, field = 'close', prefix = ''):
@@ -488,6 +542,7 @@ def BBANDS(df, n, k = 2, field = 'close', prefix = ''):
     UB = pd.Series(MA + k * MSD, name = prefix + 'BollingerU_' + str(n))
     LB = pd.Series(MA - k * MSD, name = prefix + 'BollingerL_' + str(n))
     return pd.concat([B1, B2, MA, UB, LB], sort = False, join='outer', axis=1)
+
 
 #Pivot Points, Supports and Resistances
 def PPSR(df, prefix = ''):
@@ -502,7 +557,8 @@ def PPSR(df, prefix = ''):
     PSR = pd.DataFrame(psr)
     return PSR
 
-#Stochastic oscillator %K    
+
+#Stochastic oscillator %K
 def STOCH(df, n = 14, slowk_period = 3, slowd_period = 3, prefix = ''):
     fastk = float(df[prefix + 'close'] - df[prefix + 'low'].rolling(n).min())\
             /(df[prefix + 'high'].rolling(n).max() - df[prefix + 'low'].rolling(n).min()) * 100.0
@@ -513,6 +569,7 @@ def STOCH(df, n = 14, slowk_period = 3, slowd_period = 3, prefix = ''):
     sd = pd.Series(slowd, index = df.index, name = prefix + "STOCHSD_%s_%s_%s" % (str(n), str(slowk_period), str(slowd_period)))
     return pd.concat([fk, sk, sd], sort = False, join='outer', axis=1)
 
+
 def stoch(df, n=14, slowk_period=3, slowd_period=3, prefix = ''):
     key1 = prefix + "STOCHFK_%s_%s_%s" % (str(n), str(slowk_period), str(slowd_period))
     df[key1][-1] = float(df[prefix + 'close'][-1] - min(df[prefix + 'low'][-n:])) \
@@ -522,6 +579,7 @@ def stoch(df, n=14, slowk_period=3, slowd_period=3, prefix = ''):
     key3 = prefix + "STOCHSD_%s_%s_%s" % (str(n), str(slowk_period), str(slowd_period))
     df[key3][-1] = df[key3][-2] + (df[key2][-1] - df[key2][-1 - slowd_period]) / float(slowd_period)
 
+
 def STOCHRSI(df, n=14, fastk_period=5, fastd_period=3, prefix = ''):
     RSI = RSI_F(df, n, prefix = prefix)
     fastk = float(RSI - RSI.rolling(fastk_period).min()) / (RSI.rolling(fastk_period).max() - RSI.rolling(fastk_period).min()) * 100.0
@@ -530,12 +588,14 @@ def STOCHRSI(df, n=14, fastk_period=5, fastd_period=3, prefix = ''):
     fd = pd.Series(fastd, index = df.index, name = prefix + "STOCRSI_FD_%s" % (str(n)))
     return pd.concat([fk,fd], sort = False, join='outer', axis=1)
     
-    #Trix
+
+#Trix
 def TRIX(df, n, prefix = ''):
     EX1 = df[prefix + 'close'].ewm(span = n, min_periods = n - 1, adjust = False).mean()
     EX2 = EX1.ewm(span = n, min_periods = n - 1, adjust = False).mean()
     EX3 = EX2.ewm(span = n, min_periods = n - 1, adjust = False).mean()
     return pd.Series(EX3/EX3.shift(1) - 1, name = prefix + 'Trix' + str(n))
+
 
 #Average Directional Movement Index
 def ADX(df, n, prefix = ''):
@@ -552,6 +612,7 @@ def ADX(df, n, prefix = ''):
                     name = prefix + 'ADX' + str(n) + '_' + str(n)).mean()
     return ADX
 
+
 #MACD, MACD Signal and MACD difference
 def MACD(df, n_fast, n_slow, n_signal, prefix = ''):
     EMAfast = pd.Series(df[prefix + 'close'].ewm(span = n_fast, min_periods = n_slow - 1).mean())
@@ -563,6 +624,7 @@ def MACD(df, n_fast, n_slow, n_signal, prefix = ''):
                         name = prefix + 'MACDhist' + str(n_fast) + '_' + str(n_slow) + '_' + str(n_signal))
     return pd.concat([MACD, MACDsig, MACDhist], sort = False, join='outer', axis=1)
 
+
 #Mass Index
 def MassI(df, prefix = ''):
     Range = df[prefix + 'high'] - df[prefix + 'low']
@@ -572,12 +634,14 @@ def MassI(df, prefix = ''):
     MassI = pd.Series(Mass.rolling(25).sum(), name = prefix + 'MassIndex')
     return MassI
 
+
 #Vortex Indicator
 def Vortex(df, n, prefix = ''):
     tr = TR(df, prefix = prefix)
     vm = abs(df[prefix + 'high'] - df[prefix + 'low'].shift(1)) - abs(df[prefix + 'low']-df[prefix + 'high'].shift(1))
     VI = pd.Series(vm.astype('float').rolling(n).sum() / tr.rolling(n).sum(), name = prefix + 'Vortex' + str(n))
     return VI
+
 
 #KST Oscillator
 def KST(df, r1, r2, r3, r4, n1, n2, n3, n4, prefix = ''):
@@ -597,6 +661,7 @@ def KST(df, r1, r2, r3, r4, n1, n2, n3, n4, prefix = ''):
                     + ROC4.rolling(n4).sum() * 4, name = prefix + 'KST' + str(r1) + '_' + str(r2) + '_' + str(r3) + '_' + str(r4) + '_' + str(n1) + '_' + str(n2) + '_' + str(n3) + '_' + str(n4))
     return KST
 
+
 def RSI_F(df, n, field='close', prefix = ''):
     UpMove = df[prefix + field] - df[prefix + field].shift(1)
     DoMove = df[prefix + field].shift(1) - df[prefix + field]
@@ -608,6 +673,7 @@ def RSI_F(df, n, field='close', prefix = ''):
     NegDI = pd.Series(DoD.ewm(com = n-1).mean(), name = prefix + "RSI"+str(n)+'_DN')
     RSI = pd.Series(PosDI / (PosDI + NegDI) * 100, name = prefix + 'RSI' + str(n))
     return pd.concat([RSI, PosDI, NegDI], sort = False, join='outer', axis=1)
+
 
 def rsi_f(df, n, field = 'close', prefix = ''):
     RSI_key = prefix + 'RSI%s' % str(n)
@@ -622,7 +688,8 @@ def rsi_f(df, n, field = 'close', prefix = ''):
     udi = df[RSI_key + '_UP'][-1] = df[RSI_key + '_UP'][-2] * (1 - alpha) + upx * alpha
     ddi = df[RSI_key + '_DN'][-1] = df[RSI_key + '_DN'][-2] * (1 - alpha) + dnx * alpha
     df[RSI_key][-1] = udi/(udi + ddi) * 100.0
-    
+
+
 #True Strength Index
 def TSI(df, r, s, prefix = ''):
     M = pd.Series(df[prefix + 'close'].diff(1))
@@ -634,6 +701,7 @@ def TSI(df, r, s, prefix = ''):
     TSI = pd.Series(EMA2 / aEMA2, name = prefix + 'TSI' + str(r) + '_' + str(s))
     return TSI
 
+
 #Accumulation/Distribution
 def ACCDIST(df, n, prefix = ''):
     ad = float(2 * df[prefix + 'close'] - df[prefix + 'high'] - df[prefix + 'low']) \
@@ -644,6 +712,7 @@ def ACCDIST(df, n, prefix = ''):
     AD = pd.Series(ROC, name = prefix + 'AccDist_ROC' + str(n))
     return AD
 
+
 #Chaikin Oscillator
 def Chaikin(df, prefix = ''):
     ad = float(2 * df[prefix + 'close'] - df[prefix + 'high'] - df[prefix + 'low']) \
@@ -651,6 +720,7 @@ def Chaikin(df, prefix = ''):
     Chaikin = pd.Series(ad.ewm(span = 3, min_periods = 2).mean() - ad.ewm(span = 10, min_periods = 9).mean(), \
                         name = prefix + 'Chaikin')
     return Chaikin
+
 
 #Money Flow Index and Ratio
 def MFI(df, n, prefix = ''):
@@ -664,6 +734,7 @@ def MFI(df, n, prefix = ''):
     MFI = pd.Series(MFR.rolling(n).mean(), name = prefix + 'MFI' + str(n))
     return MFI
 
+
 #On-balance Volume
 def OBV(df, n, prefix = ''):
     PosVol = pd.Series(df[prefix + 'volume'])
@@ -673,10 +744,12 @@ def OBV(df, n, prefix = ''):
     OBV = pd.Series((PosVol + NegVol).rolling(n).mean(), name = prefix + 'OBV' + str(n))
     return OBV
 
+
 #Force Index
 def FORCE(df, n, prefix = ''):
     F = pd.Series(df[prefix + 'close'].diff(n) * df[prefix + 'volume'].diff(n), name = prefix + 'Force' + str(n))
     return F
+
 
 #Ease of Movement
 def EOM(df, n, prefix = ''):
@@ -684,6 +757,7 @@ def EOM(df, n, prefix = ''):
           / (2 * df[prefix + 'volume'])
     Eom_ma = pd.Series(EoM.rolling(n).mean(), name = prefix + 'EoM' + str(n))
     return Eom_ma
+
 
 #Coppock Curve
 def COPP(df, n, prefix = ''):
@@ -696,12 +770,14 @@ def COPP(df, n, prefix = ''):
     Copp = pd.Series((ROC1 + ROC2).ewm(span = n, min_periods = n).mean(), name = prefix + 'Copp' + str(n))
     return Copp
 
+
 #Keltner Channel
 def KELCH(df, n, prefix = ''):
     KelChM = pd.Series(((df[prefix + 'high'] + df[prefix + 'low'] + df[prefix + 'close']) / 3.0).rolling(n).mean(), name = prefix + 'KelChM' + str(n))
     KelChU = pd.Series(((4 * df[prefix + 'high'] - 2 * df[prefix + 'low'] + df[prefix + 'close']) / 3.0).rolling(n).mean(), name = prefix + 'KelChU' + str(n))
     KelChD = pd.Series(((-2 * df[prefix + 'high'] + 4 * df[prefix + 'low'] + df[prefix + 'close']) / 3.0).rolling(n).mean(), name = prefix + 'KelChD' + str(n))
     return pd.concat([KelChM, KelChU, KelChD], sort = False, join='outer', axis=1)
+
 
 #Ultimate Oscillator
 def ULTOSC(df, prefix = ''):
@@ -712,6 +788,7 @@ def ULTOSC(df, prefix = ''):
                     / TR_l.rolling(14).sum()) + (BP_l.rolling(28).sum() / TR_l.rolling(28).sum()), \
                     name = prefix + 'UltOsc')
     return UltO
+
 
 def DONCH_IDX(df, n, prefix = ''):
     high = pd.Series(df[prefix + 'high'].rolling(n).max(), name = prefix + 'DONCH_H'+ str(n))
@@ -726,6 +803,7 @@ def DONCH_IDX(df, n, prefix = ''):
             minidx[idx] = lowlist.index(low[idx])
     return pd.concat([high,low, maxidx, minidx], sort = False, join='outer', axis=1)
 
+
 def CHENOW_PLUNGER(df, n, atr_n = 40, prefix = ''):
     atr = ATR(df, atr_n, prefix = prefix)
     high = pd.Series((df[prefix + 'high'].rolling(n).max() - df[prefix + 'close'])/atr, \
@@ -734,23 +812,28 @@ def CHENOW_PLUNGER(df, n, atr_n = 40, prefix = ''):
                      name = prefix + 'CPLUNGER_L'+ str(n))
     return pd.concat([high,low], sort = False, join='outer', axis=1)
 
+
 #Donchian Channel
 def DONCH_H(df, n, field = 'high', prefix = ''):
     DC_H = df[prefix + field].rolling(n).max()
     return pd.Series(DC_H, name = prefix + 'DONCH_H' + field[0].upper() + str(n))
 
+
 def DONCH_L(df, n, field = 'low', prefix = ''):
     DC_L = df[prefix + field].rolling(n).min()
     return pd.Series(DC_L, name = prefix + 'DONCH_L'+ field[0].upper() + str(n))
 
+
 def donch_h(df, n, field = 'high', prefix = ''):
     key = prefix + 'DONCH_H'+ field[0].upper() + str(n)
     df[key][-1] = max(df[prefix + field][-n:])
- 
+
+
 def donch_l(df, n, field = 'low', prefix = ''):
     key = prefix + 'DONCH_L'+ field[0].upper() + str(n)
     df[key][-1] = min(df[prefix + field][-n:])
-    
+
+
 def HEIKEN_ASHI(df, period1, prefix = ''):
     SM_O = df[prefix + 'open'].rolling(period1).mean()
     SM_H = df[prefix + 'high'].rolling(period1).mean()
@@ -766,7 +849,8 @@ def HEIKEN_ASHI(df, period1, prefix = ''):
         HA_H[idx] = max(SM_H[idx], HA_O[idx], HA_C[idx])
         HA_L[idx] = min(SM_L[idx], HA_O[idx], HA_C[idx])
     return pd.concat([HA_O, HA_H, HA_L, HA_C], sort = False, join='outer', axis=1)
-    
+
+
 def heiken_ashi(df, period, prefix = ''):
     ma_o = sum(df[prefix + 'open'][-period:])/float(period)
     ma_c = sum(df['close'][-period:])/float(period)
@@ -776,6 +860,7 @@ def heiken_ashi(df, period, prefix = ''):
     df[prefix + 'HAopen'][-1] = (df[prefix + 'HAopen'][-2] + df[prefix + 'HAclose'][-2])/2.0
     df[prefix + 'HAhigh'][-1] = max(ma_h, df[prefix + 'HAopen'][-1], df[prefix + 'HAclose'][-1])
     df[prefix + 'HAlow'][-1] = min(ma_l, df[prefix + 'HAopen'][-1], df[prefix + 'HAclose'][-1])
+
 
 def BBANDS_STOP(df, n, nstd, prefix = ''):
     MA = pd.Series(df[prefix + 'close'].rolling(n).mean())
@@ -796,6 +881,7 @@ def BBANDS_STOP(df, n, nstd, prefix = ''):
                 Upper[idx] = Upper[idx-1]
     return pd.concat([Upper,Lower, Trend], sort = False, join='outer', axis=1)
 
+
 def bbands_stop(df, n, nstd, prefix = ''):
     ma = df[prefix + 'close'][-n:].mean()
     msd = df[prefix + 'close'][-n:].std()
@@ -811,6 +897,7 @@ def bbands_stop(df, n, nstd, prefix = ''):
     if (df[prefix + 'BBSTOP_trend'][-1] == -1) and (df[prefix + 'BBSTOP_upper'][-1] > df[prefix + 'BBSTOP_upper'][-2]):
         df[prefix + 'BBSTOP_upper'][-1] = df[prefix + 'BBSTOP_upper'][-2]
 
+
 def FISHER(df, n, smooth_p = 0.7, smooth_i = 0.7, prefix = ''):
     roll_high = df[prefix + 'high'].rolling(n).max()
     roll_low  = df[prefix + 'low'].rolling(n).min()
@@ -820,6 +907,7 @@ def FISHER(df, n, smooth_p = 0.7, smooth_i = 0.7, prefix = ''):
     sm_fisher = pd.Series(fisher_ind.ewm(com = 1.0/smooth_i - 1, adjust = False).mean(), name = prefix + 'FISHER_I')
     return pd.concat([sm_price, sm_fisher], sort = False, join='outer', axis=1)
 
+
 def fisher(df, n, smooth_p = 0.7, smooth_i = 0.7, prefix = ''):
     roll_high = max(df[prefix + 'high'][-n:])
     roll_low  = min(df[prefix + 'low'][-n:])
@@ -828,6 +916,7 @@ def fisher(df, n, smooth_p = 0.7, smooth_i = 0.7, prefix = ''):
     fisher_ind = 0.5 * np.log((1 + df[prefix + 'FISHER_P'][-1])/(1 - df[prefix + 'FISHER_P'][-1]))
     df[prefix + 'FISHER_I'][-1] = df[prefix + 'FISHER_I'][-2] * (1 - smooth_i) + smooth_i * fisher_ind
 
+
 def PCT_CHANNEL(df, n = 20, pct = 50, field = 'close', prefix = ''):
     out = pd.Series(index=df.index, name = prefix + 'PCT%sCH%s' % (pct, n))
     for idx, d in enumerate(df.index):
@@ -835,9 +924,11 @@ def PCT_CHANNEL(df, n = 20, pct = 50, field = 'close', prefix = ''):
             out[d] = np.percentile(df[prefix + field].iloc[max(idx-n,0):idx], pct)
     return out
 
+
 def pct_channel(df, n = 20, pct = 50, field = 'close', prefix = ''):
     key =  prefix + 'PCT%sCH%s' % (pct, n)
     df[key][-1] = np.percentile(df[prefix + field][-n:], pct)
+
 
 def COND_PCT_CHAN(df, n = 20, pct = 50, field = 'close', direction=1, prefix = ''):
     out = pd.Series(index=df.index, name = prefix + 'C_CH%s_PCT%s' % (n, pct))
@@ -853,6 +944,7 @@ def COND_PCT_CHAN(df, n = 20, pct = 50, field = 'close', direction=1, prefix = '
             out[d] = tot_s/tot_w
     return out
    
+
 def VCI(df, n, rng = 8, prefix = ''):
     if n > 7:
         varA = df[prefix + 'high'].rolling(rng).max() - df[prefix + 'low'].rolling(rng).min()
@@ -872,6 +964,7 @@ def VCI(df, n, rng = 8, prefix = ''):
     VC = pd.Series((df[prefix + 'close'] - avg_pr)/avg_tr, name = prefix + 'VCIC')
     return pd.concat([VO, VH, VL, VC], sort = False, join='outer', axis=1)
 
+
 def TEMA(ts, n, prefix = ''):
     n = int(n)
     ts_ema1 = pd.Series( ts.ewm(span = n, adjust = False).mean(), name = prefix + 'EMA' + str(n) )
@@ -879,7 +972,8 @@ def TEMA(ts, n, prefix = ''):
     ts_ema3 = pd.Series( ts_ema2.ewm(span = n, adjust = False).mean(), name = prefix + 'EMA3' + str(n) )
     ts_tema = pd.Series( 3 * ts_ema1 - 3 * ts_ema2 + ts_ema3, name = prefix + 'TEMA' + str(n) )
     return ts_tema
-    
+
+
 def SVAPO(df, period = 8, cutoff = 1, stdev_h = 1.5, stdev_l = 1.3, stdev_period = 100, prefix = ''):
     HA = HEIKEN_ASHI(df, 1, prefix = prefix)
     haCl = (HA[prefix + 'HAopen'] + HA[prefix + 'HAclose'] + HA[prefix + 'HAhigh'] + HA[prefix + 'HAlow'])/4.0
@@ -898,6 +992,7 @@ def SVAPO(df, period = 8, cutoff = 1, stdev_h = 1.5, stdev_l = 1.3, stdev_period
     svapo_lb = pd.Series(-svapo_std * stdev_l, name = prefix + 'SVAPO_LB%s' % period)
     return pd.concat([svapo, svapo_ub, svapo_lb], sort = False, join='outer', axis=1)
 
+
 def LINEAR_REG_SLOPE(ts, n):
     sumbars = n*(n-1)*0.5
     sumsqrbars = (n-1)*n*(2*n-1)/6.0
@@ -908,6 +1003,7 @@ def LINEAR_REG_SLOPE(ts, n):
             x_array = np.arange(n-1,-1,-1)
             lrs[idx] = (n * np.dot(x_array, y_array) - sumbars * y_array.sum())/(sumbars*sumbars-n*sumsqrbars)
     return lrs
+
 
 def DVO(df, w = [0.5, 0.5, 0, 0], N = 2, s = [0.5, 0.5], M = 252, prefix = ''):
     ratio = df[prefix + 'close']/(df[prefix + 'high'] * w[0] + df[prefix + 'low'] * w[1] \
@@ -923,6 +1019,7 @@ def DVO(df, w = [0.5, 0.5, 0, 0], N = 2, s = [0.5, 0.5], M = 252, prefix = ''):
             ts = theta[idx-(M-1):idx+1]
             dvo[idx] = stats.percentileofscore(ts.values, theta[idx])
     return dvo
+
 
 def PSAR(df, iaf = 0.02, maxaf = 0.2, incr = 0, prefix = ''):
     if incr == 0:
@@ -974,6 +1071,7 @@ def PSAR(df, iaf = 0.02, maxaf = 0.2, incr = 0, prefix = ''):
             direction[idx] = -1
     return pd.concat([psar, direction], sort = False, join='outer', axis=1)
 
+
 def SPBFILTER(df, n1 = 40, n2 = 60, n3 = 0, field = 'close', prefix = ''):
     if n3 == 0:
         n3 = int((n1 + n2)/2)
@@ -985,6 +1083,7 @@ def SPBFILTER(df, n1 = 40, n2 = 60, n3 = 0, field = 'close', prefix = ''):
     RMS = pd.Series((PB*PB).rolling(n3).mean()**0.5, name = prefix + 'SPBRMS__%s_%s' % (n1, n2))
     return pd.concat([PB, RMS], sort = False, join='outer', axis=1)
 
+
 def spbfilter(df, n1 = 40, n2 = 60, n3 = 0, field = 'close', prefix = ''):
     if n3 == 0:
         n3 = int((n1 + n2)/2)
@@ -995,7 +1094,8 @@ def spbfilter(df, n1 = 40, n2 = 60, n3 = 0, field = 'close', prefix = ''):
     df[SPB_key][-1] = df[prefix + field][-1]*(a1-a2) + df[prefix + field][-2]*(a2-a1) \
                     + df[SPB_key][-2]*(2-a1-a2) - df[SPB_key][-2]*(1-a1)*(1-a2)
     df[RMS_key][-1] = np.sqrt((df[SPB_key][(-n3):]**2).mean())
-    
+
+
 def MA_RIBBON(df, ma_series, prefix = ''):
     ma_array = np.zeros([len(df), len(ma_series)])
     ema_list = []
@@ -1018,7 +1118,8 @@ def MA_RIBBON(df, ma_series, prefix = ''):
     pval_ts = pd.Series(pval*100, index = df.index, name = prefix + "MARIBBON_PVAL")
     dist_ts = pd.Series(dist, index = df.index, name = prefix + "MARIBBON_DIST")
     return pd.concat([corr_ts, pval_ts, dist_ts] + ema_list, sort = False, join='outer', axis=1)
-    
+
+
 def ma_ribbon(df, ma_series, prefix = ''):
     ma_array = np.zeros([len(df)])
     for idx, ma_len in enumerate(ma_series):
@@ -1030,6 +1131,7 @@ def ma_ribbon(df, ma_series, prefix = ''):
     df[prefix + "MARIBBON_CORR"][-1] = corr * 100
     df[prefix + "MARIBBON_PVAL"][-1] = pval * 100
     df[prefix + "MARIBBON_DIST"][-1] = dist
+
 
 def DT_RNG(df, win = 2, ratio = 0.7, prefix = ''):
     if win == 0:
@@ -1044,6 +1146,7 @@ def DT_RNG(df, win = 2, ratio = 0.7, prefix = ''):
                        sort = False, join='outer', axis=1).max(axis=1)
     return pd.Series(tr_ts, name = prefix + 'DTRNG%s_%s' % (win, ratio))
 
+
 def dt_rng(df, win = 2, ratio = 0.7, prefix = ''):
     key = prefix + 'DTRNG%s_%s' % (win, ratio)
     if win > 0:
@@ -1054,6 +1157,7 @@ def dt_rng(df, win = 2, ratio = 0.7, prefix = ''):
                                 max(df[prefix + 'close'][-2:]) - min(df[prefix + 'low'][-2:]))
         df[key][-1] = max(df[key][-1] * 0.5, df[prefix + 'high'][-1] - df[prefix + 'close'][-1],
                                 df[prefix + 'close'][-1] - df[prefix + 'low'][-1])
+
 
 def KUMO_CLOUD(df, n = 26, short_ratio = 0.35, long_ratio = 2.0, prefix = ''):
     short_win = int(short_ratio * n)
@@ -1069,6 +1173,7 @@ def KUMO_CLOUD(df, n = 26, short_ratio = 0.35, long_ratio = 2.0, prefix = ''):
                          + df[prefix + 'low'].rolling(long_win).min())/2.0, \
                         index = df.index, name = prefix + "KUMO_SKB_%s" % str(n))
     return pd.concat([conv_line, base_line, lspan_a, lspan_b], sort = False, join='outer', axis=1)
+
 
 def kumo_cloud(df, n = 26, short_ratio = 0.35, long_ratio = 2.0, prefix = ''):
     short_win = int(short_ratio * n)

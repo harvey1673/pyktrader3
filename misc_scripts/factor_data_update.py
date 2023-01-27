@@ -5,7 +5,8 @@ import datetime
 import copy
 from sqlalchemy import create_engine
 from pycmqlib3.utility.dbaccess import dbconfig, mysql_replace_into, connect, load_factor_data
-from pycmqlib3.utility.misc import nearby, cleanup_mindata, prod2exch, inst2contmth, day_shift, sign, product_lotsize
+from pycmqlib3.utility.dataseries import nearby
+from pycmqlib3.utility.misc import cleanup_mindata, prod2exch, inst2contmth, day_shift, sign, product_lotsize
 import pycmqlib3.analytics.data_handler as dh
 
 ferrous_products_mkts = ['rb', 'hc', 'i', 'j', 'jm']
@@ -118,28 +119,19 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule=
     fact_config['serial_no'] = 0
 
     factor_repo = {}
+    roll_name = 'expiry'
+    roll_file_loc = "C:/dev/wtdev/config/"
     for idx, asset in enumerate(product_list):
-        use_args = copy.copy(args)
-        if asset in eq_fut_mkts:
-            use_args = eq_args
-        elif asset in ['cu', 'al', 'zn', 'pb', 'sn', 'ss', 'lu']:
-            use_args = base_args
-        elif asset in ['ni', 'jd', 'lh', 'eg',]:
-            use_args = base2_args
-        elif asset in ['sc', 'eb']:
-            use_args = sc_args
-        # elif asset in ['lu']:
-        #     use_args = lu_args
-        elif asset in bond_fut_mkts:
-            use_args = bond_args
-        elif asset in precious_metal_mkts:
-            use_args = precious_args
-        use_args['start_date'] = max(sim_start_dict.get(asset, start_date), start_date)
-        use_args['end_date'] = end_date
-
-        use_args['n'] = 1
-        print("loading mkt = %s, nb = %s, args = %s" % (asset, str(use_args['n']), use_args))
-        df = nearby(asset, **use_args)
+        print("loading mkt = %s, nb = 1, " % asset)
+        df = nearby(asset,
+                    1,
+                    start_date=max(sim_start_dict.get(asset, start_date), start_date),
+                    end_date=end_date,
+                    shift_mode=shift_mode,
+                    freq=freq,
+                    roll_name=roll_name,
+                    config_loc=roll_file_loc).set_index('date')
+        df = df.set_index('date')
         df = df[col_list]
         if freq == 'm':
             df = cleanup_mindata(df, asset)
@@ -148,9 +140,16 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule=
         df['mth'] = df['contmth'].apply(lambda x: x // 100 * 12 + x % 100)
         vol_win = 20
         df['atr'] = dh.ATR(df, vol_win).fillna(method='bfill')
-        use_args['n'] = 2
-        print("loading mkt = %s, nb = %s, args = %s" % (asset, str(use_args['n']), use_args))
-        xdf = nearby(asset, **use_args)
+
+        print("loading mkt = %s, nb = 2" % asset)
+        xdf = nearby(asset,
+                     2,
+                     start_date=max(sim_start_dict.get(asset, start_date), start_date),
+                     end_date=end_date,
+                     shift_mode=shift_mode,
+                     freq=freq,
+                     roll_name=roll_name,
+                     config_loc=roll_file_loc).set_index('date')
         xdf = xdf[col_list]
         if freq == 'm':
             xdf = cleanup_mindata(xdf, asset)
@@ -318,50 +317,15 @@ def generate_daily_position(cur_date, prod_list, factor_repo,
     for fact in factor_repo:
         rebal_freq = factor_repo[fact]['rebal']
         weight = factor_repo[fact]['weight']
-        factor_pos[fact] = pd.DataFrame(index=fact_data[fact].index,
-                                        columns=fact_data[fact].columns)
-        if factor_repo[fact]['type'] == 'pos':
-            factor_pos[fact] = fact_data[fact].copy()
-        elif factor_repo[fact]['type'] == 'ts':
-            rebal_ts = pd.Series(range(len(fact_data[fact].index)),
-                                 index=fact_data[fact].index)
-            for rebal_idx in range(rebal_freq):
-                flag = rebal_ts % rebal_freq == rebal_idx
-                long_pos = pd.Series(np.nan, index=fact_data[fact].index)
-                short_pos = pd.Series(np.nan, index=fact_data[fact].index)
-                for asset in prod_list:
-                    pflag = (fact_data[fact][asset] >= 0.0)
-                    nflag = (fact_data[fact][asset] <= 0.0)
-                    long_pos[flag & pflag] = fact_data[fact][asset][flag & pflag]
-                    long_pos[flag & (~pflag)] = 0.0
-                    long_pos[flag] = long_pos[flag].fillna(method='ffill').fillna(0.0)
-                    short_pos[flag & nflag] = fact_data[fact][asset][flag & nflag]
-                    short_pos[flag & (~nflag)] = 0.0
-                    short_pos[flag] = short_pos[flag].fillna(method='ffill').fillna(0.0)
-                    factor_pos[fact].loc[flag, asset] = long_pos[flag] + short_pos[flag]
-        elif factor_repo[fact]['type'] == 'xs':
-            lower_rank = int(len(prod_list) * factor_repo[fact]['threshold']) + 1
-            upper_rank = len(prod_list) - int(len(prod_list) * factor_repo[fact]['threshold'])
-            rank_df = fact_data[fact].rank(axis=1)
-            rebal_ts = pd.Series(range(len(fact_data[fact].index)),
-                                 index=fact_data[fact].index)
-            for rebal_idx in range(rebal_freq):
-                flag = rebal_ts % rebal_freq == rebal_idx
-                long_pos = pd.Series(np.nan, index=fact_data[fact].index)
-                short_pos = pd.Series(np.nan, index=fact_data[fact].index)
-                for asset in prod_list:
-                    pflag = (rank_df[asset] > upper_rank)
-                    nflag = (rank_df[asset] < lower_rank)
-                    long_pos[flag & pflag] = 1.0
-                    long_pos[flag & (~pflag)] = 0.0
-                    long_pos[flag] = long_pos[flag].fillna(method='ffill').fillna(0.0)
-                    short_pos[flag & nflag] = -1.0
-                    short_pos[flag & (~nflag)] = 0.0
-                    short_pos[flag] = short_pos[flag].fillna(method='ffill').fillna(0.0)
-                    factor_pos[fact].loc[flag, asset] = long_pos[flag] + short_pos[flag]
-            factor_pos[fact] = factor_pos[fact].fillna(0.0)
-        fact_pos = pd.Series(factor_pos[fact].iloc[-rebal_freq:, :].sum()/rebal_freq * weight,
-                             name=fact)
+        factor_pos[fact] = fact_data[fact].copy()
+        if factor_repo[fact]['type'] != 'pos':
+            if factor_repo[fact]['type'] == 'xs':
+                lower_rank = int(len(prod_list) * factor_repo[fact]['threshold']) + 1
+                upper_rank = len(prod_list) - int(len(prod_list) * factor_repo[fact]['threshold'])
+                rank_df = factor_pos[fact].rank(axis=1)
+                factor_pos[fact] = rank_df.gt(upper_rank, axis=0) * 1.0 - rank_df.lt(lower_rank, axis=0) * 1.0
+            factor_pos[fact] = factor_pos[fact].rolling(rebal_freq).mean().fillna(0.0)
+        fact_pos = pd.Series(factor_pos[fact].iloc[-1] * weight, name=fact)
         pos_sum = pos_sum.append(fact_pos)
     pos_sum = pos_sum[prod_list].round(2)
     net_pos = pos_sum.sum()

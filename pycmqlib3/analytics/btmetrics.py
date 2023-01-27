@@ -1,14 +1,54 @@
 from . import tstool
 import copy
+import math
 import pandas as pd
 import numpy as np
 import workdays
 from datetime import date, timedelta
-from pycmqlib3.utility.misc import get_first_day_of_month, Holiday_Map
+from pycmqlib3.utility.misc import get_first_day_of_month, Holiday_Map, day_shift
+
+
+def sharpe(ts, cum_pnl=True, business_days_per_year=tstool.PNL_BDAYS):
+    if cum_pnl:
+        ts = ts.diff(1).dropna()
+    return ts.mean() / ts.std() * np.sqrt(business_days_per_year)
+
+
+def sortino(ts, cum_pnl=True, business_days_per_year=tstool.PNL_BDAYS):
+    if cum_pnl:
+        ts = ts.diff(1).dropna()
+    return ts.mean() / (ts[ts<0].std()) * np.sqrt(business_days_per_year)
+
+
+def calmar(ts, cum_pnl=True, business_days_per_year=tstool.PNL_BDAYS):
+    if cum_pnl:
+        max_dd, _ = max_drawdown(ts)
+        daily_pnl = ts.diff(1).dropna()
+    else:
+        daily_pnl = ts
+        cum_pnl = daily_pnl.cumsum()
+        max_dd = max_drawdown(cum_pnl)
+    if max_dd >= 0:
+        return np.nan
+    else:
+        return daily_pnl.mean() * business_days_per_year / (-max_dd)
+
+
+def max_drawdown(ts, cum_pnl=True):
+    if cum_pnl:
+        cum_pnl = ts
+    else:
+        cum_pnl = ts.cumsum()
+    dd = cum_pnl - cum_pnl.cummax()
+    max_dd = dd.min()
+    return max_dd
 
 
 class MetricsBase(object):
-    def __init__(self, holdings, returns, portfolio_obj = None, limits = None, shift_holdings = 0, backtest = True, hols = 'CHN'):
+    def __init__(self, holdings, returns, portfolio_obj=None, limits=None,
+                 shift_holdings=0, backtest=True, hols='CHN',
+                 business_days_per_year=tstool.PNL_BDAYS,
+                 offsets=pd.Series(), cost_ratio=0):
         holdings.index = pd.to_datetime(holdings.index)
         returns.index = pd.to_datetime(returns.index)
         self.raw_holdings, self.raw_returns = holdings, returns
@@ -18,12 +58,18 @@ class MetricsBase(object):
         self.date_range = self.holdings.index
         self.universe = self.holdings.columns
         self.holidays = Holiday_Map.get(hols, [])
+        self.business_days_per_year = business_days_per_year
+        self.cost_ratio = cost_ratio
+        if len(offsets) > 0:
+            self.offsets = offsets
+        else:
+            self.offsets = pd.Series(0, index=self.universe)
 
     def _align_holding_returns(self, holdings, returns, limits, backtest):
         import warnings
 
         holdings = copy.deepcopy(holdings).sort_index()
-        returns = copy.deepcopy(returns).sort_index().dropna(how = 'all')
+        returns = copy.deepcopy(returns).sort_index().dropna(how='all')
 
         first_index = holdings.index[0]
         last_index = holdings.index[-1]
@@ -32,7 +78,7 @@ class MetricsBase(object):
         else:
             aligned_return = returns.loc[first_index:]
 
-        holdings = holdings.reindex_like(aligned_return, method = 'ffill', limit = limits)
+        holdings = holdings.reindex_like(aligned_return, method='ffill', limit=limits)
         date_range = holdings.index.intersection(aligned_return.index)
 
         if set(returns.columns) < set(holdings.columns):
@@ -41,29 +87,74 @@ class MetricsBase(object):
         universe = returns.columns.intersection(holdings.columns)
         return holdings.loc[date_range, universe], returns.loc[date_range, universe]
 
-    def _calculate_sharpe(self, pnl_df, business_days_per_year = tstool.PNL_BDAYS, fl = True):
-        import math
+    def _perf_metric(self, pnl_df, metric):
+        func_dict = {
+            'sharpe': sharpe,
+            'sortino': sortino,
+            'calmar': calmar,
+            'maxdd': max_drawdown,
+        }
+        res_ts = pd.Series(index=pnl_df.columns)
+        for col in pnl_df.columns:
+            if metric in func_dict:
+                args = {'cum_pnl': False}
+                if metric in ['sharpe', 'sortino', 'calmar']:
+                    args['business_days_per_year'] = self.business_days_per_year
+                res_ts.loc[col] = func_dict[metric](pnl_df[col], **args)
+            else:
+                res_ts.loc[col] = getattr(pnl_df[col], metric)()
+        return res_ts
 
+    def _calculate_perf_metric(self, pnl_df, metric='sharpe', tenors=True):
         df = copy.deepcopy(pnl_df)
         if isinstance(df, pd.Series):
-            df = df.to_frame(name = 'total')
-        
+            df = df.to_frame(name='total')
         result = {}
-        result['sharpe'] = df.mean(skipna = True, axis = 0)/df.std(skipna = True, axis = 0)
+        result[metric] = self._perf_metric(df, metric)
 
-        if fl:
-            mid_point = int(math.floor(len(df.index)/2.0))
+        if isinstance(tenors, bool) and tenors:
+            mid_point = int(math.floor(len(df.index) / 2.0))
             sample = df.iloc[:mid_point]
-            result['sharpe_fh'] = sample.mean(skipna = True, axis = 0)/sample.std(skipna = True, axis = 0)
-
+            result[f'{metric}_fh'] = self._perf_metric(sample, metric)
             sample = df.iloc[mid_point + 1:]
-            result['sharpe_sh'] = sample.mean(skipna = True, axis = 0)/sample.std(skipna = True, axis = 0)
+            result[f'{metric}_sh'] = self._perf_metric(sample, metric)
+        elif isinstance(tenors, list):
+            edate = df.index[-1]
+            for tenor in tenors:
+                sdate = pd.to_datetime(day_shift(edate, '-' + tenor))
+                sample = df.loc[sdate:]
+                result[f'{metric}_{tenor}'] = self._perf_metric(sample, metric)
 
         result = pd.DataFrame(result).T
         if isinstance(pnl_df, pd.Series):
             result = result['total']
+        return result
 
-        return np.sqrt(business_days_per_year) * result
+    def _calculate_sharpe(self, pnl_df, tenors=True):
+        df = copy.deepcopy(pnl_df)
+        if isinstance(df, pd.Series):
+            df = df.to_frame(name='total')
+        
+        result = {}
+        result['sharpe'] = df.mean(skipna=True, axis=0)/df.std(skipna=True, axis=0)
+
+        if isinstance(tenors, bool) and tenors:
+            mid_point = int(math.floor(len(df.index)/2.0))
+            sample = df.iloc[:mid_point]
+            result['sharpe_fh'] = sample.mean(skipna=True, axis=0)/sample.std(skipna=True, axis=0)
+            sample = df.iloc[mid_point + 1:]
+            result['sharpe_sh'] = sample.mean(skipna=True, axis=0)/sample.std(skipna=True, axis=0)
+        elif isinstance(tenors, list):
+            edate = df.index[-1]
+            for tenor in tenors:
+                sdate = pd.to_datetime(day_shift(edate, '-' + tenor))
+                sample = df.loc[sdate:]
+                result[f'sharpe_{tenor}'] = sample.mean(skipna=True, axis=0)/sample.std(skipna=True, axis=0)
+
+        result = pd.DataFrame(result).T
+        if isinstance(pnl_df, pd.Series):
+            result = result['total']
+        return np.sqrt(self.business_days_per_year) * result
 
     def _lagged_portfolio_pnl(self, **kwargs):
         return self._lagged_asset_pnl(**kwargs).sum(axis=1, skipna = True)
@@ -71,28 +162,34 @@ class MetricsBase(object):
     def _smoothed_portfolio_pnl(self, **kwargs):
         return self._smoothed_asset_pnl(**kwargs).sum(axis=1, skipna = True)
 
-    def _lagged_asset_pnl(self, holdings = None, shift = 0):
+    def _calc_pnl(self, holdings):
         if holdings is None:
             holdings = self.holdings
-        return tstool.lag(holdings, shift).multiply(self.returns)
+        cost_df = holdings.diff().abs().multiply(self.offsets, axis=1)*self.cost_ratio
+        return holdings.multiply(self.returns) - cost_df
 
-    def _smoothed_asset_pnl(self, hl, holdings = None):
+    def _lagged_asset_pnl(self, holdings=None, shift=0):
         if holdings is None:
             holdings = self.holdings
-        return tstool.exp_smooth(holdings, hl).multiply(self.returns)
+        return self._calc_pnl(tstool.lag(holdings, shift))
+
+    def _smoothed_asset_pnl(self, hl, holdings=None):
+        if holdings is None:
+            holdings = self.holdings
+        return self._calc_pnl(tstool.exp_smooth(holdings, hl))
 
     def _check_log_safe(self, returns):
         if isinstance(returns, pd.Series):
             bad_counts = (returns < -1).sum()
         else:
             bad_counts = (returns < -1).sum(axis=1)
-        bad_dates = returns.index[bad_counts.values>0]
+        bad_dates = returns.index[bad_counts.values > 0]
         if len(bad_dates) > 0:
             raise Warning(str(len(bad_dates)) + " instances of returns < -1 identified (eg: " +
-                        str(bad_dates[0]) + ") - not safe to convert to log returns.")
+                          str(bad_dates[0]) + ") - not safe to convert to log returns.")
 
-    def _cumpnl(self, input_df, use_log_returns = False, limits = None):
-        df = copy.deepcopy(input_df).dropna(how = 'all').fillna(0, limit = limits)
+    def _cumpnl(self, input_df, use_log_returns=False, limits=None):
+        df = copy.deepcopy(input_df).dropna(how='all').fillna(0, limit=limits)
         if use_log_returns:
             self._check_log_safe(df)
             cumpnl = np.log(1+df).cumsum()
@@ -100,19 +197,20 @@ class MetricsBase(object):
             cumpnl = df.cumsum()
         return cumpnl
 
-    def _calculate_pnl_stats(self, holdings, shift=0, use_log_returns=False):
+    def _calculate_pnl_stats(self, holdings, shift=0, use_log_returns=False, tenors=True):
         asset_pnl = self._lagged_asset_pnl(holdings=holdings, shift=shift)
         portfolio_pnl = self._lagged_portfolio_pnl(holdings=holdings, shift=shift)
-        portfolio_sharpe_all = self._calculate_sharpe(portfolio_pnl, fl=True)
-        asset_sharpe_stats = asset_pnl.apply(lambda x: self._calculate_sharpe(x, fl=True), axis=0)
+        asset_sharpe_stats = asset_pnl.apply(lambda x: self._calculate_sharpe(x, tenors=tenors), axis=0)
         pnl_stats = {
             'asset_pnl': asset_pnl,
             'asset_cumpnl': self._cumpnl(asset_pnl, use_log_returns=use_log_returns),
             'portfolio_pnl': portfolio_pnl.to_frame(name='total'),
             'portfolio_cumpnl': self._cumpnl(portfolio_pnl, use_log_returns=use_log_returns).to_frame(name='total'),
-            'sharpe': portfolio_sharpe_all,
             'asset_sharpe_stats': asset_sharpe_stats,
         }
+
+        for metric in ['sharpe', 'sortino', 'calmar', 'maxdd', 'std', ]:
+            pnl_stats[metric] = self._calculate_perf_metric(portfolio_pnl, metric, tenors=tenors)
         return pnl_stats
 
     def asset_returns(self):
@@ -135,7 +233,6 @@ class MetricsBase(object):
             'cumlog_pnl': self._cumpnl(annual_pnl, use_log_returns=use_log_returns),
             'sharpe_stats': annual_sharpe_stats,
         }
-
         return group_pnl
 
     def seasonal_pnl(self, use_log_returns=False):
@@ -150,10 +247,9 @@ class MetricsBase(object):
             'cumlog_pnl': self._cumpnl(seasonal_pnl, use_log_returns=use_log_returns, limits=4),
             'sharpe_stats': seasonal_stats,
         }
-
         return group_pnl
 
-    def week_pnl(self, use_log_returns = False):
+    def week_pnl(self, use_log_returns=False):
         portfolio_pnl = self._lagged_portfolio_pnl().to_frame(name='total')
         portfolio_pnl['WeekDay'] = portfolio_pnl.index.weekday
         portfolio_pnl.index = [i-timedelta(days=i.weekday()) for i in portfolio_pnl.index]
@@ -191,7 +287,7 @@ class MetricsBase(object):
         
         return new_index, new_col
 
-    def monthday_pnl(self, use_log_returns = False):
+    def monthday_pnl(self, use_log_returns=False):
         portfolio_pnl = self._lagged_portfolio_pnl().to_frame(name='total')
         new_index, new_col = self._business_day_in_month(portfolio_pnl.index)
         portfolio_pnl.index = new_index
@@ -202,13 +298,13 @@ class MetricsBase(object):
         group_pnl = {
             'years': list(set(self.holdings.index.year)),
             'pnl': monthday_pnl,
-            'cumlog_pnl': self._cumpnl(monthday_pnl, use_log_returns = use_log_returns, limits = 2),
+            'cumlog_pnl': self._cumpnl(monthday_pnl, use_log_returns=use_log_returns, limits=2),
             'sharpe_stats': monthday_stats,
         }
 
         return group_pnl
 
-    def long_short_pnl(self, use_log_returns = False):
+    def long_short_pnl(self, use_log_returns=False):
         long_holdings = copy.deepcopy(self.holdings)
         long_holdings[long_holdings < 0] = 0
         short_holdings = copy.deepcopy(self.holdings)
@@ -229,14 +325,14 @@ class MetricsBase(object):
                     (date(2020, 1, 1), date(2029, 12, 31)),
                 ]):
         leadlag_result = []
-        data = {i: self._calculate_sharpe(self._lagged_portfolio_pnl(shift=i), fl = False).loc['sharpe']
+        data = {i: self._calculate_sharpe(self._lagged_portfolio_pnl(shift=i), tenors=False).loc['sharpe']
                 for i in range(ll_limit_left, ll_limit_right+1)}
         leadlag_result.append(pd.Series(data, name='fullsample'))
 
         for (start, end) in ll_sub_windows:
-            data = {i: self._calculate_sharpe(self._lagged_portfolio_pnl(shift=i)[start:end], fl = False).loc['sharpe']
-                for i in range(ll_limit_left, ll_limit_right+1)}
-            leadlag_result.append(pd.Series(data, name = '{0}:{1}'.format(start.strftime('%Y-%b-%d'), end.strftime('%Y-%b-%d'))))
+            data = {i: self._calculate_sharpe(self._lagged_portfolio_pnl(shift=i)[start:end], tenors=False).loc['sharpe']
+                    for i in range(ll_limit_left, ll_limit_right+1)}
+            leadlag_result.append(pd.Series(data, name='{0}:{1}'.format(start.strftime('%Y-%b-%d'), end.strftime('%Y-%b-%d'))))
         leadlag_stats = {
             'leadlag_sharpes': pd.DataFrame(leadlag_result),
         }
@@ -256,7 +352,7 @@ class MetricsBase(object):
             else:
                 params = shift_func.get('params', {})
                 shifted_holdings = func(self.holdings, **params)
-                lagged_pnl = shifted_holdings.multiply(self.returns).sum(axis=1, skipna = True).to_frame(name = 'total')
+                lagged_pnl = self._calc_pnl(shifted_holdings).sum(axis=1, skipna=True).to_frame(name='total')
                 lagged_sharpe = self._calculate_sharpe(lagged_pnl)
 
         portfolio_pnl_stats = {
@@ -283,7 +379,7 @@ class MetricsBase(object):
 
         avg_holdings = self.holdings.mean(axis=0, skipna=True)
         holdings_tilt_full_sample = pd.DataFrame(data=[avg_holdings.values] * len(self.holdings.index), 
-                                                index=self.holdings.index, columns = avg_holdings.index)
+                                                 index=self.holdings.index, columns=avg_holdings.index)
         holdings_timing_full_sample = self.holdings - holdings_tilt_full_sample
         tilt_timing_stats = {
             'holdings_tilt': holdings_tilt,
@@ -407,7 +503,7 @@ class MetricsBase(object):
 
         return directional_xs_stats
 
-    def scaled_holdings(self, rolling_periods = 252):
+    def scaled_holdings(self, rolling_periods=252):
         rolling_std = self.returns.rolling(min_periods=1, window=rolling_periods).std()
         scaled_holding = self.holdings.multiply(rolling_std)
         return scaled_holding
