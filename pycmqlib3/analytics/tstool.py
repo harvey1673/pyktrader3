@@ -5,7 +5,7 @@ import numpy as np
 import seaborn as sns
 import sklearn
 
-PNL_BDAYS = 252
+PNL_BDAYS = 244
 
 
 def calendar_aggregation(df_in, period='monthly', how='returns'):

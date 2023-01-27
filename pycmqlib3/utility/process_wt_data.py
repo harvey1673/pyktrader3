@@ -1,4 +1,5 @@
 import numpy as np
+import json
 import os
 import pathlib
 import math
@@ -12,6 +13,7 @@ from pycmqlib3.utility import misc
 from pycmqlib3.utility import dbaccess
 import pycmqlib3.analytics.data_handler as dh
 from wtpy.wrapper import WtDataHelper
+from wtpy import WtDtServo
 from wtpy.WtCoreDefs import WTSBarStruct, WTSTickStruct
 
 
@@ -26,9 +28,53 @@ def wt_time_to_min_id(wt_time: int = 0):
     return min_id
 
 
+def roll_df_to_list(roll_df: pd.DataFrame, field_name: str='instID') -> list:
+    roll_df = roll_df.reset_index()
+    inst = roll_df[field_name].iloc[-1]
+    exch = misc.inst2exch(inst)
+    roll_df['prev_inst'] = roll_df[field_name].shift(1).fillna('')
+    row_list = []
+    for idx, row in enumerate(roll_df.to_dict('records')):
+        prev_price = curr_price = 0.0
+        if len(row['prev_inst']) > 0:
+            prev_df = load_bars_to_df(exch+'.'+row['prev_inst'],
+                                      period='d1',
+                                      start_time=row['date'],
+                                      end_time=row['date'])
+            if len(prev_df) > 0:
+                prev_price = prev_df['close'].iloc[-1]
+            else:
+                print("no prev price for %s on %s on roll date, set it as 0.0" % (exch+'.'+row['prev_inst'], row['date']))
+        curr_df = load_bars_to_df(exch+'.'+row[field_name],
+                                      period='d1',
+                                      start_time=row['date'],
+                                      end_time=row['date'])
+        if len(curr_df) > 0:
+            curr_price = curr_df['close'].iloc[-1]
+        else:
+            print("no curr price for %s on %s on roll date, set it as 0.0" % (exch + '.' + row[field_name], row['date']))
+        roll_date = misc.day_shift(row['date'].date(), roll_rule='1b', hols=misc.CHN_Holidays)
+        row_list.append({
+            'date': int(roll_date.strftime("%Y%m%d")),
+            'from': row['prev_inst'],
+            'oldclose': prev_price,
+            'to': row[field_name],
+            'newclose': curr_price,
+        })
+    return row_list
+
+
+def roll_list_to_df(roll_list: list, field_name: str='instID') -> pd.DataFrame:
+    roll_df = pd.DataFrame.from_dict(roll_list).rename(columns={'to': field_name}).drop(columns=['from', 'oldclose', 'newclose'])
+    roll_df['date'] = pd.to_datetime(roll_df['date'].astype(str), format='%Y%m%d')
+    roll_df['date'] = roll_df['date'].apply(lambda d: misc.day_shift(d.date(), '-1b', misc.CHN_Holidays))
+    roll_df = roll_df.set_index('date')
+    return roll_df
+
+
 def convert_wt_data(df, cont, freq='d'):
     df['date'] = df['date'].apply(lambda x: datetime.date(x//10000, (x % 10000)//100, x % 100))
-    df = df.rename(columns = {'hold': 'openInterest'})
+    df = df.rename(columns={'hold': 'openInterest'})
     df['instID'] = cont
     if freq == 'd':
         col_list = ['instID', 'date', 'open', 'high', 'low', 'close', 'volume', 'openInterest', 'diff_oi']
@@ -44,7 +90,8 @@ def convert_wt_data(df, cont, freq='d'):
     return df
 
 
-def load_fut_by_product(product, exch, start_date, end_date, freq='d', folder_loc='C:/dev/wtdev/storage/his'):
+def load_fut_by_product(code, start_date, end_date, freq='d', folder_loc='C:/dev/wtdev/storage/his'):
+    exch, product = code.split('.')
     if end_date is None:
         end_date = datetime.date.today()
     if start_date is None:
@@ -83,30 +130,93 @@ def load_fut_by_product(product, exch, start_date, end_date, freq='d', folder_lo
     return out_df
 
 
-def load_bars_to_df(inst, d_start=None, d_end=None,
-                    index_col='datetime',
+def load_hist_bars_to_df(code, start_date=None, end_date=None,
+                    index_col='date',
                     freq='d',
                     folder_loc='C:/dev/wtdev/storage/his'):
-    prod_code = misc.inst2product(inst)
-    exch = misc.prod2exch(prod_code)
+    exch, instID = code.split('.')
     dtHelper = WtDataHelper()
     period = 'day'
     if freq in ['m', 'm1']:
         period = 'min1'
     elif freq in ['m5']:
         period = 'min5'
-    mdf = dtHelper.read_dsb_bars(f'{folder_loc}/{period}/{exch}/{inst}.dsb')
+    mdf = dtHelper.read_dsb_bars(f'{folder_loc}/{period}/{exch}/{instID}.dsb')
     if mdf:
-        mdf = mdf.to_df()
-        mdf = convert_wt_data(mdf, inst, freq=freq)
-        if d_start:
-            mdf = mdf[mdf['date']>=d_start]
-        if d_end:
-            mdf = mdf[mdf['date']<=d_end]
+        mdf = mdf.to_df().rename(columns={'hold': 'openInterest', 'diff': 'diff_oi'})
+        mdf = convert_wt_data(mdf, instID, freq=freq)
+        if start_date:
+            mdf = mdf[mdf['date'] >= start_date]
+        if end_date:
+            mdf = mdf[mdf['date'] <= end_date]
         mdf = mdf.reset_index(drop=True)
         if index_col:
             mdf = mdf.set_index(index_col)
     return mdf
+
+
+def int_to_datetime(cur_dt):
+    cur_dt = str(cur_dt)
+    if len(cur_dt) == 12:
+        dt = datetime.datetime.strptime(cur_dt, "%Y%m%d%H%M")
+    elif len(cur_dt) == 8:
+        dt = datetime.datetime.strptime(cur_dt, "%Y%m%d").date()
+    return dt
+
+
+def date_to_int(cur_date=None):
+    if cur_date is None:
+        cur_date = datetime.date.today()
+    if isinstance(cur_date, datetime.date):
+        cur_date = int(cur_date.strftime("%Y%m%d"))
+    elif isinstance(cur_date, datetime.datetime) or isinstance(cur_date, pd.Timestamp):
+        cur_date = int(cur_date.strftime("%Y%m%d"))
+    elif isinstance(cur_date, int) and cur_date >= 199000000000:
+        cur_date = cur_date // 10000
+    return cur_date
+
+
+def datetime_to_int(cur_dt=None, hhmm=0):
+    if cur_dt is None:
+        cur_dt = datetime.datetime.now()
+    if isinstance(cur_dt, datetime.date):
+        cur_dt = int(cur_dt.strftime("%Y%m%d")) * 10000 + hhmm
+    elif isinstance(cur_dt, datetime.datetime) or isinstance(cur_dt, pd.Timestamp):
+        cur_dt = int(cur_dt.strftime("%Y%m%d%H%M"))
+    elif isinstance(cur_dt, int) and cur_dt < 99999999:
+        cur_dt = cur_dt * 10000 + hhmm
+    return cur_dt
+
+
+def load_bars_to_df(code, period='d1', start_time=None, end_time=None,
+                    index_col=None,
+                    folder_loc='C:/dev/wtdev'):
+    code_split = code.split('.')
+    instID = ''.join(code_split[1:])
+    if 'm' in period:
+        start_time = datetime_to_int(start_time, 600)
+        end_time = datetime_to_int(end_time, 1600)
+    else:
+        start_time = datetime_to_int(start_time, 0)
+        end_time = datetime_to_int(end_time, 0)
+    dtServo = WtDtServo()
+    dtServo.setBasefiles(folder=f"{folder_loc}/common/")
+    dtServo.setStorage(path=f'{folder_loc}/storage/')
+    df = dtServo.get_bars(code, period, fromTime=start_time, endTime=end_time)
+    if df:
+        df = df.to_df().rename(columns={'hold': 'openInterest', 'diff': 'diff_oi'})
+        df['bartime'] = df['bartime'] + 199000000000
+        if 'd' in period:
+            freq = 'd'
+        else:
+            freq = 'm'
+        df = convert_wt_data(df, instID, freq=freq)
+        df = df.reset_index(drop=True)
+        if index_col:
+            df = df.set_index(index_col)
+    else:
+        df = pd.DataFrame()
+    return df
 
 
 def conv_min_data(mdf):

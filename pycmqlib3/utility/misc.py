@@ -416,6 +416,7 @@ product_ticksize = {
                     'PK_Opt': 0.5,
                     'c': 1,
                     'c_Opt': 0.5,
+                    'cs': 1,
                     'j': 0.5,
                     'jd': 1,
                     'a': 1,
@@ -470,6 +471,16 @@ exchange_start_date = {
     'INE': datetime.date(2018, 3, 26),
     'GFEX': datetime.date(2022, 12, 22),
 }
+
+
+def product_trade_offsets(product_list):
+    adj_dict = {
+        'ni': 2,
+        'si': 2,
+    }
+    offsets = pd.Series([product_ticksize[prod] * adj_dict.get(prod, 1.0) for prod in product_list],
+                        index=product_list)
+    return offsets
 
 
 def update_holidays_from_aks(filename='C:/dev/akshare/akshare/file_fold/calendar.json',
@@ -683,20 +694,40 @@ def instID_adjust(instID, exch, ref_date):
     return adj_inst
 
 
-def inst2product(inst):
+def inst2product(inst, rtn_contmth=False):
+    pos = 1
+    end_pos = len(inst)
     if inst[4].isalpha():
         key = inst[:5]
+        pos = 5
     elif inst[3].isalpha():
         key = inst[:4]
+        pos = 4
     elif inst[2].isalpha():
         key = inst[:3]
+        pos = 3
     elif inst[1].isalpha():
         key = inst[:2]
+        pos = 2
     else:
         key = inst[:1]
     if len(inst) > 8 and (('C' in inst[5:]) or ('P' in inst[5:])):
         key = key + '_Opt'
-    return key
+        if 'C' in inst[5:]:
+            splitter = 'C'
+        else:
+            splitter = 'P'
+        end_pos = len(inst.split(splitter)[0].split('-')[0])
+    if rtn_contmth:
+        contmth = int(inst[pos:end_pos])
+        if contmth < 1000:
+            if contmth < 500:
+                contmth = contmth + 2000
+            else:
+                contmth = contmth + 1000
+        return key, contmth
+    else:
+        return key
 
 
 def inst2contmth(instID):
@@ -892,45 +923,6 @@ def nearby(prodcode, n = 1, start_date = None, end_date = None, roll_rule = '-20
     return df
 
 
-def rolling_hist_data(product, n, start_date, end_date, cont_roll, freq, win_roll='-20b', database='hist_data'):
-    if start_date > end_date:
-        return None
-    cnx = dbaccess.connect(**dbaccess.dbconfig)
-    cursor = cnx.cursor()
-    stmt = "select exchange, contract from trade_products where product_code='{prod}' ".format(prod=product)
-    cursor.execute(stmt)
-    out = [(exchange, contract) for (exchange, contract) in cursor]
-    exch = str(out[0][0])
-    hols = get_hols_by_exch(exch)
-    cont = str(out[0][1])
-    cont_mth = [month_code_map[c] for c in cont]
-    cnx.close()
-    contlist, _ = contract_range(product, exch, cont_mth, start_date, end_date)
-    exp_dates = [day_shift(contract_expiry(cont), cont_roll, hols) for cont in contlist]
-    sdate = start_date
-    all_data = {}
-    i = 0
-    dbconfig = copy.deepcopy(dbaccess.dbconfig)
-    dbconfig['database'] = database
-    cnx = dbaccess.connect(**dbconfig)
-    for idx, exp in enumerate(exp_dates):
-        if exp < start_date:
-            continue
-        elif sdate > end_date:
-            break
-        nb_cont = contlist[idx + n - 1]
-        if freq == 'd':
-            df = dbaccess.load_daily_data_to_df(cnx, 'fut_daily', nb_cont, day_shift(sdate, win_roll, hols),
-                                                min(exp, end_date))
-        else:
-            df = dbaccess.load_min_data_to_df(cnx, 'fut_min', nb_cont, day_shift(sdate, win_roll, hols), min(exp, end_date))
-        all_data[i] = {'contract': nb_cont, 'data': df}
-        i += 1
-        sdate = min(exp, end_date) + datetime.timedelta(days=1)
-    cnx.close()
-    return all_data
-
-
 def day_shift(d, roll_rule, hols = []):
     if 'b' in roll_rule:
         days = int(roll_rule[:-1])
@@ -981,6 +973,7 @@ def tenor_to_expiry(tenor_label, prod_code = 'fef'):
     else:
         cont_date = datetime.datetime.strptime(tenor_label, "%Y-%m-%d").date()
         return cont_date_expiry(cont_date, prod_code, exch)
+
 
 def contract_expiry(cont, hols=CHN_Holidays):
     if cont == 'sn2005':
@@ -1042,6 +1035,7 @@ def cont_date_expiry(cont_date, prod_code, exch):
     else:
         expiry = 0
     return expiry
+
 
 def _contract_range(product, exch, cont_mth, start_date, end_date, tenor = '2y'):
     st_year = start_date.year

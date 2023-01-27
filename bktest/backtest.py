@@ -15,7 +15,7 @@ from pycmqlib3.utility.misc import sign, day_shift, nearby, cleanup_mindata, \
 
 #import mysql_helper
 
-ANNUAL_VOL_SCALER = np.sqrt(252.0)
+ANNUAL_VOL_SCALER = np.sqrt(244.0)
 
 sim_margin_dict = { 'au': 0.06, 'ag': 0.08, 'cu': 0.07, 'al':0.05,
                 'zn': 0.06, 'rb': 0.06, 'ru': 0.12, 'a': 0.05,
@@ -446,19 +446,19 @@ def hold_period(face_value, scaling = 0, fillna = True):
     return 2 * np.sum(np.sum(face_value.abs())) / np.sum(np.sum(trades.abs())) * scaling
 
 
-def sharpe_ratio(ts, need_diff = True):
+def sharpe_ratio(ts, need_diff=True, business_days_per_year=ANNUAL_VOL_SCALER**2):
     if need_diff:
         ts = ts.diff(1).dropna()
-    return ts.mean() / ts.std() * ANNUAL_VOL_SCALER
+    return ts.mean() / ts.std() * np.sqrt(business_days_per_year)
 
 
-def sortino_ratio(ts, need_diff = True):
+def sortino_ratio(ts, need_diff=True, business_days_per_year=ANNUAL_VOL_SCALER**2):
     if need_diff:
         ts = ts.diff(1).dropna()
-    return ts.mean() / (ts[ts<0].std()) * ANNUAL_VOL_SCALER
+    return ts.mean() / (ts[ts<0].std()) * np.sqrt(business_days_per_year)
 
 
-def calmar_ratio(ts, need_diff = True):
+def calmar_ratio(ts, need_diff=True, business_days_per_year=ANNUAL_VOL_SCALER**2):
     if need_diff:
         max_dd, _ = max_drawdown(ts)
         daily_pnl = ts.diff(1).dropna()
@@ -469,8 +469,9 @@ def calmar_ratio(ts, need_diff = True):
     if max_dd >=0:
         return np.nan
     else:
-        return daily_pnl.mean() * (ANNUAL_VOL_SCALER**2) / (-max_dd)
-    
+        return daily_pnl.mean() * (business_days_per_year) / (-max_dd)
+
+
 def max_drawdown(ts):
     dd = ts - ts.cummax()
     max_dd = dd.min()
@@ -479,12 +480,14 @@ def max_drawdown(ts):
     max_duration = (start - end).days
     return max_dd, max_duration
 
+
 def max_drawdown2(ts):
     i = np.argmax(np.maximum.accumulate(ts) - ts)
     j = np.argmax(ts[:i])
     max_dd = ts[i] - ts[j]
     max_duration = i - j
     return max_dd, max_duration
+
 
 def scen_dict_to_df(data):
     res = pd.DataFrame.from_dict(data, orient='index')
