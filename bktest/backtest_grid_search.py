@@ -35,8 +35,8 @@ product_grouping_complete = {
 
 product_grouping_partial = {
     'ind': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SM', 'UR', 'cu', 'al', 'zn', 'ni', 'sn', 'ss'],
-    'petro': ['l', 'pp', 'v', 'TA', 'MA', 'sc', 'eg', 'eb', 'lu', 'pg', 'PF', 'ru', 'CF', 'SR'],
-    'ags': ['m', 'RM', 'y', 'p', 'OI', 'a', 'c', 'cs', 'jd', 'AP', 'CJ', 'lh', 'PK', 'pb'],
+    'petro': ['l', 'pp', 'v', 'TA', 'MA', 'sc', 'eg', 'ru', 'CF', 'SR', 'fu'],
+    'ags': ['m', 'RM', 'y', 'p', 'OI', 'a', 'c', 'cs', 'jd', 'AP', 'CJ', 'pb', 'b'],
 }
 
 daily_start_dict = { 'c': datetime.date(2011,1,1), 'm': datetime.date(2011,1,1),
