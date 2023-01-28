@@ -1,16 +1,8 @@
-import copy
-import numpy as np
-import math
-import matplotlib as mpl
-import matplotlib.dates as dates
-import matplotlib.pyplot as plt
 import datetime
 import itertools
 import pandas as pd
 
-from pycmqlib3.utility import dbaccess, dataseries, misc
-import pycmqlib3.analytics.data_handler as dh
-
+from pycmqlib3.utility import dataseries
 from pycmqlib3.analytics.tstool import *
 from pycmqlib3.analytics.btmetrics import *
 from pycmqlib3.analytics.backtest_utils import *
@@ -33,6 +25,19 @@ bond_fut_mkts = ['T', 'TF', 'TS']
 fin_all_mkts = eq_fut_mkts + bond_fut_mkts
 commod_all_mkts = ind_all_mkts + ags_all_mkts + precious_metal_mkts
 all_markets = commod_all_mkts + fin_all_mkts
+
+
+product_grouping_complete = {
+    'ind': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SM', "SF", 'SA', 'UR', 'cu', 'al', 'zn', 'ni', 'sn', 'ss', 'au'],
+    'petro': ['l', 'pp', 'v', 'TA', 'MA', 'bu', 'sc', 'fu', 'eg', 'eb', 'lu', 'pg', 'PF', 'ru', 'nr', 'CF', 'SR'],
+    'ags': ['m', 'RM', 'y', 'p', 'OI', 'a', 'c', 'cs', 'b', 'jd', 'AP', 'sp', 'CJ', 'lh', 'PK', 'pb'],
+}
+
+product_grouping_partial = {
+    'ind': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SM', 'UR', 'cu', 'al', 'zn', 'ni', 'sn', 'ss'],
+    'petro': ['l', 'pp', 'v', 'TA', 'MA', 'sc', 'eg', 'eb', 'lu', 'pg', 'PF', 'ru', 'CF', 'SR'],
+    'ags': ['m', 'RM', 'y', 'p', 'OI', 'a', 'c', 'cs', 'jd', 'AP', 'CJ', 'lh', 'PK', 'pb'],
+}
 
 daily_start_dict = { 'c': datetime.date(2011,1,1), 'm': datetime.date(2011,1,1),
     'y': datetime.date(2011,1,1), 'l': datetime.date(2011,1,1), 'rb':datetime.date(2011,1,1),
@@ -83,7 +88,7 @@ def load_hist_data(start_date, end_date,
     for prodcode in sim_markets:
         for nb in range(nb_cont):
             try:
-                xdf = dataseries.nearby(prodcode,
+                adf = dataseries.nearby(prodcode,
                                         nb + 1,
                                         start_date=start_date,
                                         end_date=end_date,
@@ -91,12 +96,12 @@ def load_hist_data(start_date, end_date,
                                         freq=freq,
                                         roll_name=roll_name,
                                         config_loc=roll_file_loc)
-                xdf['expiry'] = xdf['contract'].map(misc.contract_expiry)
-                xdf['contmth'] = xdf['contract'].map(misc.inst2contmth)
-                xdf['mth'] = xdf['contmth'].apply(lambda x: x // 100 * 12 + x % 100)
-                xdf['product'] = prodcode
-                xdf['code'] = f'c{nb + 1}'
-                data_df = data_df.append(xdf)
+                adf['expiry'] = adf['contract'].map(misc.contract_expiry)
+                adf['contmth'] = adf['contract'].map(misc.inst2contmth)
+                adf['mth'] = adf['contmth'].apply(lambda x: x // 100 * 12 + x % 100)
+                adf['product'] = prodcode
+                adf['code'] = f'c{nb + 1}'
+                data_df = data_df.append(adf)
             except:
                 error_list.append((prodcode, nb))
 
@@ -115,12 +120,12 @@ def run_grid_btest(df, start_date, end_date, sim_type, signal_name,
                    index_list=range(10, 250, 10),
                    column_list=[1, 3, 5, 10, 15, 20],
                    product_list=ind_all_mkts,
+                   product_name='all',
                    pnl_tenors=True,
                    exp_mean=False,
                    shift_mode=1,
                    save_loc="C:/dev/data/data_cache",
                    perf_metric='sharpe'):
-    xdf = df.copy()
     rev_char = '!'
     exec_mode = 'open'
     total_risk = 4600.0
@@ -180,7 +185,9 @@ def run_grid_btest(df, start_date, end_date, sim_type, signal_name,
             win = 1
             ma_win = scen_x
             rebal = scen_y
-        elif signal_name in ['basmomxma', 'basmomsma', 'basmomnma', 'basmomnmb', 'basmomzlv', 'basmomelv', 'basmomqtl',
+        elif signal_name in ['basmomxma', 'basmomsma', 'basmomema',
+                             'basmomnma', 'basmomnmb', 'basmomzlv',
+                             'basmomelv', 'basmomqtl',
                              'momsma', 'momxma', 'momnma', 'momnmb', 'momzlv', 'macdnma']:
             win = scen_x
             ma_win = scen_y
@@ -228,7 +235,7 @@ def run_grid_btest(df, start_date, end_date, sim_type, signal_name,
         if len(scen) > 8:
             run_args['xs_params'] = {'cutoff': scen[8]}
 
-        bt_metrics = run_backtest(xdf, run_args)
+        bt_metrics = run_backtest(df, run_args)
         metrics_dict[run_name] = bt_metrics
         pnl_stats = bt_metrics.calculate_pnl_stats(shift=0, tenors=pnl_tenors)
         stats_dict[run_name] = pnl_stats
@@ -244,14 +251,71 @@ def run_grid_btest(df, start_date, end_date, sim_type, signal_name,
         stat_df['Y'] = scen_y
         data_df = data_df.append(stat_df)
 
-    save_file = f"{save_loc}/{sim_type}_{signal_name}_{start_date.strftime('%Y%m%d')}_{end_date.strftime('%Y%m%d')}.xlsx"
+    save_file = f"{save_loc}/{sim_type}_{signal_name}_{product_name}_{start_date.strftime('%Y%m%d')}.xlsx"
     writer = pd.ExcelWriter(save_file, engine='xlsxwriter')
     metric_keys = data_df['tenor'].unique()
     for key in metric_keys:
         adf = pd.pivot_table(data_df[data_df['tenor'] == key], values=['sharpe'], index=['Y'], columns=['X'])
-        print(f'{key}\n', adf,'\n\n')
         adf.to_excel(writer, sheet_name=key, startcol=1, startrow=2)
     writer.close()
 
     return metrics_dict, stats_dict
+
+
+def run_xs_product():
+    run_markets = product_grouping_partial['ind'] + product_grouping_partial['petro'] + product_grouping_partial['ags']
+    df, error_list = load_hist_data(
+        start_date=datetime.date(2010, 1, 1),
+        end_date=datetime.date(2020, 1, 1),
+        sim_markets=run_markets,
+        freq='d'
+    )
+    range_1 = range(10, 260, 10)
+    range_2 = [10, 20, 40, 61, 122, 183, 244]
+    range_3 = [1, 3, 5, 10]
+
+    range_by_signal = {
+        'ryieldnma': [range_2, range_3],
+        'basmomnma': [range_1, range_2],
+        'ryieldsma': [range_2, range_3],
+    }
+    start_d = datetime.date(2012, 1, 1)
+    end_d = datetime.date(2020, 1, 1)
+
+    sim_group = [
+        ('xscarry-rank', 'ryieldnma'),
+        # ('xscarry-rank_cutoff', 'ryieldnma'),
+        # ('xscarry-rank', 'basmomnma'),
+        # ('xscarry-rank_cutoff', 'basmomnma'),
+        # ('xscarry-rank', 'ryieldsma'),
+        # ('xscarry-rank_cutoff', 'ryieldsma'),
+    ]
+
+    bt_metric_dict = {}
+    pnl_stats_dict = {}
+
+    for group_key in ['petro', 'ags', 'all']:
+        if group_key not in product_grouping_partial:
+            product_list = run_markets
+        else:
+            product_list = product_grouping_partial[group_key]
+        bt_metric_dict[group_key] = {}
+        pnl_stats_dict[group_key] = {}
+        for sim_type, signal_name in sim_group:
+            index_list = range_by_signal[signal_name][0]
+            column_list = range_by_signal[signal_name][1]
+            print(f"processing product = {group_key} for {sim_type} - {signal_name}")
+            metric_dict, stat_dict = run_grid_btest(df, start_d, end_d,
+                                                    sim_type, signal_name,
+                                                    index_list=index_list,
+                                                    column_list=column_list,
+                                                    product_list=product_list,
+                                                    product_name=group_key,
+                                                    pnl_tenors=True,
+                                                    exp_mean=False)
+            bt_metric_dict[group_key][(sim_type, signal_name)] = metric_dict
+            pnl_stats_dict[group_key][(sim_type, signal_name)] = stat_dict
+
+    return bt_metric_dict, pnl_stats_dict
+
 
