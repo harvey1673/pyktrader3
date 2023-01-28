@@ -57,6 +57,34 @@ def write_roll_json_to_excel(out_excel: str,
     writer.close()
 
 
+def read_roll_map_from_excel(src_excel: str,
+                             name_map: dict = {'hots': '0', 'seconds':'1'},
+                             exchanges: list = ['DCE', "CZCE", 'SHFE', 'INE', 'CFFEX', 'GFEX']):
+    roll_dict = {}
+    for exch in exchanges:
+        df = pd.read_excel(src_excel, sheet_name=exch, header=[0, 1])
+        products = [key for key in df.columns.get_level_values(0).unique() if '.' in key]
+        for product in products:
+            roll_name, prodcode = product.split('.')
+            if roll_name in name_map:
+                nb = name_map[roll_name]
+            else:
+                nb = str(int(roll_name[-1])-1)
+            roll_map = df.loc[:, (df.columns.get_level_values(0) == product) & (
+                df.columns.get_level_values(1).isin(['date', 'instID']))].dropna()
+            roll_map = roll_map.droplevel(0, axis=1)
+            roll_map = roll_map.rename(columns={'instID': nb}).set_index('date')
+            if len(roll_map) == 0:
+                continue
+            if prodcode not in roll_dict:
+                roll_dict[prodcode] = []
+            roll_dict[prodcode].append(roll_map)
+    roll_map_dict = {}
+    for prodcode in roll_dict.keys():
+        roll_map_dict[prodcode] = pd.concat(roll_dict[prodcode], axis=1, join='outer').fillna(method='ffill')
+    return roll_map_dict
+
+
 def read_roll_list_from_excel(src_excel: str,
                               exchanges: list = ['DCE', "CZCE", 'SHFE', 'INE', 'CFFEX', 'GFEX']):
     roll_dict = {}
@@ -149,7 +177,7 @@ def update_expiry_roll(start_date=datetime.date(2020, 1, 1),
     }
     contract_filter = main_cont_filter
     exchanges = ['DCE', "CZCE", 'SHFE', 'INE', 'CFFEX', 'GFEX']
-    roll_res = read_roll_list_from_excel(src_excel=f'{folder}/{roll_name}.xlsx')
+    roll_map_dict = read_roll_map_from_excel(src_excel=f'{folder}/{roll_name}.xlsx')
     results = dict([(exch, {}) for exch in exchanges])
     new_addon = []
     for prodcode in markets:
@@ -173,15 +201,11 @@ def update_expiry_roll(start_date=datetime.date(2020, 1, 1),
             sdate = max(sdate, product_starts[prodcode])
         if prodcode in ['cu', 'al', 'zn', 'ss', ]:
             nb_cont = 2
-        if prodcode in roll_res[roll_name+str(1)][exch]:
+        if prodcode in roll_map_dict:
             if skip_exists:
                 continue
-            df_list = []
-            for nb in range(1, nb_cont+1):
-                if prodcode in roll_res[roll_name+str(nb)][exch]:
-                    roll_map = roll_list_to_df(roll_res[roll_name+str(nb)][exch][prodcode])
-                    df_list.append(roll_map.rename(columns={'instID': str(nb-1)}))
-            curr_roll = pd.concat(df_list, axis=1, join='outer', sort=True).fillna(method='ffill').reset_index()
+            curr_roll = roll_map_dict[prodcode].reset_index()
+            curr_roll['date'] = curr_roll['date'].dt.date
             curr_roll = curr_roll[curr_roll['date'] < cutoff]
             curr_roll = curr_roll.set_index('date')
         else:
@@ -239,7 +263,7 @@ def update_main_roll(start_date=datetime.date(2020, 1, 1),
         'pb': datetime.date(2013, 12, 1),
     }
     exchanges = ['DCE', "CZCE", 'SHFE', 'INE', 'CFFEX', 'GFEX']
-    roll_res = read_roll_list_from_excel(src_excel=f'{folder}/{roll_name}.xlsx')
+    roll_map_dict = read_roll_map_from_excel(src_excel=f'{folder}/{roll_name}.xlsx')
     results = dict([(exch, {}) for exch in exchanges])
     new_addon = []
     for prodcode in markets:
@@ -264,15 +288,10 @@ def update_main_roll(start_date=datetime.date(2020, 1, 1),
             sdate = max(sdate, product_starts[prodcode])
         if prodcode in ['cu', 'al', 'zn', 'ss', ]:
             nb_cont = 2
-        if prodcode in roll_res[roll_name+str(1)][exch]:
+        if prodcode in roll_map_dict:
             if skip_exists:
                 continue
-            df_list = []
-            for nb in range(1, nb_cont + 1):
-                if prodcode in roll_res[roll_name + str(nb)][exch]:
-                    roll_map = roll_list_to_df(roll_res[roll_name + str(nb)][exch][prodcode])
-                    df_list.append(roll_map.rename(columns={'instID': str(nb - 1)}))
-            curr_roll = pd.concat(df_list, axis=1, join='outer', sort=True).fillna(method='ffill').reset_index()
+            curr_roll = roll_map_dict[prodcode].reset_index()
             curr_roll = curr_roll[curr_roll['date'] < cutoff]
             curr_roll = curr_roll.set_index('date')
         else:
@@ -306,7 +325,7 @@ def update_main_roll(start_date=datetime.date(2020, 1, 1),
     except WindowsError:
         os.remove(f'{folder}/{roll_name}_old.xlsx')
         os.rename(out_excel, f'{folder}/{roll_name}_old.xlsx')
-    save_roll_to_excel(roll_res, roll_name, out_excel, exchanges)
+    save_roll_to_excel(results, roll_name, out_excel, exchanges)
     output = {"roll_map": results, "addon": new_addon, 'out_excel': out_excel}
     return output
 
@@ -406,7 +425,7 @@ def generate_daily_roll(folder="C:/dev/wtdev/config/roll",
 
 
 def run(curr_date=datetime.date.today(), folder='C:/dev/wtdev/config'):
-    start_date = curr_date - datetime.timedelta(days=365)
+    start_date = curr_date - datetime.timedelta(days=180)
     results = update_expiry_roll(
         start_date=start_date,
         end_date=curr_date,
