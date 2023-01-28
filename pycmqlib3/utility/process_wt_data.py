@@ -46,9 +46,9 @@ def roll_df_to_list(roll_df: pd.DataFrame, field_name: str='instID') -> list:
             else:
                 print("no prev price for %s on %s on roll date, set it as 0.0" % (exch+'.'+row['prev_inst'], row['date']))
         curr_df = load_bars_to_df(exch+'.'+row[field_name],
-                                      period='d1',
-                                      start_time=row['date'],
-                                      end_time=row['date'])
+                                  period='d1',
+                                  start_time=row['date'],
+                                  end_time=row['date'])
         if len(curr_df) > 0:
             curr_price = curr_df['close'].iloc[-1]
         else:
