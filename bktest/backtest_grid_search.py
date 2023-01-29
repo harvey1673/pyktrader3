@@ -188,7 +188,8 @@ def run_grid_btest(df, start_date, end_date, sim_type, signal_name,
         elif signal_name in ['basmomxma', 'basmomsma', 'basmomema',
                              'basmomnma', 'basmomnmb', 'basmomzlv',
                              'basmomelv', 'basmomqtl',
-                             'momsma', 'momxma', 'momnma', 'momnmb', 'momzlv', 'macdnma']:
+                             'momsma', 'momxma', 'momnma', 'momnmb',
+                             'momzlv', 'momelv', 'momqtl', 'macdnma']:
             win = scen_x
             ma_win = scen_y
             rebal = 1
@@ -262,39 +263,44 @@ def run_grid_btest(df, start_date, end_date, sim_type, signal_name,
     return metrics_dict, stats_dict
 
 
-def run_xs_product():
+def run_xs_product(df,
+                   group_keys=['ind', 'petro', 'ags', 'all'],
+                   sim_group=[
+                       ('xscarry-demedian', 'ryieldnma'),
+                       ('xscarry-demedian', 'ryieldsma'),
+                       ('xscarry-demedian', 'basmomnma'),
+                       # ('xscarry-rank', 'ryieldnma'),
+                       # ('xscarry-rank_cutoff', 'ryieldnma'),
+                       # ('xscarry-rank', 'basmomnma'),
+                       # ('xscarry-rank_cutoff', 'basmomnma'),
+                       # ('xscarry-rank', 'ryieldsma'),
+                       # ('xscarry-rank_cutoff', 'ryieldsma'),
+                   ]):
     run_markets = product_grouping_partial['ind'] + product_grouping_partial['petro'] + product_grouping_partial['ags']
-    df, error_list = load_hist_data(
-        start_date=datetime.date(2010, 1, 1),
-        end_date=datetime.date(2020, 1, 1),
-        sim_markets=run_markets,
-        freq='d'
-    )
+
     range_1 = range(10, 260, 10)
     range_2 = [10, 20, 40, 61, 122, 183, 244]
     range_3 = [1, 3, 5, 10]
-
+    range_4 = [4, 8, 12, 16, 24, 32, 64]
+    range_5 = [10, 20, 40, 80, 160, 320]
     range_by_signal = {
         'ryieldnma': [range_2, range_3],
+        'ryieldnmb': [range_2, range_3],
         'basmomnma': [range_1, range_2],
         'ryieldsma': [range_2, range_3],
+        'momnma': [range_1, range_2],
+        'macdnma': [range_4, range_2],
+        'hlbrk': [range_2, range_5],
+        'momelv': [range_1, range_2],
+        'momqtl': [range_1, range_2],
     }
     start_d = datetime.date(2012, 1, 1)
     end_d = datetime.date(2020, 1, 1)
 
-    sim_group = [
-        ('xscarry-rank', 'ryieldnma'),
-        # ('xscarry-rank_cutoff', 'ryieldnma'),
-        # ('xscarry-rank', 'basmomnma'),
-        # ('xscarry-rank_cutoff', 'basmomnma'),
-        # ('xscarry-rank', 'ryieldsma'),
-        # ('xscarry-rank_cutoff', 'ryieldsma'),
-    ]
-
     bt_metric_dict = {}
     pnl_stats_dict = {}
 
-    for group_key in ['petro', 'ags', 'all']:
+    for group_key in group_keys:
         if group_key not in product_grouping_partial:
             product_list = run_markets
         else:
