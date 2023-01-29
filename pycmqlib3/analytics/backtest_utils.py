@@ -89,7 +89,7 @@ def generate_signal(df, input_args):
         elif 'macd' in signal_name:
             ema1 = xdf[(asset, 'c1', 'close')].ewm(span=win).mean()
             ema2 = xdf[(asset, 'c1', 'close')].ewm(span=int(win * params[0])).mean()
-            mstd = xdf[(asset, 'c1', 'close')].diff().rolling(int(win * params[1])).std()
+            mstd = xdf[(asset, 'c1', 'close')].diff().ewm(span=int(win * params[1]), min_periods=10).std()
             xdf[(asset, 'factor', 'macd')] = (ema1 - ema2) / mstd
         elif signal_name == 'mixmom':
             xdf[(asset, 'factor', 'mixmom')] = (xdf[(asset, 'factor', 'mom')] * xdf[
