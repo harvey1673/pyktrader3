@@ -130,7 +130,7 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule=
                     shift_mode=shift_mode,
                     freq=freq,
                     roll_name=roll_name,
-                    config_loc=roll_file_loc).set_index('date')
+                    config_loc=roll_file_loc)
         df = df.set_index('date')
         df = df[col_list]
         if freq == 'm':
@@ -234,21 +234,29 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule=
                 extra_fields += ['xma', str(ma_win)]
             elif 'xea' == run_mode[-3:]:
                 ref_field = run_mode[:-3]
-                xdf[data_field] = xdf[ref_field] - dh.EMA(xdf, ma_win, field = ref_field)
+                xdf[data_field] = xdf[ref_field] - dh.EMA(xdf, ma_win, field=ref_field)
                 extra_fields += ['xea', str(ma_win)]
             elif 'nma' == run_mode[-3:]:
                 ref_field = run_mode[:-3]
-                xdf[data_field] = xdf[ref_field] / dh.STDEV(xdf, ma_win, field = ref_field)
+                xdf[data_field] = xdf[ref_field] / dh.STDEV(xdf, ma_win, field=ref_field)
                 extra_fields += ['nma', str(ma_win)]
             elif 'nmb' == run_mode[-3:]:
                 ref_field = run_mode[:-3]
-                xdf[data_field] = xdf[ref_field] / dh.BSTDEV(xdf, ma_win, field = ref_field)
+                xdf[data_field] = xdf[ref_field] / ((xdf[ref_field]**2).rolling(ma_win).mean()**0.5)
                 extra_fields += ['nmb', str(ma_win)]
+            elif 'elv' == run_mode[-3:]:
+                ref_field = run_mode[:-3]
+                xdf[data_field] = (xdf[ref_field] - xdf[ref_field].ewm(span=ma_win, min_periods=ma_win // 2,
+                                                                       ignore_na=True).mean()) / \
+                                  (xdf[ref_field].ewm(span=ma_win, min_periods=ma_win // 2, ignore_na=True).std())
             elif 'zlv' == run_mode[-3:]:
                 ref_field = run_mode[:-3]
                 xdf[data_field] = (xdf[ref_field] - xdf[ref_field].rolling(ma_win).mean()) \
                                         / dh.STDEV(xdf, ma_win, field = ref_field)
                 extra_fields += ['zlv', str(ma_win)]
+            elif 'qtl' == run_mode[-3:]:
+                ref_field = run_mode[:-3]
+                xdf[data_field] = 2.0 * (dh.rolling_percentile(xdf[ref_field], win=ma_win) - 0.5)
             else:
                 ref_field = run_mode
             if pos_func:
@@ -319,11 +327,10 @@ def generate_daily_position(cur_date, prod_list, factor_repo,
         weight = factor_repo[fact]['weight']
         factor_pos[fact] = fact_data[fact].copy()
         if factor_repo[fact]['type'] != 'pos':
-            if factor_repo[fact]['type'] == 'xs':
-                lower_rank = int(len(prod_list) * factor_repo[fact]['threshold']) + 1
-                upper_rank = len(prod_list) - int(len(prod_list) * factor_repo[fact]['threshold'])
+            if 'xs' in factor_repo[fact]['type']:
                 rank_df = factor_pos[fact].rank(axis=1)
-                factor_pos[fact] = rank_df.gt(upper_rank, axis=0) * 1.0 - rank_df.lt(lower_rank, axis=0) * 1.0
+                median_ts = rank_df.quantile(0.5, axis=1)
+                factor_pos[fact] = rank_df.sub(median_ts, axis=0)/len(rank_df.columns) * 2.0
             factor_pos[fact] = factor_pos[fact].rolling(rebal_freq).mean().fillna(0.0)
         fact_pos = pd.Series(factor_pos[fact].iloc[-1] * weight, name=fact)
         pos_sum = pos_sum.append(fact_pos)
