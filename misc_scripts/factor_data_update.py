@@ -6,7 +6,7 @@ import copy
 from sqlalchemy import create_engine
 from pycmqlib3.utility.dbaccess import dbconfig, mysql_replace_into, connect, load_factor_data
 from pycmqlib3.utility.dataseries import nearby
-from pycmqlib3.utility.misc import cleanup_mindata, prod2exch, inst2contmth, day_shift, sign, product_lotsize
+from pycmqlib3.utility.misc import cleanup_mindata, prod2exch, inst2contmth, day_shift, sign, product_lotsize, CHN_Holidays
 import pycmqlib3.analytics.data_handler as dh
 
 ferrous_products_mkts = ['rb', 'hc', 'i', 'j', 'jm']
@@ -97,7 +97,7 @@ def update_factor_db(xdf, field, config, dbtable='fut_fact_data', flavor='mysql'
 
 def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule='30b', flavor='mysql', dbtbl_prefix=''):
     col_list = ['open', 'high', 'low','close', 'volume', 'openInterest', 'contract', 'shift']
-    update_start = day_shift(end_date, '-5b')
+    update_start = day_shift(end_date, '-5b', CHN_Holidays)
     shift_mode = 1
     freq = 'd'
     args = {'roll_rule': '-' + roll_rule, 'freq': freq, 'shift_mode': shift_mode, 'dbtbl_prefix': dbtbl_prefix}
@@ -179,8 +179,19 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule=
         xdf.index.name = 'date'
         for field in ['logret', 'baslr', 'ryield', 'atr']:
             update_factor_db(xdf, field, fact_config, start_date=update_start, end_date=end_date, flavor=flavor)
+        
+        updated_factors = ['logret', 'baslr', 'ryield', 'atr']
+
         for scen in scenarios:
-            sim_name = scen[0]
+            sim_name = scen[0]            
+            if 'ts' in sim_name:
+                sim_type = 'ts'
+            elif 'xs' in sim_name:
+                type_split = sim_name.split('-')
+                if len(type_split) > 1:
+                    sim_type = 'xs-' + type_split[1]
+                else:
+                    sim_type = 'xs'
             run_mode = data_field = scen[1]
             weight = scen[2]
             win = scen[3]
@@ -249,6 +260,7 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule=
                 xdf[data_field] = (xdf[ref_field] - xdf[ref_field].ewm(span=ma_win, min_periods=ma_win // 2,
                                                                        ignore_na=True).mean()) / \
                                   (xdf[ref_field].ewm(span=ma_win, min_periods=ma_win // 2, ignore_na=True).std())
+                extra_fields += ['elv', str(ma_win)]
             elif 'zlv' == run_mode[-3:]:
                 ref_field = run_mode[:-3]
                 xdf[data_field] = (xdf[ref_field] - xdf[ref_field].rolling(ma_win).mean()) \
@@ -257,6 +269,7 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule=
             elif 'qtl' == run_mode[-3:]:
                 ref_field = run_mode[:-3]
                 xdf[data_field] = 2.0 * (dh.rolling_percentile(xdf[ref_field], win=ma_win) - 0.5)
+                extra_fields += ['qtl', str(ma_win)]
             else:
                 ref_field = run_mode
             if pos_func:
@@ -265,24 +278,26 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule=
                     extra_fields.append(pos_name) 
             fact_name = '_'.join([ref_field, str(win)] + extra_fields)
             xdf[fact_name] = xdf[data_field]
-            if fact_name not in factor_repo:
-                factor_repo[fact_name] = {}
-                factor_repo[fact_name]['name'] = fact_name
+            strat_fact_name = f'{fact_name}.{sim_type}'
+            
+            if strat_fact_name not in factor_repo:
+                factor_repo[strat_fact_name] = {}
+                factor_repo[strat_fact_name]['name'] = fact_name
+                factor_repo[strat_fact_name]['type'] = sim_type
                 if 'ts' in sim_name:
-                    factor_repo[fact_name]['type'] = 'ts'
-                    factor_repo[fact_name]['threshold'] = 0.0               
+                    factor_repo[strat_fact_name]['threshold'] = 0.0               
                 elif 'xs' in sim_name:
-                    factor_repo[fact_name]['type'] = 'xs'
-                    factor_repo[fact_name]['threshold'] = quantile
+                    factor_repo[strat_fact_name]['threshold'] = quantile
                 else:
                     print("unsupported run mode")
-                factor_repo[fact_name]['rebal'] = rebal
-                factor_repo[fact_name]['param'] = params
-                factor_repo[fact_name]['weight'] = weight 
-            try:
+                factor_repo[strat_fact_name]['rebal'] = rebal
+                factor_repo[strat_fact_name]['param'] = params
+                factor_repo[strat_fact_name]['weight'] = weight 
+
+            if fact_name not in updated_factors:
                 update_factor_db(xdf, fact_name, fact_config, start_date=update_start, end_date=end_date, flavor=flavor)
-            except:
-                continue
+                updated_factors.append(fact_name)                
+
     return factor_repo
 
 
@@ -296,7 +311,7 @@ def generate_daily_position(cur_date, prod_list, factor_repo,
     factor_pos = {}
     target_pos = {}
     vol_weight = [1.0] * len(prod_list)
-    start_date = day_shift(cur_date, '-%sb' % (str(hist_fact_lookback)))
+    start_date = day_shift(cur_date, '-%sb' % (str(hist_fact_lookback)), CHN_Holidays)
     fact_list = list(set([factor_repo[fact]['name'] for fact in factor_repo.keys()]))
     df = load_factor_data(prod_list,
                           factor_list=fact_list+['atr'],
@@ -328,9 +343,30 @@ def generate_daily_position(cur_date, prod_list, factor_repo,
         factor_pos[fact] = fact_data[fact].copy()
         if factor_repo[fact]['type'] != 'pos':
             if 'xs' in factor_repo[fact]['type']:
-                rank_df = factor_pos[fact].rank(axis=1)
-                median_ts = rank_df.quantile(0.5, axis=1)
-                factor_pos[fact] = rank_df.sub(median_ts, axis=0)/len(rank_df.columns) * 2.0
+                xs_split = factor_repo[fact]['type'].split('-')
+                if len(xs_split) <= 1:
+                    xs_signal = 'rank_cutoff'
+                else:
+                    xs_signal = xs_split[1]
+
+                if xs_signal == 'rank_cutoff':
+                    cutoff = factor_repo[fact]['threshold']
+                    lower_rank = int(len(prod_list) * cutoff) + 1
+                    upper_rank = len(prod_list) - int(len(prod_list) * cutoff)
+                    rank_df = factor_pos[fact].rank(axis=1)
+                    factor_pos[fact] = rank_df.gt(upper_rank, axis=0) * 1.0 - rank_df.lt(lower_rank, axis=0) * 1.0
+                elif xs_signal == 'demedian':
+                    median_ts = factor_pos[fact].quantile(0.5, axis=1)
+                    factor_pos[fact] = factor_pos[fact].sub(median_ts, axis=0)
+                elif xs_signal == 'demean':
+                    mean_ts = factor_pos[fact].mean(axis=1)
+                    factor_pos[fact] = factor_pos[fact].sub(mean_ts, axis=0)
+                elif xs_signal == 'rank':
+                    rank_df = factor_pos[fact].rank(axis=1)
+                    median_ts = rank_df.quantile(0.5, axis=1)
+                    factor_pos[fact] = rank_df.sub(median_ts, axis=0)/len(prod_list) * 2.0
+                elif len(xs_signal) > 0:
+                    print('unsupported xs signal types')
             factor_pos[fact] = factor_pos[fact].rolling(rebal_freq).mean().fillna(0.0)
         fact_pos = pd.Series(factor_pos[fact].iloc[-1] * weight, name=fact)
         pos_sum = pos_sum.append(fact_pos)

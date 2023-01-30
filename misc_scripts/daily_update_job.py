@@ -55,6 +55,7 @@ commod_mkts = ['rb', 'hc', 'i', 'j', 'jm', 'ru', 'FG', 'cu', 'al', 'zn', 'pb', '
 
 port_pos_config = [
     ('PT_FACTPORT3', 'C:/dev/pyktrader3/process/pt_test3/', 4600, 'CAL_30b', 's1'),
+    ('PT_FACTPORT1', 'C:/dev/pyktrader3/process/pt_test3/', 4600, 'CAL_30b', 's1'),
 ]
 
 scenarios_all = [
