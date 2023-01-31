@@ -1,5 +1,9 @@
 import platform
 
+EMAIL_NOTIFY = True
+
+NOTIFIERS = ['harveywu@gmail.com']
+
 PROXY_CREDENTIALS = {'user': 'xxxxxx', 'passwd': 'xxxxxxx'}
 
 skype_user = {'user': 'wei.x.wu', 'pwd': 'HW@9619252y'}

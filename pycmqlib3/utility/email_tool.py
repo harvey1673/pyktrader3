@@ -5,6 +5,7 @@ import os
 import subprocess
 import smtplib
 from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 
 def send_email_w_outlook(recepient, subject, body_text = '', attach_files = [], html_text = ''):
@@ -58,6 +59,30 @@ def send_email_by_smtp(mail_account, to_list, sub, content):
     msg['Subject'] = sub
     msg['From'] = mail_user
     msg['To'] = ';'.join(to_list)
+    try:
+        smtp = smtplib.SMTP(mail_host, mail_account['port'])
+        # smtp.ehlo()
+        smtp.starttls()
+        # smtp.ehlo()
+        smtp.login(mail_user, mail_pass)
+        smtp.sendmail(mail_user, to_list, msg.as_string())
+        smtp.close()
+        return True
+    except Exception as e:
+        print("exception when sending e-mail %s" % str(e))
+        return False
+
+
+def send_html_by_smtp(mail_account, to_list, sub, html):
+    mail_host = mail_account['host']
+    mail_user = mail_account['user']
+    mail_pass = mail_account['passwd']
+    msg = MIMEMultipart('related')
+    msg['Subject'] = sub
+    msg['From'] = mail_user
+    msg['To'] = ';'.join(to_list)
+    partHTML = MIMEText(html, 'html')
+    msg.attach(partHTML)
     try:
         smtp = smtplib.SMTP(mail_host, mail_account['port'])
         # smtp.ehlo()
