@@ -6,191 +6,355 @@
         "hist_fact_lookback": 100,
         "roll_label": "CAL_30b",
         "factor_repo": {
-            "ryield_1_nmb_120": {
-                "name": "ryield_1_nmb_120",
-                "type": "ts",
-                "threshold": 0.0,
-                "rebal": 1,
-                "param": [
-                    0.0,
-                    0.0
-                ],
-                "weight": 2.8
-            },
-            "basmom_100_nma_120": {
-                "name": "basmom_100_nma_120",
-                "type": "ts",
-                "threshold": 0.0,
-                "rebal": 1,
-                "param": [
-                    0.0,
-                    0.0
-                ],
-                "weight": 0.7
-            },
-            "basmom_170_nma_120": {
-                "name": "basmom_170_nma_120",
-                "type": "ts",
-                "threshold": 0.0,
-                "rebal": 1,
-                "param": [
-                    0.0,
-                    0.0
-                ],
-                "weight": 0.5
-            },
-            "ryield_1_nma_20": {
-                "name": "ryield_1_nma_20",
-                "type": "xs",
-                "threshold": 0.2,
-                "rebal": 1,
-                "param": [
-                    0.0,
-                    0.0
-                ],
-                "weight": 2.0
-            },
-            "ryield_1_nma_110": {
-                "name": "ryield_1_nma_110",
-                "type": "xs",
-                "threshold": 0.2,
-                "rebal": 1,
-                "param": [
-                    0.0,
-                    0.0
-                ],
-                "weight": 2.2
-            },
-            "basmom_80_nma_120": {
-                "name": "basmom_80_nma_120",
-                "type": "xs",
-                "threshold": 0.2,
-                "rebal": 5,
-                "param": [
-                    0.0,
-                    0.0
-                ],
-                "weight": 2.5
-            },
-            "basmom_150_nma_120": {
-                "name": "basmom_150_nma_120",
-                "type": "xs",
-                "threshold": 0.2,
-                "rebal": 5,
-                "param": [
-                    0.0,
-                    0.0
-                ],
-                "weight": 2.5
-            },
-            "hlbrk_10": {
-                "name": "hlbrk_10",
-                "type": "ts",
-                "threshold": 0.0,
-                "rebal": 10,
-                "param": [
-                    0.0,
-                    0.0
-                ],
-                "weight": 1.2
-            },
-            "hlbrk_30": {
-                "name": "hlbrk_30",
-                "type": "ts",
-                "threshold": 0.0,
-                "rebal": 10,
-                "param": [
-                    0.0,
-                    0.0
-                ],
-                "weight": 1.0
-            },
-            "hlbrk_240": {
-                "name": "hlbrk_240",
-                "type": "ts",
-                "threshold": 0.0,
-                "rebal": 10,
-                "param": [
-                    0.0,
-                    0.0
-                ],
-                "weight": 1.0
-            },
-            "macd_8_12_80_nma_160_reverting": {
-                "name": "macd_8_12_80_nma_160_reverting",
-                "type": "ts",
-                "threshold": 0.0,
-                "rebal": 5,
-                "param": [
-                    1.5,
-                    10.0
-                ],
-                "weight": 0.24
-            },
-            "macd_16_24_80_nma_160_reverting": {
-                "name": "macd_16_24_80_nma_160_reverting",
-                "type": "ts",
-                "threshold": 0.0,
-                "rebal": 5,
-                "param": [
-                    1.5,
-                    5.0
-                ],
-                "weight": 0.21
-            },
-            "hlbrk_20_xs": {
-                "name": "hlbrk_20",
-                "type": "xs",
-                "threshold": 0.2,
-                "rebal": 10,
-                "param": [
-                    0.0,
-                    0.0
-                ],
-                "weight": 0.9
-            },
-            "hlbrk_120_xs": {
-                "name": "hlbrk_120",
-                "type": "xs",
-                "threshold": 0.2,
-                "rebal": 10,
-                "param": [
-                    0.0,
-                    0.0
-                ],
-                "weight": 0.75
-            },
-            "hlbrk_240_xs": {
-                "name": "hlbrk_240",
-                "type": "xs",
-                "threshold": 0.2,
-                "rebal": 10,
-                "param": [
-                    0.0,
-                    0.0
-                ],
-                "weight": 0.75
-            },
-            "mom_130_nma_90": {
-                "name": "mom_130_nma_90",
-                "type": "xs",
-                "threshold": 0.2,
-                "rebal": 5,
-                "param": [
-                    0.0
-                ],
-                "weight": 0.75
-            },
-            "mom_240_nma_90": {
-                "name": "mom_240_nma_90",
-                "type": "xs",
-                "threshold": 0.2,
-                "rebal": 5,
-                "param": [
-                    0.0
-                ],
-                "weight": 0.75
-            }
+			"ryield_1_nmb_122.ts": {
+				"name": "ryield_1_nmb_122",
+				"type": "ts",
+				"threshold": 0.0,
+				"rebal": 1,
+				"param": [
+					0.0,
+					0.0
+				],
+				"weight": 1.0
+			},
+			"ryield_1_qtl_20.ts": {
+				"name": "ryield_1_qtl_20",
+				"type": "ts",
+				"threshold": 0.0,
+				"rebal": 1,
+				"param": [
+					0.0,
+					0.0
+				],
+				"weight": 0.8
+			},
+			"ryield_1_qtl_60.ts": {
+				"name": "ryield_1_qtl_60",
+				"type": "ts",
+				"threshold": 0.0,
+				"rebal": 1,
+				"param": [
+					0.0,
+					0.0
+				],
+				"weight": 0.8
+			},
+			"ryield_1_qtl_244.ts": {
+				"name": "ryield_1_qtl_244",
+				"type": "ts",
+				"threshold": 0.0,
+				"rebal": 1,
+				"param": [
+					0.0,
+					0.0
+				],
+				"weight": 0.8
+			},
+			"basmom_20_nma_122.ts": {
+				"name": "basmom_20_nma_122",
+				"type": "ts",
+				"threshold": 0.0,
+				"rebal": 1,
+				"param": [
+					0.0,
+					0.0
+				],
+				"weight": 0.5
+			},
+			"basmom_60_nma_122.ts": {
+				"name": "basmom_60_nma_122",
+				"type": "ts",
+				"threshold": 0.0,
+				"rebal": 1,
+				"param": [
+					0.0,
+					0.0
+				],
+				"weight": 0.42
+			},
+			"basmom_120_nma_122.ts": {
+				"name": "basmom_120_nma_122",
+				"type": "ts",
+				"threshold": 0.0,
+				"rebal": 1,
+				"param": [
+					0.0,
+					0.0
+				],
+				"weight": 0.35
+			},
+			"basmom_180_nma_122.ts": {
+				"name": "basmom_180_nma_122",
+				"type": "ts",
+				"threshold": 0.0,
+				"rebal": 1,
+				"param": [
+					0.0,
+					0.0
+				],
+				"weight": 0.35
+			},
+			"basmom_120_qtl_20.ts": {
+				"name": "basmom_120_qtl_20",
+				"type": "ts",
+				"threshold": 0.0,
+				"rebal": 1,
+				"param": [
+					0.0,
+					0.0
+				],
+				"weight": 2.0
+			},
+			"basmom_240_qtl_20.ts": {
+				"name": "basmom_240_qtl_20",
+				"type": "ts",
+				"threshold": 0.0,
+				"rebal": 1,
+				"param": [
+					0.0,
+					0.0
+				],
+				"weight": 1.8
+			},
+			"ryield_1_nma_20.xs-rank": {
+				"name": "ryield_1_nma_20",
+				"type": "xs-rank",
+				"threshold": 0.2,
+				"rebal": 1,
+				"param": [
+					0.0,
+					0.0
+				],
+				"weight": 1.4
+			},
+			"ryield_1_nma_122.xs-rank": {
+				"name": "ryield_1_nma_122",
+				"type": "xs-rank",
+				"threshold": 0.2,
+				"rebal": 1,
+				"param": [
+					0.0,
+					0.0
+				],
+				"weight": 1.4
+			},
+			"ryield_1_nma_244.xs-rank": {
+				"name": "ryield_1_nma_244",
+				"type": "xs-rank",
+				"threshold": 0.2,
+				"rebal": 1,
+				"param": [
+					0.0,
+					0.0
+				],
+				"weight": 1.4
+			},
+			"basmom_20_nma_122.xs-rank": {
+				"name": "basmom_20_nma_122",
+				"type": "xs-rank",
+				"threshold": 0.2,
+				"rebal": 1,
+				"param": [
+					0.0,
+					0.0
+				],
+				"weight": 2.0
+			},
+			"basmom_100_nma_122.xs-rank": {
+				"name": "basmom_100_nma_122",
+				"type": "xs-rank",
+				"threshold": 0.2,
+				"rebal": 1,
+				"param": [
+					0.0,
+					0.0
+				],
+				"weight": 2.0
+			},
+			"basmom_170_nma_122.xs-rank": {
+				"name": "basmom_170_nma_122",
+				"type": "xs-rank",
+				"threshold": 0.2,
+				"rebal": 1,
+				"param": [
+					0.0,
+					0.0
+				],
+				"weight": 2.0
+			},
+			"hlbrk_20.ts": {
+				"name": "hlbrk_20",
+				"type": "ts",
+				"threshold": 0.0,
+				"rebal": 10,
+				"param": [
+					0.0,
+					0.0
+				],
+				"weight": 0.5
+			},
+			"hlbrk_40.ts": {
+				"name": "hlbrk_40",
+				"type": "ts",
+				"threshold": 0.0,
+				"rebal": 10,
+				"param": [
+					0.0,
+					0.0
+				],
+				"weight": 0.5
+			},
+			"hlbrk_61.ts": {
+				"name": "hlbrk_61",
+				"type": "ts",
+				"threshold": 0.0,
+				"rebal": 10,
+				"param": [
+					0.0,
+					0.0
+				],
+				"weight": 0.5
+			},
+			"hlbrk_122.ts": {
+				"name": "hlbrk_122",
+				"type": "ts",
+				"threshold": 0.0,
+				"rebal": 10,
+				"param": [
+					0.0,
+					0.0
+				],
+				"weight": 0.5
+			},
+			"hlbrk_244.ts": {
+				"name": "hlbrk_244",
+				"type": "ts",
+				"threshold": 0.0,
+				"rebal": 10,
+				"param": [
+					0.0,
+					0.0
+				],
+				"weight": 0.5
+			},
+			"macd_8_12_80_nma_160_reverting.ts": {
+				"name": "macd_8_12_80_nma_160_reverting",
+				"type": "ts",
+				"threshold": 0.0,
+				"rebal": 5,
+				"param": [
+					1.5,
+					10.0
+				],
+				"weight": 0.22
+			},
+			"macd_16_24_80_nma_160_reverting.ts": {
+				"name": "macd_16_24_80_nma_160_reverting",
+				"type": "ts",
+				"threshold": 0.0,
+				"rebal": 5,
+				"param": [
+					1.5,
+					5.0
+				],
+				"weight": 0.2
+			},
+			"macd_24_36_80_nma_160_reverting.ts": {
+				"name": "macd_24_36_80_nma_160_reverting",
+				"type": "ts",
+				"threshold": 0.0,
+				"rebal": 5,
+				"param": [
+					1.5,
+					3.34
+				],
+				"weight": 0.18
+			},
+			"hlbrk_20.xs-rank": {
+				"name": "hlbrk_20",
+				"type": "xs-rank",
+				"threshold": 0.2,
+				"rebal": 1,
+				"param": [
+					0.0,
+					0.0
+				],
+				"weight": 0.375
+			},
+			"hlbrk_40.xs-rank": {
+				"name": "hlbrk_40",
+				"type": "xs-rank",
+				"threshold": 0.2,
+				"rebal": 1,
+				"param": [
+					0.0,
+					0.0
+				],
+				"weight": 0.375
+			},
+			"hlbrk_61.xs-rank": {
+				"name": "hlbrk_61",
+				"type": "xs-rank",
+				"threshold": 0.2,
+				"rebal": 1,
+				"param": [
+					0.0,
+					0.0
+				],
+				"weight": 0.375
+			},
+			"hlbrk_122.xs-rank": {
+				"name": "hlbrk_122",
+				"type": "xs-rank",
+				"threshold": 0.2,
+				"rebal": 1,
+				"param": [
+					0.0,
+					0.0
+				],
+				"weight": 0.375
+			},
+			"hlbrk_244.xs-rank": {
+				"name": "hlbrk_244",
+				"type": "xs-rank",
+				"threshold": 0.2,
+				"rebal": 1,
+				"param": [
+					0.0,
+					0.0
+				],
+				"weight": 0.375
+			},
+			"mom_10_nma_10.xs-rank": {
+				"name": "mom_10_nma_10",
+				"type": "xs-rank",
+				"threshold": 0.2,
+				"rebal": 1,
+				"param": [
+					0.0
+				],
+				"weight": 0.6
+			},
+			"mom_130_nma_120.xs-rank": {
+				"name": "mom_130_nma_120",
+				"type": "xs-rank",
+				"threshold": 0.2,
+				"rebal": 1,
+				"param": [
+					0.0
+				],
+				"weight": 0.6
+			},
+			"mom_240_nma_60.xs-rank": {
+				"name": "mom_240_nma_60",
+				"type": "xs-rank",
+				"threshold": 0.2,
+				"rebal": 1,
+				"param": [
+					0.0
+				],
+				"weight": 0.6
+			}
         },
         "vol_win": 20,
         "fact_db_table": "fut_fact_data",
@@ -201,7 +365,7 @@
             1534,
             1633,
             1933,
-            2055
+            2035
         ],
         "pos_scaler": 4600,
         "assets": [
@@ -213,7 +377,7 @@
                     1
                 ],
                 "alloc_w": 1.0,
-                "prev_underliers": ["rb2301"]
+                "prev_underliers": []
             },
             {
                 "underliers": [
@@ -223,7 +387,7 @@
                     1
                 ],
                 "alloc_w": 1.0,
-                "prev_underliers": ["hc2301"]
+                "prev_underliers": []
             },
             {
                 "underliers": [
@@ -233,7 +397,7 @@
                     1
                 ],
                 "alloc_w": 1.0,
-                "prev_underliers": ["i2301"]
+                "prev_underliers": []
             },
             {
                 "underliers": [
@@ -243,7 +407,7 @@
                     1
                 ],
                 "alloc_w": 1.0,
-                "prev_underliers": ["j2301"]
+                "prev_underliers": []
             },
             {
                 "underliers": [
@@ -253,7 +417,7 @@
                     1
                 ],
                 "alloc_w": 1.0,
-                "prev_underliers": ["jm2301"]
+                "prev_underliers": []
             },
             {
                 "underliers": [
@@ -263,7 +427,7 @@
                     1
                 ],
                 "alloc_w": 1.0,
-                "prev_underliers": ["ru2301"]
+                "prev_underliers": []
             },
             {
                 "underliers": [
@@ -273,7 +437,7 @@
                     1
                 ],
                 "alloc_w": 1.0,
-                "prev_underliers": ["FG301"]
+                "prev_underliers": []
             },
             {
                 "underliers": [
@@ -283,7 +447,7 @@
                     1
                 ],
                 "alloc_w": 1.0,
-                "prev_underliers": ["l2301"]
+                "prev_underliers": []
             },
             {
                 "underliers": [
@@ -293,7 +457,7 @@
                     1
                 ],
                 "alloc_w": 1.0,
-                "prev_underliers": ["pp2301"]
+                "prev_underliers": []
             },
             {
                 "underliers": [
@@ -303,7 +467,7 @@
                     1
                 ],
                 "alloc_w": 1.0,
-                "prev_underliers": ["v2301"]
+                "prev_underliers": []
             },
             {
                 "underliers": [
@@ -313,7 +477,7 @@
                     1
                 ],
                 "alloc_w": 1.0,
-                "prev_underliers": ["TA301"]
+                "prev_underliers": []
             },
             {
                 "underliers": [
@@ -323,7 +487,7 @@
                     1
                 ],
                 "alloc_w": 1.0,
-                "prev_underliers": ["m2301"]
+                "prev_underliers": []
             },
             {
                 "underliers": [
@@ -333,7 +497,7 @@
                     1
                 ],
                 "alloc_w": 1.0,
-                "prev_underliers": ["RM301"]
+                "prev_underliers": []
             },
             {
                 "underliers": [
@@ -343,7 +507,7 @@
                     1
                 ],
                 "alloc_w": 1.0,
-                "prev_underliers": ["y2301"]
+                "prev_underliers": []
             },
             {
                 "underliers": [
@@ -353,7 +517,7 @@
                     1
                 ],
                 "alloc_w": 1.0,
-                "prev_underliers": ["p2301"]
+                "prev_underliers": []
             },
             {
                 "underliers": [
@@ -363,7 +527,7 @@
                     1
                 ],
                 "alloc_w": 1.0,
-                "prev_underliers": ["OI301"]
+                "prev_underliers": []
             },
             {
                 "underliers": [
@@ -385,7 +549,7 @@
                     1
                 ],
                 "alloc_w": 1.0,
-                "prev_underliers": ["c2301"]
+                "prev_underliers": []
             },
             {
                 "underliers": [
@@ -395,7 +559,7 @@
                     1
                 ],
                 "alloc_w": 1.0,
-                "prev_underliers": ["CF301"]
+                "prev_underliers": []
             },
             {
                 "underliers": [
@@ -405,7 +569,7 @@
                     1
                 ],
                 "alloc_w": 1.0,
-                "prev_underliers": ["jd2301"]
+                "prev_underliers": []
             },
             {
                 "underliers": [
@@ -415,9 +579,7 @@
                     1
                 ],
                 "alloc_w": 1.0,
-                "prev_underliers": [
-                    "AP301"
-                ]
+                "prev_underliers": []
             },
             {
                 "underliers": [
@@ -427,7 +589,7 @@
                     1
                 ],
                 "alloc_w": 1.0,
-                "prev_underliers": ["SM301"]
+                "prev_underliers": []
             },
             {
                 "underliers": [
@@ -437,7 +599,7 @@
                     1
                 ],
                 "alloc_w": 1.0,
-                "prev_underliers": ["UR301"]
+                "prev_underliers": []
             },
             {
                 "underliers": [
@@ -501,6 +663,18 @@
             },
             {
                 "underliers": [
+                    "ni2303"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": [
+                    "ni2302"
+                ]
+            },			
+            {
+                "underliers": [
                     "sn2303"
                 ],
                 "volumes": [
@@ -521,18 +695,6 @@
                 "alloc_w": 1.0,
                 "prev_underliers": [
                     "ss2302"
-                ]
-            },
-            {
-                "underliers": [
-                    "pg2303"
-                ],
-                "volumes": [
-                    1
-                ],
-                "alloc_w": 1.0,
-                "prev_underliers": [
-                    "pg2302"
                 ]
             },
             {
@@ -561,16 +723,6 @@
             },
             {
                 "underliers": [
-                    "T2303"
-                ],
-                "volumes": [
-                    1
-                ],
-                "alloc_w": 1.0,
-                "prev_underliers": []
-            },
-            {
-                "underliers": [
                     "lu2304"
                 ],
                 "volumes": [
@@ -589,7 +741,7 @@
                     1
                 ],
                 "alloc_w": 1.0,
-                "prev_underliers": ["lh2301"]
+                "prev_underliers": []
             }
         ]
     }

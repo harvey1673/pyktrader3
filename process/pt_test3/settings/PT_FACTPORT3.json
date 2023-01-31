@@ -1,0 +1,584 @@
+{
+    "class": "pycmqlib3.strategy.strat_factor_port.FactorPortTrader",
+    "config": {
+        "name": "MM_FACT_PORT",
+        "freq": "d1",
+        "hist_fact_lookback": 100,
+        "roll_label": "expiry",
+        "factor_repo": {
+            "ryield_1_nmb_120": {
+                "name": "ryield_1_nmb_120",
+                "type": "ts",
+                "threshold": 0.0,
+                "rebal": 1,
+                "param": [
+                    0.0,
+                    0.0
+                ],
+                "weight": 2.0
+            },
+            "basmom_100_nma_120": {
+                "name": "basmom_100_nma_120",
+                "type": "ts",
+                "threshold": 0.0,
+                "rebal": 1,
+                "param": [
+                    0.0,
+                    0.0
+                ],
+                "weight": 1.0
+            },
+            "basmom_170_nma_120": {
+                "name": "basmom_170_nma_120",
+                "type": "ts",
+                "threshold": 0.0,
+                "rebal": 1,
+                "param": [
+                    0.0,
+                    0.0
+                ],
+                "weight": 1.0
+            },
+            "ryield_1_nma_20": {
+                "name": "ryield_1_nma_20",
+                "type": "xs",
+                "threshold": 0.2,
+                "rebal": 1,
+                "param": [
+                    0.0,
+                    0.0
+                ],
+                "weight": 1.9
+            },
+            "ryield_1_nma_110": {
+                "name": "ryield_1_nma_110",
+                "type": "xs",
+                "threshold": 0.2,
+                "rebal": 1,
+                "param": [
+                    0.0,
+                    0.0
+                ],
+                "weight": 2.1
+            },
+            "basmom_80_nma_120": {
+                "name": "basmom_80_nma_120",
+                "type": "xs",
+                "threshold": 0.2,
+                "rebal": 5,
+                "param": [
+                    0.0,
+                    0.0
+                ],
+                "weight": 2.5
+            },
+            "basmom_150_nma_120": {
+                "name": "basmom_150_nma_120",
+                "type": "xs",
+                "threshold": 0.2,
+                "rebal": 5,
+                "param": [
+                    0.0,
+                    0.0
+                ],
+                "weight": 2.5
+            },
+            "hlbrk_10": {
+                "name": "hlbrk_10",
+                "type": "ts",
+                "threshold": 0.0,
+                "rebal": 10,
+                "param": [
+                    0.0,
+                    0.0
+                ],
+                "weight": 1.1
+            },
+            "hlbrk_30": {
+                "name": "hlbrk_30",
+                "type": "ts",
+                "threshold": 0.0,
+                "rebal": 10,
+                "param": [
+                    0.0,
+                    0.0
+                ],
+                "weight": 0.9
+            },
+            "hlbrk_240": {
+                "name": "hlbrk_240",
+                "type": "ts",
+                "threshold": 0.0,
+                "rebal": 10,
+                "param": [
+                    0.0,
+                    0.0
+                ],
+                "weight": 0.9
+            },
+            "macd_8_12_80_nma_160_reverting": {
+                "name": "macd_8_12_80_nma_160_reverting",
+                "type": "ts",
+                "threshold": 0.0,
+                "rebal": 5,
+                "param": [
+                    1.5,
+                    10.0
+                ],
+                "weight": 0.22
+            },
+            "macd_16_24_80_nma_160_reverting": {
+                "name": "macd_16_24_80_nma_160_reverting",
+                "type": "ts",
+                "threshold": 0.0,
+                "rebal": 5,
+                "param": [
+                    1.5,
+                    5.0
+                ],
+                "weight": 0.20
+            },
+            "hlbrk_20_xs": {
+                "name": "hlbrk_20",
+                "type": "xs",
+                "threshold": 0.2,
+                "rebal": 10,
+                "param": [
+                    0.0,
+                    0.0
+                ],
+                "weight": 0.5
+            },
+            "hlbrk_120_xs": {
+                "name": "hlbrk_120",
+                "type": "xs",
+                "threshold": 0.2,
+                "rebal": 10,
+                "param": [
+                    0.0,
+                    0.0
+                ],
+                "weight": 0.75
+            },
+            "hlbrk_240_xs": {
+                "name": "hlbrk_240",
+                "type": "xs",
+                "threshold": 0.2,
+                "rebal": 10,
+                "param": [
+                    0.0,
+                    0.0
+                ],
+                "weight": 0.75
+            },
+            "mom_130_nma_90": {
+                "name": "mom_130_nma_90",
+                "type": "xs",
+                "threshold": 0.2,
+                "rebal": 5,
+                "param": [
+                    0.0
+                ],
+                "weight": 0.75
+            },
+            "mom_240_nma_90": {
+                "name": "mom_240_nma_90",
+                "type": "xs",
+                "threshold": 0.2,
+                "rebal": 5,
+                "param": [
+                    0.0
+                ],
+                "weight": 0.75
+            }
+        },
+        "vol_win": 20,
+        "fact_db_table": "fut_fact_data",
+        "exec_bar_list": [
+            307,
+            412,
+            1508,
+            1534,
+            1633,
+            1933,
+            2035
+        ],
+        "pos_scaler": 4600,
+        "assets": [
+            {
+                "underliers": [
+                    "rb2305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": []
+            },
+            {
+                "underliers": [
+                    "hc2305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": []
+            },
+            {
+                "underliers": [
+                    "i2305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": []
+            },
+            {
+                "underliers": [
+                    "j2305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": []
+            },
+            {
+                "underliers": [
+                    "jm2305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": []
+            },
+            {
+                "underliers": [
+                    "ru2305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": []
+            },
+            {
+                "underliers": [
+                    "FG305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": []
+            },
+            {
+                "underliers": [
+                    "l2305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": []
+            },
+            {
+                "underliers": [
+                    "pp2305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": []
+            },
+            {
+                "underliers": [
+                    "v2305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": []
+            },
+            {
+                "underliers": [
+                    "TA305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": []
+            },
+            {
+                "underliers": [
+                    "m2305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": []
+            },
+            {
+                "underliers": [
+                    "RM305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": []
+            },
+            {
+                "underliers": [
+                    "y2305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": []
+            },
+            {
+                "underliers": [
+                    "p2305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": []
+            },
+            {
+                "underliers": [
+                    "OI305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": []
+            },
+            {
+                "underliers": [
+                    "a2305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": [
+                    "a2303"
+                ]
+            },
+            {
+                "underliers": [
+                    "c2305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": []
+            },
+            {
+                "underliers": [
+                    "CF305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": []
+            },
+            {
+                "underliers": [
+                    "jd2305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": []
+            },
+            {
+                "underliers": [
+                    "AP305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": []
+            },
+            {
+                "underliers": [
+                    "SM305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": []
+            },
+            {
+                "underliers": [
+                    "UR305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": []
+            },
+            {
+                "underliers": [
+                    "sc2303"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": [
+                    "sc2302"
+                ]
+            },
+            {
+                "underliers": [
+                    "cu2303"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": [
+                    "cu2302"
+                ]
+            },
+            {
+                "underliers": [
+                    "al2303"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": [
+                    "al2302"
+                ]
+            },
+            {
+                "underliers": [
+                    "zn2303"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": [
+                    "zn2302"
+                ]
+            },
+            {
+                "underliers": [
+                    "pb2303"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": [
+                    "pb2302"
+                ]
+            },
+            {
+                "underliers": [
+                    "ni2303"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": [
+                    "ni2302"
+                ]
+            },			
+            {
+                "underliers": [
+                    "sn2303"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": [
+                    "sn2302"
+                ]
+            },
+			{
+                "underliers": [
+                    "ss2303"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": [
+                    "ss2302"
+                ]
+            },
+            {
+                "underliers": [
+                    "eg2305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": [
+                    "eg2302"
+                ]
+            },
+            {
+                "underliers": [
+                    "eb2303"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": [
+                    "eb2302"
+                ]
+            },
+            {
+                "underliers": [
+                    "lu2304"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": [
+                    "lu2303"
+                ]
+            },
+            {
+                "underliers": [
+                    "lh2305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": []
+            }
+        ]
+    }
+}
