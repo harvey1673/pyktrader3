@@ -5,7 +5,7 @@ from pathlib import Path
 from pycmqlib3.utility import misc
 from pycmqlib3.utility.process_wt_data import *
 from pycmqlib3.utility.dataseries import load_processed_fut_by_product, rolling_fut_cont
-from pycmqlib3.utility.sec_bits import EMAIL_HOTMAIL
+from pycmqlib3.utility.sec_bits import EMAIL_HOTMAIL, EMAIL_NOTIFY, NOTIFIERS
 from pycmqlib3.utility.email_tool import send_email_by_smtp
 
 ferrous_products_mkts = ['rb', 'hc', 'i', 'j', 'jm']
@@ -403,13 +403,13 @@ def run(curr_date=datetime.date.today(), folder='C:/dev/wtdev/config'):
             json.dump(roll_dict[key], ofile, indent=4)
 
     new_updates = results['addon']
-    if len(new_updates) > 0:
+    if EMAIL_NOTIFY and len(new_updates) > 0:
         sub = '合约换月邮件<%s>' % (curr_date.strftime('%Y.%m.%d'))
         content = ''
         for data in new_updates:
             content += '交易日(%s) expiry roll contract nb1: %s  nb2: %s\n' % (data["date"].strftime('%Y.%m.%d'),
                                                                             data["0"], data["1"])
-        send_email_by_smtp(EMAIL_HOTMAIL, ['harvey_wwu@yahoo.com'], sub, content)
+        send_email_by_smtp(EMAIL_HOTMAIL, NOTIFIERS, sub, content)
 
 
     # _ = update_main_roll(start_date=start_date,

@@ -1,11 +1,14 @@
 import sys
 import datetime
+import pandas as pd
 import json
+from pycmqlib3.utility.sec_bits import EMAIL_HOTMAIL, EMAIL_NOTIFY, NOTIFIERS
 from pycmqlib3.utility.misc import day_shift, CHN_Holidays, sign, is_workday, inst2product
 import pycmqlib3.analytics.data_handler as dh
 from aks_data_update import update_hist_fut_daily, update_spot_daily, \
                             update_exch_receipt_table, update_exch_inv_table, update_rank_table
 from factor_data_update import update_factor_data, generate_daily_position
+from pycmqlib3.utility.email_tool import send_html_by_smtp
 
 scenarios_test = [
     ('tscarry', 'ryieldnmb', 1.0, 1, 122, 1, (None, {}, ''), [0.0, 0.0]),
@@ -62,6 +65,8 @@ port_pos_config = [
     ('PT_FACTPORT3', 'C:/dev/pyktrader3/process/pt_test3/', 4600, 'expiry', 'd1'),
     ('PT_FACTPORT1', 'C:/dev/pyktrader3/process/pt_test3/', 4600, 'expiry', 'd1'),
 ]
+
+pos_chg_notification = ['PT_FACTPORT3_CAL_30b', 'PT_FACTPORT1_hot']
 
 scenarios_all = [
     ('tscarry', 'ryieldnmb', 2.8, 1, 120, 1, (None, {}, ''), [0.0, 0.0]),
@@ -217,6 +222,7 @@ def run_update(tday=datetime.date.today()):
     update_field = 'fact_pos_file'
     if update_field not in job_status:
         job_status[update_field] = {}
+    pos_update = {}
     for (port_name, pos_loc, pos_scaler, roll, freq) in port_pos_config:
         port_file = port_name + '_' + roll
         if job_status[update_field].get(port_file, False):
@@ -239,34 +245,53 @@ def run_update(tday=datetime.date.today()):
                                                           pos_scaler=pos_scaler,
                                                           freq=freq,
                                                           hist_fact_lookback=20)
-            pos_date = day_shift(edate, '1b', CHN_Holidays).strftime('%Y%m%d')
+            pos_date = day_shift(edate, '1b', CHN_Holidays)
+            pre_date = day_shift(pos_date, '-1b', CHN_Holidays)
+            pos_date = pos_date.strftime('%Y%m%d')
+            pre_date = pre_date.strftime('%Y%m%d')
             posfile = '%s%s_%s.json' % (pos_loc, port_file, pos_date)
             with open(posfile, 'w') as ofile:
                 json.dump(target_pos, ofile, indent=4)
             pos_sum.index.name = 'factor'
             pos_sum.to_csv('%spos_by_strat_%s_%s.csv' % (pos_loc, port_file, pos_date))
             job_status[update_field][port_file] = True
+
+            if port_file in pos_chg_notification:
+                with open('%s%s_%s.json' % (pos_loc, port_file, pre_date), 'r') as fp:
+                    curr_pos = json.load(fp)
+                pos_df = pd.DataFrame({'cur': curr_pos, 'tgt': target_pos})
+                pos_df['diff'] = pos_df['tgt'] - pos_df['cur']
+                pos_update[port_file] = pos_df
         except:
             job_status[update_field][port_file] = False
         save_status(filename, job_status)
 
     sdate = day_shift(tday, '-1b', CHN_Holidays)
-    for (update_field, update_func, ref_text) in [('exch_receipt', update_exch_receipt_table, 'exch receipt'), \
-                                                ('exch_inv', update_exch_inv_table, 'exchange warrant'), \
-                                                ('spot_daily', update_spot_daily, 'spot data'), \
-                                                ('rank_table', update_rank_table, 'top future broker ranking table'),]:
+    for (update_field, update_func, ref_text) in [('exch_receipt', update_exch_receipt_table, 'exch receipt'),
+                                                  ('exch_inv', update_exch_inv_table, 'exchange warrant'),
+                                                  ('spot_daily', update_spot_daily, 'spot data'),
+                                                  ('rank_table', update_rank_table, 'top future broker ranking table')]:
         try:
             print('updating historical %s ...' % ref_text)
             if not job_status.get(update_field, False):
-                update_func(sdate, tday, flavor = 'mysql')
+                update_func(sdate, tday, flavor='mysql')
                 job_status[update_field] = True
         except:
             job_status[update_field] = False
             print("update_field = %s is FAILED to update" % (update_field))
         save_status(filename, job_status)
 
+    if EMAIL_NOTIFY:
+        sub = 'EOD pos and job status<%s>' % (edate.strftime('%Y.%m.%d'))
+        html = "<html><head></head><body><p><br>"
+        for key in pos_update:
+            html += "Position change for %s:<br>%s" % (key, pos_update[key].to_html())
+        html += "Job status: %s <br>" % (json.dumps(job_status))
+        html += "</p></body></html>"
+        send_html_by_smtp(EMAIL_HOTMAIL, NOTIFIERS, sub, html)
 
-if __name__=="__main__":    
+
+if __name__ == "__main__":
     args = sys.argv[1:]
     if len(args)>=1:
         tday = datetime.datetime.strptime(args[0], "%Y%m%d").date()
