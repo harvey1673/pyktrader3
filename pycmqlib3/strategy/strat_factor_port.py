@@ -17,14 +17,15 @@ class FactorPortTrader(Strategy):
     common_params = dict(Strategy.common_params, \
                          **{'freq': 's1',
                             'factor_repo': {'lr_sum_20': {'name': 'lr_sum_20','type': 'ts', 'param': [], 'weight': 1.0, \
-                                            'rebal': 5, 'threshold': 0.0}}, \
-                            'factor_data': {}, \
-                            'factor_pos': {}, \
-                            'pos_scaler': 1000000.0, 'vol_win': 20, \
-                            'exec_bar_list': [305], \
-                            'fact_db_table': 'fut_fact_data', \
+                                            'rebal': 5, 'threshold': 0.0}},
+                            'factor_data': {},
+                            'factor_pos': {},
+                            'pos_scaler': 1000000.0, 'vol_win': 20,
+                            'exec_bar_list': [305],
+                            'fact_db_table': 'fut_fact_data',
+                            'roll_label': 'CAL_30b',
                             'hist_fact_lookback': 250, })
-    asset_params = dict({'roll_label': 'CAL_30b',}, **Strategy.asset_params)
+    asset_params = dict({}, **Strategy.asset_params)
 
     def __init__(self, config, agent=None):
         Strategy.__init__(self, config, agent)
@@ -57,18 +58,16 @@ class FactorPortTrader(Strategy):
     def load_fact_data(self):
         if 'db' in self.fact_src:
             end_date = self.agent.scur_day
-            start_date = day_shift(end_date, '-%sb' % (str(self.hist_fact_lookback)))
-            df = pd.DataFrame()
+            start_date = day_shift(end_date, '-%sb' % (str(self.hist_fact_lookback)))            
             fact_list = list(set([self.factor_repo[fact]['name'] for fact in self.factor_repo.keys()]))
-            for roll_rule in set(self.roll_label):
-                prod_list = [prod for prod, roll in zip(self.prod_list, self.roll_label) if roll == roll_rule]                
-                adf = load_factor_data(prod_list, \
-                             factor_list = fact_list,\
-                             roll_label = roll_rule,\
-                             start = start_date, \
-                             end = end_date, \
-                             freq = self.freq, db_table = self.fact_db_table)
-                df = df.append(adf)
+            df = load_factor_data(self.prod_list, 
+                                  factor_list=fact_list,
+                                  roll_label=self.roll_label,
+                                  start=start_date,
+                                  end=end_date,
+                                  freq=self.freq, 
+                                  db_table=self.fact_db_table)
+            print(df)
             for fact in self.factor_repo:
                 xdf = pd.pivot_table(df[df['fact_name'] == self.factor_repo[fact]['name']], values = 'fact_val', \
                                      index = ['date', 'serial_key'], columns = ['product_code'],\

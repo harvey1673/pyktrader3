@@ -53,9 +53,14 @@ commod_mkts = ['rb', 'hc', 'i', 'j', 'jm', 'ru', 'FG', 'cu', 'al', 'zn', 'pb', '
                'AP', 'SM', 'SF', 'ss', 'CJ', 'UR', 'eb', 'eg', 'pg', 'T', 'PK', 'PF', 'lh', \
                'MA', 'SR', 'cs', 'TF', 'lu', 'fu']
 
+
 port_pos_config = [
     ('PT_FACTPORT3', 'C:/dev/pyktrader3/process/pt_test3/', 4600, 'CAL_30b', 's1'),
     ('PT_FACTPORT1', 'C:/dev/pyktrader3/process/pt_test3/', 4600, 'CAL_30b', 's1'),
+    ('PT_FACTPORT3', 'C:/dev/pyktrader3/process/pt_test3/', 4600, 'hot', 'd1'),
+    ('PT_FACTPORT1', 'C:/dev/pyktrader3/process/pt_test3/', 4600, 'hot', 'd1'),
+    ('PT_FACTPORT3', 'C:/dev/pyktrader3/process/pt_test3/', 4600, 'expiry', 'd1'),
+    ('PT_FACTPORT1', 'C:/dev/pyktrader3/process/pt_test3/', 4600, 'expiry', 'd1'),
 ]
 
 scenarios_all = [
@@ -151,6 +156,12 @@ scenarios_all = [
 ]
 
 
+run_settings = [
+    ('commod_cal', commod_mkts, scenarios_all, 'CAL_30b', 's1'),
+    ('commod_hot', commod_mkts, scenarios_all, 'hot', 'd1'),
+    ('commod_exp', commod_mkts, scenarios_all, 'expiry', 'd1'),
+]
+
 
 def save_status(filename, job_status):
     with open(filename, 'w') as ofile:
@@ -193,10 +204,10 @@ def run_update(tday=datetime.date.today()):
     update_field = 'fact_repo'
     if update_field not in job_status:
         job_status[update_field] = {}
-    for (fact_key, fact_mkts, scenarios) in [('commod_all', commod_mkts, scenarios_all),]:
+    for (fact_key, fact_mkts, scenarios, roll_label, freq) in run_settings:
         try:
             if not job_status[update_field].get(fact_key, False):
-                _ = update_factor_data(fact_mkts, scenarios, start_date, edate, roll_rule='30b')
+                _ = update_factor_data(fact_mkts, scenarios, start_date, edate, roll_rule=roll_label, freq=freq)
                 job_status[update_field][fact_key] = True
         except:
             job_status[update_field][fact_key] = False
@@ -207,7 +218,8 @@ def run_update(tday=datetime.date.today()):
     if update_field not in job_status:
         job_status[update_field] = {}
     for (port_name, pos_loc, pos_scaler, roll, freq) in port_pos_config:
-        if job_status[update_field].get(port_name, False):
+        port_file = port_name + '_' + roll
+        if job_status[update_field].get(port_file, False):
             continue
         config_file = f'{pos_loc}settings/{port_name}.json'
         with open(config_file, 'r') as fp:
@@ -228,14 +240,14 @@ def run_update(tday=datetime.date.today()):
                                                           freq=freq,
                                                           hist_fact_lookback=20)
             pos_date = day_shift(edate, '1b', CHN_Holidays).strftime('%Y%m%d')
-            posfile = '%s%s_%s_%s.json' % (pos_loc, port_name, roll, pos_date)
+            posfile = '%s%s_%s.json' % (pos_loc, port_file, pos_date)
             with open(posfile, 'w') as ofile:
                 json.dump(target_pos, ofile, indent=4)
             pos_sum.index.name = 'factor'
-            pos_sum.to_csv('%spos_by_strat_%s_%s_%s.csv' % (pos_loc, port_name, roll, pos_date))
-            job_status[update_field][port_name] = True
+            pos_sum.to_csv('%spos_by_strat_%s_%s.csv' % (pos_loc, port_file, pos_date))
+            job_status[update_field][port_file] = True
         except:
-            job_status[update_field][port_name] = False
+            job_status[update_field][port_file] = False
         save_status(filename, job_status)
 
     sdate = day_shift(tday, '-1b', CHN_Holidays)
