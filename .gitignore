@@ -6,7 +6,6 @@
 # Node artifact files
 node_modules/
 dist/
-process/
 bktest/.ipynb_checkpoints/
 *.csv
 *.pyd
