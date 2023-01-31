@@ -84,7 +84,7 @@ def update_factor_db(xdf, field, config, dbtable='fut_fact_data', flavor='mysql'
 
 def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule='CAL_30b', freq='d', flavor='mysql'):
     col_list = ['open', 'high', 'low','close', 'volume', 'openInterest', 'contract', 'shift']
-    update_start = day_shift(end_date, '-5b', CHN_Holidays)
+    update_start = day_shift(end_date, '-20b', CHN_Holidays)
     shift_mode = 1
 
     fact_config = {}
