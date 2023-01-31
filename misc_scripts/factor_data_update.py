@@ -5,8 +5,8 @@ import datetime
 import copy
 from sqlalchemy import create_engine
 from pycmqlib3.utility.dbaccess import dbconfig, mysql_replace_into, connect, load_factor_data
-from pycmqlib3.utility.dataseries import nearby
-from pycmqlib3.utility.misc import cleanup_mindata, prod2exch, inst2contmth, day_shift, sign, product_lotsize, CHN_Holidays
+from pycmqlib3.utility import dataseries
+from pycmqlib3.utility.misc import cleanup_mindata, prod2exch, inst2contmth, day_shift, sign, product_lotsize, CHN_Holidays, nearby
 import pycmqlib3.analytics.data_handler as dh
 
 ferrous_products_mkts = ['rb', 'hc', 'i', 'j', 'jm']
@@ -17,28 +17,15 @@ ind_metal_mkts = ferrous_products_mkts + ferrous_mixed_mkts + base_metal_mkts
 petro_chem_mkts = ['l', 'pp', 'v', 'TA', 'MA', 'bu']  # , 'sc', 'fu', 'eg']
 ind_all_mkts = ind_metal_mkts + petro_chem_mkts
 ags_oil_mkts = ['m', 'RM', 'y', 'p', 'OI', 'a', 'c', 'cs']  # , 'b']
-ags_soft_mkts = ['CF', 'CY', 'SR', 'jd', 'AP']  # , 'sp', 'CJ', 'UR']
+ags_soft_mkts = ['CF', 'CY', 'SR', 'jd', 'AP', 'UR', 'CJ']  # , 'sp', 'CJ', 'UR']
 ags_all_mkts = ags_oil_mkts + ags_soft_mkts
-eq_fut_mkts = ['IF', 'IH', 'IC']
-bond_fut_mkts = ['T', 'TF']
+eq_fut_mkts = ['IF', 'IH', 'IC', "IM"]
+bond_fut_mkts = ['T', 'TF', 'TS']
 fin_all_mkts = eq_fut_mkts + bond_fut_mkts
 commod_all_mkts = ind_all_mkts + ags_all_mkts + precious_metal_mkts
 all_markets = commod_all_mkts + fin_all_mkts
 
-trade_cont_map = {'rb': ['rb2110', 'rb2201'], 'hc': ['hc2110', 'hc2201'], 'i': ['i2109', 'i2201'],
-                  'j': ['j2109', 'j2201'], 'jm': ['jm2109', 'jm2201'], 'ru': ['ru2109', 'ru2201'],
-                  'FG': ['FG109', 'FG201'], 'ZC': ['ZC109', 'ZC201'], 'cu': ['cu2107', 'cu2108'],
-                  'al': ['al2107', 'al2108'], 'zn': ['zn2107', 'zn2108'], 'ni': ['ni2107', 'ni2108'],
-                  'sn': ['sn2107', 'sn2108'], 'pb': ['pb2107', 'pb2108'], 'l': ['l2109', 'l2201'], 
-                  'pp': ['pp2109', 'pp2201'], 'v': ['v2109', 'v2201'], 'TA': ['TA109', 'TA201'],
-                  'sc': ['sc2106', 'sc2107'], 'm': ['m2109', 'm2201'], 'RM': ['RM109', 'RM201'],
-                  'y': ['y2109', 'y2201'], 'p': ['p2109', 'p2201'], 'OI': ['OI109', 'OI201'],
-                  'a': ['a2109', 'a2201'], 'c': ['c2109', 'c2201'], 'cs': ['cs2109', 'cs2201'],
-                  'CF': ['CF109', 'CF201'], 'jd': ['jd2109', 'jd2201'], 'AP': ['AP110', 'AP201'],
-                  'ss': ['ss2107', 'ss2108'], 'SM': ['SM109', 'SM201'], 'SF': ['SF109', 'SF201'],
-                  'SR': ['SR109', 'SR201'], 'CY': ['CY109', 'CY201'], 'eg': ['eg2109', 'eg2201'],
-                  'ag': ['ag2112', 'ag2206'], 'au': ['au2112', 'au2206'], 
-                  }
+trade_cont_map = {}
 
 sim_start_dict = {'c': datetime.date(2011, 1, 1), 'm': datetime.date(2011, 1, 1),
                   'y': datetime.date(2011, 1, 1), 'l': datetime.date(2011, 1, 1), 'rb': datetime.date(2011, 1, 1),
@@ -95,23 +82,14 @@ def update_factor_db(xdf, field, config, dbtable='fut_fact_data', flavor='mysql'
         conn.dispose()
 
 
-def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule='30b', flavor='mysql', dbtbl_prefix=''):
+def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule='CAL_30b', freq='d', flavor='mysql'):
     col_list = ['open', 'high', 'low','close', 'volume', 'openInterest', 'contract', 'shift']
     update_start = day_shift(end_date, '-5b', CHN_Holidays)
     shift_mode = 1
-    freq = 'd'
-    args = {'roll_rule': '-' + roll_rule, 'freq': freq, 'shift_mode': shift_mode, 'dbtbl_prefix': dbtbl_prefix}
-    base_args = {'roll_rule': '-25b', 'freq': freq, 'shift_mode': shift_mode, 'dbtbl_prefix': dbtbl_prefix}
-    base2_args = {'roll_rule': '-35b', 'freq': freq, 'shift_mode': shift_mode}
-    sc_args = {'roll_rule': '-20b', 'freq': freq, 'shift_mode': shift_mode}
-    lu_args = {'roll_rule': '-45b', 'freq': freq, 'shift_mode': shift_mode}
-    eq_args = {'roll_rule': '-1b', 'freq': freq, 'shift_mode': shift_mode, 'dbtbl_prefix': dbtbl_prefix}
-    bond_args = {'roll_rule': '-20b', 'freq': freq, 'shift_mode': shift_mode, 'dbtbl_prefix': dbtbl_prefix}
-    precious_args = {'roll_rule': '-15b', 'freq': freq, 'shift_mode': shift_mode, 'dbtbl_prefix': dbtbl_prefix}
 
     fact_config = {}
-    fact_config['roll_label'] = 'CAL_%s' % roll_rule
-    if freq == 'd':
+    fact_config['roll_label'] = roll_rule
+    if roll_rule == 'CAL_30b':
         fact_config['freq'] = 's1'
     else:
         fact_config['freq'] = freq
@@ -119,46 +97,41 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule=
     fact_config['serial_no'] = 0
 
     factor_repo = {}
-    roll_name = 'expiry'
-    roll_file_loc = "C:/dev/wtdev/config/"
+
     for idx, asset in enumerate(product_list):
-        print("loading mkt = %s, nb = 1, " % asset)
-        df = nearby(asset,
-                    1,
-                    start_date=max(sim_start_dict.get(asset, start_date), start_date),
-                    end_date=end_date,
-                    shift_mode=shift_mode,
-                    freq=freq,
-                    roll_name=roll_name,
-                    config_loc=roll_file_loc)
-        df = df.set_index('date')
-        df = df[col_list]
-        if freq == 'm':
-            df = cleanup_mindata(df, asset)
-        # df['expiry'] = df['contract'].apply(lambda x: contract_expiry(x, CHN_Holidays))
-        df['contmth'] = df['contract'].apply(lambda x: inst2contmth(x))
-        df['mth'] = df['contmth'].apply(lambda x: x // 100 * 12 + x % 100)
+        sdate = max(sim_start_dict.get(asset, start_date), start_date)
+        print("loading mkt = %s" % asset)
+        if roll_rule == 'CAL_30b':
+            roll = '-30b'
+            if asset in eq_fut_mkts:
+                roll = '-1b'
+            elif asset in ['cu', 'al', 'zn', 'pb', 'sn', 'ss', 'lu']:
+                roll = '-25b'
+            elif asset in ['ni', 'jd', 'lh', 'eg', ]:
+                roll = '-35b'
+            elif asset in ['sc', 'eb'] + bond_fut_mkts:
+                roll = '-20b'
+            elif asset in precious_metal_mkts:
+                roll = '-15b'
+            df1 = nearby(asset, 1, start_date=sdate, end_date=end_date, shift_mode=shift_mode, freq='d', roll_rule=roll)
+            df2 = nearby(asset, 2, start_date=sdate, end_date=end_date, shift_mode=shift_mode, freq='d', roll_rule=roll)
+        else:
+            df1 = dataseries.nearby(asset, 1, start_date=sdate, end_date=end_date, shift_mode=shift_mode, freq='d',
+                                    roll_name=roll_rule, config_loc="C:/dev/wtdev/config/").set_index('date')
+            df2 = dataseries.nearby(asset, 2, start_date=sdate, end_date=end_date, shift_mode=shift_mode, freq='d',
+                                    roll_name=roll_rule, config_loc="C:/dev/wtdev/config/").set_index('date')
+        df1 = df1[col_list]
+        df1['contmth'] = df1['contract'].apply(lambda x: inst2contmth(x))
+        df1['mth'] = df1['contmth'].apply(lambda x: x // 100 * 12 + x % 100)
         vol_win = 20
-        df['atr'] = dh.ATR(df, vol_win).fillna(method='bfill')
+        df1['atr'] = dh.ATR(df1, vol_win).fillna(method='bfill')
 
-        print("loading mkt = %s, nb = 2" % asset)
-        xdf = nearby(asset,
-                     2,
-                     start_date=max(sim_start_dict.get(asset, start_date), start_date),
-                     end_date=end_date,
-                     shift_mode=shift_mode,
-                     freq=freq,
-                     roll_name=roll_name,
-                     config_loc=roll_file_loc).set_index('date')
-        xdf = xdf[col_list]
-        if freq == 'm':
-            xdf = cleanup_mindata(xdf, asset)
-        # xdf['expiry'] = xdf['contract'].apply(lambda x: contract_expiry(x, CHN_Holidays))
-        xdf['contmth'] = xdf['contract'].apply(lambda x: inst2contmth(x))
-        xdf['mth'] = xdf['contmth'].apply(lambda x: x // 100 * 12 + x % 100)
+        df2 = df2[col_list]
+        df2['contmth'] = df2['contract'].apply(lambda x: inst2contmth(x))
+        df2['mth'] = df2['contmth'].apply(lambda x: x // 100 * 12 + x % 100)
 
-        xdf.columns = [col + '_2' for col in xdf.columns]
-        xdf = pd.concat([df, xdf], axis=1, sort=False).sort_index()
+        df2.columns = [col + '_2' for col in df2.columns]
+        xdf = pd.concat([df1, df2], axis=1, sort=False).sort_index()
         fact_config['product_code'] = asset
         fact_config['exch'] = prod2exch(asset)
         if shift_mode == 1:
@@ -307,6 +280,8 @@ def generate_daily_position(cur_date, prod_list, factor_repo,
                             pos_scaler=1000,
                             fact_db_table='fut_fact_data',
                             hist_fact_lookback=100):
+    if roll_label == 'CAL_30b':
+        freq = 's1'
     fact_data = {}
     factor_pos = {}
     target_pos = {}

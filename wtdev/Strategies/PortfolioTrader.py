@@ -11,7 +11,8 @@ from pycmqlib3.utility.process_wt_data import wt_time_to_min_id
 class StraPortTrader(BaseCtaStrategy):
     def __init__(self, name, pos_loc='C:/dev/pyktrader3/process/pt_test2',
                  reload_times=[2200, 2230, 905, 930, 1030, 1130, 1330, 1430],
-                 exec_times=[2107, 2250, 907, 933, 1034, 1334]):
+                 exec_times=[2107, 2250, 907, 933, 1034, 1334],
+                 strat_postfix='CAL_30b'):
         BaseCtaStrategy.__init__(self, name)
         config_file = f'{pos_loc}/settings/{name}.json'
         with open(config_file, 'r') as fp:
@@ -20,6 +21,7 @@ class StraPortTrader(BaseCtaStrategy):
         assets = strat_args['assets']
         num_assets = len(assets)
         self.__pos_loc = pos_loc
+        self.__postfix = strat_postfix
         self.__prod_list = [''] * num_assets
         self.__codes = [''] * num_assets
         self.__prev_codes = [''] * num_assets
@@ -52,7 +54,8 @@ class StraPortTrader(BaseCtaStrategy):
         cur_date = context.stra_get_tdate()
         pos_loc = self.__pos_loc
         strat_name = self.__name__
-        pos_file = f'{pos_loc}/{strat_name}_{cur_date}.json'
+        post_fix = self.__postfix
+        pos_file = f'{pos_loc}/{strat_name}_{post_fix}_{cur_date}.json'
         context.stra_log_text(f"reload curr position from {pos_file}")
         with open(pos_file, 'r') as fp:
             pos_dict = json.load(fp)

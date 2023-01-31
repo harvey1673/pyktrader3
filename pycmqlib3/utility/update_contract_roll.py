@@ -378,50 +378,8 @@ def handle_roll_schedule(df, roll_map):
     return out
 
 
-def generate_daily_roll(folder="C:/dev/wtdev/config/roll",
-                        markets=all_markets,
-                        roll_list=[('oroll', 'oi_roll'), ('troll', 'exp_roll')],
-                        output_json=False):
-    res = {}
-    max_nb = 3
-    for roll_name, outfile_prefix in roll_list:
-        out_dict = dict([(str(idx), dict([(exch, {}) for exch in ["DCE", "CZCE", "SHFE", "INE", "CFFEX"]]))
-                         for idx in range(max_nb)])
-        key_map = dict([(str(idx), f'{outfile_prefix}{idx + 1}') for idx in range(max_nb)])
-        for prodcode in markets:
-            print(f'processing roll={roll_name}, product={prodcode}')
-            filename = "%s/%s_%s.csv" % (folder, prodcode, roll_name)
-            exch = misc.prod2exch(prodcode)
-            code = '.'.join([exch, prodcode])
-            xdf = load_fut_by_product(code, start_date, end_date, freq='d')
-            roll_map = pd.read_csv(filename, parse_dates=['date'])
-            roll_map['date'] = roll_map['date'].dt.date
-            roll_map = default_fill(roll_map)
-            res = handle_roll_schedule(xdf, roll_map)
-            for nb in res['roll_map'].keys():
-                roll_df = res['roll_map'][nb].reset_index()
-                roll_df['roll_date'] = roll_df['date'].apply(lambda x: misc.day_shift(x, '1b', misc.CHN_Holidays))
-                roll_df[f'{nb}_prev'] = roll_df[nb].shift(1)
-                for key in [nb, f'{nb}_prev']:
-                    roll_df = roll_df.merge(xdf[['instID', 'date', 'close', 'volume', 'openInterest']], how='left',
-                                            left_on=[key, 'date'],
-                                            right_on=['instID', 'date']).drop(columns=['instID'])
-                    roll_df = roll_df.rename(columns={'close': f'close_{key}',
-                                                      'volume': f'vol_{key}',
-                                                      'openInterest': f'oi_{key}'})
-                nb_df = roll_df[['roll_date', f'{nb}_prev', nb, f'close_{nb}_prev', f'close_{nb}']].copy()
-                nb_df.columns = ['date', 'from', 'to', 'oldclose', 'newclose']
-                nb_df['date'] = nb_df['date'].apply(lambda d: misc.day_shift(d, '1b', misc.CHN_Holidays))
-                nb_df['date'] = nb_df['date'].astype('datetime64').dt.strftime('%Y%m%d').astype('int64')
-                nb_df.fillna({'from': '', 'oldclose': 0.0}, inplace=True)
-                out_dict[nb][exch][prodcode] = nb_df.to_dict('records')
-        res[roll_name] = out_dict
-        if output_json:
-            for nb in out_dict.keys():
-                fname = '%s/%s.json' % (folder, key_map[nb])
-                with open(fname, 'w') as ofile:
-                    json.dump(out_dict[nb], ofile, indent=4)
-    return res
+def increment_update_roll_json(roll_name, new_updates):
+    pass
 
 
 def run(curr_date=datetime.date.today(), folder='C:/dev/wtdev/config'):

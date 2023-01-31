@@ -220,18 +220,19 @@ def run_update(tday=datetime.date.today()):
             under = asset_dict["underliers"][0]
             product = inst2product(under)
             product_list.append(product)
+
         try:
             target_pos, pos_sum = generate_daily_position(edate, product_list, factor_repo,
-                                                            roll_label=roll,
-                                                            pos_scaler=pos_scaler,
-                                                            freq=freq,
-                                                            hist_fact_lookback=20)
+                                                          roll_label=roll,
+                                                          pos_scaler=pos_scaler,
+                                                          freq=freq,
+                                                          hist_fact_lookback=20)
             pos_date = day_shift(edate, '1b', CHN_Holidays).strftime('%Y%m%d')
-            posfile = '%s%s_%s.json' % (pos_loc, port_name, pos_date)
+            posfile = '%s%s_%s_%s.json' % (pos_loc, port_name, roll, pos_date)
             with open(posfile, 'w') as ofile:
                 json.dump(target_pos, ofile, indent=4)
             pos_sum.index.name = 'factor'
-            pos_sum.to_csv('%spos_by_strat_%s_%s.csv' % (pos_loc, port_name, pos_date))
+            pos_sum.to_csv('%spos_by_strat_%s_%s_%s.csv' % (pos_loc, port_name, roll, pos_date))
             job_status[update_field][port_name] = True
         except:
             job_status[update_field][port_name] = False
