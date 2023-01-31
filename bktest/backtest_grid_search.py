@@ -2,7 +2,7 @@ import datetime
 import itertools
 import pandas as pd
 
-from pycmqlib3.utility import dataseries
+from pycmqlib3.utility import dataseries, misc
 from pycmqlib3.analytics.tstool import *
 from pycmqlib3.analytics.btmetrics import *
 from pycmqlib3.analytics.backtest_utils import *
@@ -80,22 +80,43 @@ def load_hist_data(start_date, end_date,
                    freq='d',
                    roll_file_loc="C:/dev/wtdev/config/",
                    shift_mode=1):
-    field_list = ['contract', 'open', 'high', 'low', 'close', 'volume', 'openInterest', 'diff_oi', 'expiry', 'mth',
-                  'shift']
+    field_list = ['contract', 'open', 'high', 'low', 'close', 'volume', 'openInterest', 'expiry', 'mth', 'shift']
     nb_cont = 2
     data_df = pd.DataFrame()
     error_list = []
     for prodcode in sim_markets:
         for nb in range(nb_cont):
             try:
-                adf = dataseries.nearby(prodcode,
-                                        nb + 1,
-                                        start_date=start_date,
-                                        end_date=end_date,
-                                        shift_mode=shift_mode,
-                                        freq=freq,
-                                        roll_name=roll_name,
-                                        config_loc=roll_file_loc)
+                if roll_name == 'CAL_30b':
+                    roll = '-30b'
+                    if prodcode in eq_fut_mkts:
+                        roll = '0b'
+                    elif prodcode in ['cu', 'al', 'zn', 'pb', 'sn', 'ss', 'lu']:
+                        roll = '-25b'
+                    elif prodcode in ['ni', 'jd', 'lh', 'eg',]:
+                        roll = '-35b'
+                    elif prodcode in ['v', 'MA']:
+                        roll = '-28b'
+                    elif prodcode in ['sc', 'eb'] + bond_fut_mkts:
+                        roll = '-20b'
+                    elif prodcode in precious_metal_mkts:
+                        roll = '-15b'
+                    sdate = max(start_date, daily_start_dict.get(prodcode, start_date))
+                    adf = misc.nearby(prodcode, nb+1,
+                                      start_date=sdate,
+                                      end_date=end_date,
+                                      shift_mode=shift_mode,
+                                      freq=freq,
+                                      roll_rule=roll).reset_index()
+                else:
+                    adf = dataseries.nearby(prodcode,
+                                            nb+1,
+                                            start_date=start_date,
+                                            end_date=end_date,
+                                            shift_mode=shift_mode,
+                                            freq=freq,
+                                            roll_name=roll_name,
+                                            config_loc=roll_file_loc)
                 adf['expiry'] = adf['contract'].map(misc.contract_expiry)
                 adf['contmth'] = adf['contract'].map(misc.inst2contmth)
                 adf['mth'] = adf['contmth'].apply(lambda x: x // 100 * 12 + x % 100)

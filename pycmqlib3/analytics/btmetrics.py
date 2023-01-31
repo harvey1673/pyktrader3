@@ -213,6 +213,14 @@ class MetricsBase(object):
             pnl_stats[metric] = self._calculate_perf_metric(portfolio_pnl, metric, tenors=tenors)
         return pnl_stats
 
+    def calculate_daily_pnl(self, trade_prices, close_prices):
+        holdings, trade_prices = self._align_holding_returns(self.holdings, trade_prices, limits=None, backtest=True)
+        holdings, close_prices = self._align_holding_returns(self.holdings, close_prices, limits=None, backtest=True)
+        cost_df = self.holdings.diff().abs().multiply(self.offsets, axis=1) * self.cost_ratio
+        pnl_df = self.holdings.shift(1).multiply(close_prices.diff().fillna(0))
+        pnl_df += (self.holdings - self.holdings.shift(1).fillna(0)).multiply(close_prices - trade_prices)
+        return pnl_df - cost_df
+
     def asset_returns(self):
         cum_log_returns = np.log(1+self.returns).cumsum(axis=0)
         asset_returns_stats = {'asset_cum_log_returns': cum_log_returns}
@@ -505,7 +513,7 @@ class MetricsBase(object):
 
     def scaled_holdings(self, rolling_periods=252):
         rolling_std = self.returns.rolling(min_periods=1, window=rolling_periods).std()
-        scaled_holding = self.holdings.multiply(rolling_std)
+        scaled_holding = self.holdings.div(rolling_std)
         return scaled_holding
 
     def expected_risk(self):
