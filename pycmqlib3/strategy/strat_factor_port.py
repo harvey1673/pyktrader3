@@ -67,7 +67,7 @@ class FactorPortTrader(Strategy):
                                   end=end_date,
                                   freq=self.freq, 
                                   db_table=self.fact_db_table)
-            print(df)
+
             for fact in self.factor_repo:
                 xdf = pd.pivot_table(df[df['fact_name'] == self.factor_repo[fact]['name']], values = 'fact_val', \
                                      index = ['date', 'serial_key'], columns = ['product_code'],\
