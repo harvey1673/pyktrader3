@@ -281,7 +281,8 @@ def run_update(tday=datetime.date.today()):
             print("update_field = %s is FAILED to update" % (update_field))
         save_status(filename, job_status)
 
-    if EMAIL_NOTIFY:
+    update_field = 'email_notify'
+    if not job_status.get(update_field, False) and EMAIL_NOTIFY:
         sub = 'EOD pos and job status<%s>' % (edate.strftime('%Y.%m.%d'))
         html = "<html><head></head><body><p><br>"
         for key in pos_update:
@@ -293,7 +294,7 @@ def run_update(tday=datetime.date.today()):
 
 if __name__ == "__main__":
     args = sys.argv[1:]
-    if len(args)>=1:
+    if len(args) >= 1:
         tday = datetime.datetime.strptime(args[0], "%Y%m%d").date()
     else:
         tday = datetime.date.today()    
