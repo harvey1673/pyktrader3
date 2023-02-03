@@ -290,6 +290,8 @@ def run_update(tday=datetime.date.today()):
         html += "Job status: %s <br>" % (json.dumps(job_status))
         html += "</p></body></html>"
         send_html_by_smtp(EMAIL_HOTMAIL, NOTIFIERS, sub, html)
+        job_status[update_field] = True
+    save_status(filename, job_status)
 
 
 if __name__ == "__main__":
