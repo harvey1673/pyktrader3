@@ -6,6 +6,7 @@ from pycmqlib3.utility import dataseries, misc
 from pycmqlib3.analytics.tstool import *
 from pycmqlib3.analytics.btmetrics import *
 from pycmqlib3.analytics.backtest_utils import *
+from misc_scripts.daily_update_job import scenarios_test, scenarios_elite
 
 ferrous_products_mkts = ['rb', 'hc', 'i', 'j', 'jm']
 ferrous_mixed_mkts = ['ru', 'FG', 'SM', "SF", 'nr', 'SA', 'UR'] # 'ZC',
@@ -344,5 +345,128 @@ def run_xs_product(df,
             pnl_stats_dict[group_key][(sim_type, signal_name)] = stat_dict
 
     return bt_metric_dict, pnl_stats_dict
+
+
+def run_scenarios(df,
+                  start_date,
+                  end_date,
+                  product_list,
+                  scenarios):
+    file_folder = "C:\\dev\\data\\data_cache\\"
+    scenario_config = {
+        'shift_mode': 1,
+        'exec_mode': 'open',
+        'rev_char': '!',
+        'cost_ratio': 0,
+        'total_risk': 4600,
+        'asset_scaling': False,
+        'pnl_tenors': ['6m', '1y', '2y', '3y', '4y', '5y', '6y', '7y', '8y', '9y', '10y', '11y'],
+        'std_win': 20,
+        'xs_signal': '',
+        'xs_params': {'cutoff': 0.2},
+    }
+    product_offsets = misc.product_trade_offsets(product_list)
+    run_pos_sum = True
+    pos_sum = pd.DataFrame()
+    scen_names = []
+    scen_metrics = []
+    scen_stats = []
+
+    port_start = pd.to_datetime('2019-01-01')
+
+    for scen in scenarios:
+        sim_type = scen[0]
+        signal_name = scen[1]
+        weight = scen[2]
+        win = scen[3]
+        ma_win = scen[4]
+        rebal = scen[5]
+        pos_map = scen[6]
+        params = scen[7]
+        run_name = '-'.join([sim_type, signal_name, str(win), str(ma_win), str(rebal)])
+
+        run_args = copy.deepcopy(scenario_config)
+        run_args['start_date'] = start_date
+        run_args['end_date'] = end_date
+        run_args['product_list'] = product_list
+
+        run_args['signal_name'] = signal_name
+        run_args['win'] = win
+        run_args['ma_win'] = ma_win
+        run_args['rebal_freq'] = rebal
+        run_args['params'] = params
+        run_args['pos_map'] = pos_map
+        run_args['xs_params'] = {'cutoff': 0.2}
+
+        if 'xs' in sim_type:
+            sim_split = sim_type.split('-')
+            if len(sim_split) > 1:
+                run_args['xs_signal'] = sim_split[1]
+            else:
+                run_args['xs_signal'] = 'rank_cutoff'
+        else:
+            run_args['xs_signal'] = ''
+
+        if len(scen) > 8:
+            run_args['xs_params'] = {'cutoff': scen[8]}
+
+        bt_metrics = run_backtest(df, run_args)
+        scen_names.append(run_name)
+        scen_metrics.append(bt_metrics)
+        pnl_stats = bt_metrics.calculate_pnl_stats(shift=0, tenors=run_args['pnl_tenors'])
+        scen_stats.append(pnl_stats)
+        pnl_stats['portfolio_cumpnl'][port_start:].plot(title=run_name)
+        plt.show()
+        perf_stats = transform_output(pnl_stats)
+        print(perf_stats.round(2))
+
+        if run_pos_sum:
+            pos_sum = pos_sum.add(bt_metrics.holdings * weight, fill_value=0)
+
+    df_pxchg = get_px_chg(df, exec_mode=scenario_config['exec_mode'], chg_type='px', contract='c1')
+    df_pxchg = df_pxchg[product_list].reindex(index=pos_sum.index)
+
+    bt_met = MetricsBase(holdings=pos_sum,
+                         returns=df_pxchg,
+                         offsets=product_offsets,
+                         cost_ratio=scenario_config['cost_ratio'])
+    port_stats = bt_met.calculate_pnl_stats(shift=0, tenors=scenario_config['pnl_tenors'])
+    port_stats['portfolio_cumpnl'][port_start:].plot(title="Total portfolio ")
+    plt.show()
+    perf_stats = transform_output(port_stats)
+    print(perf_stats.round(2))
+
+    bt_metrics = bt_met
+
+    close_prices = df.loc[:,
+                   (df.columns.get_level_values(1) == 'c1') & (df.columns.get_level_values(2) == 'close')].droplevel(
+        [1, 2], axis=1)
+    close_prices = close_prices[product_list]
+    open_prices = df.loc[:,
+                  (df.columns.get_level_values(1) == 'c1') & (df.columns.get_level_values(2) == 'open')].droplevel(
+        [1, 2], axis=1)
+    open_prices = open_prices[product_list]
+    asset_pnl = bt_met.calculate_daily_pnl(open_prices, close_prices)
+    port_pnl = asset_pnl.sum(axis=1).cumsum().to_frame('total')
+    print(port_pnl[-40:])
+    port_pnl.to_csv(file_folder + "port_pnl.csv")
+
+
+def run_scenarios(tday=datetime.date.today(), roll_names=['hot', 'CAL_30b']):
+    product_list = ['rb', 'hc', 'i', 'j', 'jm', 'ru', 'FG', 'cu', 'al', 'zn', 'pb', 'sn', \
+                    'l', 'pp', 'v', 'TA', 'sc', 'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'CF', 'jd', \
+                    'AP', 'SM', 'eb', 'eg', 'UR', 'ss', 'lu', 'lh', 'ni', ]
+
+    for roll_name in roll_names:
+        df, error_list = load_hist_data(
+            start_date=datetime.date(2011, 1, 1),
+            end_date=tday,
+            roll_name=roll_name,
+            sim_markets=product_list,
+            freq='d')
+
+        if len(error_list) > 0:
+            print(error_list)
+
 
 
