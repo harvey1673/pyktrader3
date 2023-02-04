@@ -1,6 +1,6 @@
 import platform
 
-EMAIL_NOTIFY = True
+EMAIL_NOTIFY = False
 
 NOTIFIERS = ['harveywu@gmail.com']
 
