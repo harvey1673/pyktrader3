@@ -5,8 +5,7 @@ from typing import Union, List
 import datetime
 from pycmqlib3.utility import misc
 from pycmqlib3.utility.dbaccess import prod_main_cont_exch
-from pycmqlib3.utility.process_wt_data import load_fut_by_product, \
-    load_bars_to_df, date_to_int, datetime_to_int, int_to_datetime
+from pycmqlib3.utility.process_wt_data import load_fut_by_product, load_bars_to_df
 
 
 def multislice_many(df, label_map):
@@ -150,7 +149,7 @@ def rolling_fut_cont(xdf, nb_cont=2, cont_thres=10_000, roll_mode=1, curr_roll=p
 
 
 def nearby(code, n=1, start_date=None, end_date=None,
-           freq='d', shift_mode=0, roll_name='hots',
+           freq='d', shift_mode=0, roll_name='hot',
            config_loc="C:/dev/wtdev/config/"):
     if '.' in code:
         exch, prodcode = code.split('.')
@@ -167,43 +166,36 @@ def nearby(code, n=1, start_date=None, end_date=None,
         return pd.DataFrame()
     if end_date is None:
         end_date = datetime.date.today()
+    else:
+        end_date = pd.to_datetime(str(end_date)).date()
     if start_date is None:
         start_date = end_date - datetime.timedelta(days=365)
+    else:
+        start_date = pd.to_datetime(str(start_date)).date()
     hols = misc.get_hols_by_exch(exch)
-    start_date = misc.day_shift(misc.day_shift(start_date, '-1b', hols), '1b', hols)
-    end_date = misc.day_shift(misc.day_shift(end_date, '1b', hols), '-1b', hols)
-    start_date = date_to_int(start_date)
-    end_date = date_to_int(end_date)
     if freq in ['m', 'd']:
         period = f'{freq}1'
     else:
         period = freq
-    df = pd.DataFrame()
+    start_date = misc.day_shift(misc.day_shift(start_date, '-1b', hols), '1b', hols)
+    end_date = misc.day_shift(misc.day_shift(end_date, '1b', hols), '-1b', hols)
+
     s_date = start_date
     n_period = len(roll_list)
+    df = pd.DataFrame()
     for idx, row in enumerate(roll_list):
-        s_date = max(s_date, row['date'])
+        s_date = max(s_date, pd.to_datetime(str(row['date'])).date())
         if idx == n_period - 1:
             e_date = end_date
         else:
-            nxt_date = roll_list[idx+1]['date']
+            nxt_date = pd.to_datetime(str(roll_list[idx+1]['date'])).date()
             if nxt_date <= s_date:
                 continue
-            e_date = misc.day_shift(int_to_datetime(nxt_date), '-1b', misc.CHN_Holidays)
-            e_date = min(end_date, date_to_int(e_date))
+            e_date = min(end_date, misc.day_shift(nxt_date, '-1b', hols))
         if s_date <= e_date:
             product, contmth = misc.inst2product(row['to'], rtn_contmth=True)
             code = '.'.join([exch, product, str(contmth)])
-            if 'd' in period:
-                stime = s_date * 10000
-                etime = e_date * 10000
-            else:
-                stime = misc.day_shift(int_to_datetime(s_date), '-1b', misc.CHN_Holidays)
-                stime = datetime_to_int(stime, 2100)
-                etime = e_date * 10000 + 1515
-            new_df = load_bars_to_df(code, period=period,
-                                     start_time=stime,
-                                     end_time=etime)
+            new_df = load_bars_to_df(code, period=period, start_time=s_date, end_time=e_date)
             if len(new_df) > 0:
                 new_df['shift'] = 0.0
             else:

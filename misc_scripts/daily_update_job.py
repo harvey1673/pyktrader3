@@ -5,9 +5,9 @@ import json
 from pycmqlib3.utility.sec_bits import EMAIL_HOTMAIL, EMAIL_NOTIFY, NOTIFIERS
 from pycmqlib3.utility.misc import day_shift, CHN_Holidays, sign, is_workday, inst2product
 import pycmqlib3.analytics.data_handler as dh
-from aks_data_update import update_hist_fut_daily, update_spot_daily, \
-                            update_exch_receipt_table, update_exch_inv_table, update_rank_table
-from factor_data_update import update_factor_data, generate_daily_position
+from misc_scripts.aks_data_update import update_hist_fut_daily, update_spot_daily, \
+    update_exch_receipt_table, update_exch_inv_table, update_rank_table
+from misc_scripts.factor_data_update import update_factor_data, generate_daily_position
 from pycmqlib3.utility.email_tool import send_html_by_smtp
 
 scenarios_elite = [
