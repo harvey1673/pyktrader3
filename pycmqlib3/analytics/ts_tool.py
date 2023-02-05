@@ -164,10 +164,10 @@ def split_df(df, date_list, split_col = 'date'):
 def get_cont_data(asset, start_date, end_date, freq = '1m', nearby = 1, rollrule = '-10b'):
     cnx = dbaccess.connect(**dbaccess.hist_dbconfig)
     if nearby == 0:
-        mdf = dbaccess.load_min_data_to_df(cnx, 'fut_min', asset, start_date, end_date, minid_start = 300, minid_end = 2114, database = 'hist_data')
+        mdf = dbaccess.load_min_data_to_df(cnx, 'fut_min', asset, start_date, end_date, minid_start = 300, minid_end = 2114)
         mdf['contract'] = asset
     else:
-        mdf = misc.nearby(asset, nearby, start_date, end_date, rollrule, 'm', shift_mode=True, database = 'hist_data')
+        mdf = misc.nearby(asset, nearby, start_date, end_date, rollrule, 'm', shift_mode=True)
     mdf = misc.cleanup_mindata(mdf, asset)
     xdf = dh.conv_ohlc_freq(mdf, freq, extra_cols = ['contract'], bar_func = dh.bar_conv_func2)
     return xdf

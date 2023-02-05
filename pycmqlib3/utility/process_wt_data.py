@@ -21,6 +21,28 @@ def assign(procession, buffer):
     tuple(map(lambda x: setattr(buffer[x[0]], procession.name, x[1]), enumerate(procession)))
 
 
+def wtcode_to_code(wtcode):
+    code_split = wtcode.split('.')
+    if (len(code_split) == 0) or (len(code_split) > 3):
+        raise ValueError(f"wtpy stdcode={wtcode} has a wrong format.")
+    elif len(code_split) == 1:
+        code = wtcode
+        inst = code_split[1]
+    else:
+        if code_split[0] in ['CZCE']:
+            if int(code_split[2]) > 1500:
+                code_split[2] = str(int(code_split[2]) % 1000)
+        inst = ''.join(code_split[1:])
+        code = '.'.join([code_split[0], inst])
+    return code, inst
+
+def code_to_inst(code):
+    code_split = code.split('.')
+    exch = code_split[0]
+    inst = ''.join(code_split[1:])
+    return exch, inst
+
+
 def wt_time_to_min_id(wt_time: int = 0):
     hour = wt_time // 100
     minute = wt_time % 100
@@ -155,50 +177,39 @@ def load_hist_bars_to_df(code, start_date=None, end_date=None,
     return mdf
 
 
-def int_to_datetime(cur_dt):
-    cur_dt = str(cur_dt)
-    if len(cur_dt) == 12:
-        dt = datetime.datetime.strptime(cur_dt, "%Y%m%d%H%M")
-    elif len(cur_dt) == 8:
-        dt = datetime.datetime.strptime(cur_dt, "%Y%m%d").date()
-    return dt
-
-
 def date_to_int(cur_date=None):
     if cur_date is None:
         cur_date = datetime.date.today()
-    if isinstance(cur_date, datetime.date):
-        cur_date = int(cur_date.strftime("%Y%m%d"))
-    elif isinstance(cur_date, datetime.datetime) or isinstance(cur_date, pd.Timestamp):
-        cur_date = int(cur_date.strftime("%Y%m%d"))
-    elif isinstance(cur_date, int) and cur_date >= 199000000000:
-        cur_date = cur_date // 10000
+    if isinstance(cur_date, (int, float)):
+        cur_date = str(int(cur_date))
+    cur_date = pd.to_datetime(cur_date)
+    cur_date = int(cur_date.strftime("%Y%m%d"))
     return cur_date
 
 
-def datetime_to_int(cur_dt=None, hhmm=0):
-    if cur_dt is None:
-        cur_dt = datetime.datetime.now()
-    if isinstance(cur_dt, datetime.date):
-        cur_dt = int(cur_dt.strftime("%Y%m%d")) * 10000 + hhmm
-    elif isinstance(cur_dt, datetime.datetime) or isinstance(cur_dt, pd.Timestamp):
-        cur_dt = int(cur_dt.strftime("%Y%m%d%H%M"))
-    elif isinstance(cur_dt, int) and cur_dt < 99999999:
-        cur_dt = cur_dt * 10000 + hhmm
-    return cur_dt
+def conv_dt_to_int(dt=None, period='d1', mode='s', exch='SHFE'):
+    if dt is None:
+        dt = datetime.date.today()
+    if isinstance(dt, (float, int)):
+        dt = str(int(dt))
+    dt = pd.to_datetime(dt)
+    out_dt = int(dt.strftime("%Y%m%d%H%M"))
+    hols = misc.get_hols_by_exch(exch)
+    if 'm' in period:
+        if mode in ['S', 's']:
+            bday = misc.day_shift(dt.date(), '-1b', hols)
+            out_dt = int(bday.strftime("%Y%m%d"))*10000 + 1800
+        elif out_dt % 10000 == 0:
+            out_dt += 1700
+    return out_dt
 
 
 def load_bars_to_df(code, period='d1', start_time=None, end_time=None,
                     index_col=None,
                     folder_loc='C:/dev/wtdev'):
-    code_split = code.split('.')
-    instID = ''.join(code_split[1:])
-    if 'm' in period:
-        start_time = datetime_to_int(start_time, 600)
-        end_time = datetime_to_int(end_time, 1600)
-    else:
-        start_time = datetime_to_int(start_time, 0)
-        end_time = datetime_to_int(end_time, 0)
+    exch, instID = code_to_inst(code)
+    start_time = conv_dt_to_int(start_time, period, mode='s', exch=exch)
+    end_time = conv_dt_to_int(end_time, period, mode='e', exch=exch)
     dtServo = WtDtServo()
     dtServo.setBasefiles(folder=f"{folder_loc}/common/")
     dtServo.setStorage(path=f'{folder_loc}/storage/')
