@@ -67,7 +67,6 @@ class FactorPortTrader(Strategy):
                                   end=end_date,
                                   freq=self.freq, 
                                   db_table=self.fact_db_table)
-
             for fact in self.factor_repo:
                 xdf = pd.pivot_table(df[df['fact_name'] == self.factor_repo[fact]['name']], values = 'fact_val', \
                                      index = ['date', 'serial_key'], columns = ['product_code'],\
@@ -88,46 +87,35 @@ class FactorPortTrader(Strategy):
             weight =  self.factor_repo[fact]['weight']
             self.factor_pos[fact] = pd.DataFrame(index = self.fact_data[fact].index, \
                                                  columns = self.fact_data[fact].columns)
-            if self.factor_repo[fact]['type'] == 'pos':
-                self.factor_pos[fact] = self.fact_data[fact].copy()
-            elif self.factor_repo[fact]['type'] == 'ts':
-                rebal_ts = pd.Series(range(len(self.fact_data[fact].index)), index = self.fact_data[fact].index)
-                for rebal_idx in range(rebal_freq):
-                    flag = rebal_ts % rebal_freq == rebal_idx
-                    long_pos  = pd.Series(np.nan, index = self.fact_data[fact].index)
-                    short_pos = pd.Series(np.nan, index = self.fact_data[fact].index)
-                    for asset in self.prod_list:
-                        pflag = (self.fact_data[fact][asset] >= 0.0)
-                        nflag = (self.fact_data[fact][asset] <= 0.0)
-                        long_pos[flag & pflag] = self.fact_data[fact][asset][flag & pflag]
-                        long_pos[flag & (~pflag)] = 0.0
-                        long_pos[flag] = long_pos[flag].fillna(method = 'ffill').fillna(0.0)
-                        short_pos[flag & nflag] = self.fact_data[fact][asset][flag & nflag]
-                        short_pos[flag & (~nflag)] = 0.0
-                        short_pos[flag] = short_pos[flag].fillna(method='ffill').fillna(0.0)
-                        self.factor_pos[fact].loc[flag, asset] = long_pos[flag] + short_pos[flag]
-            elif self.factor_repo[fact]['type'] == 'xs':
-                lower_rank = int(len(self.prod_list) * self.factor_repo[fact]['threshold']) + 1
-                upper_rank = len(self.prod_list) - int(len(self.prod_list) * self.factor_repo[fact]['threshold'])
-                rank_df = self.fact_data[fact].rank(axis = 1)
-                rebal_ts = pd.Series(range(len(self.fact_data[fact].index)), index = self.fact_data[fact].index)
-                for rebal_idx in range(rebal_freq):
-                    flag = rebal_ts % rebal_freq == rebal_idx
-                    long_pos  = pd.Series(np.nan, index = self.fact_data[fact].index)
-                    short_pos = pd.Series(np.nan, index = self.fact_data[fact].index)
-                    for asset in self.prod_list:
-                        pflag = (rank_df[asset] > upper_rank)
-                        nflag = (rank_df[asset] < lower_rank)
-                        long_pos[flag & pflag] = 1.0
-                        long_pos[flag & (~pflag)] = 0.0
-                        long_pos[flag] = long_pos[flag].fillna(method = 'ffill').fillna(0.0)
-                        short_pos[flag & nflag] = -1.0
-                        short_pos[flag & (~nflag)] = 0.0
-                        short_pos[flag] = short_pos[flag].fillna(method='ffill').fillna(0.0)
-                        self.factor_pos[fact].loc[flag, asset] = long_pos[flag] + short_pos[flag]
-                self.factor_pos[fact] = self.factor_pos[fact].fillna(0.0)
-            fact_pos = pd.Series(self.factor_pos[fact].iloc[-rebal_freq:,:].sum()/rebal_freq * weight, name = fact)
-            self.pos_summary = self.pos_summary.append(fact_pos)              
+            self.factor_pos[fact] = self.fact_data[fact].copy()
+            if self.factor_repo[fact]['type'] != 'pos':
+                if 'xs' in self.factor_repo[fact]['type']:
+                    xs_split = self.factor_repo[fact]['type'].split('-')
+                    if len(xs_split) <= 1:
+                        xs_signal = 'rank_cutoff'
+                    else:
+                        xs_signal = xs_split[1]
+                    if xs_signal == 'rank_cutoff':
+                        cutoff = self.factor_repo[fact]['threshold']
+                        lower_rank = int(len(self.prod_list) * cutoff) + 1
+                        upper_rank = len(self.prod_list) - int(len(self.prod_list) * cutoff)
+                        rank_df = self.factor_pos[fact].rank(axis=1)
+                        self.factor_pos[fact] = rank_df.gt(upper_rank, axis=0) * 1.0 - rank_df.lt(lower_rank, axis=0) * 1.0
+                    elif xs_signal == 'demedian':
+                        median_ts = self.factor_pos[fact].quantile(0.5, axis=1)
+                        self.factor_pos[fact] = self.factor_pos[fact].sub(median_ts, axis=0)
+                    elif xs_signal == 'demean':
+                        mean_ts = self.factor_pos[fact].mean(axis=1)
+                        self.factor_pos[fact] = self.factor_pos[fact].sub(mean_ts, axis=0)
+                    elif xs_signal == 'rank':
+                        rank_df = self.factor_pos[fact].rank(axis=1)
+                        median_ts = rank_df.quantile(0.5, axis=1)
+                        self.factor_pos[fact] = rank_df.sub(median_ts, axis=0) / len(self.prod_list) * 2.0
+                    elif len(xs_signal) > 0:
+                        print('unsupported xs signal types')
+                self.factor_pos[fact] = self.factor_pos[fact].rolling(rebal_freq).mean().fillna(0.0)
+            fact_pos = pd.Series(self.factor_pos[fact].iloc[-1] * weight, name=fact)
+            self.pos_summary = self.pos_summary.append(fact_pos)
         self.pos_summary = self.pos_summary[self.prod_list].round(2)
         net_pos = self.pos_summary.sum()           
         for idx, (under, prodcode) in enumerate(zip(self.underliers, self.prod_list)):            
