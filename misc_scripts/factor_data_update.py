@@ -97,7 +97,7 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule=
     fact_config['serial_no'] = 0
 
     factor_repo = {}
-
+    data_cache = {}
     for idx, asset in enumerate(product_list):
         sdate = max(sim_start_dict.get(asset, start_date), start_date)
         print("loading mkt = %s" % asset)
@@ -148,11 +148,13 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule=
             xdf['ryield'] = (np.log(xdf['close']) - np.log(xdf['close_2'])) / (xdf['mth_2'] - xdf['mth']) * 12.0
             xdf['logret'] = np.log(xdf['close']) - np.log(xdf['close'].shift(1))
             xdf['logret_2'] = np.log(xdf['close_2']) - np.log(xdf['close_2'].shift(1))
+        xdf['px_chg'] = xdf['close'].diff()
         xdf['baslr'] = xdf['logret'] - xdf['logret_2']
         xdf.index.name = 'date'
         for field in ['logret', 'baslr', 'ryield', 'atr']:
             update_factor_db(xdf, field, fact_config, start_date=update_start, end_date=end_date, flavor=flavor)
-        
+
+        data_cache[asset] = xdf.copy(deep=True)
         updated_factors = ['logret', 'baslr', 'ryield', 'atr']
 
         for scen in scenarios:
@@ -271,6 +273,19 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule=
                 update_factor_db(xdf, fact_name, fact_config, start_date=update_start, end_date=end_date, flavor=flavor)
                 updated_factors.append(fact_name)                
 
+    if ('rb' in product_list) and ('hc' in product_list):
+        rb_df = data_cache['rb']
+        hc_df = data_cache['hc']
+        hc_df['rb_px_chg'] = rb_df['px_chg']
+        hc_df['hc_rb_diff'] = hc_df['px_chg'] - hc_df['rb_px_chg']
+        fact_config['product_code'] = 'hc_rb_diff'
+        fact_config['exch'] = 'SHFE'
+        for win in [20, 30, 40, 60]:
+            fact_name = f'hc_rb_diff_{win}'
+            hc_df[fact_name] = hc_df['hc_rb_diff'].ewm(span=win).mean()/hc_df['hc_rb_diff'].ewm(span=win).std()
+            hc_df[fact_name] = hc_df[fact_name].apply(lambda x: max(min(x, hc_df[fact_name].quantile(0.975)),
+                                                                    hc_df[fact_name].quantile(0.025)))
+            update_factor_db(hc_df, fact_name, fact_config, start_date=update_start, end_date=end_date, flavor=flavor)
     return factor_repo
 
 
