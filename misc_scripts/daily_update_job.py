@@ -89,17 +89,46 @@ commod_mkts = ['rb', 'hc', 'i', 'j', 'jm', 'ru', 'FG', 'cu', 'al', 'zn', 'pb', '
                'AP', 'SM', 'SF', 'ss', 'CJ', 'UR', 'eb', 'eg', 'pg', 'T', 'PK', 'PF', 'lh', \
                'MA', 'SR', 'cs', 'TF', 'lu', 'fu']
 
+port_pos_config = {
+    'PT_FACTPORT3_CAL30': {
+        'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
+        'roll': 'CAL_30b',
+        'strat_list': [
+            ('PT_FACTPORT3.json', 4600, 's1'),
+        ],},
+    'PT_FACTPORT1_CAL30': {
+        'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
+        'roll': 'CAL_30b',
+        'strat_list': [
+            ('PT_FACTPORT1.json', 4600, 's1'),
+        ], },
+    'PT_FACTPORT3_HOT': {
+        'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
+        'roll': 'hot',
+        'strat_list': [
+            ('PT_FACTPORT3.json', 4600, 'd1'),
+        ], },
+    'PT_FACTPORT1_HOT': {
+        'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
+        'roll': 'hot',
+        'strat_list': [
+            ('PT_FACTPORT1.json', 4600, 'd1'),
+        ], },
+    'PT_FACTPORT3_EXP': {
+        'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
+        'roll': 'expiry',
+        'strat_list': [
+            ('PT_FACTPORT3.json', 4600, 'd1'),
+        ], },
+    'PT_FACTPORT1_EXP': {
+        'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
+        'roll': 'expiry',
+        'strat_list': [
+            ('PT_FACTPORT1.json', 4600, 'd1'),
+        ], },
+}
 
-port_pos_config = [
-    ('PT_FACTPORT3', 'C:/dev/pyktrader3/process/pt_test3/', 4600, 'CAL_30b', 's1'),
-    ('PT_FACTPORT1', 'C:/dev/pyktrader3/process/pt_test3/', 4600, 'CAL_30b', 's1'),
-    ('PT_FACTPORT3', 'C:/dev/pyktrader3/process/pt_test3/', 4600, 'hot', 'd1'),
-    ('PT_FACTPORT1', 'C:/dev/pyktrader3/process/pt_test3/', 4600, 'hot', 'd1'),
-    ('PT_FACTPORT3', 'C:/dev/pyktrader3/process/pt_test3/', 4600, 'expiry', 'd1'),
-    ('PT_FACTPORT1', 'C:/dev/pyktrader3/process/pt_test3/', 4600, 'expiry', 'd1'),
-]
-
-pos_chg_notification = ['PT_FACTPORT3_CAL_30b', 'PT_FACTPORT1_hot']
+pos_chg_notification = ['PT_FACTPORT3_CAL30', 'PT_FACTPORT1_HOT']
 
 scenarios_all = [
     ('tscarry', 'ryieldnmb', 2.8, 1, 120, 1, (None, {}, ''), [0.0, 0.0]),
@@ -261,7 +290,7 @@ def run_update(tday=datetime.date.today()):
     for port_name in port_pos_config.keys():
         pos_loc = port_pos_config[port_name]['pos_loc']
         roll = port_pos_config[port_name]['roll']
-        port_file = port_name + '_' + roll
+        port_file = port_name
         if job_status[update_field].get(port_file, False):
             continue
         try:
