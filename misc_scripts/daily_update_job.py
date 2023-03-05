@@ -7,7 +7,7 @@ from pycmqlib3.utility.misc import day_shift, CHN_Holidays, sign, is_workday, in
 import pycmqlib3.analytics.data_handler as dh
 from misc_scripts.aks_data_update import update_hist_fut_daily, update_spot_daily, \
     update_exch_receipt_table, update_exch_inv_table, update_rank_table
-from misc_scripts.factor_data_update import update_factor_data, generate_daily_position
+from misc_scripts.factor_data_update import update_factor_data, generate_strat_position
 from pycmqlib3.utility.email_tool import send_html_by_smtp
 
 scenarios_elite = [
@@ -273,7 +273,7 @@ def run_update(tday=datetime.date.today()):
             product_list.append(product)
 
         try:
-            target_pos, pos_sum = generate_daily_position(edate, product_list, factor_repo,
+            target_pos, pos_sum = generate_strat_position(edate, product_list, factor_repo,
                                                           roll_label=roll,
                                                           pos_scaler=pos_scaler,
                                                           freq=freq,

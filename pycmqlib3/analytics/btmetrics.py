@@ -180,7 +180,7 @@ class MetricsBase(object):
 
     def _check_log_safe(self, returns):
         if isinstance(returns, pd.Series):
-            bad_counts = (returns < -1).sum()
+            bad_counts = (returns < -1) * 1.0
         else:
             bad_counts = (returns < -1).sum(axis=1)
         bad_dates = returns.index[bad_counts.values > 0]
@@ -197,7 +197,7 @@ class MetricsBase(object):
             cumpnl = df.cumsum()
         return cumpnl
 
-    def _calculate_pnl_stats(self, holdings, shift=0, use_log_returns=False, tenors=True):
+    def _calculate_pnl_stats(self, holdings, shift=0, use_log_returns=False, tenors=True, perf_metrics=['sharpe']):
         asset_pnl = self._lagged_asset_pnl(holdings=holdings, shift=shift)
         portfolio_pnl = self._lagged_portfolio_pnl(holdings=holdings, shift=shift)
         asset_sharpe_stats = asset_pnl.apply(lambda x: self._calculate_sharpe(x, tenors=tenors), axis=0)
@@ -209,7 +209,7 @@ class MetricsBase(object):
             'asset_sharpe_stats': asset_sharpe_stats,
         }
 
-        for metric in ['sharpe', 'sortino', 'calmar', 'maxdd', 'std', ]:
+        for metric in perf_metrics:
             pnl_stats[metric] = self._calculate_perf_metric(portfolio_pnl, metric, tenors=tenors)
         return pnl_stats
 

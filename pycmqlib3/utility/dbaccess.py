@@ -100,6 +100,23 @@ tick_field_rename_map = {
 }
 
 
+def load_codes_from_edb(code_list, source, start_date=None, end_date=None, column_name='index_name'):
+    if isinstance(code_list, str):
+        code_list = [code_list]
+    cnx = connect(**dbconfig)
+    fields = ['date', 'index_name', 'index_code', 'value', 'ref_name']
+    stmt = f"select {','.join(fields)} from edb where source='{source}' "
+    stmt += "and index_code in ({seq}) ".format(seq=','.join(f'"{w}"' for w in code_list))
+    if start_date:
+        stmt = stmt + "and date >= '%s' " % start_date.strftime('%Y-%m-%d')
+    if end_date:
+        stmt = stmt + "and date <= '%s' " % end_date.strftime('%Y-%m-%d')
+    df = pd.io.sql.read_sql(stmt, cnx)
+    df['date'] = pd.to_datetime(df['date'])
+    pivot = df.pivot(index='date', columns=column_name, values = 'value')
+    return pivot
+
+
 def tick2dict(tick):
     tick_dict = {}
     for idx, field in enumerate(agent_conf.tick_data_list):
@@ -770,21 +787,22 @@ def load_agg_pos_from_db(start = datetime.date.today(), end = datetime.date.toda
     return df
 
 
-def load_factor_data(product_list, \
-                     factor_list = [],\
-                     roll_label = 'CAL-1',\
-                     start = datetime.date.today(), \
-                     end = datetime.date.today(), \
-                     freq = 'd', db_table = 'fut_fact_data'):
+def load_factor_data(product_list,
+                     factor_list=[],
+                     roll_label='CAL_30b',
+                     start=datetime.date.today(),
+                     end=datetime.date.today(),
+                     freq='d', db_table='fut_fact_data'):
     cnx = connect(**dbconfig)
     columns = ['product_code', 'date', 'serial_no', 'serial_key', 'fact_name', 'fact_val']
-    stmt = "select {variables} from {table} where fact_name in ('{fact_list}') and product_code in ('{prod_list}') ".format(\
-                        fact_list = "','".join(factor_list), prod_list = "','".join(product_list), \
-                        variables=','.join(columns), table = db_table)
-    stmt = stmt + "and date >='%s' " % start.strftime('%Y-%m-%d')
-    stmt = stmt + "and date <='%s' " % end.strftime('%Y-%m-%d')
-    stmt = stmt + "and freq = '%s' and roll_label = '%s'" % (freq, roll_label)
-    stmt = stmt + "order by date, serial_no"
+    stmt = "select {variables} from {table} where fact_name in ('{fact_list}')".format(
+        variables=','.join(columns), fact_list="','".join(factor_list), table=db_table)
+    if len(product_list) > 0:
+        stmt = stmt + " and product_code in ('{prod_list}')".format(prod_list="','".join(product_list))
+    stmt = stmt + " and date >='%s'" % start.strftime('%Y-%m-%d')
+    stmt = stmt + " and date <='%s'" % end.strftime('%Y-%m-%d')
+    stmt = stmt + " and freq = '%s' and roll_label = '%s'" % (freq, roll_label)
+    stmt = stmt + " order by date, serial_no"
     df = pd.io.sql.read_sql(stmt, cnx)
     return df
 
