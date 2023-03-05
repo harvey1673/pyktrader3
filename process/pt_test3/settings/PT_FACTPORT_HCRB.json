@@ -1,0 +1,212 @@
+{
+    "class": "pycmqlib3.strategy.strat_factor_port.FactorPortTrader",
+    "config": {
+        "name": "FACT_PORT_HCRB",
+        "freq": "s1",
+        "hist_fact_lookback": 100,
+        "roll_label": "CAL_30b",
+		"repo_type": "port",
+        "factor_repo": {
+			"hc_rb_diff_20": {
+				"name": "hc_rb_diff_20",
+				"type": "pos",
+				"threshold": 0.0,
+				"rebal": 1,
+				"param": [
+					0.0,
+					0.0
+				],
+				"weight": 0.4
+			},
+			"hc_rb_diff_30": {
+				"name": "hc_rb_diff_30",
+				"type": "pos",
+				"threshold": 0.0,
+				"rebal": 1,
+				"param": [
+					0.0,
+					0.0
+				],
+				"weight": 0.4
+			},
+			"hc_rb_diff_40": {
+				"name": "hc_rb_diff_40",
+				"type": "pos",
+				"threshold": 0.0,
+				"rebal": 1,
+				"param": [
+					0.0,
+					0.0
+				],
+				"weight": 0.4
+			}			
+        },
+        "vol_win": 20,
+        "fact_db_table": "fut_fact_data",
+        "exec_bar_list": [
+            307,
+            412,
+            1508,
+            1534,
+            1633,
+            1933,
+            2035
+        ],
+        "pos_scaler": 100000,
+        "assets": [
+            {
+                "underliers": [
+                    "rb2305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": []
+            },
+            {
+                "underliers": [
+                    "hc2305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": []
+            },
+            {
+                "underliers": [
+                    "i2305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": []
+            },
+            {
+                "underliers": [
+                    "j2305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": []
+            },
+            {
+                "underliers": [
+                    "jm2305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": []
+            },
+            {
+                "underliers": [
+                    "FG305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": []
+            },
+            {
+                "underliers": [
+                    "v2305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": []
+            },
+
+            {
+                "underliers": [
+                    "UR305"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": []
+            },
+            {
+                "underliers": [
+                    "cu2304"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": [
+                    "cu2303"
+                ]
+            },
+            {
+                "underliers": [
+                    "al2304"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": [
+                    "al2303"
+                ]
+            },
+            {
+                "underliers": [
+                    "zn2304"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": [
+                    "zn2303"
+                ]
+            },
+            {
+                "underliers": [
+                    "ni2304"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": [
+                    "ni2303"
+                ]
+            },			
+            {
+                "underliers": [
+                    "sn2304"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": [
+                    "sn2303"
+                ]
+            },
+			{
+                "underliers": [
+                    "ss2304"
+                ],
+                "volumes": [
+                    1
+                ],
+                "alloc_w": 1.0,
+                "prev_underliers": [
+                    "ss2303"
+                ]
+            }
+        ]
+    }
+}

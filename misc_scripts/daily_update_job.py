@@ -90,45 +90,51 @@ commod_mkts = ['rb', 'hc', 'i', 'j', 'jm', 'ru', 'FG', 'cu', 'al', 'zn', 'pb', '
                'MA', 'SR', 'cs', 'TF', 'lu', 'fu']
 
 port_pos_config = {
-    'PT_FACTPORT3_CAL30': {
+    'PT_FACTPORT3_CAL_30b': {
         'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
         'roll': 'CAL_30b',
         'strat_list': [
             ('PT_FACTPORT3.json', 4600, 's1'),
+            ('PT_FACTPORT_HCRB.json', 20000, 's1'),
         ],},
-    'PT_FACTPORT1_CAL30': {
+    'PT_FACTPORT1_CAL_30b': {
         'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
         'roll': 'CAL_30b',
         'strat_list': [
             ('PT_FACTPORT1.json', 4600, 's1'),
+            ('PT_FACTPORT_HCRB.json', 20000, 's1'),
         ], },
-    'PT_FACTPORT3_HOT': {
+    'PT_FACTPORT3_hot': {
         'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
         'roll': 'hot',
         'strat_list': [
             ('PT_FACTPORT3.json', 4600, 'd1'),
+            ('PT_FACTPORT_HCRB.json', 20000, 'd1'),
         ], },
-    'PT_FACTPORT1_HOT': {
+    'PT_FACTPORT1_hot': {
         'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
         'roll': 'hot',
         'strat_list': [
             ('PT_FACTPORT1.json', 4600, 'd1'),
+            ('PT_FACTPORT_HCRB.json', 20000, 'd1'),
         ], },
-    'PT_FACTPORT3_EXP': {
+    'PT_FACTPORT3_expiry': {
         'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
         'roll': 'expiry',
         'strat_list': [
             ('PT_FACTPORT3.json', 4600, 'd1'),
+            ('PT_FACTPORT_HCRB.json', 20000, 'd1'),
         ], },
-    'PT_FACTPORT1_EXP': {
+    'PT_FACTPORT1_expiry': {
         'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
         'roll': 'expiry',
         'strat_list': [
             ('PT_FACTPORT1.json', 4600, 'd1'),
+            ('PT_FACTPORT_HCRB.json', 20000, 'd1'),
         ], },
 }
 
-pos_chg_notification = ['PT_FACTPORT3_CAL30', 'PT_FACTPORT1_HOT']
+pos_chg_notification = ['PT_FACTPORT3_CAL_30b', 'PT_FACTPORT1_hot']
 
 scenarios_all = [
     ('tscarry', 'ryieldnmb', 2.8, 1, 120, 1, (None, {}, ''), [0.0, 0.0]),
@@ -285,75 +291,75 @@ def run_update(tday=datetime.date.today()):
     if update_field not in job_status:
         job_status[update_field] = {}
     pos_update = {}
-    target_pos = {}
-    pos_by_strat = {}
     for port_name in port_pos_config.keys():
+        target_pos = {}
+        pos_by_strat = {}
         pos_loc = port_pos_config[port_name]['pos_loc']
         roll = port_pos_config[port_name]['roll']
         port_file = port_name
         if job_status[update_field].get(port_file, False):
             continue
-        try:
-            for strat_file, pos_scaler, freq in port_pos_config[port_name]['strat_list']:
-                config_file = f'{pos_loc}/settings/{strat_file}'
-                with open(config_file, 'r') as fp:
-                    strat_conf = json.load(fp)
-                strat_args = strat_conf['config']
-                assets = strat_args['assets']
-                repo_type = strat_args['repo_type']
-                factor_repo = strat_args['factor_repo']
+        # try:
+        for strat_file, pos_scaler, freq in port_pos_config[port_name]['strat_list']:
+            config_file = f'{pos_loc}/settings/{strat_file}'
+            with open(config_file, 'r') as fp:
+                strat_conf = json.load(fp)
+            strat_args = strat_conf['config']
+            assets = strat_args['assets']
+            repo_type = strat_args.get('repo_type', 'asset')
+            factor_repo = strat_args['factor_repo']
 
-                product_list = []
-                for asset_dict in assets:
-                    under = asset_dict["underliers"][0]
-                    product = inst2product(under)
-                    product_list.append(product)
+            product_list = []
+            for asset_dict in assets:
+                under = asset_dict["underliers"][0]
+                product = inst2product(under)
+                product_list.append(product)
 
-                strat_target, strat_sum = generate_strat_position(edate, product_list, factor_repo,
-                                                                  repo_type=repo_type,
-                                                                  roll_label=roll,
-                                                                  pos_scaler=pos_scaler,
-                                                                  freq=freq,
-                                                                  hist_fact_lookback=20)
-                pos_by_strat[strat_file] = strat_target
+            strat_target, strat_sum = generate_strat_position(edate, product_list, factor_repo,
+                                                              repo_type=repo_type,
+                                                              roll_label=roll,
+                                                              pos_scaler=pos_scaler,
+                                                              freq=freq,
+                                                              hist_fact_lookback=20)
+            pos_by_strat[strat_file] = strat_target
 
-                for prod in strat_target:
-                    if prod not in target_pos:
-                        target_pos[prod] = 0
-                    target_pos[prod] += strat_target[prod]
+            for prod in strat_target:
+                if prod not in target_pos:
+                    target_pos[prod] = 0
+                target_pos[prod] += strat_target[prod]
 
-            for prodcode in target_pos:
-                if prodcode == 'CJ':
-                    target_pos[prodcode] = int((target_pos[prodcode] / 4 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 4
-                elif prodcode == 'ZC':
-                    target_pos[prodcode] = int((target_pos[prodcode] / 2 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 2
-                else:
-                    target_pos[prodcode] = int(target_pos[prodcode] + (0.5 if target_pos[prodcode] > 0 else -0.5))
+        for prodcode in target_pos:
+            if prodcode == 'CJ':
+                target_pos[prodcode] = int((target_pos[prodcode] / 4 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 4
+            elif prodcode == 'ZC':
+                target_pos[prodcode] = int((target_pos[prodcode] / 2 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 2
+            else:
+                target_pos[prodcode] = int(target_pos[prodcode] + (0.5 if target_pos[prodcode] > 0 else -0.5))
 
-            pos_date = day_shift(edate, '1b', CHN_Holidays)
-            pre_date = day_shift(pos_date, '-1b', CHN_Holidays)
-            pos_date = pos_date.strftime('%Y%m%d')
-            pre_date = pre_date.strftime('%Y%m%d')
-            posfile = '%s/%s_%s.json' % (pos_loc, port_file, pos_date)
-            with open(posfile, 'w') as ofile:
-                json.dump(target_pos, ofile, indent=4)
+        pos_date = day_shift(edate, '1b', CHN_Holidays)
+        pre_date = day_shift(pos_date, '-1b', CHN_Holidays)
+        pos_date = pos_date.strftime('%Y%m%d')
+        pre_date = pre_date.strftime('%Y%m%d')
+        posfile = '%s/%s_%s.json' % (pos_loc, port_file, pos_date)
+        with open(posfile, 'w') as ofile:
+            json.dump(target_pos, ofile, indent=4)
 
-            stratfile = '%s/pos_by_strat_%s_%s.json' % (pos_loc, port_file, pos_date)
-            with open(stratfile, 'w') as ofile:
-                json.dump(pos_by_strat, ofile, indent=4)
+        stratfile = '%s/pos_by_strat_%s_%s.json' % (pos_loc, port_file, pos_date)
+        with open(stratfile, 'w') as ofile:
+            json.dump(pos_by_strat, ofile, indent=4)
 
-            job_status[update_field][port_file] = True
+        job_status[update_field][port_file] = True
 
-            if port_file in pos_chg_notification:
-                with open('%s/%s_%s.json' % (pos_loc, port_file, pre_date), 'r') as fp:
-                    curr_pos = json.load(fp)
-                pos_df = pd.DataFrame({'cur': curr_pos, 'tgt': target_pos})
-                pos_df['diff'] = pos_df['tgt'] - pos_df['cur']
-                pos_update[port_file] = pos_df
+        if port_file in pos_chg_notification:
+            with open('%s/%s_%s.json' % (pos_loc, port_file, pre_date), 'r') as fp:
+                curr_pos = json.load(fp)
+            pos_df = pd.DataFrame({'cur': curr_pos, 'tgt': target_pos})
+            pos_df['diff'] = pos_df['tgt'] - pos_df['cur']
+            pos_update[port_file] = pos_df
 
-        except:
-            job_status[update_field][port_file] = False
-        save_status(filename, job_status)
+        # except:
+        #     job_status[update_field][port_file] = False
+        # save_status(filename, job_status)
 
     sdate = day_shift(tday, '-1b', CHN_Holidays)
     for (update_field, update_func, ref_text) in [('exch_receipt', update_exch_receipt_table, 'exch receipt'),
