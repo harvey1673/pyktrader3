@@ -256,45 +256,72 @@ def run_update(tday=datetime.date.today()):
     if update_field not in job_status:
         job_status[update_field] = {}
     pos_update = {}
-    for (port_name, pos_loc, pos_scaler, roll, freq) in port_pos_config:
+    target_pos = {}
+    pos_by_strat = {}
+    for port_name in port_pos_config.keys():
+        pos_loc = port_pos_config[port_name]['pos_loc']
+        roll = port_pos_config[port_name]['roll']
         port_file = port_name + '_' + roll
         if job_status[update_field].get(port_file, False):
             continue
-        config_file = f'{pos_loc}settings/{port_name}.json'
-        with open(config_file, 'r') as fp:
-            strat_conf = json.load(fp)
-        strat_args = strat_conf['config']
-        assets = strat_args['assets']
-        factor_repo = strat_args['factor_repo']
-        product_list = []
-        for asset_dict in assets:
-            under = asset_dict["underliers"][0]
-            product = inst2product(under)
-            product_list.append(product)
-
         try:
-            target_pos, pos_sum = generate_strat_position(edate, product_list, factor_repo,
-                                                          roll_label=roll,
-                                                          pos_scaler=pos_scaler,
-                                                          freq=freq,
-                                                          hist_fact_lookback=20)
+            for strat_file, pos_scaler, freq in port_pos_config[port_name]['strat_list']:
+                config_file = f'{pos_loc}/settings/{strat_file}'
+                with open(config_file, 'r') as fp:
+                    strat_conf = json.load(fp)
+                strat_args = strat_conf['config']
+                assets = strat_args['assets']
+                repo_type = strat_args['repo_type']
+                factor_repo = strat_args['factor_repo']
+
+                product_list = []
+                for asset_dict in assets:
+                    under = asset_dict["underliers"][0]
+                    product = inst2product(under)
+                    product_list.append(product)
+
+                strat_target, strat_sum = generate_strat_position(edate, product_list, factor_repo,
+                                                                  repo_type=repo_type,
+                                                                  roll_label=roll,
+                                                                  pos_scaler=pos_scaler,
+                                                                  freq=freq,
+                                                                  hist_fact_lookback=20)
+                pos_by_strat[strat_file] = strat_target
+
+                for prod in strat_target:
+                    if prod not in target_pos:
+                        target_pos[prod] = 0
+                    target_pos[prod] += strat_target[prod]
+
+            for prodcode in target_pos:
+                if prodcode == 'CJ':
+                    target_pos[prodcode] = int((target_pos[prodcode] / 4 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 4
+                elif prodcode == 'ZC':
+                    target_pos[prodcode] = int((target_pos[prodcode] / 2 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 2
+                else:
+                    target_pos[prodcode] = int(target_pos[prodcode] + (0.5 if target_pos[prodcode] > 0 else -0.5))
+
             pos_date = day_shift(edate, '1b', CHN_Holidays)
             pre_date = day_shift(pos_date, '-1b', CHN_Holidays)
             pos_date = pos_date.strftime('%Y%m%d')
             pre_date = pre_date.strftime('%Y%m%d')
-            posfile = '%s%s_%s.json' % (pos_loc, port_file, pos_date)
+            posfile = '%s/%s_%s.json' % (pos_loc, port_file, pos_date)
             with open(posfile, 'w') as ofile:
                 json.dump(target_pos, ofile, indent=4)
-            pos_sum.index.name = 'factor'
-            pos_sum.to_csv('%spos_by_strat_%s_%s.csv' % (pos_loc, port_file, pos_date))
+
+            stratfile = '%s/pos_by_strat_%s_%s.json' % (pos_loc, port_file, pos_date)
+            with open(stratfile, 'w') as ofile:
+                json.dump(pos_by_strat, ofile, indent=4)
+
             job_status[update_field][port_file] = True
 
             if port_file in pos_chg_notification:
-                with open('%s%s_%s.json' % (pos_loc, port_file, pre_date), 'r') as fp:
+                with open('%s/%s_%s.json' % (pos_loc, port_file, pre_date), 'r') as fp:
                     curr_pos = json.load(fp)
                 pos_df = pd.DataFrame({'cur': curr_pos, 'tgt': target_pos})
                 pos_df['diff'] = pos_df['tgt'] - pos_df['cur']
                 pos_update[port_file] = pos_df
+
         except:
             job_status[update_field][port_file] = False
         save_status(filename, job_status)
