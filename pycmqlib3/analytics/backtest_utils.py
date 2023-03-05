@@ -20,7 +20,7 @@ def get_asset_vols(df, product_list, vol_win, vol_type='atr'):
         for asset in product_list:
             vol_ts = (np.log(df[(asset, 'c1', 'close')])
                       - np.log(df[(asset, 'c1', 'close')].shift(1))).rolling(vol_win).std()
-            vol_ts = vol_ts * df[(asset, 'c1', 'close')]
+            #vol_ts = vol_ts * df[(asset, 'c1', 'close')]
             df_list.append(vol_ts)
         vol_df = pd.concat(df_list, axis=1, join='outer').fillna(method='ffill')
         vol_df.columns = product_list
@@ -198,11 +198,12 @@ def generate_signal(df, input_args):
 def generate_holding_from_signal(signal_df, vol_df, risk_scaling=1.0, asset_scaling=True):
     vol_df = vol_df.reindex(index=signal_df.index).fillna(method='ffill')
     sig_df = signal_df.div(vol_df)
+    nperiod, nasset = sig_df.shape
     prod_count = sig_df.apply(lambda x: x.count() if x.count() > 0 else np.nan, axis=1)
     if asset_scaling:
-        scaling = risk_scaling * 36 / prod_count
+        scaling = risk_scaling / prod_count
     else:
-        scaling = pd.Series(risk_scaling, index=prod_count.index)
+        scaling = pd.Series(risk_scaling/nasset, index=prod_count.index)
     pos_df = sig_df.mul(scaling, axis='rows').shift(1).fillna(0.0)
     return pos_df
 
@@ -218,8 +219,7 @@ def get_px_chg(df, exec_mode='open', chg_type='px', contract='c1'):
         if chg_type == 'px':
             xdf[(asset, 'px_chg')] = xdf[(asset, 'traded_price')].diff()
         elif chg_type == 'pct':
-            xdf[(asset, 'px_chg')] = xdf[(asset, 'traded_price')] /\
-                                     xdf[(asset, 'traded_price')].shift(1) - 1
+            xdf[(asset, 'px_chg')] = xdf[(asset, 'traded_price')].pct_change()
     xdf = xdf.loc[:, xdf.columns.get_level_values(1) == 'px_chg'].droplevel([1], axis=1)
     return xdf
 

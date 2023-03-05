@@ -289,7 +289,8 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule=
     return factor_repo
 
 
-def generate_daily_position(cur_date, prod_list, factor_repo,
+def generate_strat_position(cur_date, prod_list, factor_repo,
+                            repo_type='asset',
                             roll_label='CAL_30b',
                             freq='s1',
                             pos_scaler=1000,
@@ -302,31 +303,46 @@ def generate_daily_position(cur_date, prod_list, factor_repo,
     target_pos = {}
     vol_weight = [1.0] * len(prod_list)
     start_date = day_shift(cur_date, '-%sb' % (str(hist_fact_lookback)), CHN_Holidays)
-    fact_list = list(set([factor_repo[fact]['name'] for fact in factor_repo.keys()]))
-    df = load_factor_data(prod_list,
-                          factor_list=fact_list+['atr'],
-                          roll_label=roll_label,
-                          start=start_date,
-                          end=cur_date,
-                          freq=freq,
-                          db_table=fact_db_table)
-    atr_df = pd.pivot_table(df[df['fact_name'] == 'atr'], values='fact_val',
+    atr_df = load_factor_data(prod_list,
+                              factor_list=['atr'],
+                              roll_label=roll_label,
+                              start=start_date,
+                              end=cur_date,
+                              freq=freq,
+                              db_table=fact_db_table)
+    atr_df = pd.pivot_table(atr_df[atr_df['fact_name'] == 'atr'], values='fact_val',
                             index=['date', 'serial_key'],
                             columns=['product_code'],
                             aggfunc='last')
+
+    fact_list = list(set([factor_repo[fact]['name'] for fact in factor_repo.keys()]))
+    if repo_type == 'port':
+        df = load_factor_data([], factor_list=fact_list, roll_label=roll_label,
+                              start=start_date, end=cur_date, freq=freq, db_table=fact_db_table)
+    else:
+        df = load_factor_data(prod_list, factor_list=fact_list, roll_label=roll_label,
+                              start=start_date, end=cur_date, freq=freq, db_table=fact_db_table)
     for idx, prod in enumerate(prod_list):
         vol_weight[idx] = vol_weight[idx]*pos_scaler/(atr_df[prod].iloc[-1]*product_lotsize[prod])
-    for fact in factor_repo:
-        xdf = pd.pivot_table(df[df['fact_name'] == factor_repo[fact]['name']],
-                             values='fact_val',
-                             index=['date', 'serial_key'],
-                             columns=['product_code'],
-                             aggfunc='last')
-        for prod in prod_list:
-            if prod not in xdf.columns:
-                xdf[prod] = np.nan
-        fact_data[fact] = xdf[prod_list]
+    if repo_type == 'port':
+        xdf = pd.pivot_table(df, values='fact_val', index=['date', 'serial_key'],
+                             columns=['fact_name'], aggfunc='last')
+        for fact in factor_repo:
+            fact_data[fact] = pd.concat([xdf[fact]] * len(prod_list), axis=1)
+            fact_data[fact].columns = prod_list
+    else:
+        for fact in factor_repo:
+            xdf = pd.pivot_table(df[df['fact_name'] == factor_repo[fact]['name']],
+                                 values='fact_val',
+                                 index=['date', 'serial_key'],
+                                 columns=['product_code'],
+                                 aggfunc='last')
+            for prod in prod_list:
+                if prod not in xdf.columns:
+                    xdf[prod] = np.nan
+            fact_data[fact] = xdf[prod_list]
     pos_sum = pd.DataFrame()
+
     for fact in factor_repo:
         rebal_freq = factor_repo[fact]['rebal']
         weight = factor_repo[fact]['weight']
@@ -363,15 +379,7 @@ def generate_daily_position(cur_date, prod_list, factor_repo,
     pos_sum = pos_sum[prod_list].round(2)
     net_pos = pos_sum.sum()
     for idx, prodcode in enumerate(prod_list):
-        if prodcode == 'CJ':
-            target_pos[prodcode] = int((net_pos[prodcode] * vol_weight[idx]/4 +
-                                          (0.5 if net_pos.loc[prodcode] > 0 else -0.5)))*4
-        elif prodcode == 'ZC':
-            target_pos[prodcode] = int((net_pos[prodcode] * vol_weight[idx]/2 +
-                                          (0.5 if net_pos[prodcode] > 0 else -0.5)))*2
-        else:
-            target_pos[prodcode] = int(net_pos[prodcode] * vol_weight[idx] +
-                                         (0.5 if net_pos[prodcode] > 0 else -0.5))
+        target_pos[prodcode] = net_pos[prodcode] * vol_weight[idx]
     return target_pos, pos_sum
 
 

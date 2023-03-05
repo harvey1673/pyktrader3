@@ -99,7 +99,7 @@ def convert_wt_data(df, cont, freq='d'):
     df = df.rename(columns={'hold': 'openInterest'})
     df['instID'] = cont
     if freq == 'd':
-        col_list = ['instID', 'date', 'open', 'high', 'low', 'close', 'volume', 'openInterest', 'diff_oi']
+        col_list = ['instID', 'date', 'open', 'high', 'low', 'close', 'volume', 'openInterest', 'diff_oi', 'settle']
     else:
         num_m = 1
         if len(freq)>1:

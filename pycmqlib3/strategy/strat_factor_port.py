@@ -16,6 +16,7 @@ from . strategy import Strategy
 class FactorPortTrader(Strategy):
     common_params = dict(Strategy.common_params, \
                          **{'freq': 's1',
+                            'repo_type': 'asset',
                             'factor_repo': {'lr_sum_20': {'name': 'lr_sum_20','type': 'ts', 'param': [], 'weight': 1.0, \
                                             'rebal': 5, 'threshold': 0.0}},
                             'factor_data': {},
@@ -60,27 +61,40 @@ class FactorPortTrader(Strategy):
             end_date = self.agent.scur_day
             start_date = day_shift(end_date, '-%sb' % (str(self.hist_fact_lookback)))            
             fact_list = list(set([self.factor_repo[fact]['name'] for fact in self.factor_repo.keys()]))
-            df = load_factor_data(self.prod_list, 
-                                  factor_list=fact_list,
-                                  roll_label=self.roll_label,
-                                  start=start_date,
-                                  end=end_date,
-                                  freq=self.freq, 
-                                  db_table=self.fact_db_table)
-            for fact in self.factor_repo:
-                xdf = pd.pivot_table(df[df['fact_name'] == self.factor_repo[fact]['name']], values = 'fact_val', \
-                                     index = ['date', 'serial_key'], columns = ['product_code'],\
-                                     aggfunc = 'last')
-                for prod in self.prod_list:
-                    if prod not in xdf.columns:
-                        xdf[prod] = np.nan
-                self.fact_data[fact] = xdf[self.prod_list]
+            if self.repo_type == 'port':
+                df = load_factor_data([],
+                                      factor_list=fact_list,
+                                      roll_label=self.roll_label,
+                                      start=start_date,
+                                      end=end_date,
+                                      freq=self.freq,
+                                      db_table=self.fact_db_table)
+                xdf = pd.pivot_table(df, values='fact_val', index=['date', 'serial_key'],
+                                     columns=['fact_name'], aggfunc='last')
+                for fact in self.factor_repo:
+                    self.fact_data[fact] = pd.concat([xdf[fact]] * len(self.prod_list), axis=1)
+                    self.fact_data[fact].columns = self.prod_list
+            else:
+                df = load_factor_data(self.prod_list,
+                                      factor_list=fact_list,
+                                      roll_label=self.roll_label,
+                                      start=start_date,
+                                      end=end_date,
+                                      freq=self.freq,
+                                      db_table=self.fact_db_table)
+                for fact in self.factor_repo:
+                    xdf = pd.pivot_table(df[df['fact_name'] == self.factor_repo[fact]['name']], values='fact_val',
+                                         index=['date', 'serial_key'], columns=['product_code'],
+                                         aggfunc='last')
+                    for prod in self.prod_list:
+                        if prod not in xdf.columns:
+                            xdf[prod] = np.nan
+                    self.fact_data[fact] = xdf[self.prod_list]
         else:
             print("Update from the strategy is not implemented yet.")
         self.update_target_pos()
 
     def update_target_pos(self):
-        net_pos = pd.Series(dtype = 'float')
         self.pos_summary = pd.DataFrame()
         for fact in self.factor_repo:
             rebal_freq = self.factor_repo[fact]['rebal']
