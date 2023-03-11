@@ -31,7 +31,7 @@ def get_asset_vols(df, product_list, vol_win, vol_type='atr'):
     return vol_df
 
 
-def generate_signal(df, input_args):
+def default_signal_gen(df, input_args):
     shift_mode = input_args['shift_mode']
     rev_char = input_args['rev_char']
     product_list = input_args['product_list']
@@ -195,6 +195,25 @@ def generate_signal(df, input_args):
     return sig_df
 
 
+def hc_rb_diff(df, input_args):
+    shift_mode = input_args['shift_mode']
+    product_list = input_args['product_list']
+    win = input_args['win']
+    xdf = df.loc[:, df.columns.get_level_values(0).isin(['rb', 'hc'])].copy(deep=True)
+    xdf = xdf['2014-07-01':]
+    if shift_mode == 2:
+        xdf[('rb', 'c1', 'px_chg')] = np.log(xdf[('rb', 'c1', 'close')]).diff()
+        xdf[('hc', 'c1', 'px_chg')] = np.log(xdf[('hc', 'c1', 'close')]).diff()
+    else:
+        xdf[('rb', 'c1', 'px_chg')] = xdf[('rb', 'c1', 'close')].diff()
+        xdf[('hc', 'c1', 'px_chg')] = xdf[('hc', 'c1', 'close')].diff()
+    hc_rb_diff = xdf[('hc', 'c1', 'px_chg')] - xdf[('rb', 'c1', 'px_chg')]
+    signal_ts = hc_rb_diff.ewm(span=win).mean() / hc_rb_diff.ewm(span=win).std()
+    signal_df = pd.concat([signal_ts] * len(product_list), axis=1)
+    signal_df.columns = product_list
+    return signal_df
+
+
 def generate_holding_from_signal(signal_df, vol_df, risk_scaling=1.0, asset_scaling=True):
     vol_df = vol_df.reindex(index=signal_df.index).fillna(method='ffill')
     sig_df = signal_df.div(vol_df)
@@ -232,7 +251,8 @@ def run_backtest(df, input_args):
     asset_scaling = input_args.get('asset_scaling', False)
     exec_mode = input_args.get('exec_mode', 'open')
     cost_ratio = input_args.get('cost_ratio', 0.0)
-    signal_df = generate_signal(df, input_args)
+    signal_func = input_args.get('signal_func', default_signal_gen)
+    signal_df = signal_func(df, input_args)
 
     start_date = input_args.get('start_date', None)
     end_date = input_args.get('end_date', None)
@@ -261,4 +281,3 @@ def run_backtest(df, input_args):
                              offsets=product_offsets,
                              cost_ratio=cost_ratio)
     return bt_metrics
-
