@@ -95,42 +95,42 @@ port_pos_config = {
         'roll': 'CAL_30b',
         'strat_list': [
             ('PT_FACTPORT3.json', 4600, 's1'),
-            ('PT_FACTPORT_HCRB.json', 20000, 's1'),
+            ('PT_FACTPORT_HCRB.json', 30000, 's1'),
         ],},
     'PT_FACTPORT1_CAL_30b': {
         'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
         'roll': 'CAL_30b',
         'strat_list': [
             ('PT_FACTPORT1.json', 4600, 's1'),
-            ('PT_FACTPORT_HCRB.json', 20000, 's1'),
+            ('PT_FACTPORT_HCRB.json', 30000, 's1'),
         ], },
     'PT_FACTPORT3_hot': {
         'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
         'roll': 'hot',
         'strat_list': [
             ('PT_FACTPORT3.json', 4600, 'd1'),
-            ('PT_FACTPORT_HCRB.json', 20000, 'd1'),
+            ('PT_FACTPORT_HCRB.json', 30000, 'd1'),
         ], },
     'PT_FACTPORT1_hot': {
         'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
         'roll': 'hot',
         'strat_list': [
             ('PT_FACTPORT1.json', 4600, 'd1'),
-            ('PT_FACTPORT_HCRB.json', 20000, 'd1'),
+            ('PT_FACTPORT_HCRB.json', 30000, 'd1'),
         ], },
     'PT_FACTPORT3_expiry': {
         'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
         'roll': 'expiry',
         'strat_list': [
             ('PT_FACTPORT3.json', 4600, 'd1'),
-            ('PT_FACTPORT_HCRB.json', 20000, 'd1'),
+            ('PT_FACTPORT_HCRB.json', 30000, 'd1'),
         ], },
     'PT_FACTPORT1_expiry': {
         'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
         'roll': 'expiry',
         'strat_list': [
             ('PT_FACTPORT1.json', 4600, 'd1'),
-            ('PT_FACTPORT_HCRB.json', 20000, 'd1'),
+            ('PT_FACTPORT_HCRB.json', 30000, 'd1'),
         ], },
 }
 
