@@ -52,7 +52,7 @@
             1933,
             2035
         ],
-        "pos_scaler": 100000,
+        "pos_scaler": 30000,
         "assets": [
             {
                 "underliers": [

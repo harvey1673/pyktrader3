@@ -283,8 +283,8 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule=
         for win in [20, 30, 40, 60]:
             fact_name = f'hc_rb_diff_{win}'
             hc_df[fact_name] = hc_df['hc_rb_diff'].ewm(span=win).mean()/hc_df['hc_rb_diff'].ewm(span=win).std()
-            hc_df[fact_name] = hc_df[fact_name].apply(lambda x: max(min(x, hc_df[fact_name].quantile(0.975)),
-                                                                    hc_df[fact_name].quantile(0.025)))
+            # hc_df[fact_name] = hc_df[fact_name].apply(lambda x: max(min(x, hc_df[fact_name].quantile(0.975)),
+            #                                                         hc_df[fact_name].quantile(0.025)))
             update_factor_db(hc_df, fact_name, fact_config, start_date=update_start, end_date=end_date, flavor=flavor)
     return factor_repo
 
