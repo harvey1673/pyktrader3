@@ -6,7 +6,9 @@ import datetime
 from pycmqlib3.utility import misc
 from pycmqlib3.utility.dbaccess import prod_main_cont_exch
 from pycmqlib3.utility.process_wt_data import load_fut_by_product, load_bars_to_df
-
+import matplotlib.pyplot as plt
+from matplotlib import font_manager
+font = font_manager.FontProperties(fname='C:/windows/fonts/simsun.ttc')
 
 def multislice_many(df, label_map):
     idx_label_map = {idx: label_map[label] for idx, label in enumerate(df.columns.names) if label in label_map}
@@ -263,6 +265,39 @@ def make_seasonal_df(ser, limit = 1, fill = False, weekly_dense = False):
         df = df.ffill(limit = 4)
     
     return df
+
+
+def plot_seasonal_df(ts, cutoff=None, title=''):
+    xdf = make_seasonal_df(ts[cutoff:])
+    curr_yr = max(xdf.columns)
+    for yr in xdf.columns:
+        if yr == curr_yr:
+            marker = 'o'
+            linestyle = '-'
+        else:
+            marker = '.'
+            linestyle = '--'
+        xts = xdf[yr]
+        ts_mask = np.isfinite(xts)
+        plt.plot(xts.index[ts_mask], xts.values[ts_mask], linestyle=linestyle, marker=marker, label=yr)
+        plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+        plt.title(title, fontproperties=font)
+    plt.show()
+
+
+def plot_df_on_2ax(df, left_on=[], right_on=[]):
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    for col in left_on:
+        ax.plot(df.index, df[col], '-', label=col)
+    ax2 = ax.twinx()
+    for col in right_on:
+        ax2.plot(df.index, df[col], ':', label=col)
+    lines, labels = ax.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax2.legend(lines + lines2, labels + labels2, bbox_to_anchor=(1.04, 1), loc='upper left')
+    ax.grid()
+    plt.show()
 
 
 def get_level_index(df: pd.DataFrame, level=Union[str, int]) -> int:

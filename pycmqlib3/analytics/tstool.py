@@ -1,11 +1,57 @@
 import matplotlib.pyplot as plt
 from functools import reduce
-import pandas as pd
 import numpy as np
-import seaborn as sns
+import datetime
+import math
 import sklearn
+from pycmqlib3.utility import misc
+from numpy.lib.stride_tricks import sliding_window_view
+import itertools
+import pandas as pd
+import statsmodels.formula.api as smf
+import scipy.stats as stats
+from pykalman import KalmanFilter
+from .stats_test import test_mean_reverting, half_life
+from statsmodels.tsa.stattools import coint, adfuller
+import seaborn as sns
+
 
 PNL_BDAYS = 244
+
+
+def apply_vat(df, field_list = None, index_col = None, direction = 1, with_ret = True):
+    if direction == 1:
+        vat_fac = [1.17, 1.16, 1.13]
+    else:
+        vat_fac = [1/1.17, 1/1.16, 1/1.13]
+    if field_list == None:
+        field_list = [col for col in df.columns if col != index_col]
+    if index_col == None:
+        idx = df.index
+    else:
+        idx = df[index_col]
+    cutoff_dates = [datetime.date(1980, 1, 1), datetime.date(2018, 5, 1), datetime.date(2019, 4, 1), datetime.date(2100, 1, 1)]
+    if type(idx[-1]).__name__ == 'Timestamp':
+        cutoff_dates = [ pd.Timestamp(d) for d in cutoff_dates]
+    if with_ret:
+        xdf = df.copy()
+    else:
+        xdf = df
+    for sd, ed, vat in zip(cutoff_dates[:-1], cutoff_dates[1:], vat_fac):
+        ind = (idx < ed) & (idx >= sd)
+        for field in field_list:
+            xdf[field][ind] = xdf[field][ind]/vat
+    if with_ret:
+        return xdf
+
+
+def lunar_label(df):
+    ldf = df.copy(deep=True)
+    ldf['lunar_date'] = ldf.index.map(misc.lunar_date)
+    ldf['lunar_days'] = ldf['lunar_date'].map(lambda x: misc.days_to_nearest_cny(x)[1])
+    ldf['lunar_cny'] = ldf['lunar_date'].map(lambda x: misc.days_to_nearest_cny(x)[0])
+    ldf['lunar_wks'] = ldf['lunar_days'] // 7
+    return ldf
 
 
 def calendar_aggregation(df_in, period='monthly', how='returns'):
@@ -212,6 +258,68 @@ def seasonal_score(signal_df, **kwargs):
     return pd.DataFrame(df).T.reindex_like(signal_df)
 
 
+def seasonal_group_helper(df_in, func, score_cols, yr_col='year', group_col='days',
+                          min_obs=0, backward=1, forward=1, split_zero=True,
+                          rolling_years=100, **kwargs):
+    df_in = df_in.copy(deep=True)
+    if type(score_cols) == str:
+        score_cols = [score_cols]
+    results = {}
+    group_max = df_in[group_col].max()
+    group_min = df_in[group_col].min()
+    for t_date in df_in.index:
+        curr_yr = df_in.loc[t_date, yr_col]
+        curr_grp = df_in.loc[t_date, group_col]
+        mask = (df_in.index < t_date) & (df_in[yr_col] >= curr_yr - rolling_years) & (df_in[yr_col] < curr_yr)
+        grp_floor = max(curr_grp - backward, group_min)
+        grp_cap = min(curr_grp + forward, group_max)
+        if curr_grp >= 0:
+            if split_zero:
+                grp_floor = max(0, grp_floor)
+            grp_floor = min(grp_floor, group_max - backward - forward)
+        else:
+            if split_zero:
+                grp_cap = max(0, grp_cap)
+            grp_cap = max(grp_cap, group_min + backward + forward)
+        mask = mask & (df_in[group_col] >= grp_floor) & (df_in[group_col] <= grp_cap)
+        sample_period = df_in[mask]
+        if sample_period.empty or (min_obs is not None and len(sample_period) < min_obs):
+            continue
+        results[t_date] = func(sample_period[score_cols], **kwargs)
+    return results
+
+
+def seasonal_group_score(signal_df, score_cols, **kwargs):
+    def agg_func(sample_df):
+        return (sample_df.iloc[-1] - sample_df.mean()) / sample_df.std()
+
+    df = seasonal_group_helper(df_in=signal_df, func=agg_func, score_cols=score_cols, **kwargs)
+    return pd.DataFrame(df).T
+
+
+def lunar_yoy(ts, group_col='lunar_days', func='diff'):
+    ts_name = ts.name
+    tdf = ts.dropna().to_frame(ts_name)
+    tdf.index.name = 'date'
+    tdf = lunar_label(tdf)
+    ddf = pd.pivot_table(tdf, columns=['lunar_cny'], index=group_col, values=[ts_name], aggfunc='last')
+    ddf = ddf.interpolate(method='linear', limit_direction='both')
+    ddf = getattr(ddf, func)(axis=1)
+
+    rdf = pd.melt(ddf.reset_index(),
+                  id_vars=[(group_col, '')],
+                  value_vars=[col for col in ddf.columns if col[0] == ts_name]).rename(
+        columns={(group_col, ''): group_col, 'value': 'yoy'}
+    )
+
+    tdf = tdf.reset_index().merge(rdf, how='left', left_on=['lunar_cny', group_col], right_on=['lunar_cny', group_col])
+    tdf = tdf.set_index('date')
+
+    tdf = tdf[(tdf['lunar_cny'] > tdf['lunar_cny'].iloc[0] + 1) |
+              ((tdf['lunar_cny'] == tdf['lunar_cny'].iloc[0] + 1) & (tdf[group_col] >= tdf[group_col].iloc[0] + 1))]
+    return tdf['yoy'].to_frame(ts_name)
+
+
 def rolling_deseasonal(raw_df, **kwargs):
     def agg_func(sample_df):
         return sample_df.iloc[-1] - sample_df.mean()
@@ -259,6 +367,130 @@ def get_rolling_percentiles(vector, window=252, min_periods=None, use_abs=False)
         percentiles = vector.rolling(window + 1, 
                                      min_peridos=min_periods).apply(lambda s: percentile(s[-1], s[:-1]), raw=True)
     return percentiles
+
+
+
+def rolling_percentile(ts, win = 100, direction = 'max'):
+    data = ts.to_numpy()
+    sw = sliding_window_view(data, win, axis=0).T
+    scores_np = np.empty(len(ts))
+    scores_np.fill(np.nan)
+    scores_np[(win-1):] = ((sw <= sw[-1:, ...]).sum(axis=0).T / sw.shape[0]).flatten()
+    scores_np_ts = pd.Series(scores_np, index = ts.index)
+    if direction == 'min':
+        scores_np_ts = 1 - scores_np_ts
+    return scores_np_ts
+
+
+def zscore_roll(ts, win):
+    return (ts - ts.rolling(win).mean())/ts.rolling(win).std()
+
+
+def zscore_adj_roll(ts, win):
+    return (ts - ts.rolling(win).mean())/ts.diff().rolling(win).std()/np.sqrt(win)
+
+
+def zscore_ewm(ts, win):
+    return (ts - ts.ewm(halflife=win, min_periods=win).mean())/ts.ewm(halflife=win, min_periods=win).std()
+
+
+def pct_score(ts, win):
+    return rolling_percentile(ts, win) * 2 -1.0
+
+
+def ewmac(ts, win_s, win_l=None, ls_ratio=4):
+    if win_l is None:
+        win_l = ls_ratio * win_s
+    s1 = ts.ewm(halflife=win_s, min_periods=win_s).mean()
+    s2 = ts.ewm(halflife=win_l, min_periods=win_s).mean()
+    return s1-s2
+
+
+def conv_ewm(ts, h1s: list, h2s: list):
+    h1_rg = list(range(*h1s))
+    h2_rg = list(range(*h2s))
+    combinations = itertools.product(h1_rg, h2_rg)
+    collection = []
+    for h1, h2 in combinations:
+        collection.append(ewmac(ts, win_s=h1, win_l=h2).dropna())
+    conv = pd.concat(collection, axis=1).mean(axis=1)
+    return conv
+
+
+def risk_normalized(ts, win=252):
+    return ts/ts.ewm(halflife=win, min_periods=win, ignore_na=True).std()
+
+
+def norm_ewm(ts, win=80):
+    xs = ts.ewm(halflife=win, min_periods=win, ignore_na=True).mean()
+    vs = ts.ewm(halflife=win, min_periods=win, ignore_na=True).std()
+    return xs/vs
+
+
+def calc_conv_signal(feature_ts, signal_func, param_rng, signal_cap=None):
+    sig_list = []
+    for win in range(*param_rng):
+        if signal_func == 'ema':
+            signal_ts = feature_ts - feature_ts.ewm(win).mean()
+            signal_ts = risk_normalized(signal_ts, win=120)
+        elif signal_func == 'ma':
+            signal_ts = feature_ts - feature_ts.rolling(win).mean()
+            signal_ts = risk_normalized(signal_ts, win=120)
+        elif signal_func == 'ewmac':
+            signal_ts = ewmac(feature_ts, win_s=win//10, ls_ratio=4)
+            signal_ts = risk_normalized(signal_ts, win=120)
+        elif signal_func == 'zscore':
+            signal_ts = zscore_roll(feature_ts, win=win)
+        elif signal_func == 'zscore_adj':
+            signal_ts = zscore_adj_roll(feature_ts, win=win)
+        elif signal_func == 'qtl':
+            signal_ts = pct_score(feature_ts, win=win)
+        else:
+            continue
+        if signal_cap:
+            signal_ts = cap(signal_ts, signal_cap[0], signal_cap[1])
+        sig_list.append(signal_ts)
+    if len(sig_list) > 0:
+        conv_signal = pd.concat(sig_list, axis=1).mean(axis=1)
+    else:
+        conv_signal = pd.Series()
+    return conv_signal
+
+
+def response_curve(y, response='linear', param=1):
+    ''' response curve to apply to a signal, either string or a 1D function f(x)'''
+    if not isinstance(response, str):  # 1D interpolation function
+        out = response(y)
+    elif response == 'reverting':
+        scale = (1 + 2 / param ** 2) ** 0.75
+        out = scale * y * np.exp(-0.5 * (y / param) ** 2)  # min/max on param
+    elif response == 'absorbing':
+        scale = 0.258198 * (1 + 6 / param ** 2) ** 1.75
+        out = scale * y ** 3 * np.exp(-1.5 * (y / param) ** 2)
+    elif response == 'sigmoid':
+        # no closed form as a function of the parameter for the 2 below?
+        # out = y*0+scale*(erf(y/param/np.sqrt(2))) # y*0 to maintain pandas shape through scipy
+        # out = y*0+scale*(2/(1+np.exp(-y/param/np.sqrt(2)))-1) # y*0 to maintain pandas shape through scipy
+        scale = 1 / np.sqrt(1 - np.sqrt(np.pi / 2) * param * np.exp(param ** 2 / 2) * math.erfc(param / np.sqrt(2)))
+        out = scale * y / np.sqrt(param ** 2 + y ** 2)
+    elif response == 'linear':
+        out = y
+    elif response == 'sign':
+        out = 1.0 if y >= 0 else -1.0
+    elif response == 'semilinear':
+        scale = 1 / np.sqrt(
+            param ** 2 + (1 - param ** 2) * math.erf(param / np.sqrt(2)) - 0.797885 * param * np.exp(-0.5 * param ** 2))
+        out = scale * np.minimum(param, np.maximum(-param, y))
+    elif response == 'buffer':
+        scale = 1 / np.sqrt(2 * (-param * stats.norm.pdf(param) + (1 + param ** 2) * stats.norm.cdf(-param)))
+        out = scale * (np.maximum(y - param, 0) + np.minimum(y + param, 0))
+    elif response == 'band':
+        scale = 1 / np.sqrt(1 - math.erf(param / np.sqrt(2)) + 0.797885 * param * np.exp(-0.5 * param ** 2))
+        out = y * (np.abs(y) > param)
+        out = out * scale
+    else:
+        raise Exception('unknown response curve')
+    return out
 
 
 def get_scored_signal(signal, hl_smooth=20, hl_score=252, demean_signal=True, signal_cap=2):
@@ -352,7 +584,7 @@ def generate_signal_sensitivity_report(signals, pnls, quantiles=None, nb_bins=6,
             
         ax.set_xlim(pnls.index[0], pnls.index[-1])
         for tick in ax.get_xticklabels():
-            tick.set_totation(45)
+            tick.set_rotation(45)
         ax = axarray[1, 1]
         abs_pnl = pnls.abs()
         if len(pnls) > 0:
@@ -368,4 +600,319 @@ def generate_signal_sensitivity_report(signals, pnls, quantiles=None, nb_bins=6,
     
     if return_fig:
         return fig
-    
+
+
+def split_df(df, date_list, split_col = 'date'):
+    output = []
+    if len(date_list) == 0:
+        output.append(df)
+        return  output
+    if split_col == 'index':
+        ts = df.index
+    else:
+        ts = df[split_col]
+    index_list = [ts[0]] + date_list + [ts[-1]]
+    for sdate, edate in zip(index_list[:-1], index_list[1:]):
+        output.append(df[(ts <= edate) & (ts >= sdate)])
+    return output
+
+
+def colored_scatter(ts_a, ts_b, ts_c):
+    points = plt.scatter(ts_a, ts_b, c = [float((d-ts_c.min()).days) for d in ts_c], s=20, cmap='jet')
+    cb = plt.colorbar(points)
+    cb.ax.set_yticklabels([str(x) for x in ts_c[::len(ts_c)//7]])
+    plt.show()
+
+
+class Regression(object):
+    def __init__(self, df, dependent=None, independent=None):
+        """
+        Initialize the class object
+        Pre-condition:
+            dependent - column name
+            independent - list of column names
+        """
+        if not dependent:
+            dependent = df.columns[1]
+        if not independent:
+            independent = [df.columns[2], ]
+
+        formula = '{} ~ '.format(dependent)
+        first = True
+        for element in independent:
+            if first:
+                formula += element
+                first = False
+            else:
+                formula += ' + {}'.format(element)
+
+        self.df = df
+        self.dependent = dependent
+        self.independent = independent
+        self.result = smf.ols(formula, df).fit()
+
+    def summary(self):
+        """
+        Return linear regression summary
+        """
+        return self.result.summary()
+
+    def plot_all(self):
+        """
+        Plot all dependent and independent variables against time. To visualize
+        there relations
+        """
+        df = self.df
+        independent = self.independent
+        dependent = self.dependent
+
+        plt.figure(figsize=(10, 5))
+        plt.plot(df.index, df[dependent], label=dependent)
+        for indep in independent:
+            plt.plot(df.index, df[indep], label=indep)
+        plt.xticks(rotation='vertical')
+        plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+        plt.show()
+
+    def plot2D(self, rotation=False):
+        """
+        Print scatter plot and the best fit line
+        Pre-condition:
+            graph must be of 2D
+        """
+        if len(self.independent) > 1:
+            raise ValueError("Not a single independent variable regression")
+        params = self.result.params
+        df = self.df
+        k = params[1]
+        b = params[0]
+        independent = self.independent[0]
+        dependent = self.dependent
+        model = k * df[independent] + b
+
+        plt.figure(figsize=(10, 5))
+        plt.plot(df[independent], df[dependent], 'o')
+        plt.plot(df[independent], model)
+        plt.xlabel(independent)
+        plt.ylabel(dependent)
+        plt.title(dependent + ' vs. ' + independent)
+        if rotation:
+            plt.xticks(rotation='vertical')
+        plt.show()
+
+    def residual(self):
+        """
+        Return a pandas Series of residual
+        Pre-condition:
+            There should be no NAN in data. Hence length of date is equal to length
+            of data
+        """
+        df = self.result.resid
+        df.index = self.df.index
+        return df
+
+    def residual_plot(self, std_line=2, rotation=True):
+        """
+        Plot the residual against time
+        Pre-condition:
+            std_line - plot n std band. Set to zero to disable the feature.
+        """
+        plt.figure(figsize=(10, 5))
+        plt.plot(self.df.index, self.result.resid, label='residual')
+        if rotation:
+            plt.xticks(rotation='vertical')
+        plt.title('residual plot')
+        if std_line != 0:
+            df = self.df
+            std = self.residual().describe()['std']
+            mean = self.residual().describe()['mean']
+            num = len(df.index)
+            plt.plot(df.index, std_line * std * np.ones(num) + mean, 'r--')
+            plt.plot(df.index, -std_line * std * np.ones(num) + mean, 'r--')
+            plt.title('residual plot ({} STD band)'.format(std_line))
+        plt.show()
+
+    def residual_vs_fit(self, colorbar=True):
+        if colorbar:
+            df = self.df
+            y_predict = self.result.predict(df[self.independent])
+            colored_scatter(y_predict, self.result.resid, df.index)
+        else:
+            residual = self.residual()
+            df = self.df
+            y_predict = self.result.predict(df[self.independent])
+            plt.plot(y_predict, residual, 'o')
+            plt.plot(y_predict, np.zeros(len(residual)), 'r--')
+            plt.xlabel("predict")
+            plt.ylabel('residual')
+            plt.title('Residual vs fit')
+            plt.show()
+
+    def cross_validation(self, split_dates, split_col = 'index'):
+        if type(self.df.index[0]).__name__ == 'Timestamp' and type(split_dates[0]).__name__ != 'Timestamp':
+            split_dates = [pd.to_datetime(idx) for idx in split_dates]
+        data_set = split_df(self.df, split_dates, split_col = split_col)
+        for idx, train in enumerate(data_set):
+            reg_train = Regression(train, self.dependent, self.independent)
+            string = []
+            for indep in reg_train.independent:
+                string.append("%.4f * %s" % (reg_train.result.params[indep], indep))
+            print("Train set %s: %s = %s + %.4f\t\nR-sqr: %.2f\tResid std: %.4f" % (idx,
+                reg_train.dependent, ' + '.join(string), reg_train.result.params[0],
+                reg_train.result.rsquared, reg_train.result.resid.std()))
+            for idy in range(len(data_set)):
+                if idx != idy:
+                    test_sum = 0
+                    for indep in self.independent:
+                        test_sum += data_set[idy][indep] * reg_train.result.params[indep]
+                    test_resid = data_set[idy][self.dependent] - test_sum
+                    print(("Test set %s: Resid std: %.4f\tResid mean: %.4f" % (idy, test_resid.std(), test_resid.mean(),)))
+
+    def run_all(self):
+        """
+        Lazy ass's ultimate solution. Run all available analysis
+        Pre-condition:
+            There should be only one independent variable
+        """
+        _2D = len(self.independent) == 1
+        print()
+        self.plot_all()
+        print()
+        print(self.summary())
+        if _2D:
+            self.plot2D()
+        print()
+        print('Error statistics')
+        print(self.residual().describe())
+        print()
+        self.residual_vs_fit()
+        self.residual_plot()
+        residual = self.residual()
+        test_mean_reverting(residual)
+        print()
+        print('Halflife = ', half_life(residual))
+
+    def summarize_all(self):
+        if len(self.independent) == 1:
+            dependent = self.dependent
+            independent = self.independent[0]
+            params = self.result.params
+            result = self.result
+            k = params[1]
+            b = params[0]
+            conf = result.conf_int()
+            cadf = adfuller(result.resid)
+            if cadf[0] <= cadf[4]['5%']:
+                boolean = 'likely'
+            else:
+                boolean = 'unlikely'
+            print()
+            print(("{:^40}".format("{} vs {}".format(dependent.upper(), independent.upper()))))
+            print(("%20s %s = %.4f * %s + %.4f" % ("Model:", dependent, k, independent, b)))
+            print(("%20s %.4f" % ("R square:", result.rsquared)))
+            print(("%20s [%.4f, %.4f]" % ("Confidence interval:", conf.iloc[1, 0], conf.iloc[1, 1])))
+            print(("%20s %.4f" % ("Model error:", result.resid.std())))
+            print(("%20s %s" % ("Mean reverting:", boolean)))
+            print(("%20s %d" % ("Half life:", half_life(result.resid))))
+        else:
+            dependent = self.dependent
+            independent = self.independent  # list
+            params = self.result.params
+            result = self.result
+            b = params[0]
+            conf = result.conf_int()  # pandas
+            cadf = adfuller(result.resid)
+            if cadf[0] <= cadf[4]['5%']:
+                boolean = 'likely'
+            else:
+                boolean = 'unlikely'
+            print()
+            print(("{:^40}".format("{} vs {}".format(dependent.upper(), (', '.join(independent)).upper()))))
+            string = []
+            for i in range(len(independent)):
+                string.append("%.4f * %s" % (params[independent[i]], independent[i]))
+            print(("%20s %s = %s + %.4f" % ("Model:", dependent, ' + '.join(string), b)))
+            print(("%20s %.4f" % ("R square:", result.rsquared)))
+            string = []
+            for i in range(len(independent)):
+                string.append("[%.4f, %.4f]" % (conf.loc[independent[i], 0], conf.loc[independent[i], 1]))
+            print(("%20s %s" % ("Confidence interval:", ' , '.join(string))))
+            print(("%20s %.4f" % ("Model error:", result.resid.std())))
+            print(("%20s %s" % ("Mean reverting:", boolean)))
+            print(("%20s %d" % ("Half life:", half_life(result.resid))))
+
+
+class KalmanRegression(object):
+    def __init__(self, df, dependent=None, independent=None, delta=None, trans_cov=None, obs_cov=None):
+        if not dependent:
+            dependent = df.columns[1]
+        if not independent:
+            independent = df.columns[2]
+
+        self.x = df[independent]
+        self.x.index = df.index
+        self.y = df[dependent]
+        self.y.index = df.index
+        self.dependent = dependent
+        self.independent = independent
+
+        self.delta = delta or 1e-5
+        self.trans_cov = trans_cov or self.delta / (1 - self.delta) * np.eye(2)
+        self.obs_mat = np.expand_dims(
+            np.vstack([[self.x.values], [np.ones(len(self.x))]]).T,
+            axis=1
+        )
+        self.obs_cov = obs_cov or 1
+        self.kf = KalmanFilter(n_dim_obs=1, n_dim_state=2,
+                               initial_state_mean=np.zeros(2),
+                               initial_state_covariance=np.ones((2, 2)),
+                               transition_matrices=np.eye(2),
+                               observation_matrices=self.obs_mat,
+                               observation_covariance=self.obs_cov,
+                               transition_covariance=self.trans_cov)
+        self.state_means, self.state_covs = self.kf.filter(self.y.values)
+
+    def slope(self):
+        state_means = self.state_means
+        return pd.Series(state_means[:, 0], index=self.x.index)
+
+    def plot_params(self):
+        state_means = self.state_means
+        x = self.x
+        _, axarr = plt.subplots(2, sharex=True)
+        axarr[0].plot(x.index, state_means[:, 0], label='slope')
+        axarr[0].legend()
+        axarr[1].plot(x.index, state_means[:, 1], label='intercept')
+        axarr[1].legend()
+        plt.tight_layout()
+        plt.show()
+        return state_means[:, 0]
+
+    def plot2D(self):
+        x = self.x
+        y = self.y
+        state_means = self.state_means
+
+        cm = plt.get_cmap('jet')
+        colors = np.linspace(0.1, 1, len(x))
+        # Plot data points using colormap
+        sc = plt.scatter(x, y, s=30, c=colors, cmap=cm, edgecolor='k', alpha=0.7)
+        cb = plt.colorbar(sc)
+        cb.ax.set_yticklabels([str(p.date()) for p in x[::len(x) // 9].index])
+
+        # Plot every fifth line
+        step = 100
+        xi = np.linspace(x.min() - 5, x.max() + 5, 2)
+        colors_l = np.linspace(0.1, 1, len(state_means[::step]))
+        for i, beta in enumerate(state_means[::step]):
+            plt.plot(xi, beta[0] * xi + beta[1], alpha=.2, lw=1, c=cm(colors_l[i]))
+
+        # Plot the OLS regression line
+        plt.plot(xi, np.poly1d(np.polyfit(x, y, 1))(xi), '0.4')
+
+        plt.title(self.dependent + ' vs. ' + self.independent)
+        plt.show()
+
+    def run_all(self):
+        self.plot_params()
+        self.plot2D()

@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import workdays
 import datetime
+from lunardate import LunarDate
 from dateutil.relativedelta import relativedelta
 import calendar
 import math
@@ -508,6 +509,29 @@ def get_hols_from_json(filename='C:/dev/pyktrader3/wtdev/common/holidays.json', 
 PLIO_Holidays = get_hols_from_json(key="PLIO")
 CHN_Holidays = get_hols_from_json(key='CHINA')
 Holiday_Map = {'CHN': CHN_Holidays, 'PLIO': PLIO_Holidays}
+
+
+def lunar_date(ds):
+    ds = pd.to_datetime(ds).date()
+    return LunarDate.fromSolarDate(ds.year, ds.month, ds.day)
+
+
+def days_to_nearest_cny(ldate, calendar=''):
+    def days_diff(d1, d2):
+        if calendar == '':
+            return (d1 - d2).days
+        else:
+            hols = Holiday_Map.get(calendar, [])
+            return workdays.networkdays(d1, d2, hols) - is_workday(d1, calendar=calendar)
+    cur_cny = LunarDate(ldate.year, 1, 1)
+    nxt_cny = LunarDate(ldate.year+1, 1, 1)
+    if abs((ldate - cur_cny).days) > abs((ldate - nxt_cny).days):
+        cny_yr = nxt_cny.year
+        dt = days_diff(ldate.toSolarDate(), nxt_cny.toSolarDate())
+    else:
+        cny_yr = cur_cny.year
+        dt = days_diff(ldate.toSolarDate(), cur_cny.toSolarDate())
+    return cny_yr, dt
 
 
 def xl2date(num):

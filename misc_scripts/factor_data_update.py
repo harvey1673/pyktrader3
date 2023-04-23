@@ -8,6 +8,7 @@ from pycmqlib3.utility.dbaccess import dbconfig, mysql_replace_into, connect, lo
 from pycmqlib3.utility import dataseries
 from pycmqlib3.utility.misc import cleanup_mindata, prod2exch, inst2contmth, day_shift, sign, product_lotsize, CHN_Holidays, nearby
 import pycmqlib3.analytics.data_handler as dh
+from pycmqlib3.analytics.tstool import *
 
 ferrous_products_mkts = ['rb', 'hc', 'i', 'j', 'jm']
 ferrous_mixed_mkts = ['ru', 'FG', 'ZC', 'SM', "SF"]
@@ -243,7 +244,7 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule=
                 extra_fields += ['zlv', str(ma_win)]
             elif 'qtl' == run_mode[-3:]:
                 ref_field = run_mode[:-3]
-                xdf[data_field] = 2.0 * (dh.rolling_percentile(xdf[ref_field], win=ma_win) - 0.5)
+                xdf[data_field] = 2.0 * (rolling_percentile(xdf[ref_field], win=ma_win) - 0.5)
                 extra_fields += ['qtl', str(ma_win)]
             else:
                 ref_field = run_mode
