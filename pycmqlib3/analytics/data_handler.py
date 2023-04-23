@@ -7,55 +7,6 @@ from collections import OrderedDict
 import pandas as pd
 import scipy.stats as stats
 import scipy.signal as signal
-from numpy.lib.stride_tricks import sliding_window_view
-
-
-def rolling_percentile(ts, win = 100, direction = 'max'):
-    data = ts.to_numpy()
-    sw = sliding_window_view(data, win, axis=0).T
-    scores_np = np.empty(len(ts))
-    scores_np.fill(np.nan)
-    scores_np[(win-1):] = ((sw <= sw[-1:, ...]).sum(axis=0).T / sw.shape[0]).flatten()
-    scores_np_ts = pd.Series(scores_np, index = ts.index)
-    if direction == 'min':
-        scores_np_ts = 1 - scores_np_ts
-    return scores_np_ts
-
-
-def response_curve(y, response='linear', param=1):
-    ''' response curve to apply to a signal, either string or a 1D function f(x)'''
-    if not isinstance(response, str):  # 1D interpolation function
-        out = response(y)
-    elif response == 'reverting':
-        scale = (1 + 2 / param ** 2) ** 0.75
-        out = scale * y * np.exp(-0.5 * (y / param) ** 2)  # min/max on param
-    elif response == 'absorbing':
-        scale = 0.258198 * (1 + 6 / param ** 2) ** 1.75
-        out = scale * y ** 3 * np.exp(-1.5 * (y / param) ** 2)
-    elif response == 'sigmoid':
-        # no closed form as a function of the parameter for the 2 below?
-        # out = y*0+scale*(erf(y/param/np.sqrt(2))) # y*0 to maintain pandas shape through scipy
-        # out = y*0+scale*(2/(1+np.exp(-y/param/np.sqrt(2)))-1) # y*0 to maintain pandas shape through scipy
-        scale = 1 / np.sqrt(1 - np.sqrt(np.pi / 2) * param * np.exp(param ** 2 / 2) * math.erfc(param / np.sqrt(2)))
-        out = scale * y / np.sqrt(param ** 2 + y ** 2)
-    elif response == 'linear':
-        out = y
-    elif response == 'sign':
-        out = 1.0 if y >= 0 else -1.0 
-    elif response == 'semilinear':
-        scale = 1 / np.sqrt(
-            param ** 2 + (1 - param ** 2) * math.erf(param / np.sqrt(2)) - 0.797885 * param * np.exp(-0.5 * param ** 2))
-        out = scale * np.minimum(param, np.maximum(-param, y))
-    elif response == 'buffer':
-        scale = 1 / np.sqrt(2 * (-param * stats.norm.pdf(param) + (1 + param ** 2) * stats.norm.cdf(-param)))
-        out = scale * (np.maximum(y - param, 0) + np.minimum(y + param, 0))
-    elif response == 'band':
-        scale = 1 / np.sqrt(1 - math.erf(param / np.sqrt(2)) + 0.797885 * param * np.exp(-0.5 * param ** 2))
-        out = y * (np.abs(y) > param)
-        out = out * scale
-    else:
-        raise Exception('unknown response curve')
-    return out
 
 
 def conv_date(d):

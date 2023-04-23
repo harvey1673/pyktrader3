@@ -100,21 +100,67 @@ tick_field_rename_map = {
 }
 
 
-def load_codes_from_edb(code_list, source, start_date=None, end_date=None, column_name='index_name'):
+def load_codes_from_edb(code_list, source=['ifind'], start_date=None, end_date=None, column_name='index_name'):
     if isinstance(code_list, str):
         code_list = [code_list]
+    if isinstance(source, str):
+        source = [source]
     cnx = connect(**dbconfig)
     fields = ['date', 'index_name', 'index_code', 'value', 'ref_name']
-    stmt = f"select {','.join(fields)} from edb where source='{source}' "
-    stmt += "and index_code in ({seq}) ".format(seq=','.join(f'"{w}"' for w in code_list))
+    stmt = "select {sel_fields} from edb where source in ({src})".format(
+        sel_fields=','.join(fields), src=','.join(f'"{w}"' for w in source))
+    if len(code_list) > 0:
+        stmt += " and index_code in ({seq})".format(seq=','.join(f'"{w}"' for w in code_list))
     if start_date:
-        stmt = stmt + "and date >= '%s' " % start_date.strftime('%Y-%m-%d')
+        stmt = stmt + " and date >= '%s'" % start_date.strftime('%Y-%m-%d')
     if end_date:
-        stmt = stmt + "and date <= '%s' " % end_date.strftime('%Y-%m-%d')
+        stmt = stmt + " and date <= '%s'" % end_date.strftime('%Y-%m-%d')
     df = pd.io.sql.read_sql(stmt, cnx)
     df['date'] = pd.to_datetime(df['date'])
     pivot = df.pivot(index='date', columns=column_name, values = 'value')
     return pivot
+
+
+def save_data_to_edb(xdf, source):
+    conn = create_engine('mysql+mysqlconnector://{user}:{passwd}@{host}/{dbase}'.format( \
+        user=dbconfig['user'], \
+        passwd=dbconfig['password'], \
+        host=dbconfig['host'], \
+        dbase=dbconfig['database']), echo=False)
+    func = mysql_replace_into
+    error_list = []
+    for index_name, freq, unit, index_code in xdf.columns:
+        adf = xdf[(index_name, freq, unit, index_code)].to_frame('value').dropna()
+        adf['index_name'] = index_name
+        adf['frequency'] = freq
+        adf['unit'] = unit
+        adf['index_code'] = index_code
+        adf = adf.reset_index()
+        adf['publish_time'] = adf['date']
+        adf['source'] = source
+        adf['ref_name'] = '_'.join(index_name.split(':'))
+        try:
+            adf.to_sql('edb', con=conn, if_exists='append', index=False, method=func)
+        except:
+            error_list.append(index_code)
+    return error_list
+
+
+def write_edb_by_xl_sheet(file_setup, data_folder='C:/Users/harvey/OneDrive/Documents'):
+    error_list = []
+    for data_file, sheet_name in file_setup:
+        key= (data_file, sheet_name)
+        xdf = pd.read_excel(f'{data_folder}/{data_file}',
+                            sheet_name=sheet_name,
+                            header=file_setup[key]['header'],
+                            skiprows=file_setup[key]['skiprows']).reorder_levels(file_setup[key]['reorder'], axis=1)
+        xdf.columns = [col if idx > 0 else 'date' for idx, col in enumerate(xdf.columns)]
+        xdf = xdf.set_index('date')
+        if file_setup[key]['drop_zero']:
+            xdf = xdf.replace(0, np.nan)
+        err = save_data_to_edb(xdf, file_setup[key]['source'])
+        error_list += err
+    return error_list
 
 
 def tick2dict(tick):
@@ -860,3 +906,14 @@ def load_fut_by_product(product, exch, start_date, end_date, freq = 'd'):
         out_df = out_df[out_df.instID != 'ME505']
         out_df['instID'] = out_df['instID'].replace(['MA506'], 'MA505')
     return out_df
+
+
+def write_edb_from_files():
+    file_setup = {
+        ('ifind_data.xlsx', 'daily'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
+                                       'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
+        ('ifind_data.xlsx', 'weekly'):{'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
+                                       'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
+    }
+    write_edb_by_xl_sheet(file_setup)
+    

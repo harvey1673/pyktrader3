@@ -47,8 +47,7 @@ def max_drawdown(ts, cum_pnl=True):
 class MetricsBase(object):
     def __init__(self, holdings, returns, portfolio_obj=None, limits=None,
                  shift_holdings=0, backtest=True, hols='CHN',
-                 business_days_per_year=tstool.PNL_BDAYS,
-                 offsets=pd.Series(), cost_ratio=0):
+                 business_days_per_year=tstool.PNL_BDAYS):
         holdings.index = pd.to_datetime(holdings.index)
         returns.index = pd.to_datetime(returns.index)
         self.raw_holdings, self.raw_returns = holdings, returns
@@ -59,11 +58,6 @@ class MetricsBase(object):
         self.universe = self.holdings.columns
         self.holidays = Holiday_Map.get(hols, [])
         self.business_days_per_year = business_days_per_year
-        self.cost_ratio = cost_ratio
-        if len(offsets) > 0:
-            self.offsets = offsets
-        else:
-            self.offsets = pd.Series(0, index=self.universe)
 
     def _align_holding_returns(self, holdings, returns, limits, backtest):
         import warnings
@@ -165,8 +159,7 @@ class MetricsBase(object):
     def _calc_pnl(self, holdings):
         if holdings is None:
             holdings = self.holdings
-        cost_df = holdings.diff().abs().multiply(self.offsets, axis=1)*self.cost_ratio
-        return holdings.multiply(self.returns) - cost_df
+        return holdings.multiply(self.returns)
 
     def _lagged_asset_pnl(self, holdings=None, shift=0):
         if holdings is None:
@@ -200,6 +193,8 @@ class MetricsBase(object):
     def _calculate_pnl_stats(self, holdings, shift=0, use_log_returns=False, tenors=True, perf_metrics=['sharpe']):
         asset_pnl = self._lagged_asset_pnl(holdings=holdings, shift=shift)
         portfolio_pnl = self._lagged_portfolio_pnl(holdings=holdings, shift=shift)
+        pnl_per_trade = 100 * 100 * asset_pnl.mean(axis=0) / self.holdings.diff().abs().mean()
+        turnover = 100 * self.holdings.diff().abs().mean() / self.holdings.abs().mean()
         asset_sharpe_stats = asset_pnl.apply(lambda x: self._calculate_sharpe(x, tenors=tenors), axis=0)
         pnl_stats = {
             'asset_pnl': asset_pnl,
@@ -207,19 +202,24 @@ class MetricsBase(object):
             'portfolio_pnl': portfolio_pnl.to_frame(name='total'),
             'portfolio_cumpnl': self._cumpnl(portfolio_pnl, use_log_returns=use_log_returns).to_frame(name='total'),
             'asset_sharpe_stats': asset_sharpe_stats,
+            'pnl_per_trade': pnl_per_trade,
+            'turnover': turnover,
         }
 
         for metric in perf_metrics:
             pnl_stats[metric] = self._calculate_perf_metric(portfolio_pnl, metric, tenors=tenors)
         return pnl_stats
 
-    def calculate_daily_pnl(self, trade_prices, close_prices):
+    def calculate_daily_pnl(self, trade_prices, close_prices, mode='ret'):
         holdings, trade_prices = self._align_holding_returns(self.holdings, trade_prices, limits=None, backtest=True)
         holdings, close_prices = self._align_holding_returns(self.holdings, close_prices, limits=None, backtest=True)
-        cost_df = self.holdings.diff().abs().multiply(self.offsets, axis=1) * self.cost_ratio
-        pnl_df = self.holdings.shift(1).multiply(close_prices.diff().fillna(0))
-        pnl_df += (self.holdings - self.holdings.shift(1).fillna(0)).multiply(close_prices - trade_prices)
-        return pnl_df - cost_df
+        if mode == 'ret':
+            pnl_df = self.holdings.shift(1).multiply(close_prices.pct_change().fillna(0))
+            pnl_df += (self.holdings - self.holdings.shift(1).fillna(0)).multiply(close_prices/trade_prices-1)
+        else:
+            pnl_df = self.holdings.shift(1).multiply(close_prices.diff().fillna(0))
+            pnl_df += (self.holdings - self.holdings.shift(1).fillna(0)).multiply(close_prices - trade_prices)
+        return pnl_df
 
     def asset_returns(self):
         cum_log_returns = np.log(1+self.returns).cumsum(axis=0)

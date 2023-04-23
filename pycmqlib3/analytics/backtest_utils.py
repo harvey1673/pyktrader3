@@ -3,6 +3,7 @@ import pandas as pd
 import pycmqlib3.analytics.data_handler as dh
 from pycmqlib3.utility import misc
 from pycmqlib3.analytics.btmetrics import *
+from pycmqlib3.analytics.tstool import *
 
 
 def get_asset_vols(df, product_list, vol_win, vol_type='atr'):
@@ -12,6 +13,13 @@ def get_asset_vols(df, product_list, vol_win, vol_type='atr'):
             asset_df = df.loc[:, (df.columns.get_level_values(0) == asset)
                                   & (df.columns.get_level_values(1) == 'c1')].droplevel([0, 1], axis=1)
             vol_ts = dh.ATR(asset_df, vol_win).fillna(method='bfill')
+            df_list.append(vol_ts)
+        vol_df = pd.concat(df_list, axis=1, join='outer').fillna(method='ffill')
+        vol_df.columns = product_list
+    elif vol_type == 'pct_chg':
+        df_list = []
+        for asset in product_list:
+            vol_ts = df[(asset, 'c1', 'close')].pct_change().rolling(vol_win).std()
             df_list.append(vol_ts)
         vol_df = pd.concat(df_list, axis=1, join='outer').fillna(method='ffill')
         vol_df.columns = product_list
@@ -143,7 +151,7 @@ def default_signal_gen(df, input_args):
         elif 'qtl' == data_field[-3:]:
             ref_field = data_field[:-3]
             xdf[(asset, 'factor', data_field)] = 2.0 * (
-                    dh.rolling_percentile(xdf[(asset, 'factor', ref_field)], win=ma_win) - 0.5)
+                    rolling_percentile(xdf[(asset, 'factor', ref_field)], win=ma_win) - 0.5)
 
         if pos_func:
             xdf[(asset, 'factor', data_field)] = xdf[(asset, 'factor', data_field)].apply(
@@ -247,10 +255,9 @@ def run_backtest(df, input_args):
     product_list = input_args['product_list']
     vol_win = input_args['std_win']
     total_risk = input_args.get('total_risk', 5000000.0)
-    shift_mode = input_args.get('shift_mode', 1)
+    shift_mode = input_args.get('shift_mode', 2)
     asset_scaling = input_args.get('asset_scaling', False)
     exec_mode = input_args.get('exec_mode', 'open')
-    cost_ratio = input_args.get('cost_ratio', 0.0)
     signal_func = input_args.get('signal_func', default_signal_gen)
     signal_df = signal_func(df, input_args)
 
@@ -265,19 +272,36 @@ def run_backtest(df, input_args):
     if shift_mode == 1:
         vol_df = get_asset_vols(df, product_list, vol_win=vol_win, vol_type='atr')
     elif shift_mode == 2:
-        vol_df = get_asset_vols(df, product_list, vol_win=vol_win, vol_type='lret')
+        vol_df = get_asset_vols(df, product_list, vol_win=vol_win, vol_type='pct_chg')
     else:
         vol_df = get_asset_vols(df, product_list, vol_win=vol_win, vol_type='close')
 
     holding = generate_holding_from_signal(signal_df, vol_df,
                                            risk_scaling=total_risk,
                                            asset_scaling=asset_scaling)
-    df_pxchg = get_px_chg(df, exec_mode=exec_mode, chg_type='px', contract='c1')
+    df_pxchg = get_px_chg(df, exec_mode=exec_mode, chg_type='pct', contract='c1')
     df_pxchg = df_pxchg.reindex(index=holding.index)
 
-    product_offsets = misc.product_trade_offsets(product_list)
     bt_metrics = MetricsBase(holdings=holding[product_list],
-                             returns=df_pxchg[product_list],
-                             offsets=product_offsets,
-                             cost_ratio=cost_ratio)
+                             returns=df_pxchg[product_list])
     return bt_metrics
+
+
+def get_beta_neutral_returns(df, asset_pairs):
+    beta_ret_dict = {}
+    betas_dict = {}
+    for trade_asset, index_asset in asset_pairs:
+        asset_df = df[[(index_asset, 'c1', 'close'), (trade_asset, 'c1', 'close')]].copy(deep=True)
+        asset_df = asset_df.droplevel([1, 2], axis=1)
+        asset_df = asset_df.dropna(subset=[trade_asset]).ffill()
+        for asset in asset_df:
+            asset_df[f'{asset}_pct'] = asset_df[asset].pct_change().rolling(5).mean()
+        asset_df['beta'] = asset_df[f'{index_asset}_pct'].rolling(244).cov(asset_df[f'{trade_asset}_pct'])\
+                           / asset_df[f'{index_asset}_pct'].rolling(244).var()
+        key = '_'.join([trade_asset, index_asset])
+        asset_df[key] = asset_df[trade_asset].pct_change() \
+                        - asset_df['beta'] * asset_df[index_asset].pct_change().fillna(0)
+        beta_ret_dict[key] = asset_df[key].dropna()
+        betas_dict[key] = asset_df['beta']
+    return beta_ret_dict, betas_dict
+
