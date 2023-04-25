@@ -222,6 +222,49 @@ def hc_rb_diff(df, input_args):
     return signal_df
 
 
+def leader_lagger(df, input_args):
+    leadlag_port = {
+        'ferrous': {'lead': ['hc', 'rb', ],
+                    'lag': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SA', 'UR', 'SM',],
+                    'param_rng': [40, 60, 2],
+                    },
+        'base': {'lead': ['al'],
+                 'lag': ['al', 'ni', 'sn', 'ss', ],  # 'zn', 'cu'
+                 'param_rng': [40, 60, 2],
+                 },
+        'petchem': {'lead': ['v'],
+                    'lag': ['TA', 'MA', 'pp', 'eg', 'eb', 'PF', ],
+                    'param_rng': [40, 60, 2],
+                    },
+        'oil': {'lead': ['sc'],
+                'lag': ['sc', 'pg', 'bu', ],
+                'param_rng': [20, 30, 2],
+                },
+        'bean': {'lead': ['b'],
+                 'lag': ['p', 'y', 'OI', ],
+                 'param_rng': [60, 80, 2],
+                 },
+    }
+    product_list = input_args['product_list']
+    signal_cap = input_args.get('signal_cap', None)
+    conv_func = input_args.get('conv_func', 'qtl')
+    signal_df = pd.DataFrame(index=df.index, columns=product_list)
+    for asset in product_list:
+        for sector in leadlag_port:
+            if asset in leadlag_port[sector]['lag']:
+                signal_list = []
+                for lead_prod in leadlag_port[sector]['lead']:
+                    feature_ts = df[(lead_prod, 'c1', 'close')]
+                    signal_ts = calc_conv_signal(feature_ts.dropna(), conv_func,
+                                                 leadlag_port[sector]['param_rng'], signal_cap=signal_cap)
+                    signal_list.append(signal_ts)
+                signal_df[asset] = pd.concat(signal_list, axis=1).mean(axis=1)
+                break
+            else:
+                signal_df[asset] = 0
+    return signal_df
+
+
 def generate_holding_from_signal(signal_df, vol_df, risk_scaling=1.0, asset_scaling=True):
     vol_df = vol_df.reindex(index=signal_df.index).fillna(method='ffill')
     sig_df = signal_df.div(vol_df)
@@ -279,7 +322,10 @@ def run_backtest(df, input_args):
     holding = generate_holding_from_signal(signal_df, vol_df,
                                            risk_scaling=total_risk,
                                            asset_scaling=asset_scaling)
-    df_pxchg = get_px_chg(df, exec_mode=exec_mode, chg_type='pct', contract='c1')
+    if shift_mode == 2:
+        df_pxchg = get_px_chg(df, exec_mode=exec_mode, chg_type='pct', contract='c1')
+    else:
+        df_pxchg = get_px_chg(df, exec_mode=exec_mode, chg_type='px', contract='c1')
     df_pxchg = df_pxchg.reindex(index=holding.index)
 
     bt_metrics = MetricsBase(holdings=holding[product_list],
