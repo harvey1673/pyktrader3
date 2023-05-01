@@ -44,6 +44,29 @@ def max_drawdown(ts, cum_pnl=True):
     return max_dd
 
 
+def calc_perf_by_tenors(ts, tenors, metric='sharpe', business_days_per_year=244):
+    func_dict = {
+        'sharpe': sharpe,
+        'sortino': sortino,
+        'calmar': calmar,
+        'maxdd': max_drawdown,
+    }
+    edate = ts.index[-1]
+    result = {}
+    for tenor in tenors:
+        sdate = pd.to_datetime(day_shift(edate, '-' + tenor))
+        sample = ts.loc[sdate:]
+        if metric in func_dict:
+            args = {'cum_pnl': False}
+            if metric in ['sharpe', 'sortino', 'calmar']:
+                args['business_days_per_year'] = business_days_per_year
+            result[f'{metric}_{tenor}'] = func_dict[metric](sample, **args)
+        else:
+            result[f'{metric}_{tenor}'] = getattr(sample, metric)()
+    result = pd.DataFrame([result]).T[0]
+    return result
+
+
 class MetricsBase(object):
     def __init__(self, holdings, returns, portfolio_obj=None, limits=None,
                  shift_holdings=0, backtest=True, hols='CHN',
