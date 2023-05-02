@@ -53,6 +53,32 @@ sim_start_dict = {'c': datetime.date(2011, 1, 1), 'm': datetime.date(2011, 1, 1)
                   }
 
 field_list = ['open', 'high', 'low', 'close', 'volume', 'openInterest', 'contract', 'shift']
+leadlag_port = {
+    'ferrous': {'lead': ['hc', 'rb', ],
+                'lag': ['rb', 'hc', 'i', 'j', 'jm', 'SM', ],
+                'param_rng': [40, 60, 2],
+                },
+    'constrs': {'lead': ['hc', 'rb', 'v'],
+                'lag': ['FG', 'SA', 'v', 'UR', ],
+                'param_rng': [40, 60, 2],
+                },
+    'petchem': {'lead': ['v'],
+                'lag': ['TA', 'MA', 'pp', 'eg', 'eb', 'PF', ],
+                'param_rng': [40, 60, 2],
+                },
+    'base': {'lead': ['al'],
+             'lag': ['al', 'ni', 'sn', 'ss', ],  # 'zn', 'cu'
+             'param_rng': [40, 60, 2],
+             },
+    'oil': {'lead': ['sc'],
+            'lag': ['sc', 'pg', 'bu', ],
+            'param_rng': [20, 30, 2],
+            },
+    'bean': {'lead': ['b'],
+             'lag': ['p', 'y', 'OI', ],
+             'param_rng': [60, 80, 2],
+             },
+}
 
 
 def update_factor_db(xdf, field, config, dbtable='fut_fact_data', flavor='mysql', start_date=None, end_date=None):
@@ -83,10 +109,13 @@ def update_factor_db(xdf, field, config, dbtable='fut_fact_data', flavor='mysql'
         conn.dispose()
 
 
-def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule='CAL_30b', freq='d', flavor='mysql'):
+def update_factor_data(product_list, scenarios, start_date, end_date,
+                       roll_rule='CAL_30b',
+                       freq='d',
+                       flavor='mysql',
+                       shift_mode=1):
     col_list = ['open', 'high', 'low','close', 'volume', 'openInterest', 'contract', 'shift']
     update_start = day_shift(end_date, '-20b', CHN_Holidays)
-    shift_mode = 1
 
     fact_config = {}
     fact_config['roll_label'] = roll_rule
@@ -139,24 +168,29 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule=
             xdf['ryield'] = (np.log(xdf['close'] - xdf['shift']) - np.log(xdf['close_2'] - xdf['shift_2'])) / (
                         xdf['mth_2'] - xdf['mth']) * 12.0
             xdf['logret'] = np.log(xdf['close'] - xdf['shift']) - np.log(xdf['close'].shift(1) - xdf['shift'])
+            xdf['pct_chg'] = (xdf['close'] - xdf['shift'])/(xdf['close'].shift(1) - xdf['shift']) - 1
             xdf['logret_2'] = np.log(xdf['close_2'] - xdf['shift_2']) - np.log(xdf['close_2'].shift(1) - xdf['shift_2'])
         elif shift_mode == 2:
             xdf['ryield'] = (np.log(xdf['close']) - np.log(xdf['close_2']) - xdf['shift'] + xdf['shift_2']) / (
                         xdf['mth_2'] - xdf['mth']) * 12.0
             xdf['logret'] = np.log(xdf['close']) - np.log(xdf['close'].shift(1))
+            xdf['pct_chg'] = xdf['close'].pct_change()
             xdf['logret_2'] = np.log(xdf['close_2']) - np.log(xdf['close_2'].shift(1))
         else:
             xdf['ryield'] = (np.log(xdf['close']) - np.log(xdf['close_2'])) / (xdf['mth_2'] - xdf['mth']) * 12.0
             xdf['logret'] = np.log(xdf['close']) - np.log(xdf['close'].shift(1))
+            xdf['pct_chg'] = xdf['close'].pct_change()
             xdf['logret_2'] = np.log(xdf['close_2']) - np.log(xdf['close_2'].shift(1))
         xdf['px_chg'] = xdf['close'].diff()
         xdf['baslr'] = xdf['logret'] - xdf['logret_2']
+        xdf['pct_vol'] = xdf['close'] * xdf['pct_chg'].rolling(vol_win).std()
+
         xdf.index.name = 'date'
-        for field in ['logret', 'baslr', 'ryield', 'atr']:
+        for field in ['logret', 'baslr', 'ryield', 'atr', 'pct_vol']:
             update_factor_db(xdf, field, fact_config, start_date=update_start, end_date=end_date, flavor=flavor)
 
         data_cache[asset] = xdf.copy(deep=True)
-        updated_factors = ['logret', 'baslr', 'ryield', 'atr']
+        updated_factors = ['logret', 'baslr', 'ryield', 'atr', 'pct_vol']
 
         for scen in scenarios:
             sim_name = scen[0]            
@@ -287,6 +321,34 @@ def update_factor_data(product_list, scenarios, start_date, end_date, roll_rule=
             # hc_df[fact_name] = hc_df[fact_name].apply(lambda x: max(min(x, hc_df[fact_name].quantile(0.975)),
             #                                                         hc_df[fact_name].quantile(0.025)))
             update_factor_db(hc_df, fact_name, fact_config, start_date=update_start, end_date=end_date, flavor=flavor)
+
+    #leader-lagger
+    fact_name = 'leadlag_d_mid'
+    leadlag_products = ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SM', 'UR', 'cu', 'al', 'zn', 'sn', 'ss', 'ni',
+                        'l', 'pp', 'v', 'TA', 'sc', 'eb', 'eg', 'y', 'p', 'OI']
+    for sector in leadlag_port:
+        for asset in leadlag_port[sector]['lead']:
+            if asset not in data_cache:
+                xdf = dataseries.nearby(asset, 1, start_date=sdate, end_date=end_date, shift_mode=shift_mode,
+                                        freq='d', roll_name='hot',
+                                        config_loc="C:/dev/wtdev/config/").set_index('date')
+                data_cache[asset] = xdf
+    for asset in leadlag_products:
+        fact_config['product_code'] = asset
+        fact_config['exch'] = prod2exch(asset)
+        for sector in leadlag_port:
+            if asset in leadlag_port[sector]['lag']:
+                signal_list = []
+                for lead_prod in leadlag_port[sector]['lead']:
+                    feature_ts = data_cache[lead_prod]['close']
+                    signal_ts = calc_conv_signal(feature_ts.dropna(), 'qtl',
+                                                 leadlag_port[sector]['param_rng'], signal_cap=None)
+                    signal_list.append(signal_ts)
+                signal_ts = pd.concat(signal_list, axis=1).mean(axis=1)
+                asset_df = data_cache[asset].copy()
+                asset_df[fact_name] = signal_ts
+                update_factor_db(asset_df, fact_name, fact_config, start_date=update_start, end_date=end_date,
+                                 flavor=flavor)
     return factor_repo
 
 
@@ -296,7 +358,8 @@ def generate_strat_position(cur_date, prod_list, factor_repo,
                             freq='s1',
                             pos_scaler=1000,
                             fact_db_table='fut_fact_data',
-                            hist_fact_lookback=100):
+                            hist_fact_lookback=100,
+                            shift_mode=1):
     if roll_label == 'CAL_30b':
         freq = 's1'
     fact_data = {}
@@ -304,14 +367,18 @@ def generate_strat_position(cur_date, prod_list, factor_repo,
     target_pos = {}
     vol_weight = [1.0] * len(prod_list)
     start_date = day_shift(cur_date, '-%sb' % (str(hist_fact_lookback)), CHN_Holidays)
-    atr_df = load_factor_data(prod_list,
-                              factor_list=['atr'],
+    if shift_mode == 1:
+        vol_key = 'atr'
+    else:
+        vol_key = 'pct_vol'
+    vol_df = load_factor_data(prod_list,
+                              factor_list=[vol_key],
                               roll_label=roll_label,
                               start=start_date,
                               end=cur_date,
                               freq=freq,
                               db_table=fact_db_table)
-    atr_df = pd.pivot_table(atr_df[atr_df['fact_name'] == 'atr'], values='fact_val',
+    vol_df = pd.pivot_table(vol_df[vol_df['fact_name'] == vol_key], values='fact_val',
                             index=['date', 'serial_key'],
                             columns=['product_code'],
                             aggfunc='last')
@@ -324,7 +391,7 @@ def generate_strat_position(cur_date, prod_list, factor_repo,
         df = load_factor_data(prod_list, factor_list=fact_list, roll_label=roll_label,
                               start=start_date, end=cur_date, freq=freq, db_table=fact_db_table)
     for idx, prod in enumerate(prod_list):
-        vol_weight[idx] = vol_weight[idx]*pos_scaler/(atr_df[prod].iloc[-1]*product_lotsize[prod])
+        vol_weight[idx] = vol_weight[idx]*pos_scaler/(vol_df[prod].iloc[-1]*product_lotsize[prod])
     if repo_type == 'port':
         xdf = pd.pivot_table(df, values='fact_val', index=['date', 'serial_key'],
                              columns=['fact_name'], aggfunc='last')
