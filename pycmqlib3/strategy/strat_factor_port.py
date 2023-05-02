@@ -25,6 +25,7 @@ class FactorPortTrader(Strategy):
                             'exec_bar_list': [305],
                             'fact_db_table': 'fut_fact_data',
                             'roll_label': 'CAL_30b',
+                            'vol_key': 'atr',
                             'hist_fact_lookback': 250, })
     asset_params = dict({}, **Strategy.asset_params)
 
@@ -59,8 +60,21 @@ class FactorPortTrader(Strategy):
     def load_fact_data(self):
         if 'db' in self.fact_src:
             end_date = self.agent.scur_day
-            start_date = day_shift(end_date, '-%sb' % (str(self.hist_fact_lookback)))            
+            start_date = day_shift(end_date, '-%sb' % (str(self.hist_fact_lookback)))
             fact_list = list(set([self.factor_repo[fact]['name'] for fact in self.factor_repo.keys()]))
+            vol_df = load_factor_data(self.prod_list,
+                                      factor_list=[self.vol_key],
+                                      roll_label=self.roll_label,
+                                      start=start_date,
+                                      end=end_date,
+                                      freq=self.freq,
+                                      db_table=self.fact_db_table)
+            vol_df = pd.pivot_table(vol_df[vol_df['fact_name'] == self.vol_key], values='fact_val',
+                                    index=['date', 'serial_key'],
+                                    columns=['product_code'],
+                                    aggfunc='last')
+            for idx, underlier in enumerate(self.underliers):
+                self.vol_weight[idx] = self.pos_scaler/vol_df[self.prod_list[idx]].iloc[-1]/self.conv_f[underlier[0]]
             if self.repo_type == 'port':
                 df = load_factor_data([],
                                       factor_list=fact_list,
@@ -146,13 +160,6 @@ class FactorPortTrader(Strategy):
             inst = under[0]
             if ('s' in self.freq) or ('m' in self.freq):
                 self.agent.register_data_func(inst, self.freq, None)
-        vol_name = 'ATR' + str(self.vol_win)
-        self.scaling_field = vol_name
-        for idx, under_obj in enumerate(self.underlying):
-            atr_fobj = BaseObject(name = vol_name,
-                            sfunc = fcustom(dh.ATR, n=self.vol_win),
-                            rfunc=fcustom(dh.atr, n=self.vol_win))
-            self.agent.register_data_func(under_obj.name, 'd', atr_fobj)
 
     def register_bar_freq(self):
         for idx, (under, prev_under) in enumerate(zip(self.underlying, self.prev_underlying)):
@@ -169,8 +176,8 @@ class FactorPortTrader(Strategy):
                 self.min_trade_size[idx] = 2
             else:
                 self.min_trade_size[idx] = 1
-            xdata = self.agent.day_data[self.underlying[idx].name].data
-            self.vol_weight[idx] = self.pos_scaler/xdata[self.scaling_field][-1]/self.conv_f[underlier[0]]
+            # xdata = self.agent.day_data[self.underlying[idx].name].data
+            # self.vol_weight[idx] = self.pos_scaler/xdata[self.scaling_field][-1]/self.conv_f[underlier[0]]
         for idx in self.positions:
             self.curr_pos[idx] = sum([tradepos.pos for tradepos in self.positions[idx]])
             if len(self.positions[idx]) > 1:
