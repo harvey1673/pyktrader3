@@ -93,44 +93,36 @@ port_pos_config = {
     'PT_FACTPORT3_CAL_30b': {
         'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
         'roll': 'CAL_30b',
+        'shift_mode': 1,
         'strat_list': [
             ('PT_FACTPORT3.json', 4600, 's1'),
-            ('PT_FACTPORT_HCRB.json', 30000, 's1'),
-        ],},
-    'PT_FACTPORT1_CAL_30b': {
-        'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
-        'roll': 'CAL_30b',
-        'strat_list': [
-            ('PT_FACTPORT1.json', 4600, 's1'),
             ('PT_FACTPORT_HCRB.json', 30000, 's1'),
         ], },
     'PT_FACTPORT3_hot': {
         'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
         'roll': 'hot',
+        'shift_mode': 1,
         'strat_list': [
             ('PT_FACTPORT3.json', 4600, 'd1'),
             ('PT_FACTPORT_HCRB.json', 30000, 'd1'),
         ], },
     'PT_FACTPORT1_hot': {
-        'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
+        'pos_loc': 'C:/dev/pyktrader3/process/pt_test1',
         'roll': 'hot',
+        'shift_mode': 2,
         'strat_list': [
-            ('PT_FACTPORT1.json', 4600, 'd1'),
-            ('PT_FACTPORT_HCRB.json', 30000, 'd1'),
-        ], },
-    'PT_FACTPORT3_expiry': {
-        'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
-        'roll': 'expiry',
-        'strat_list': [
-            ('PT_FACTPORT3.json', 4600, 'd1'),
-            ('PT_FACTPORT_HCRB.json', 30000, 'd1'),
+            ('PT_FACTPORT1.json', 14705, 'd1'),
+            ('PT_FACTPORT_HCRB.json', 37714, 'd1'),
+            ('PT_FACTPORT_LEADLAG1.json', 23810, 'd1'),
         ], },
     'PT_FACTPORT1_expiry': {
-        'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
+        'pos_loc': 'C:/dev/pyktrader3/process/pt_test1',
         'roll': 'expiry',
+        'shift_mode': 2,
         'strat_list': [
-            ('PT_FACTPORT1.json', 4600, 'd1'),
-            ('PT_FACTPORT_HCRB.json', 30000, 'd1'),
+            ('PT_FACTPORT1.json', 14705, 'd1'),
+            ('PT_FACTPORT_HCRB.json', 37714, 'd1'),
+            ('PT_FACTPORT_LEADLAG1.json', 23810, 'd1'),
         ], },
 }
 
@@ -230,9 +222,9 @@ scenarios_all = [
 
 
 run_settings = [
-    ('commod_cal', commod_mkts, scenarios_all, 'CAL_30b', 's1'),
-    ('commod_hot', commod_mkts, scenarios_all, 'hot', 'd1'),
-    ('commod_exp', commod_mkts, scenarios_all, 'expiry', 'd1'),
+    ('commod_cal', commod_mkts, scenarios_all, 'CAL_30b', 's1', 1),
+    ('commod_hot', commod_mkts, scenarios_all, 'hot', 'd1', 2),
+    ('commod_exp', commod_mkts, scenarios_all, 'expiry', 'd1', 2),
 ]
 
 
@@ -277,10 +269,13 @@ def run_update(tday=datetime.date.today()):
     update_field = 'fact_repo'
     if update_field not in job_status:
         job_status[update_field] = {}
-    for (fact_key, fact_mkts, scenarios, roll_label, freq) in run_settings:
+    for (fact_key, fact_mkts, scenarios, roll_label, freq, shift_mode) in run_settings:
         try:
             if not job_status[update_field].get(fact_key, False):
-                _ = update_factor_data(fact_mkts, scenarios, start_date, edate, roll_rule=roll_label, freq=freq)
+                _ = update_factor_data(fact_mkts, scenarios, start_date, edate,
+                                       roll_rule=roll_label,
+                                       freq=freq,
+                                       shift_mode=shift_mode)
                 job_status[update_field][fact_key] = True
         except:
             job_status[update_field][fact_key] = False
@@ -296,6 +291,7 @@ def run_update(tday=datetime.date.today()):
         pos_by_strat = {}
         pos_loc = port_pos_config[port_name]['pos_loc']
         roll = port_pos_config[port_name]['roll']
+        shift_mode = port_pos_config[port_name]['shift_mode']
         port_file = port_name
         if job_status[update_field].get(port_file, False):
             continue
@@ -320,7 +316,8 @@ def run_update(tday=datetime.date.today()):
                                                               roll_label=roll,
                                                               pos_scaler=pos_scaler,
                                                               freq=freq,
-                                                              hist_fact_lookback=20)
+                                                              hist_fact_lookback=20,
+                                                              shift_mode=shift_mode)
             pos_by_strat[strat_file] = strat_target
 
             for prod in strat_target:
