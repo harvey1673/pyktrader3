@@ -225,17 +225,21 @@ def hc_rb_diff(df, input_args):
 def leader_lagger(df, input_args):
     leadlag_port = {
         'ferrous': {'lead': ['hc', 'rb', ],
-                    'lag': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SA', 'UR', 'SM',],
+                    'lag': ['rb', 'hc', 'i', 'j', 'jm', 'SM', ],
+                    'param_rng': [40, 60, 2],
+                    },
+        'constrs': {'lead': ['hc', 'rb', 'v'],
+                    'lag': ['FG', 'SA', 'v', 'UR', ],
+                    'param_rng': [40, 60, 2],
+                    },
+        'petchem': {'lead': ['v'],
+                    'lag': ['TA', 'MA', 'pp', 'eg', 'eb', 'PF', ],
                     'param_rng': [40, 60, 2],
                     },
         'base': {'lead': ['al'],
                  'lag': ['al', 'ni', 'sn', 'ss', ],  # 'zn', 'cu'
                  'param_rng': [40, 60, 2],
                  },
-        'petchem': {'lead': ['v'],
-                    'lag': ['TA', 'MA', 'pp', 'eg', 'eb', 'PF', ],
-                    'param_rng': [40, 60, 2],
-                    },
         'oil': {'lead': ['sc'],
                 'lag': ['sc', 'pg', 'bu', ],
                 'param_rng': [20, 30, 2],
@@ -274,6 +278,7 @@ def generate_holding_from_signal(signal_df, vol_df, risk_scaling=1.0, asset_scal
         scaling = risk_scaling / prod_count
     else:
         scaling = pd.Series(risk_scaling/nasset, index=prod_count.index)
+    print(scaling)
     pos_df = sig_df.mul(scaling, axis='rows').shift(1).fillna(0.0)
     return pos_df
 
