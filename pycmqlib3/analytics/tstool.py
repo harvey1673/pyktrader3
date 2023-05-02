@@ -14,7 +14,7 @@ from pykalman import KalmanFilter
 from .stats_test import test_mean_reverting, half_life
 from statsmodels.tsa.stattools import coint, adfuller
 import seaborn as sns
-
+import holidays
 
 PNL_BDAYS = 244
 
@@ -45,13 +45,93 @@ def apply_vat(df, field_list = None, index_col = None, direction = 1, with_ret =
         return xdf
 
 
-def lunar_label(df):
-    ldf = df.copy(deep=True)
-    ldf['lunar_date'] = ldf.index.map(misc.lunar_date)
-    ldf['lunar_days'] = ldf['lunar_date'].map(lambda x: misc.days_to_nearest_cny(x)[1])
-    ldf['lunar_cny'] = ldf['lunar_date'].map(lambda x: misc.days_to_nearest_cny(x)[0])
-    ldf['lunar_wks'] = ldf['lunar_days'] // 7
-    return ldf
+def lunar_label(df: pd.DataFrame, copy=True):
+    def find_nearest_cny(d):
+        curr_yr = int(d.year)
+        next_yr = int(d.year+1)
+        cny_date = cny_date_map[curr_yr]
+        next_cny_date = cny_date_map[next_yr]
+        if abs((d-cny_date).days) <= abs((d-next_cny_date).days):
+            days_to_cny = (d-cny_date).days
+            cny_yr = curr_yr
+        else:
+            days_to_cny = (d-next_cny_date).days
+            cny_yr = next_yr
+        return (cny_yr, days_to_cny)
+    if copy:
+        data_daily = df.copy()
+    else:
+        data_daily = df
+    bds = data_daily.index
+    cny_date_map = dict([(yr, pd.Timestamp([item[0] for item in holidays.China(years=int(yr)).items()
+                                            if item[1] == 'Chinese New Year (Spring Festival)'][0]))
+                         for yr in range(bds[0].year-1, bds[-1].year+2)])
+    days_to_cny = pd.DataFrame(data_daily.index.map(find_nearest_cny).tolist(),
+                               index=data_daily.index,
+                               columns=['cny', 'days_to_cny'])
+    data_daily[['label_tr', 'label_day']] = days_to_cny
+    data_daily['label_wk'] = data_daily['label_day'] // 7
+    return data_daily
+
+
+def lunar_yoy(ts, group_col='label_days', func='diff'):
+    ts_name = ts.name
+    tdf = ts.dropna().to_frame(ts_name)
+    tdf.index.name = 'date'
+    tdf = lunar_label(tdf)
+    ddf = pd.pivot_table(tdf, columns=['label_yr'], index=group_col, values=[ts_name], aggfunc='last')
+    ddf = ddf.interpolate(method='linear', limit_direction='both')
+    ddf = getattr(ddf, func)(axis=1)
+
+    rdf = pd.melt(ddf.reset_index(),
+                  id_vars=[(group_col, '')],
+                  value_vars=[col for col in ddf.columns if col[0] == ts_name]).rename(
+        columns={(group_col, ''): group_col, 'value': 'yoy'}
+    )
+    tdf = tdf.reset_index().merge(rdf, how='left', left_on=['label_yr', group_col], right_on=['label_yr', group_col])
+    tdf = tdf.set_index('date')
+    tdf = tdf[(tdf['label_yr'] > tdf['label_yr'].iloc[0] + 1) |
+              ((tdf['label_yr'] == tdf['label_yr'].iloc[0] + 1) & (tdf[group_col] >= tdf[group_col].iloc[0] + 1))]
+    return tdf['yoy'].to_frame(ts_name)
+
+
+def calendar_label(data_df: pd.DataFrame, anchor_date={'month': 1, 'day': 1}, copy=True):
+    if copy:
+        data_daily = data_df.copy()
+    else:
+        data_daily = data_df
+    data_daily['anchor_dates'] = data_daily.index.map(lambda d: datetime.date(d.year, **anchor_date)
+                                                      if d.date() >= datetime.date(d.year, **anchor_date)
+                                                      else datetime.date(d.year-1, **anchor_date))
+    data_daily['label_yr'] = data_daily['anchor_dates'].map(lambda d: d.year)
+    data_daily['label_day'] = (data_daily.index - pd.to_datetime(data_daily['anchor_dates'])).map(lambda x: x.days)
+    data_daily['label_wk'] = data_daily['label_day'] // 7
+    data_daily = data_daily.drop(columns=['anchor_dates'])
+    return data_daily
+
+
+def yoy_generic(ts, label_func=lunar_label, func='diff', interpolate=False, label_args={}):
+    ts_name = ts.name
+    tdf = ts.dropna().to_frame(ts_name)
+    tdf.index.name = 'date'
+    tdf = label_func(tdf, **label_args)
+    ddf = pd.pivot_table(tdf, columns=['label_yr'], index='label_day', values=[ts_name], aggfunc='last')
+    if interpolate:
+        ddf = ddf.interpolate(method='linear', limit_direction='both')
+    else:
+        ddf = ddf.ffill.bfill()
+    ddf = getattr(ddf, func)(axis=1)
+    rdf = pd.melt(ddf.reset_index(),
+                  id_vars=[('label_day', '')],
+                  value_vars=[col for col in ddf.columns if col[0] == ts_name]).rename(
+        columns={('label_day', ''): 'label_day', 'value': 'yoy'}
+    )
+    tdf = tdf.reset_index().merge(rdf, how='left', left_on=['label_yr', 'label_day'],
+                                  right_on=['label_yr', 'label_day'])
+    tdf = tdf.set_index('date')
+    tdf = tdf[(tdf['label_yr'] > tdf['label_yr'].iloc[0] + 1) |
+              ((tdf['label_yr'] == tdf['label_yr'].iloc[0] + 1) & (tdf['label_day'] >= tdf['label_day'].iloc[0] + 1))]
+    return tdf['yoy'].to_frame(ts_name)
 
 
 def calendar_aggregation(df_in, period='monthly', how='returns'):
@@ -297,29 +377,6 @@ def seasonal_group_score(signal_df, score_cols, **kwargs):
     return pd.DataFrame(df).T
 
 
-def lunar_yoy(ts, group_col='lunar_days', func='diff'):
-    ts_name = ts.name
-    tdf = ts.dropna().to_frame(ts_name)
-    tdf.index.name = 'date'
-    tdf = lunar_label(tdf)
-    ddf = pd.pivot_table(tdf, columns=['lunar_cny'], index=group_col, values=[ts_name], aggfunc='last')
-    ddf = ddf.interpolate(method='linear', limit_direction='both')
-    ddf = getattr(ddf, func)(axis=1)
-
-    rdf = pd.melt(ddf.reset_index(),
-                  id_vars=[(group_col, '')],
-                  value_vars=[col for col in ddf.columns if col[0] == ts_name]).rename(
-        columns={(group_col, ''): group_col, 'value': 'yoy'}
-    )
-
-    tdf = tdf.reset_index().merge(rdf, how='left', left_on=['lunar_cny', group_col], right_on=['lunar_cny', group_col])
-    tdf = tdf.set_index('date')
-
-    tdf = tdf[(tdf['lunar_cny'] > tdf['lunar_cny'].iloc[0] + 1) |
-              ((tdf['lunar_cny'] == tdf['lunar_cny'].iloc[0] + 1) & (tdf[group_col] >= tdf[group_col].iloc[0] + 1))]
-    return tdf['yoy'].to_frame(ts_name)
-
-
 def rolling_deseasonal(raw_df, **kwargs):
     def agg_func(sample_df):
         return sample_df.iloc[-1] - sample_df.mean()
@@ -427,7 +484,7 @@ def norm_ewm(ts, win=80):
     return xs/vs
 
 
-def calc_conv_signal(feature_ts, signal_func, param_rng, signal_cap=None):
+def calc_conv_signal(feature_ts, signal_func, param_rng, signal_cap=None, proc_func=None):
     sig_list = []
     for win in range(*param_rng):
         if signal_func == 'ema':
@@ -447,6 +504,8 @@ def calc_conv_signal(feature_ts, signal_func, param_rng, signal_cap=None):
             signal_ts = pct_score(feature_ts, win=win)
         else:
             continue
+        if proc_func:
+            signal_ts = signal_ts.map(proc_func)
         if signal_cap:
             signal_ts = cap(signal_ts, signal_cap[0], signal_cap[1])
         sig_list.append(signal_ts)

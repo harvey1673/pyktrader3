@@ -146,7 +146,7 @@ def save_data_to_edb(xdf, source):
     return error_list
 
 
-def write_edb_by_xl_sheet(file_setup, data_folder='C:/Users/harvey/OneDrive/Documents'):
+def write_edb_by_xl_sheet(file_setup, data_folder='C:/Users/harvey/Nutstore/1/Nutstore'):
     error_list = []
     for data_file, sheet_name in file_setup:
         key= (data_file, sheet_name)
@@ -912,8 +912,10 @@ def write_edb_from_files():
     file_setup = {
         ('ifind_data.xlsx', 'daily'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
                                        'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
-        ('ifind_data.xlsx', 'weekly'):{'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
-                                       'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
+        ('ifind_data.xlsx', 'weekly'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
+                                        'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
+        ('ifind_data.xlsx', 'sector'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
+                                        'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
     }
     write_edb_by_xl_sheet(file_setup)
     
