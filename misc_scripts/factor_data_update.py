@@ -130,7 +130,7 @@ def update_factor_data(product_list, scenarios, start_date, end_date,
     data_cache = {}
     for idx, asset in enumerate(product_list):
         sdate = max(sim_start_dict.get(asset, start_date), start_date)
-        print("loading mkt = %s" % asset)
+        print("loading mkt = %s, end_date=%s, shift_mode=%s" % (asset, end_date, shift_mode))
         if roll_rule == 'CAL_30b':
             roll = '-30b'
             if asset in eq_fut_mkts:
