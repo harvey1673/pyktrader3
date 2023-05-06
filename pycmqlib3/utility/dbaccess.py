@@ -143,13 +143,14 @@ def save_data_to_edb(xdf, source):
             adf.to_sql('edb', con=conn, if_exists='append', index=False, method=func)
         except:
             error_list.append(index_code)
+    conn.dispose()
     return error_list
 
 
 def write_edb_by_xl_sheet(file_setup, data_folder='C:/Users/harvey/Nutstore/1/Nutstore'):
     error_list = []
     for data_file, sheet_name in file_setup:
-        key= (data_file, sheet_name)
+        key = (data_file, sheet_name)
         xdf = pd.read_excel(f'{data_folder}/{data_file}',
                             sheet_name=sheet_name,
                             header=file_setup[key]['header'],
@@ -158,9 +159,26 @@ def write_edb_by_xl_sheet(file_setup, data_folder='C:/Users/harvey/Nutstore/1/Nu
         xdf = xdf.set_index('date')
         if file_setup[key]['drop_zero']:
             xdf = xdf.replace(0, np.nan)
+        print(f"saving data for {data_file}:{sheet_name}, total cols:{len(xdf.columns)}")
         err = save_data_to_edb(xdf, file_setup[key]['source'])
         error_list += err
     return error_list
+
+
+def write_edb_from_files():
+    file_setup = {
+        # ('ifind_data.xlsx', 'hist'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
+        #                                 'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
+        ('ifind_data.xlsx', 'const'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
+                                        'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
+        ('ifind_data.xlsx', 'daily'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
+                                       'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
+        ('ifind_data.xlsx', 'weekly'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
+                                        'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
+        ('ifind_data.xlsx', 'sector'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
+                                        'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
+    }
+    write_edb_by_xl_sheet(file_setup)
 
 
 def tick2dict(tick):
@@ -907,15 +925,4 @@ def load_fut_by_product(product, exch, start_date, end_date, freq = 'd'):
         out_df['instID'] = out_df['instID'].replace(['MA506'], 'MA505')
     return out_df
 
-
-def write_edb_from_files():
-    file_setup = {
-        ('ifind_data.xlsx', 'daily'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
-                                       'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
-        ('ifind_data.xlsx', 'weekly'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
-                                        'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
-        ('ifind_data.xlsx', 'sector'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
-                                        'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
-    }
-    write_edb_by_xl_sheet(file_setup)
     
