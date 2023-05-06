@@ -48,42 +48,42 @@ scenarios_elite = [
 ]
 
 scenarios_test = [
-    ('tscarry', 'ryieldnmb', 1.0, 1, 122, 1, (None, {}, ''), [0.0, 0.0]),
-    ('tscarry', 'ryieldqtl', 0.8, 1, 20, 1, (None, {}, ''), [0.0, 0.0]),
-    ('tscarry', 'ryieldqtl', 0.8, 1, 60, 1, (None, {}, ''), [0.0, 0.0]),
-    ('tscarry', 'ryieldqtl', 0.8, 1, 244, 1, (None, {}, ''), [0.0, 0.0]),
+    ('tscarry', 'ryieldnmb', 0.1213, 1, 122, 1, (None, {}, ''), [0.0, 0.0]),
+    ('tscarry', 'ryieldqtl', 0.2727, 1, 20, 1, (None, {}, ''), [0.0, 0.0]),
+    ('tscarry', 'ryieldqtl', 0.0, 1, 60, 1, (None, {}, ''), [0.0, 0.0]),
+    ('tscarry', 'ryieldqtl', 0.184, 1, 244, 1, (None, {}, ''), [0.0, 0.0]),
 
-    ('tscarry', 'basmomnma', 0.5, 20, 122, 1, (None, {}, ''), [0.0, 0.0]),
-    ('tscarry', 'basmomnma', 0.42, 60, 122, 1, (None, {}, ''), [0.0, 0.0]),
-    ('tscarry', 'basmomnma', 0.35, 120, 122, 1, (None, {}, ''), [0.0, 0.0]),
-    ('tscarry', 'basmomnma', 0.35, 180, 122, 1, (None, {}, ''), [0.0, 0.0]),
-    ('tscarry', 'basmomqtl', 2.0, 120, 20, 1, (None, {}, ''), [0.0, 0.0]),
-    ('tscarry', 'basmomqtl', 1.8, 240, 20, 1, (None, {}, ''), [0.0, 0.0]),
+    ('tscarry', 'basmomnma', 0.0, 20, 122, 1, (None, {}, ''), [0.0, 0.0]),
+    ('tscarry', 'basmomnma', 0.0103, 60, 122, 1, (None, {}, ''), [0.0, 0.0]),
+    ('tscarry', 'basmomnma', 0.0532, 120, 122, 1, (None, {}, ''), [0.0, 0.0]),
+    ('tscarry', 'basmomnma', 0.1204, 180, 122, 1, (None, {}, ''), [0.0, 0.0]),
+    ('tscarry', 'basmomqtl', 0.4054, 120, 20, 1, (None, {}, ''), [0.0, 0.0]),
+    ('tscarry', 'basmomqtl', 0.3380, 240, 20, 1, (None, {}, ''), [0.0, 0.0]),
+    
+    #('xscarry-rank', 'ryieldnma', 0, 1, 20, 1, (None, {}, ''), [0.0, 0.0], 0.2),
+    ('xscarry-rank', 'ryieldnma', 1.102, 1, 122, 1, (None, {}, ''), [0.0, 0.0], 0.2),
+    #('xscarry-rank', 'ryieldnma', 0, 1, 244, 1, (None, {}, ''), [0.0, 0.0], 0.2),
 
-    ('xscarry-rank', 'ryieldnma', 1.4, 1, 20, 1, (None, {}, ''), [0.0, 0.0], 0.2),
-    ('xscarry-rank', 'ryieldnma', 1.4, 1, 122, 1, (None, {}, ''), [0.0, 0.0], 0.2),
-    ('xscarry-rank', 'ryieldnma', 1.4, 1, 244, 1, (None, {}, ''), [0.0, 0.0], 0.2),
+    ('xscarry-rank', 'basmomnma', 0.5282, 20, 122, 1, (None, {}, ''), [0.0, 0.0], 0.2),
+    ('xscarry-rank', 'basmomnma', 0.1997, 100, 122, 1, (None, {}, ''), [0.0, 0.0], 0.2),
+    ('xscarry-rank', 'basmomnma', 0.4554, 170, 122, 1, (None, {}, ''), [0.0, 0.0], 0.2), 
 
-    ('xscarry-rank', 'basmomnma', 2.0, 20, 122, 1, (None, {}, ''), [0.0, 0.0], 0.2),
-    ('xscarry-rank', 'basmomnma', 2.0, 100, 122, 1, (None, {}, ''), [0.0, 0.0], 0.2),
-    ('xscarry-rank', 'basmomnma', 2.0, 170, 122, 1, (None, {}, ''), [0.0, 0.0], 0.2),
-
-    ('tsmom', 'hlbrk', 0.5, 20, 1, 10, (None, {}, ''), [0.0, 0.0], 0.2),
-    ('tsmom', 'hlbrk', 0.5, 40, 1, 10, (None, {}, ''), [0.0, 0.0], 0.2),
-    ('tsmom', 'hlbrk', 0.5, 61, 1, 10, (None, {}, ''), [0.0, 0.0], 0.2),
-    ('tsmom', 'hlbrk', 0.5, 122, 1, 10, (None, {}, ''), [0.0, 0.0], 0.2),
-    ('tsmom', 'hlbrk', 0.5, 244, 1, 10, (None, {}, ''), [0.0, 0.0], 0.2),
-    ('tsmom', 'macdnma', 0.22, 8, 160, 5, (response_curve, {"response": "reverting", "param": 2}, 'reverting'), [1.5, 10.0]),
-    ('tsmom', 'macdnma', 0.20, 16, 160, 5, (response_curve, {"response": "reverting", "param": 2}, 'reverting'), [1.5, 5.0]),
-    ('tsmom', 'macdnma', 0.18, 24, 160, 5, (response_curve, {"response": "reverting", "param": 2}, 'reverting'), [1.5, 3.34]),
-    ('xsmom-rank', 'hlbrk', 0.375, 20, 1, 1, (None, {}, ''), [0.0, 0.0], 0.2),
-    ('xsmom-rank', 'hlbrk', 0.375, 40, 1, 1, (None, {}, ''), [0.0, 0.0], 0.2),
-    ('xsmom-rank', 'hlbrk', 0.375, 61, 1, 1, (None, {}, ''), [0.0, 0.0], 0.2),
-    ('xsmom-rank', 'hlbrk', 0.375, 122, 1, 1, (None, {}, ''), [0.0, 0.0], 0.2),
-    ('xsmom-rank', 'hlbrk', 0.375, 244, 1, 1, (None, {}, ''), [0.0, 0.0], 0.2),
-    ('xsmom-rank', 'momnma', 0.6, 10, 10, 1, (None, {}, ''), [0.0], 0.2),
-    ('xsmom-rank', 'momnma', 0.6, 130, 120, 1, (None, {}, ''), [0.0], 0.2),
-    ('xsmom-rank', 'momnma', 0.6, 240, 60, 1, (None, {}, ''), [0.0], 0.2),
+    ('tsmom', 'hlbrk', 0.5546, 20, 1, 10, (None, {}, ''), [0.0, 0.0], 0.2),
+    #('tsmom', 'hlbrk', 0.000, 40, 1, 10, (None, {}, ''), [0.0, 0.0], 0.2),
+    ('tsmom', 'hlbrk', 0.0, 61, 1, 10, (None, {}, ''), [0.0, 0.0], 0.2),
+    #('tsmom', 'hlbrk', 0.000, 122, 1, 10, (None, {}, ''), [0.0, 0.0], 0.2),
+    ('tsmom', 'hlbrk', 0.4524, 244, 1, 10, (None, {}, ''), [0.0, 0.0], 0.2),  
+    ('tsmom', 'macdnma', 0.0, 8, 160, 5, (response_curve, {"response": "reverting", "param": 2}, 'reverting'), [1.5, 10.0]),
+    ('tsmom', 'macdnma', 0.0, 16, 160, 5, (response_curve, {"response": "reverting", "param": 2}, 'reverting'), [1.5, 5.0]),
+    ('tsmom', 'macdnma', 0.04414, 24, 160, 5, (response_curve, {"response": "reverting", "param": 2}, 'reverting'), [1.5, 3.34]),
+    ('xsmom-rank', 'hlbrk', 0.1458, 20, 1, 1, (None, {}, ''), [0.0, 0.0], 0.2),
+    #('xsmom-rank', 'hlbrk', 0.000, 40, 1, 1, (None, {}, ''), [0.0, 0.0], 0.2),
+    ('xsmom-rank', 'hlbrk', 0.0, 61, 1, 1, (None, {}, ''), [0.0, 0.0], 0.2),
+    #('xsmom-rank', 'hlbrk', 0.000, 122, 1, 1, (None, {}, ''), [0.0, 0.0], 0.2),
+    ('xsmom-rank', 'hlbrk', 0.0, 244, 1, 1, (None, {}, ''), [0.0, 0.0], 0.2),
+    ('xsmom-rank', 'momnma', 0.2731, 10, 10, 1, (None, {}, ''), [0.0], 0.2),
+    ('xsmom-rank', 'momnma', 0.1708, 130, 120, 1, (None, {}, ''), [0.0], 0.2),
+    ('xsmom-rank', 'momnma', 0.3562, 240, 60, 1, (None, {}, ''), [0.0], 0.2),
 ]
 
 mixed_metal_mkts = ['rb', 'hc', 'i', 'j', 'jm', 'ru', 'FG', 'cu', 'al', 'zn', 'ni']
@@ -95,33 +95,34 @@ commod_mkts = ['rb', 'hc', 'i', 'j', 'jm', 'ru', 'FG', 'cu', 'al', 'zn', 'pb', '
 
 port_pos_config = {
     'PT_FACTPORT3_CAL_30b': {
-        'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
+        'pos_loc': 'C:/dev/pyktrader3/process/paper_sim1',
         'roll': 'CAL_30b',
         'shift_mode': 1,
         'strat_list': [
             ('PT_FACTPORT3.json', 4600, 's1'),
             ('PT_FACTPORT_HCRB.json', 30000, 's1'),
         ], },
-    'PT_FACTPORT3_hot': {
-        'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
-        'roll': 'hot',
-        'shift_mode': 1,
-        'strat_list': [
-            ('PT_FACTPORT3.json', 4600, 'd1'),
-            ('PT_FACTPORT_HCRB.json', 30000, 'd1'),
-        ], },
-    'PT_FACTPORT1_hot': {
-        'pos_loc': 'C:/dev/pyktrader3/process/pt_test1',
+    'PTSIM1_FACTPORT1_hot': {
+        'pos_loc': 'C:/dev/pyktrader3/process/paper_sim1',
         'roll': 'hot',
         'shift_mode': 2,
         'strat_list': [
-            ('PT_FACTPORT1.json', 14705, 'd1'),
-            ('PT_FACTPORT_HCRB.json', 37714, 'd1'),
-            ('PT_FACTPORT_LEADLAG1.json', 23810, 'd1'),
+            ('PTSIM1_FACTPORT1.json', 14705, 'd1'),
+            ('PTSIM1_HCRB.json', 37714, 'd1'),
+            ('PTSIM1_LEADLAG1.json', 23810, 'd1'),
+        ], },
+    'PTSIM1_FACTPORT1_expiry': {
+        'pos_loc': 'C:/dev/pyktrader3/process/paper_sim1',
+        'roll': 'expiry',
+        'shift_mode': 2,
+        'strat_list': [
+            ('PTSIM1_FACTPORT1.json', 14705, 'd1'),
+            ('PTSIM1_HCRB.json', 37714, 'd1'),
+            ('PTSIM1_LEADLAG1.json', 23810, 'd1'),
         ], },
 }
 
-pos_chg_notification = ['PT_FACTPORT3_CAL_30b', 'PT_FACTPORT1_hot']
+pos_chg_notification = ['PT_FACTPORT3_CAL_30b', 'PTSIM1_hot']
 
 scenarios_all = [
     ('tscarry', 'ryieldnmb', 2.8, 1, 120, 1, (None, {}, ''), [0.0, 0.0]),
@@ -347,68 +348,68 @@ def run_update(tday=datetime.date.today()):
         port_file = port_name
         if job_status[update_field].get(port_file, False):
             continue
-        # try:
-        for strat_file, pos_scaler, freq in port_pos_config[port_name]['strat_list']:
-            config_file = f'{pos_loc}/settings/{strat_file}'
-            with open(config_file, 'r') as fp:
-                strat_conf = json.load(fp)
-            strat_args = strat_conf['config']
-            assets = strat_args['assets']
-            repo_type = strat_args.get('repo_type', 'asset')
-            factor_repo = strat_args['factor_repo']
+        try:
+            for strat_file, pos_scaler, freq in port_pos_config[port_name]['strat_list']:
+                config_file = f'{pos_loc}/settings/{strat_file}'
+                with open(config_file, 'r') as fp:
+                    strat_conf = json.load(fp)
+                strat_args = strat_conf['config']
+                assets = strat_args['assets']
+                repo_type = strat_args.get('repo_type', 'asset')
+                factor_repo = strat_args['factor_repo']
 
-            product_list = []
-            for asset_dict in assets:
-                under = asset_dict["underliers"][0]
-                product = inst2product(under)
-                product_list.append(product)
+                product_list = []
+                for asset_dict in assets:
+                    under = asset_dict["underliers"][0]
+                    product = inst2product(under)
+                    product_list.append(product)
 
-            strat_target, strat_sum = generate_strat_position(edate, product_list, factor_repo,
-                                                              repo_type=repo_type,
-                                                              roll_label=roll,
-                                                              pos_scaler=pos_scaler,
-                                                              freq=freq,
-                                                              hist_fact_lookback=20,
-                                                              shift_mode=shift_mode)
-            pos_by_strat[strat_file] = strat_target
+                strat_target, strat_sum = generate_strat_position(edate, product_list, factor_repo,
+                                                                repo_type=repo_type,
+                                                                roll_label=roll,
+                                                                pos_scaler=pos_scaler,
+                                                                freq=freq,
+                                                                hist_fact_lookback=20,
+                                                                shift_mode=shift_mode)
+                pos_by_strat[strat_file] = strat_target
 
-            for prod in strat_target:
-                if prod not in target_pos:
-                    target_pos[prod] = 0
-                target_pos[prod] += strat_target[prod]
+                for prod in strat_target:
+                    if prod not in target_pos:
+                        target_pos[prod] = 0
+                    target_pos[prod] += strat_target[prod]
 
-        for prodcode in target_pos:
-            if prodcode == 'CJ':
-                target_pos[prodcode] = int((target_pos[prodcode] / 4 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 4
-            elif prodcode == 'ZC':
-                target_pos[prodcode] = int((target_pos[prodcode] / 2 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 2
-            else:
-                target_pos[prodcode] = int(target_pos[prodcode] + (0.5 if target_pos[prodcode] > 0 else -0.5))
+            for prodcode in target_pos:
+                if prodcode == 'CJ':
+                    target_pos[prodcode] = int((target_pos[prodcode] / 4 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 4
+                elif prodcode == 'ZC':
+                    target_pos[prodcode] = int((target_pos[prodcode] / 2 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 2
+                else:
+                    target_pos[prodcode] = int(target_pos[prodcode] + (0.5 if target_pos[prodcode] > 0 else -0.5))
 
-        pos_date = day_shift(edate, '1b', CHN_Holidays)
-        pre_date = day_shift(pos_date, '-1b', CHN_Holidays)
-        pos_date = pos_date.strftime('%Y%m%d')
-        pre_date = pre_date.strftime('%Y%m%d')
-        posfile = '%s/%s_%s.json' % (pos_loc, port_file, pos_date)
-        with open(posfile, 'w') as ofile:
-            json.dump(target_pos, ofile, indent=4)
+            pos_date = day_shift(edate, '1b', CHN_Holidays)
+            pre_date = day_shift(pos_date, '-1b', CHN_Holidays)
+            pos_date = pos_date.strftime('%Y%m%d')
+            pre_date = pre_date.strftime('%Y%m%d')
+            posfile = '%s/%s_%s.json' % (pos_loc, port_file, pos_date)
+            with open(posfile, 'w') as ofile:
+                json.dump(target_pos, ofile, indent=4)
 
-        stratfile = '%s/pos_by_strat_%s_%s.json' % (pos_loc, port_file, pos_date)
-        with open(stratfile, 'w') as ofile:
-            json.dump(pos_by_strat, ofile, indent=4)
+            stratfile = '%s/pos_by_strat_%s_%s.json' % (pos_loc, port_file, pos_date)
+            with open(stratfile, 'w') as ofile:
+                json.dump(pos_by_strat, ofile, indent=4)
 
-        job_status[update_field][port_file] = True
+            job_status[update_field][port_file] = True
 
-        if port_file in pos_chg_notification:
-            with open('%s/%s_%s.json' % (pos_loc, port_file, pre_date), 'r') as fp:
-                curr_pos = json.load(fp)
-            pos_df = pd.DataFrame({'cur': curr_pos, 'tgt': target_pos})
-            pos_df['diff'] = pos_df['tgt'] - pos_df['cur']
-            pos_update[port_file] = pos_df
+            if port_file in pos_chg_notification:
+                with open('%s/%s_%s.json' % (pos_loc, port_file, pre_date), 'r') as fp:
+                    curr_pos = json.load(fp)
+                pos_df = pd.DataFrame({'cur': curr_pos, 'tgt': target_pos})
+                pos_df['diff'] = pos_df['tgt'] - pos_df['cur']
+                pos_update[port_file] = pos_df
 
-        # except:
-        #     job_status[update_field][port_file] = False
-        # save_status(filename, job_status)
+        except:
+            job_status[update_field][port_file] = False
+        save_status(filename, job_status)
 
     sdate = day_shift(tday, '-1b', CHN_Holidays)
     for (update_field, update_func, ref_text) in [('exch_receipt', update_exch_receipt_table, 'exch receipt'),
@@ -444,7 +445,7 @@ def run_update(tday=datetime.date.today()):
 
 def check_eod_data(tday):
     config_file = 'C:/dev/wtdev/hotpicker/hotmap.json'
-    end_date = datetime.date(2023, 5, 5)
+    end_date = tday
     lookback = 1
     start_date = day_shift(end_date, f'-{lookback}b', CHN_Holidays)
     with open(config_file, 'r', encoding='utf-8') as infile:
