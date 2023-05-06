@@ -278,7 +278,6 @@ def generate_holding_from_signal(signal_df, vol_df, risk_scaling=1.0, asset_scal
         scaling = risk_scaling / prod_count
     else:
         scaling = pd.Series(risk_scaling/nasset, index=prod_count.index)
-    print(scaling)
     pos_df = sig_df.mul(scaling, axis='rows').shift(1).fillna(0.0)
     return pos_df
 
