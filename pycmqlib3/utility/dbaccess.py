@@ -841,12 +841,13 @@ def load_factor_data(product_list,
                      freq='d', db_table='fut_fact_data'):
     cnx = connect(**dbconfig)
     columns = ['product_code', 'date', 'serial_no', 'serial_key', 'fact_name', 'fact_val']
-    stmt = "select {variables} from {table} where fact_name in ('{fact_list}')".format(
-        variables=','.join(columns), fact_list="','".join(factor_list), table=db_table)
+    stmt = "select {variables} from {table} where date >='{start_d}' and date <= '{end_d}'".format(
+        variables=','.join(columns), start_d=start.strftime('%Y-%m-%d'), end_d=end.strftime('%Y-%m-%d'),
+        table=db_table)
+    if factor_list:
+        stmt = stmt + " and fact_name in ('{fact_list}')".format(fact_list="','".join(factor_list))
     if len(product_list) > 0:
         stmt = stmt + " and product_code in ('{prod_list}')".format(prod_list="','".join(product_list))
-    stmt = stmt + " and date >='%s'" % start.strftime('%Y-%m-%d')
-    stmt = stmt + " and date <='%s'" % end.strftime('%Y-%m-%d')
     stmt = stmt + " and freq = '%s' and roll_label = '%s'" % (freq, roll_label)
     stmt = stmt + " order by date, serial_no"
     df = pd.io.sql.read_sql(stmt, cnx)
