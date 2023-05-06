@@ -32,7 +32,7 @@ month_code_map = {'f': 1,
 
 product_code = {'SHFE': ['cu', 'cu_Opt', 'al', 'zn', 'al_Opt', 'zn_Opt', 'pb', 'wr', 'rb', 'fu', 'ru', 'ru_Opt', \
                          'bu', 'hc', 'ag', 'au', 'au_Opt', 'sn', 'ni', 'sp', 'ss'],
-                'CFFEX': ['IF', 'TF', 'IO_Opt', 'T', 'TS', 'IH', 'IC', 'IM', 'MO_Opt',],
+                'CFFEX': ['IF', 'TF', 'IO_Opt', 'T', 'TS', 'TL', 'IH', 'IC', 'IM', 'MO_Opt',],
                 'DCE': ['c', 'c_Opt', 'cs', 'j', 'jd', 'a', 'a_Opt', 'b', 'b_Opt','m', 'm_Opt', 'y', 'y_Opt', 'p', 'p_Opt',\
                         'l', 'v', 'pp', 'l_Opt', 'v_Opt', 'pp_Opt', \
                         'jm', 'i', 'i_Opt', 'fb', 'bb', 'eg', 'rr', 'eb', 'pg', 'pg_Opt', 'lh'],
@@ -246,6 +246,7 @@ product_class_map = {
     'TF': ('Macro', 'Bond'),
     'T': ('Macro', 'Bond'),
     'TS': ('Macro', 'Bond'),
+    'TL': ('Macro', 'Bond'),
     'IO_Opt': ('Macro', 'Equity'),
     'sc': ('Ind', "Petro"),
     'sc_Opt': ('Ind', "Petro"),
@@ -348,6 +349,7 @@ product_lotsize = {'zn': 5,
                    'IM': 200,
                    'TF': 10000,
                    'T': 10000,
+                   'TL': 10000,
                    'TS': 20000,
                    'IO_Opt': 100,
                    'MO_Opt': 100,
@@ -453,6 +455,7 @@ product_ticksize = {
                     'IM': 0.2,
                     'TF': 0.005,
                     'TS': 0.005,
+                    'TL': 0.01,
                     'T': 0.005,
                     'IO_Opt': 0.2,
                     'MO_Opt': 0.2,
@@ -675,7 +678,7 @@ def trading_hours(product, exch):
 
     if exch in ['SSE', 'SZE']:
         hrs = [(1530, 1730), (1900, 2100)]
-    elif product in ['TF', 'T', 'TS']:
+    elif product in ['TF', 'T', 'TS', 'TL']:
         hrs = [(1530, 1730), (1900, 2115)]
     elif product in ['IF', 'IH', 'IC', 'IM', 'IO_Opt', 'MO_Opt',]:
         hrs = [(1530, 1730), (1900, 2100)]
@@ -1043,7 +1046,7 @@ def cont_date_expiry(cont_date, prod_code, exch):
         wkday = cont_date.weekday()
         expiry = cont_date + datetime.timedelta(days=13+(11-wkday)%7)
         expiry = workdays.workday(expiry, 1, CHN_Holidays)
-    elif prod_code in ['T', 'TF', 'TS',]:
+    elif prod_code in ['T', 'TF', 'TS', 'TL']:
         wkday = cont_date.weekday()
         expiry = cont_date + datetime.timedelta(days=6+(11-wkday)%7)
         expiry = workdays.workday(expiry, 1, CHN_Holidays)                    
@@ -1120,7 +1123,7 @@ def get_asset_tradehrs(asset):
         hrs = [(1500, 1615), (1630, 1730), (1930, 2100)]
     if (exch in ['SSE', 'SZE']) or (asset in ['IF', 'IC', 'IH', 'IM', 'IO_Opt', 'MO_Opt']):
         hrs = [(1530, 1730), (1900, 2100)]
-    elif asset in ['TF', 'T', 'TS']:
+    elif asset in ['TF', 'T', 'TS', 'TL']:
         hrs = [(1515, 1730), (1900, 2115)]
     else:
         if asset in night_session_markets:
@@ -1161,7 +1164,7 @@ def cleanup_mindata(df, asset, index_col='datetime', skip_hl=False):
     if asset in ['IF', 'IH', 'IC', ]:
         cond = cond | ((xdf.index < datetime.datetime(2016, 1, 1, 15, 0, 0)) & (xdf.min_id >= 1515) & (xdf.min_id < 1530))
         cond = cond | ((xdf.index < datetime.datetime(2016, 1, 1, 15, 0, 0)) & (xdf.min_id >= 2100) & (xdf.min_id < 2115))
-    elif asset in ['T', 'TF', 'TS']:
+    elif asset in ['T', 'TF', 'TS', 'TL']:
         cond = cond | ((xdf.index < datetime.datetime(2020, 7, 20, 0, 0, 0)) & (xdf.min_id >= 1515) & (xdf.min_id < 1530))        
     if asset in ['CF', 'CF_Opt', 'CY', 'SR', 'SR_Opt', 'RM', 'TA', 'MA', 'SA', 'OI', 'ZC', 'ZC_Opt', 'FG']:
         cond = cond | ((xdf.date < datetime.date(2019, 12, 12)) & (xdf.min_id >= 300) & (xdf.min_id < 530))

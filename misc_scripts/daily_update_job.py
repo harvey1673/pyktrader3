@@ -2,13 +2,17 @@ import sys
 import datetime
 import pandas as pd
 import json
+import logging
 from pycmqlib3.utility.sec_bits import EMAIL_HOTMAIL, EMAIL_NOTIFY, NOTIFIERS
-from pycmqlib3.utility.misc import day_shift, CHN_Holidays, is_workday, inst2product
+from pycmqlib3.utility.misc import day_shift, CHN_Holidays, is_workday, inst2product, product_lotsize
 from pycmqlib3.analytics.tstool import response_curve
 from misc_scripts.aks_data_update import update_hist_fut_daily, update_spot_daily, \
     update_exch_receipt_table, update_exch_inv_table, update_rank_table
 from misc_scripts.factor_data_update import update_factor_data, generate_strat_position
 from pycmqlib3.utility.email_tool import send_html_by_smtp
+from pycmqlib3.utility.process_wt_data import save_bars_to_dsb
+from pycmqlib3.utility import dbaccess, base
+from wtpy.wrapper import WtDataHelper
 
 scenarios_elite = [
         ('tscarry', 'ryieldnmb', 2.0, 1, 120, 1, (None, {}, ''), [0.0, 0.0]),
@@ -109,15 +113,6 @@ port_pos_config = {
     'PT_FACTPORT1_hot': {
         'pos_loc': 'C:/dev/pyktrader3/process/pt_test1',
         'roll': 'hot',
-        'shift_mode': 2,
-        'strat_list': [
-            ('PT_FACTPORT1.json', 14705, 'd1'),
-            ('PT_FACTPORT_HCRB.json', 37714, 'd1'),
-            ('PT_FACTPORT_LEADLAG1.json', 23810, 'd1'),
-        ], },
-    'PT_FACTPORT1_expiry': {
-        'pos_loc': 'C:/dev/pyktrader3/process/pt_test1',
-        'roll': 'expiry',
         'shift_mode': 2,
         'strat_list': [
             ('PT_FACTPORT1.json', 14705, 'd1'),
@@ -233,6 +228,49 @@ def save_status(filename, job_status):
         json.dump(job_status, ofile, indent=4)
 
 
+def update_wt_from_db(tday):
+    end_date = tday
+    start_date = day_shift(end_date, '-2b', CHN_Holidays)
+    cutoff_date = int(start_date.strftime("%Y%m%d"))
+    config_file = 'C:/dev/wtdev/common/contracts.json'
+    with open(config_file, 'r', encoding='utf-8') as infile:
+        contracts = json.load(infile)
+    dst_folder = 'C:/dev/wtdev/storage/his'
+    dcol_list = ['date', 'time', 'open', 'high', 'low', 'close', 'settle', 'money', 'vol', 'hold', 'diff']
+    dtHelper = WtDataHelper()
+    cnx = dbaccess.connect(**dbaccess.dbconfig)
+    for exch in contracts:
+        print(f"processing exch={exch}")
+        for cont in contracts[exch]:
+            prod = contracts[exch][cont]['product']
+            multiple = product_lotsize[prod]
+            ddf = dbaccess.load_daily_data_to_df(cnx, 'fut_daily', cont, start_date, end_date, index_col=None)
+            ddf['settle'] = ddf['settle'].fillna(method='ffill')
+            ddf = ddf.dropna(subset=['close', 'volume', 'settle'])
+            if len(ddf) > 0:
+                #print('daily data for contract = %s\n' % cont)
+                ddf['date'] = ddf['date'].astype('datetime64').dt.strftime('%Y%m%d').astype('int64')
+                ddf['time'] = 0
+                ddf['hold'] = ddf['openInterest']
+                ddf['diff'] = ddf['hold'].diff().fillna(0)
+                ddf['money'] = ddf['settle'] * ddf['volume'] * multiple
+                ddf['vol'] = ddf['volume']
+                period = 'day'
+                ddf = ddf[dcol_list]
+                filename = '%s/%s/%s/%s.dsb' % (dst_folder, period, exch, cont)
+                if cutoff_date:
+                    curr_df = dtHelper.read_dsb_bars(filename)
+                    if curr_df:
+                        curr_df = curr_df.to_df().rename(columns={'bartime': 'time', 'volume': 'vol'})
+                        curr_df['time'] = curr_df['time'] - 199000000000
+                        curr_df = curr_df[curr_df['date'] < cutoff_date]
+                        ddf = ddf[ddf['date'] >= cutoff_date]
+                        ddf = curr_df.append(ddf)
+                ddf['time'] = ddf['time'].astype('int64')
+                save_bars_to_dsb(ddf[dcol_list], contract=cont, folder_loc=f'{dst_folder}/{period}/{exch}',
+                                 period='d')
+
+
 def run_update(tday=datetime.date.today()):
     edate = min(datetime.date.today(), tday)     
     if not is_workday(edate, 'CHN'):
@@ -245,26 +283,26 @@ def run_update(tday=datetime.date.today()):
     except:
         job_status = {}
 
-    print('updating historical future data...')
+    logging.info('updating historical future data...')
     update_field = 'fut_daily'
     if update_field not in job_status:
         job_status[update_field] = {}
     for exch in ["DCE", "CFFEX", "CZCE", "SHFE", "INE", "GFEX"]:
         try:
             if not job_status[update_field].get(exch, False):
-                missing = update_hist_fut_daily(sdate, edate, exchanges = [exch], flavor = 'mysql', fut_table = 'fut_daily')
+                missing = update_hist_fut_daily(sdate, edate, exchanges=[exch], flavor='mysql', fut_table='fut_daily')
                 if len(missing) == 0:
                     job_status[update_field][exch] = True
-                    print(f'{exch} is updated')
+                    logging.info(f'{exch} is updated')
                 else:
                     job_status[update_field][exch] = False
-                    print(f'{exch} has some issue {missing}')                
+                    logging.warning(f'{exch} has some issue {missing}')
         except:
             job_status[update_field][exch] = False
-            print("exch = %s EOD price is FAILED to update" % (exch))    
+            logging.warning("exch = %s EOD price is FAILED to update" % (exch))
         save_status(filename, job_status)
     #update_hist_fut_daily(sdate, tday, exchanges = ["DCE", "CFFEX", "CZCE", "SHFE", "INE", ], flavor = 'mysql', fut_table = 'fut_daily')
-    print('updating factor data calculation...')
+    logging.info('updating factor data calculation...')
     start_date = day_shift(edate, '-30m')
     update_field = 'fact_repo'
     if update_field not in job_status:
@@ -279,9 +317,23 @@ def run_update(tday=datetime.date.today()):
                 job_status[update_field][fact_key] = True
         except:
             job_status[update_field][fact_key] = False
-            print("fact_key = %s is FAILED to update" % (fact_key))
+            logging.warning("fact_key = %s is FAILED to update" % (fact_key))
         save_status(filename, job_status)
-    print('updating factor strategy position...')
+    update_field = 'data_check'
+    if update_field not in job_status:
+        job_status[update_field] = {}
+        missing_daily, missing_factors = check_eod_data(tday)
+        job_status[update_field]['eod_price'] = list(missing_daily.keys())
+        job_status[update_field]['factor_data'] = list(missing_factors.index)
+        if len(missing_daily) > 0:
+            logging.warning('missing EOD data: %s' % missing_daily)
+        if len(missing_factors) > 0:
+            logging.warning('missing factor data: %s' % missing_factors)
+    else:
+        missing_daily = job_status[update_field].get('eod_price', [])
+        missing_factors = job_status[update_field].get('factor_data', [])
+
+    logging.info('updating factor strategy position...')
     update_field = 'fact_pos_file'
     if update_field not in job_status:
         job_status[update_field] = {}
@@ -364,19 +416,23 @@ def run_update(tday=datetime.date.today()):
                                                   ('spot_daily', update_spot_daily, 'spot data'),
                                                   ('rank_table', update_rank_table, 'top future broker ranking table')]:
         try:
-            print('updating historical %s ...' % ref_text)
+            logging.info('updating historical %s ...' % ref_text)
             if not job_status.get(update_field, False):
                 update_func(sdate, tday, flavor='mysql')
                 job_status[update_field] = True
         except:
             job_status[update_field] = False
-            print("update_field = %s is FAILED to update" % (update_field))
+            logging.warning("update_field = %s is FAILED to update" % (update_field))
         save_status(filename, job_status)
 
     update_field = 'email_notify'
     if not job_status.get(update_field, False) and EMAIL_NOTIFY:
         sub = 'EOD pos and job status<%s>' % (edate.strftime('%Y.%m.%d'))
         html = "<html><head></head><body><p><br>"
+        if len(missing_daily) > 0:
+            html += "EOD daily price missing: %s <br>" % missing_daily
+        if len(missing_factors) > 0:
+            html += "factor data missing: %s <br>" % missing_factors
         for key in pos_update:
             html += "Position change for %s:<br>%s" % (key, pos_update[key].to_html())
         html += "Job status: %s <br>" % (json.dumps(job_status))
@@ -386,12 +442,46 @@ def run_update(tday=datetime.date.today()):
     save_status(filename, job_status)
 
 
+def check_eod_data(tday):
+    config_file = 'C:/dev/wtdev/hotpicker/hotmap.json'
+    end_date = datetime.date(2023, 5, 5)
+    lookback = 1
+    start_date = day_shift(end_date, f'-{lookback}b', CHN_Holidays)
+    with open(config_file, 'r', encoding='utf-8') as infile:
+        hotmap = json.load(infile)
+    cnx = dbaccess.connect(**dbaccess.dbconfig)
+    missing_daily = {}
+    for exch in hotmap:
+        for asset in hotmap[exch]:
+            if asset in commod_mkts:
+                ddf = dbaccess.load_daily_data_to_df(cnx, 'fut_daily',
+                                                     hotmap[exch][asset], start_date, end_date, index_col=None)
+                if len(ddf) < lookback:
+                    missing_daily[hotmap[exch][asset]] = len(ddf) / lookback
+    adf = dbaccess.load_factor_data(commod_mkts,
+                                    factor_list=None,
+                                    roll_label='hot',
+                                    start=tday,
+                                    end=tday,
+                                    freq='d1')
+    stats_df = pd.pivot_table(adf, index='product_code', columns='fact_name', values=['fact_val'], aggfunc='count')
+    stats_df = stats_df.sum(axis=1)
+    missing_products = stats_df[(stats_df < 54)]
+    return missing_daily, missing_products
+
+
 if __name__ == "__main__":
     args = sys.argv[1:]
     if len(args) >= 1:
         tday = datetime.datetime.strptime(args[0], "%Y%m%d").date()
     else:
-        tday = datetime.date.today()    
+        tday = datetime.date.today()
+    folder = "C:/dev/data/"
+    name = "daily_eod_job"
+    base.config_logging(folder + name + ".log", level=logging.INFO,
+                        format='%(name)s:%(funcName)s:%(lineno)d:%(asctime)s %(levelname)s %(message)s',
+                        to_console=True,
+                        console_level=logging.INFO)
     run_update(tday)
     
     
