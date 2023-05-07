@@ -147,7 +147,7 @@ def save_data_to_edb(xdf, source):
     return error_list
 
 
-def write_edb_by_xl_sheet(file_setup, data_folder='C:/Users/harvey/Nutstore/1/Nutstore'):
+def write_edb_by_xl_sheet(file_setup, data_folder=sec_bits.LOCAL_NUTSTORE_FOLDER):
     error_list = []
     for data_file, sheet_name in file_setup:
         key = (data_file, sheet_name)
@@ -163,22 +163,6 @@ def write_edb_by_xl_sheet(file_setup, data_folder='C:/Users/harvey/Nutstore/1/Nu
         err = save_data_to_edb(xdf, file_setup[key]['source'])
         error_list += err
     return error_list
-
-
-def write_edb_from_files(data_folder='C:/Users/harvey/Nutstore/1/Nutstore'):
-    file_setup = {
-        ('ifind_data.xlsx', 'hist'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
-                                        'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
-        ('ifind_data.xlsx', 'const'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
-                                        'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
-        ('ifind_data.xlsx', 'daily'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
-                                       'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
-        ('ifind_data.xlsx', 'weekly'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
-                                        'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
-        ('ifind_data.xlsx', 'sector'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
-                                        'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
-    }
-    write_edb_by_xl_sheet(file_setup, data_folder=data_folder)
 
 
 def tick2dict(tick):

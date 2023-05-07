@@ -470,8 +470,20 @@ def check_eod_data(tday):
     return missing_daily, missing_products
 
 
-def update_data_from_xl():
-    dbaccess.write_edb_from_files(data_folder=LOCAL_NUTSTORE_FOLDER)
+def update_data_from_xl(data_folder=LOCAL_NUTSTORE_FOLDER):
+    file_setup = {
+        ('ifind_data.xlsx', 'hist'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
+                                        'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
+        ('ifind_data.xlsx', 'const'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
+                                        'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
+        ('ifind_data.xlsx', 'daily'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
+                                       'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
+        ('ifind_data.xlsx', 'weekly'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
+                                        'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
+        ('ifind_data.xlsx', 'sector'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
+                                        'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
+    }
+    dbaccess.write_edb_by_xl_sheet(file_setup, data_folder=data_folder)
 
 
 if __name__ == "__main__":
