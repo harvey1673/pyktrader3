@@ -3,7 +3,7 @@ import datetime
 import pandas as pd
 import json
 import logging
-from pycmqlib3.utility.sec_bits import EMAIL_HOTMAIL, EMAIL_NOTIFY, NOTIFIERS
+from pycmqlib3.utility.sec_bits import EMAIL_HOTMAIL, EMAIL_NOTIFY, NOTIFIERS, LOCAL_NUTSTORE_FOLDER
 from pycmqlib3.utility.misc import day_shift, CHN_Holidays, is_workday, inst2product, product_lotsize
 from pycmqlib3.analytics.tstool import response_curve
 from misc_scripts.aks_data_update import update_hist_fut_daily, update_spot_daily, \
@@ -95,34 +95,33 @@ commod_mkts = ['rb', 'hc', 'i', 'j', 'jm', 'ru', 'FG', 'cu', 'al', 'zn', 'pb', '
 
 port_pos_config = {
     'PT_FACTPORT3_CAL_30b': {
-        'pos_loc': 'C:/dev/pyktrader3/process/paper_sim1',
+        'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
         'roll': 'CAL_30b',
         'shift_mode': 1,
         'strat_list': [
             ('PT_FACTPORT3.json', 4600, 's1'),
             ('PT_FACTPORT_HCRB.json', 30000, 's1'),
         ], },
-    'PTSIM1_FACTPORT1_hot': {
-        'pos_loc': 'C:/dev/pyktrader3/process/paper_sim1',
+    'PT_FACTPORT3_hot': {
+        'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
+        'roll': 'hot',
+        'shift_mode': 1,
+        'strat_list': [
+            ('PT_FACTPORT3.json', 4600, 'd1'),
+            ('PT_FACTPORT_HCRB.json', 30000, 'd1'),
+        ], },
+    'PT_FACTPORT1_hot': {
+        'pos_loc': 'C:/dev/pyktrader3/process/pt_test1',
         'roll': 'hot',
         'shift_mode': 2,
         'strat_list': [
-            ('PTSIM1_FACTPORT1.json', 14705, 'd1'),
-            ('PTSIM1_HCRB.json', 37714, 'd1'),
-            ('PTSIM1_LEADLAG1.json', 23810, 'd1'),
-        ], },
-    'PTSIM1_FACTPORT1_expiry': {
-        'pos_loc': 'C:/dev/pyktrader3/process/paper_sim1',
-        'roll': 'expiry',
-        'shift_mode': 2,
-        'strat_list': [
-            ('PTSIM1_FACTPORT1.json', 14705, 'd1'),
-            ('PTSIM1_HCRB.json', 37714, 'd1'),
-            ('PTSIM1_LEADLAG1.json', 23810, 'd1'),
+            ('PT_FACTPORT1.json', 14705, 'd1'),
+            ('PT_FACTPORT_HCRB.json', 37714, 'd1'),
+            ('PT_FACTPORT_LEADLAG1.json', 23810, 'd1'),
         ], },
 }
 
-pos_chg_notification = ['PT_FACTPORT3_CAL_30b', 'PTSIM1_hot']
+pos_chg_notification = ['PT_FACTPORT3_CAL_30b', 'PT_FACTPORT1_hot']
 
 scenarios_all = [
     ('tscarry', 'ryieldnmb', 2.8, 1, 120, 1, (None, {}, ''), [0.0, 0.0]),
@@ -469,6 +468,10 @@ def check_eod_data(tday):
     stats_df = stats_df.sum(axis=1)
     missing_products = stats_df[(stats_df < 54)]
     return missing_daily, missing_products
+
+
+def update_data_from_xl():
+    dbaccess.write_edb_from_files(data_folder=LOCAL_NUTSTORE_FOLDER)
 
 
 if __name__ == "__main__":
