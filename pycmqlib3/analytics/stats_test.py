@@ -17,6 +17,7 @@ pd.options.mode.chained_assignment = None  # default='warn'
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
 
+
 def plot_price_series(df, ts_lab1, ts_lab2):
     fig, ax = plt.subplots()
     ax.plot(df.index, df[ts_lab1], label=ts_lab1)
@@ -29,12 +30,14 @@ def plot_price_series(df, ts_lab1, ts_lab2):
     plt.legend()
     plt.show()
 
+
 def plot_scatter_series(df, ts_lab1, ts_lab2):
     plt.xlabel('%s Price ($)' % ts_lab1)
     plt.ylabel('%s Price ($)' % ts_lab2)
     plt.title('%s and %s Price Scatterplot' % (ts_lab1, ts_lab2))
     plt.scatter(df[ts_lab1], df[ts_lab2])
     plt.show()
+
 
 def plot_series(ts):
     fig, ax = plt.subplots()
@@ -47,6 +50,7 @@ def plot_series(ts):
     plt.legend()
     plt.plot(ts)
     plt.show()
+
 
 def variance_ratio(ts, freqs):
     data = ts.values
@@ -94,8 +98,10 @@ def vratio(ts, lag=2, cor='hom'):
     pval = bsopt.cnorm(zscore)
     return vratio, zscore, pval
 
+
 def adf_test(tseries, order=1):
     return adfuller(tseries, order)
+
 
 def cadf_test(df1, df2, sdat, edate, idx='close', order=1):
     df = pd.concat([df1[idx], df2[idx]], axis=1, keys=['asset1', 'asset2'])
@@ -115,6 +121,7 @@ def cadf_test(df1, df2, sdat, edate, idx='close', order=1):
     cadf = adf_test(res, order)
     pprint.pprint(cadf)
 
+
 def get_johansen(y, p):
     """
     Get the cointegration vectors at 95% level of significance
@@ -131,17 +138,6 @@ def get_johansen(y, p):
     jres.evecr = jres.evec[:, :r]
     return jres
 
-
-def signal_stats(df, signal, time_limit=None):
-    long_signal = pd.Series(np.nan, index=df.index)
-    long_signal[(signal > 0) & (signal.shift(1) <= 0)] = 1
-    long_signal[(signal <= 0)] = 0
-    long_signal = long_signal.fillna(method='ffill', limit=time_limit)
-
-    short_signal = pd.Series(np.nan, index=df.index)
-    short_signal[(signal < 0) & (signal.shift(1) >= 0)] = 1
-    short_signal[(signal >= 0)] = 0
-    short_signal = short_signal.fillna(method='ffill', limit=time_limit)
 
 def test_stationary(X, threshold=0.01):
     """
@@ -216,6 +212,7 @@ def autocorrelation_graph(X):
     autocorrelation_plot(X)
     plt.show()
 
+
 def price_seasonality(data):
     data = data.copy()
     px = data.columns[1]
@@ -232,6 +229,7 @@ def price_seasonality(data):
         plt.xticks(rotation="vertical")
         plt.show()
 
+
 def vol_seasonality(data):
     data = data.copy()
     px = data.columns[1]
@@ -247,6 +245,7 @@ def vol_seasonality(data):
         plt.title("Volatiliy seasonality plot of year {}".format(start_year + i))
         plt.xticks(rotation="vertical")
         plt.show()
+
 
 def cross_correlation(ts_pair, lag = 100, mode = ['lndiff', 'lndiff'], supress = True):
     input = []
@@ -266,6 +265,7 @@ def cross_correlation(ts_pair, lag = 100, mode = ['lndiff', 'lndiff'], supress =
     plt.show()
     if not supress:
         return corrs
+
 
 class InputDataException(Exception):
     pass

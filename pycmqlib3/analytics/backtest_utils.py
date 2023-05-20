@@ -4,6 +4,7 @@ import pycmqlib3.analytics.data_handler as dh
 from pycmqlib3.utility import misc
 from pycmqlib3.analytics.btmetrics import *
 from pycmqlib3.analytics.tstool import *
+from pycmqlib3.strategy.signal_repo import *
 
 
 def get_asset_vols(df, product_list, vol_win, vol_type='atr'):
@@ -201,72 +202,6 @@ def default_signal_gen(df, input_args):
         sig_df = sig_df.rolling(rebal_freq).mean()
     # print("after averaging", sig_df)
     return sig_df
-
-
-def hc_rb_diff(df, input_args):
-    shift_mode = input_args['shift_mode']
-    product_list = input_args['product_list']
-    win = input_args['win']
-    xdf = df.loc[:, df.columns.get_level_values(0).isin(['rb', 'hc'])].copy(deep=True)
-    xdf = xdf['2014-07-01':]
-    if shift_mode == 2:
-        xdf[('rb', 'c1', 'px_chg')] = np.log(xdf[('rb', 'c1', 'close')]).diff()
-        xdf[('hc', 'c1', 'px_chg')] = np.log(xdf[('hc', 'c1', 'close')]).diff()
-    else:
-        xdf[('rb', 'c1', 'px_chg')] = xdf[('rb', 'c1', 'close')].diff()
-        xdf[('hc', 'c1', 'px_chg')] = xdf[('hc', 'c1', 'close')].diff()
-    hc_rb_diff = xdf[('hc', 'c1', 'px_chg')] - xdf[('rb', 'c1', 'px_chg')]
-    signal_ts = hc_rb_diff.ewm(span=win).mean() / hc_rb_diff.ewm(span=win).std()
-    signal_df = pd.concat([signal_ts] * len(product_list), axis=1)
-    signal_df.columns = product_list
-    return signal_df
-
-
-def leader_lagger(df, input_args):
-    leadlag_port = {
-        'ferrous': {'lead': ['hc', 'rb', ],
-                    'lag': ['rb', 'hc', 'i', 'j', 'jm', 'SM', ],
-                    'param_rng': [40, 60, 2],
-                    },
-        'constrs': {'lead': ['hc', 'rb', 'v'],
-                    'lag': ['FG', 'SA', 'v', 'UR', ],
-                    'param_rng': [40, 60, 2],
-                    },
-        'petchem': {'lead': ['v'],
-                    'lag': ['TA', 'MA', 'pp', 'eg', 'eb', 'PF', ],
-                    'param_rng': [40, 60, 2],
-                    },
-        'base': {'lead': ['al'],
-                 'lag': ['al', 'ni', 'sn', 'ss', ],  # 'zn', 'cu'
-                 'param_rng': [40, 60, 2],
-                 },
-        'oil': {'lead': ['sc'],
-                'lag': ['sc', 'pg', 'bu', ],
-                'param_rng': [20, 30, 2],
-                },
-        'bean': {'lead': ['b'],
-                 'lag': ['p', 'y', 'OI', ],
-                 'param_rng': [60, 80, 2],
-                 },
-    }
-    product_list = input_args['product_list']
-    signal_cap = input_args.get('signal_cap', None)
-    conv_func = input_args.get('conv_func', 'qtl')
-    signal_df = pd.DataFrame(index=df.index, columns=product_list)
-    for asset in product_list:
-        for sector in leadlag_port:
-            if asset in leadlag_port[sector]['lag']:
-                signal_list = []
-                for lead_prod in leadlag_port[sector]['lead']:
-                    feature_ts = df[(lead_prod, 'c1', 'close')]
-                    signal_ts = calc_conv_signal(feature_ts.dropna(), conv_func,
-                                                 leadlag_port[sector]['param_rng'], signal_cap=signal_cap)
-                    signal_list.append(signal_ts)
-                signal_df[asset] = pd.concat(signal_list, axis=1).mean(axis=1)
-                break
-            else:
-                signal_df[asset] = 0
-    return signal_df
 
 
 def generate_holding_from_signal(signal_df, vol_df, risk_scaling=1.0, asset_scaling=True):
