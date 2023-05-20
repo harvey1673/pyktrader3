@@ -3,7 +3,7 @@ import datetime
 import pandas as pd
 import json
 import logging
-from pycmqlib3.utility.sec_bits import EMAIL_HOTMAIL, EMAIL_NOTIFY, NOTIFIERS, LOCAL_NUTSTORE_FOLDER
+from pycmqlib3.utility.sec_bits import EMAIL_HOTMAIL, EMAIL_NOTIFY, NOTIFIERS, LOCAL_NUTSTORE_FOLDER, LOCAL_PC_NAME
 from pycmqlib3.utility.misc import day_shift, CHN_Holidays, is_workday, inst2product, product_lotsize
 from pycmqlib3.analytics.tstool import response_curve
 from misc_scripts.aks_data_update import update_hist_fut_daily, update_spot_daily, \
@@ -427,7 +427,7 @@ def run_update(tday=datetime.date.today()):
 
     update_field = 'email_notify'
     if not job_status.get(update_field, False) and EMAIL_NOTIFY:
-        sub = 'EOD pos and job status<%s>' % (edate.strftime('%Y.%m.%d'))
+        sub = '%s EOD pos and job status<%s>' % (LOCAL_PC_NAME, edate.strftime('%Y.%m.%d'))
         html = "<html><head></head><body><p><br>"
         if len(missing_daily) > 0:
             html += "EOD daily price missing: %s <br>" % missing_daily
@@ -499,6 +499,7 @@ if __name__ == "__main__":
                         to_console=True,
                         console_level=logging.INFO)
     run_update(tday)
+    update_data_from_xl()
     
     
 

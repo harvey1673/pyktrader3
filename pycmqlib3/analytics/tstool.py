@@ -4,29 +4,155 @@ import numpy as np
 import datetime
 import math
 import sklearn
-from pycmqlib3.utility import misc
 from numpy.lib.stride_tricks import sliding_window_view
 import itertools
 import pandas as pd
 import statsmodels.formula.api as smf
 import scipy.stats as stats
 from pykalman import KalmanFilter
-from .stats_test import test_mean_reverting, half_life
-from statsmodels.tsa.stattools import coint, adfuller
 import seaborn as sns
 import holidays
-
+from matplotlib import font_manager
+from .stats_test import test_mean_reverting, half_life
+from statsmodels.tsa.stattools import coint, adfuller
+from pycmqlib3.utility.misc import invert_dict
+font = font_manager.FontProperties(fname='C:\\windows\\fonts\\simsun.ttc')
 PNL_BDAYS = 244
 
 
-def apply_vat(df, field_list = None, index_col = None, direction = 1, with_ret = True):
+def multislice_many(df, label_map):
+    idx_label_map = {idx: label_map[label] for idx, label in enumerate(df.columns.names) if label in label_map}
+    num_levels = len(df.columns.names)
+    idx_slice = tuple([idx_label_map.get(i, slice(None)) for i in range(num_levels)])
+    return df.loc[:, idx_slice]
+
+
+def make_seasonal_df(ser, limit=1, fill=False, weekly_dense=False):
+    df = ser.to_frame('data')
+    if isinstance(df.index, pd.PeriodIndex):
+        df.index = df.index.to_timestamp()
+    elif isinstance(df.index, pd.Index):
+        df.index = pd.to_datetime(df.index)
+    else:
+        pass
+
+    df['year'] = df.index.year
+
+    if weekly_dense and isinstance(ser.index, pd.PeriodIndex) and ser.index.freqstr.staretswith('W'):
+        start = pd.datetime.today() - pd.offsets.YearBegin()
+        end = pd.datetime.today() + pd.offsets.YearEnd()
+        df['date_s'] = df.index.week
+        pr_df = pd.period_range(start, end, freq=ser.index.freq).to_frame()
+        pr_df['week'] = pr_df.index.week
+        pr_df.index = pr_df.index.end_time.to_period('D')
+        df['date_s'] = df['date_s'].map(invert_dict(pr_df['week'].to_dict(), return_flat=True))
+    else:
+        df['date_s'] = df.index.map(lambda t: t.replace(year=2020))
+    df = pd.pivot_table(df, values='data', index='date_s', columns='year', aggfunc=np.sum)
+
+    if fill:
+        df = df.fillna(method='ffill', limit=limit)
+
+    if type(ser.index) == pd.PeriodIndex and ser.index.freqstr[0] == 'W':
+        df = df.ffill(limit=4)
+
+    return df
+
+
+def colored_scatter(ts_a, ts_b, ts_c):
+    points = plt.scatter(ts_a, ts_b, c = [float((d-ts_c.min()).days) for d in ts_c], s=20, cmap='jet')
+    cb = plt.colorbar(points)
+    cb.ax.set_yticklabels([str(x) for x in ts_c[::len(ts_c)//7]])
+    plt.show()
+
+
+def plot_signal_pnl(cumpnl, signal=None, asset_price=None, is_cum=True, figsize=(16, 10), title=''):
+    if not is_cum:
+        cumpnl = cumpnl.cumsum()
+    dd = cumpnl.expanding().max() - cumpnl
+    pnl_df = pd.concat([cumpnl, dd], axis=1)
+    pnl_df.columns = ['pnl', 'dd']
+
+    fig = plt.figure(figsize=figsize)
+    ax = fig.add_subplot(211)
+    ax.plot(cumpnl.index, cumpnl.values, label='cumpnl')
+    if asset_price is not None:
+        asset_price = asset_price.reindex(cumpnl.index).ffill()
+        ax2 = ax.twinx()
+        ax2.plot(asset_price.index, asset_price.values, linestyle=':', color='y', label='price')
+    lines, labels = ax.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax2.legend(lines + lines2, labels + labels2, bbox_to_anchor=(1.04, 1), loc='upper left')
+    ax.grid(True)
+    plt.title(title, fontproperties=font)
+
+    ax = fig.add_subplot(212)
+    ax.plot(dd.index, dd.values, label='drawdown')
+    if signal is not None:
+        signal = signal.reindex(cumpnl.index).ffill()
+        ax2 = ax.twinx()
+        ax2.plot(signal.index, signal.values, linestyle=':', color='y', label='signal')
+    lines, labels = ax.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax2.legend(lines + lines2, labels + labels2, bbox_to_anchor=(1.04, 1), loc='upper left')
+    ax.grid(True)
+    plt.show()
+
+
+def plot_seasonal_df(ts, cutoff=None, title='', convert_seasonal=True):
+    if convert_seasonal:
+        xdf = make_seasonal_df(ts[cutoff:])
+    else:
+        xdf = ts.copy()
+    curr_yr = max(xdf.columns)
+    fig, ax = plt.subplots()
+    for yr in xdf.columns:
+        if yr == curr_yr:
+            marker = 'o'
+            linestyle = '-'
+        else:
+            marker = '.'
+            linestyle = '--'
+        xts = xdf[yr]
+        ts_mask = np.isfinite(xts)
+        plt.plot(xts.index[ts_mask], xts.values[ts_mask], linestyle=linestyle, marker=marker, label=yr)
+
+        if yr == curr_yr:
+            ax.text(ts.index[ts_mask][-1], ts.values[ts_mask][-1],
+                    "%s: %.1fs" % (ts.index[ts_mask][-1].strftime("%b-%d"), ts.values[ts_mask][-1]))
+    plt.title(title, fontproperties=font)
+    ax.grid(True)
+    plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    plt.show()
+
+
+def plot_df_on_2ax(df, left_on=[], right_on=[], left_style='-', right_style=':'):
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    for col in left_on:
+        ts = df[col]
+        ts_mask = np.isfinite(ts)
+        ax.plot(ts.index[ts_mask], ts.values[ts_mask], left_style, label=col)
+    ax2 = ax.twinx()
+    for col in right_on:
+        ts = df[col]
+        ts_mask = np.isfinite(ts)
+        ax2.plot(ts.index[ts_mask], ts.values[ts_mask], right_style, label=col)
+    lines, labels = ax.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax2.legend(lines + lines2, labels + labels2, bbox_to_anchor=(1.04, 1), loc='upper left')
+    ax.grid()
+    plt.show()
+
+
+def apply_vat(df, field_list=None, index_col=None, direction=1, with_ret=True):
     if direction == 1:
         vat_fac = [1.17, 1.16, 1.13]
     else:
         vat_fac = [1/1.17, 1/1.16, 1/1.13]
-    if field_list == None:
+    if field_list is None:
         field_list = [col for col in df.columns if col != index_col]
-    if index_col == None:
+    if index_col is None:
         idx = df.index
     else:
         idx = df[index_col]
@@ -43,6 +169,19 @@ def apply_vat(df, field_list = None, index_col = None, direction = 1, with_ret =
             xdf[field][ind] = xdf[field][ind]/vat
     if with_ret:
         return xdf
+
+
+def vat_adj(ts, direction=1):
+    vat_fac = [1.17, 1.16, 1.13]
+    if direction != 1:
+        vat_fac = [1/1.17, 1/1.16, 1/1.13]
+    cutoff_dates = ['1970-01-01', '2018-05-01', '2019-04-01', '2100-01-01']
+    cutoff_dates = [pd.Timestamp(d) for d in cutoff_dates]
+    xts = ts.copy()
+    for sd, ed, vat in zip(cutoff_dates[:-1], cutoff_dates[1:], vat_fac):
+        ind = (ts.index < ed) & (ts.index >= sd)
+        xts[ind] = xts[ind]/vat
+    return xts
 
 
 def lunar_label(df: pd.DataFrame, copy=True):
@@ -69,12 +208,12 @@ def lunar_label(df: pd.DataFrame, copy=True):
     days_to_cny = pd.DataFrame(data_daily.index.map(find_nearest_cny).tolist(),
                                index=data_daily.index,
                                columns=['cny', 'days_to_cny'])
-    data_daily[['label_tr', 'label_day']] = days_to_cny
+    data_daily[['label_yr', 'label_day']] = days_to_cny
     data_daily['label_wk'] = data_daily['label_day'] // 7
     return data_daily
 
 
-def lunar_yoy(ts, group_col='label_days', func='diff'):
+def lunar_yoy(ts, group_col='label_day', func='diff'):
     ts_name = ts.name
     tdf = ts.dropna().to_frame(ts_name)
     tdf.index.name = 'date'
@@ -426,7 +565,6 @@ def get_rolling_percentiles(vector, window=252, min_periods=None, use_abs=False)
     return percentiles
 
 
-
 def rolling_percentile(ts, win = 100, direction = 'max'):
     data = ts.to_numpy()
     sw = sliding_window_view(data, win, axis=0).T
@@ -661,11 +799,11 @@ def generate_signal_sensitivity_report(signals, pnls, quantiles=None, nb_bins=6,
         return fig
 
 
-def split_df(df, date_list, split_col = 'date'):
+def split_df(df, date_list, split_col='date'):
     output = []
     if len(date_list) == 0:
         output.append(df)
-        return  output
+        return output
     if split_col == 'index':
         ts = df.index
     else:
@@ -674,13 +812,6 @@ def split_df(df, date_list, split_col = 'date'):
     for sdate, edate in zip(index_list[:-1], index_list[1:]):
         output.append(df[(ts <= edate) & (ts >= sdate)])
     return output
-
-
-def colored_scatter(ts_a, ts_b, ts_c):
-    points = plt.scatter(ts_a, ts_b, c = [float((d-ts_c.min()).days) for d in ts_c], s=20, cmap='jet')
-    cb = plt.colorbar(points)
-    cb.ax.set_yticklabels([str(x) for x in ts_c[::len(ts_c)//7]])
-    plt.show()
 
 
 class Regression(object):
