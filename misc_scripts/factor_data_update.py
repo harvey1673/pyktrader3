@@ -1,12 +1,10 @@
-import pandas as pd
-import numpy as np
+import sys
 import json
-import datetime
 import copy
 from sqlalchemy import create_engine
 from pycmqlib3.utility.dbaccess import dbconfig, mysql_replace_into, connect, load_factor_data
-from pycmqlib3.utility import dataseries
-from pycmqlib3.utility.misc import cleanup_mindata, prod2exch, inst2contmth, day_shift, sign, product_lotsize, CHN_Holidays, nearby
+from pycmqlib3.utility import dataseries, base
+from pycmqlib3.utility.misc import inst2product, prod2exch, inst2contmth, day_shift, sign, product_lotsize, CHN_Holidays, nearby
 import pycmqlib3.analytics.data_handler as dh
 from pycmqlib3.analytics.tstool import *
 
@@ -79,6 +77,36 @@ leadlag_port = {
              'param_rng': [60, 80, 2],
              },
 }
+
+port_pos_config = {
+    'PT_FACTPORT3_CAL_30b': {
+        'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
+        'roll': 'CAL_30b',
+        'shift_mode': 1,
+        'strat_list': [
+            ('PT_FACTPORT3.json', 4600, 's1'),
+            ('PT_FACTPORT_HCRB.json', 30000, 's1'),
+        ], },
+    'PT_FACTPORT3_hot': {
+        'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
+        'roll': 'hot',
+        'shift_mode': 1,
+        'strat_list': [
+            ('PT_FACTPORT3.json', 4600, 'd1'),
+            ('PT_FACTPORT_HCRB.json', 30000, 'd1'),
+        ], },
+    'PT_FACTPORT1_hot': {
+        'pos_loc': 'C:/dev/pyktrader3/process/pt_test1',
+        'roll': 'hot',
+        'shift_mode': 2,
+        'strat_list': [
+            ('PT_FACTPORT1.json', 10300, 'd1'),
+            ('PT_FACTPORT_HCRB.json', 26400, 'd1'),
+            ('PT_FACTPORT_LEADLAG1.json', 16600, 'd1'),
+        ], },
+}
+
+pos_chg_notification = ['PT_FACTPORT1_hot']
 
 
 def update_factor_db(xdf, field, config, dbtable='fut_fact_data', flavor='mysql', start_date=None, end_date=None):
@@ -487,4 +515,81 @@ def create_strat_json(product_list, freq, roll_rule, factor_repo,
     strat_data['config'] = strat_config
     with open(filename, 'w') as f:
         json.dump(strat_data, f, indent=4)
+
+
+def update_port_position(run_date=datetime.date.today()):
+    pos_update = {}
+    for port_name in port_pos_config.keys():
+        target_pos = {}
+        pos_by_strat = {}
+        pos_loc = port_pos_config[port_name]['pos_loc']
+        roll = port_pos_config[port_name]['roll']
+        shift_mode = port_pos_config[port_name]['shift_mode']
+        port_file = port_name
+
+        for strat_file, pos_scaler, freq in port_pos_config[port_name]['strat_list']:
+            config_file = f'{pos_loc}/settings/{strat_file}'
+            with open(config_file, 'r') as fp:
+                strat_conf = json.load(fp)
+            strat_args = strat_conf['config']
+            assets = strat_args['assets']
+            repo_type = strat_args.get('repo_type', 'asset')
+            factor_repo = strat_args['factor_repo']
+
+            product_list = []
+            for asset_dict in assets:
+                under = asset_dict["underliers"][0]
+                product = inst2product(under)
+                product_list.append(product)
+
+            strat_target, strat_sum = generate_strat_position(run_date, product_list, factor_repo,
+                                                            repo_type=repo_type,
+                                                            roll_label=roll,
+                                                            pos_scaler=pos_scaler,
+                                                            freq=freq,
+                                                            hist_fact_lookback=20,
+                                                            shift_mode=shift_mode)
+            pos_by_strat[strat_file] = strat_target
+
+            for prod in strat_target:
+                if prod not in target_pos:
+                    target_pos[prod] = 0
+                target_pos[prod] += strat_target[prod]
+
+        for prodcode in target_pos:
+            if prodcode == 'CJ':
+                target_pos[prodcode] = int((target_pos[prodcode] / 4 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 4
+            elif prodcode == 'ZC':
+                target_pos[prodcode] = int((target_pos[prodcode] / 2 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 2
+            else:
+                target_pos[prodcode] = int(target_pos[prodcode] + (0.5 if target_pos[prodcode] > 0 else -0.5))
+
+        pos_date = day_shift(run_date, '1b', CHN_Holidays)
+        pre_date = day_shift(pos_date, '-1b', CHN_Holidays)
+        pos_date = pos_date.strftime('%Y%m%d')
+        pre_date = pre_date.strftime('%Y%m%d')
+        posfile = '%s/%s_%s.json' % (pos_loc, port_file, pos_date)
+        with open(posfile, 'w') as ofile:
+            json.dump(target_pos, ofile, indent=4)
+
+        stratfile = '%s/pos_by_strat_%s_%s.json' % (pos_loc, port_file, pos_date)
+        with open(stratfile, 'w') as ofile:
+            json.dump(pos_by_strat, ofile, indent=4)
+
+        if port_file in pos_chg_notification:
+            with open('%s/%s_%s.json' % (pos_loc, port_file, pre_date), 'r') as fp:
+                curr_pos = json.load(fp)
+            pos_df = pd.DataFrame({'cur': curr_pos, 'tgt': target_pos})
+            pos_df['diff'] = pos_df['tgt'] - pos_df['cur']
+            pos_update[port_file] = pos_df
+    return pos_update
+
+
+if __name__ == "__main__":
+    args = sys.argv[1:]
+    if len(args) >= 1:
+        tday = datetime.datetime.strptime(args[0], "%Y%m%d").date()
+    else:
+        tday = datetime.date.today()
+    update_port_position(run_date=tday)
 

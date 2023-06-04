@@ -2,14 +2,14 @@ import sys
 import datetime
 import pandas as pd
 import json
-import time
 import logging
-from pycmqlib3.utility.sec_bits import EMAIL_HOTMAIL, EMAIL_NOTIFY, NOTIFIERS, LOCAL_NUTSTORE_FOLDER, LOCAL_PC_NAME
-from pycmqlib3.utility.misc import day_shift, CHN_Holidays, is_workday, inst2product, product_lotsize
+from pycmqlib3.utility.sec_bits import EMAIL_HOTMAIL, EMAIL_NOTIFY, NOTIFIERS, LOCAL_PC_NAME
+from pycmqlib3.utility.misc import day_shift, CHN_Holidays, is_workday, product_lotsize
 from pycmqlib3.analytics.tstool import response_curve
 from misc_scripts.aks_data_update import update_hist_fut_daily, update_spot_daily, \
     update_exch_receipt_table, update_exch_inv_table, update_rank_table
-from misc_scripts.factor_data_update import update_factor_data, generate_strat_position
+from misc_scripts.factor_data_update import update_factor_data, update_port_position
+from misc_scripts.fun_factor_update import update_data_from_xl
 from pycmqlib3.utility.email_tool import send_html_by_smtp
 from pycmqlib3.utility.process_wt_data import save_bars_to_dsb
 from pycmqlib3.utility import dbaccess, base
@@ -94,35 +94,6 @@ commod_mkts = ['rb', 'hc', 'i', 'j', 'jm', 'ru', 'FG', 'cu', 'al', 'zn', 'pb', '
                'AP', 'SM', 'SF', 'ss', 'CJ', 'UR', 'eb', 'eg', 'pg', 'T', 'PK', 'PF', 'lh', \
                'MA', 'SR', 'cs', 'TF', 'lu', 'fu']
 
-port_pos_config = {
-    'PT_FACTPORT3_CAL_30b': {
-        'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
-        'roll': 'CAL_30b',
-        'shift_mode': 1,
-        'strat_list': [
-            ('PT_FACTPORT3.json', 4600, 's1'),
-            ('PT_FACTPORT_HCRB.json', 30000, 's1'),
-        ], },
-    'PT_FACTPORT3_hot': {
-        'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
-        'roll': 'hot',
-        'shift_mode': 1,
-        'strat_list': [
-            ('PT_FACTPORT3.json', 4600, 'd1'),
-            ('PT_FACTPORT_HCRB.json', 30000, 'd1'),
-        ], },
-    'PT_FACTPORT1_hot': {
-        'pos_loc': 'C:/dev/pyktrader3/process/pt_test1',
-        'roll': 'hot',
-        'shift_mode': 2,
-        'strat_list': [
-            ('PT_FACTPORT1.json', 14705, 'd1'),
-            ('PT_FACTPORT_HCRB.json', 37714, 'd1'),
-            ('PT_FACTPORT_LEADLAG1.json', 23810, 'd1'),
-        ], },
-}
-
-pos_chg_notification = ['PT_FACTPORT3_CAL_30b', 'PT_FACTPORT1_hot']
 
 scenarios_all = [
     ('tscarry', 'ryieldnmb', 2.8, 1, 120, 1, (None, {}, ''), [0.0, 0.0]),
@@ -337,79 +308,14 @@ def run_update(tday=datetime.date.today()):
     logging.info('updating factor strategy position...')
     update_field = 'fact_pos_file'
     if update_field not in job_status:
-        job_status[update_field] = {}
+        job_status[update_field] = False
     pos_update = {}
-    for port_name in port_pos_config.keys():
-        target_pos = {}
-        pos_by_strat = {}
-        pos_loc = port_pos_config[port_name]['pos_loc']
-        roll = port_pos_config[port_name]['roll']
-        shift_mode = port_pos_config[port_name]['shift_mode']
-        port_file = port_name
-        if job_status[update_field].get(port_file, False):
-            continue
-        try:
-            for strat_file, pos_scaler, freq in port_pos_config[port_name]['strat_list']:
-                config_file = f'{pos_loc}/settings/{strat_file}'
-                with open(config_file, 'r') as fp:
-                    strat_conf = json.load(fp)
-                strat_args = strat_conf['config']
-                assets = strat_args['assets']
-                repo_type = strat_args.get('repo_type', 'asset')
-                factor_repo = strat_args['factor_repo']
-
-                product_list = []
-                for asset_dict in assets:
-                    under = asset_dict["underliers"][0]
-                    product = inst2product(under)
-                    product_list.append(product)
-
-                strat_target, strat_sum = generate_strat_position(edate, product_list, factor_repo,
-                                                                repo_type=repo_type,
-                                                                roll_label=roll,
-                                                                pos_scaler=pos_scaler,
-                                                                freq=freq,
-                                                                hist_fact_lookback=20,
-                                                                shift_mode=shift_mode)
-                pos_by_strat[strat_file] = strat_target
-
-                for prod in strat_target:
-                    if prod not in target_pos:
-                        target_pos[prod] = 0
-                    target_pos[prod] += strat_target[prod]
-
-            for prodcode in target_pos:
-                if prodcode == 'CJ':
-                    target_pos[prodcode] = int((target_pos[prodcode] / 4 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 4
-                elif prodcode == 'ZC':
-                    target_pos[prodcode] = int((target_pos[prodcode] / 2 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 2
-                else:
-                    target_pos[prodcode] = int(target_pos[prodcode] + (0.5 if target_pos[prodcode] > 0 else -0.5))
-
-            pos_date = day_shift(edate, '1b', CHN_Holidays)
-            pre_date = day_shift(pos_date, '-1b', CHN_Holidays)
-            pos_date = pos_date.strftime('%Y%m%d')
-            pre_date = pre_date.strftime('%Y%m%d')
-            posfile = '%s/%s_%s.json' % (pos_loc, port_file, pos_date)
-            with open(posfile, 'w') as ofile:
-                json.dump(target_pos, ofile, indent=4)
-
-            stratfile = '%s/pos_by_strat_%s_%s.json' % (pos_loc, port_file, pos_date)
-            with open(stratfile, 'w') as ofile:
-                json.dump(pos_by_strat, ofile, indent=4)
-
-            job_status[update_field][port_file] = True
-
-            if port_file in pos_chg_notification:
-                with open('%s/%s_%s.json' % (pos_loc, port_file, pre_date), 'r') as fp:
-                    curr_pos = json.load(fp)
-                pos_df = pd.DataFrame({'cur': curr_pos, 'tgt': target_pos})
-                pos_df['diff'] = pos_df['tgt'] - pos_df['cur']
-                pos_update[port_file] = pos_df
-
-        except:
-            job_status[update_field][port_file] = False
-        save_status(filename, job_status)
+    try:
+        pos_update = update_port_position(run_date=edate)
+        job_status[update_field] = True
+    except:
+        job_status[update_field] = False
+    save_status(filename, job_status)
 
     sdate = day_shift(tday, '-1b', CHN_Holidays)
     for (update_field, update_func, ref_text) in [('exch_receipt', update_exch_receipt_table, 'exch receipt'),
@@ -471,59 +377,6 @@ def check_eod_data(tday):
     return missing_daily, missing_products
 
 
-def update_data_from_xl(data_folder=LOCAL_NUTSTORE_FOLDER):
-    file_setup = {
-        # ('ifind_data.xlsx', 'hist'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
-        #                                 'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
-        ('ifind_data.xlsx', 'const'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
-                                        'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
-        ('ifind_data.xlsx', 'daily'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
-                                       'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
-        ('ifind_data.xlsx', 'weekly'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
-                                        'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
-        ('ifind_data.xlsx', 'sector'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
-                                        'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
-    }
-    dbaccess.write_edb_by_xl_sheet(file_setup, data_folder=data_folder)
-
-
-def update_ifind_xlsheet(filename, wait_time=20):
-    import pyautogui
-    import win32com.client
-    import win32gui
-    import win32con
-
-    # import pythoncom
-    xl = win32com.client.DispatchEx("Excel.Application")
-    wb = xl.Workbooks.open(filename)
-    xl.Visible = True
-    wb.Activate()
-    try:
-        #win32gui.ShowWindow(xl, win32con.SW_RESTORE)
-        win32gui.SetForegroundWindow(xl.Hwnd)
-    except Exception as e:
-        print("error activating Excel window:", e)
-
-    for s in range(len(wb.Sheets)):
-        # if wb.Sheets[s].name in ['hist']:
-        #     continue
-        # pythoncom.CoInitialize()
-        # shell = win32com.client.Dispath('WScript.Shell')
-        # shell.SendKeys('%')
-        wb.Sheets[s].Activate()
-        pyautogui.typewrite(['alt', 'y', '3', 'y', 'h', 'enter'], interval=1)
-        wb.RefreshAll()
-        time.sleep(wait_time)
-        xl.CalculateUntilAsyncQueriesDone()
-
-    pyautogui.typewrite(['alt', 'y', '3', 'y', 'h', 'enter'], interval=1)
-    wb.RefreshAll()
-    time.sleep(wait_time)
-    xl.CalculateUntilAsyncQueriesDone()
-    wb.Close(SaveChanges=1)
-    xl.Quit()
-
-
 if __name__ == "__main__":
     args = sys.argv[1:]
     if len(args) >= 1:
@@ -536,8 +389,9 @@ if __name__ == "__main__":
                         format='%(name)s:%(funcName)s:%(lineno)d:%(asctime)s %(levelname)s %(message)s',
                         to_console=True,
                         console_level=logging.INFO)
-    run_update(tday)
     update_data_from_xl()
+    run_update(tday)
+
     
     
 
