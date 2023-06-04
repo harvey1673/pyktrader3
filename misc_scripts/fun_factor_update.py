@@ -5,7 +5,7 @@ from pycmqlib3.utility.misc import day_shift, CHN_Holidays, prod2exch
 from pycmqlib3.analytics.tstool import *
 import datetime
 import pandas as pd
-from .factor_data_update import update_factor_db
+from misc_scripts.factor_data_update import update_factor_db
 
 update_factors = {
     'steel_margin_lvl_fast': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al'],
@@ -15,10 +15,10 @@ update_factors = {
 
 def update_fun_factor(tday=datetime.date.today(), flavor='mysql'):
     start_date = day_shift(tday, '-3y')
-    update_start = update_start = day_shift(tday, '-20b', CHN_Holidays)
+    update_start = day_shift(tday, '-20b', CHN_Holidays)
 
-    cdate_rng = pd.date_range(start=start_date, end=tday, freq='D')
-    bdate_rng = pd.bdate_range(start=start_date, end=tday, freq='C', holidays=CHN_Holidays)
+    cdate_rng = pd.date_range(start=start_date, end=tday, freq='D', name='date')
+    bdate_rng = pd.bdate_range(start=start_date, end=tday, freq='C', holidays=CHN_Holidays, name='date')
 
     data_df = load_codes_from_edb(index_map.keys(), source='ifind', column_name='index_code')
     data_df = data_df.rename(columns=index_map)
@@ -62,22 +62,19 @@ def update_fun_factor(tday=datetime.date.today(), flavor='mysql'):
                                          signal_cap=None)
         else:
             signal_ts = feature_ts.reindex(index=bdate_rng).ffill()
-
         if not bullish:
             signal_ts = -signal_ts
-
-        signal_ts = signal_ts.reindex(index=cdate_rng).ffill().reindex(index=bdate_rng.index)
-
+        signal_ts = signal_ts.reindex(index=cdate_rng).ffill().reindex(index=bdate_rng)
         fact_config = {
             'roll_label': 'hot',
             'freq': 'd1',
             'serial_key': '0',
             'serial_no': 0,
         }
-
         for asset in update_factors[factor_name]:
             fact_config['product_code'] = asset
             fact_config['exch'] = prod2exch(asset)
-            asset_df = signal_ts.to_frame(factor_name)
-            print(asset_df)
-            #update_factor_db(asset_df, factor_name, fact_config, start_date=update_start, end_date=tday, flavor=flavor)
+            asset_df = pd.DataFrame(signal_ts.to_frame(factor_name), index=bdate_rng)
+            asset_df.index = asset_df.index.map(lambda x: x.date())
+            update_factor_db(asset_df, factor_name, fact_config, start_date=update_start, end_date=tday, flavor=flavor)
+
