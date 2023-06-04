@@ -2,6 +2,7 @@ import sys
 import datetime
 import pandas as pd
 import json
+import time
 import logging
 from pycmqlib3.utility.sec_bits import EMAIL_HOTMAIL, EMAIL_NOTIFY, NOTIFIERS, LOCAL_NUTSTORE_FOLDER, LOCAL_PC_NAME
 from pycmqlib3.utility.misc import day_shift, CHN_Holidays, is_workday, inst2product, product_lotsize
@@ -472,8 +473,8 @@ def check_eod_data(tday):
 
 def update_data_from_xl(data_folder=LOCAL_NUTSTORE_FOLDER):
     file_setup = {
-        ('ifind_data.xlsx', 'hist'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
-                                        'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
+        # ('ifind_data.xlsx', 'hist'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
+        #                                 'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
         ('ifind_data.xlsx', 'const'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
                                         'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
         ('ifind_data.xlsx', 'daily'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
@@ -484,6 +485,43 @@ def update_data_from_xl(data_folder=LOCAL_NUTSTORE_FOLDER):
                                         'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
     }
     dbaccess.write_edb_by_xl_sheet(file_setup, data_folder=data_folder)
+
+
+def update_ifind_xlsheet(filename, wait_time=20):
+    import pyautogui
+    import win32com.client
+    import win32gui
+    import win32con
+
+    # import pythoncom
+    xl = win32com.client.DispatchEx("Excel.Application")
+    wb = xl.Workbooks.open(filename)
+    xl.Visible = True
+    wb.Activate()
+    try:
+        #win32gui.ShowWindow(xl, win32con.SW_RESTORE)
+        win32gui.SetForegroundWindow(xl.Hwnd)
+    except Exception as e:
+        print("error activating Excel window:", e)
+
+    for s in range(len(wb.Sheets)):
+        # if wb.Sheets[s].name in ['hist']:
+        #     continue
+        # pythoncom.CoInitialize()
+        # shell = win32com.client.Dispath('WScript.Shell')
+        # shell.SendKeys('%')
+        wb.Sheets[s].Activate()
+        pyautogui.typewrite(['alt', 'y', '3', 'y', 'h', 'enter'], interval=1)
+        wb.RefreshAll()
+        time.sleep(wait_time)
+        xl.CalculateUntilAsyncQueriesDone()
+
+    pyautogui.typewrite(['alt', 'y', '3', 'y', 'h', 'enter'], interval=1)
+    wb.RefreshAll()
+    time.sleep(wait_time)
+    xl.CalculateUntilAsyncQueriesDone()
+    wb.Close(SaveChanges=1)
+    xl.Quit()
 
 
 if __name__ == "__main__":

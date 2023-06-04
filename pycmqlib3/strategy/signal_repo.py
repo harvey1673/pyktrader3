@@ -8,7 +8,7 @@ signal_store = {
     'io_removal_wow': ('io_removal_41ports', 'zscore', [48, 53], 'df1', 'pct_change', True, 'W-Fri'),
 
     'io_inv_mill(64)_lvl_fast': ('io_inv_mill(64)', 'qtl', [20, 42, 2], '', 'pct_change', True, 'price'),
-    'io_inv_mill(64)_lyoy_mom': ('io_inv_mill(64)', 'qtl', [8, 12], 'lunar_yoy_w', 'diff', True, 'W-Thu'),
+    'io_inv_mill(64)_lyoy_mom': ('io_inv_mill(64)', 'qtl', [2, 4], 'lunar_yoy_wk', 'diff', True, 'W-Thu'),
     'io_invdays_imp_mill(64)_lvl_fast': (
     'io_invdays_imp_mill(64)', 'qtl', [20, 42, 2], '', 'pct_change', True, 'price'),
     'io_invdays_imp_mill(64)_lyoy_mom': (
@@ -35,8 +35,8 @@ signal_store = {
     # 'margin_sea_lvl_mid': ('hrc_margin_sb', 'zscore', [40, 82, 2], '', 'pct_change', True, 'price'),
     'sea_export_arb_lvl_mid': ('hrc_exp_sea_arb', 'zscore', [40, 82, 2], '', 'pct_change', True, 'price'),
 
-    'margin_lvl_fast': ('margin_hrc_sh', 'qtl', [20, 42, 2], '', 'pct_change', True, 'price'),
-    'strip_hsec_lvl_mid': ('strip_hsec', 'qtl', [40, 82, 2], '', 'pct_change', True, 'price'),
+    'steel_margin_lvl_fast': ('margin_hrc_macf', 'qtl', [20, 40, 2], '', 'pct_change', True, 'price'),
+    'strip_hsec_lvl_mid': ('strip_hsec', 'qtl', [60, 80, 2], '', 'pct_change', True, 'price'),
     'macf_cfd_lvl_mid': ('macf_cfd', 'qtl', [40, 82, 2], '', 'pct_change', True, 'price'),
 
     'hc_rb_diff_lvl_fast': ('hc_rb_diff', 'zscore', [20, 40, 2], '', '', True, 'price'),

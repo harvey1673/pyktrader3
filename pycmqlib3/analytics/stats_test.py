@@ -8,6 +8,8 @@ import statsmodels.tsa.stattools as ts
 import statsmodels.api
 import matplotlib.pyplot as plt
 from pandas.plotting import autocorrelation_plot
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
 import warnings
 import pprint
 from .johansen_test import coint_johansen
@@ -265,6 +267,30 @@ def cross_correlation(ts_pair, lag = 100, mode = ['lndiff', 'lndiff'], supress =
     plt.show()
     if not supress:
         return corrs
+
+
+def pca_factor(df_in, df, n_pca=3, plot_pca=True):
+    data_df = df_in.dropna()
+    std_scaler = StandardScaler().fit(data_df)
+    x_std = std_scaler.transform(data_df)
+    pca = PCA(n_components=n_pca)
+    pca.fit(x_std)
+
+    if plot_pca:
+        pd.Series(pca.explained_variance_ratio_).plot.bar()
+        plt.show()
+    eigen_port = {}
+    full_x_std = std_scaler.transform(df)
+    for n in range(n_pca):
+        eigen_port[n] = pd.Series(np.dot(full_x_std, pca.components_[n]), index=df.index)
+        if plot_pca:
+            ax = pd.Series(pca.components_[n], index=df.columns).sort_values().plot.bar()
+            ax.set_title(f'PC{n+1}')
+            plt.show()
+            eigen_port[n].cumsum().plot(title=f'PC{n+1}')
+            plt.show()
+    results = {'pca_model': pca, 'pca_factors': eigen_port}
+    return results
 
 
 class InputDataException(Exception):

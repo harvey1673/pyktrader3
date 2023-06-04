@@ -118,8 +118,8 @@ def plot_seasonal_df(ts, cutoff=None, title='', convert_seasonal=True):
         plt.plot(xts.index[ts_mask], xts.values[ts_mask], linestyle=linestyle, marker=marker, label=yr)
 
         if yr == curr_yr:
-            ax.text(ts.index[ts_mask][-1], ts.values[ts_mask][-1],
-                    "%s: %.1fs" % (ts.index[ts_mask][-1].strftime("%b-%d"), ts.values[ts_mask][-1]))
+            ax.text(xts.index[ts_mask][-1], xts.values[ts_mask][-1],
+                    "%s: %.1fs" % (xts.index[ts_mask][-1].strftime("%b-%d"), xts.values[ts_mask][-1]))
     plt.title(title, fontproperties=font)
     ax.grid(True)
     plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
@@ -249,27 +249,27 @@ def calendar_label(data_df: pd.DataFrame, anchor_date={'month': 1, 'day': 1}, co
     return data_daily
 
 
-def yoy_generic(ts, label_func=lunar_label, func='diff', interpolate=False, label_args={}):
+def yoy_generic(ts, label_func=lunar_label, func='diff', interpolate=False, group_col='label_day', label_args={}):
     ts_name = ts.name
     tdf = ts.dropna().to_frame(ts_name)
     tdf.index.name = 'date'
     tdf = label_func(tdf, **label_args)
-    ddf = pd.pivot_table(tdf, columns=['label_yr'], index='label_day', values=[ts_name], aggfunc='last')
+    ddf = pd.pivot_table(tdf, columns=['label_yr'], index=group_col, values=[ts_name], aggfunc='last')
     if interpolate:
         ddf = ddf.interpolate(method='linear', limit_direction='both')
     else:
-        ddf = ddf.ffill.bfill()
+        ddf = ddf.ffill().bfill()
     ddf = getattr(ddf, func)(axis=1)
     rdf = pd.melt(ddf.reset_index(),
-                  id_vars=[('label_day', '')],
+                  id_vars=[(group_col, '')],
                   value_vars=[col for col in ddf.columns if col[0] == ts_name]).rename(
-        columns={('label_day', ''): 'label_day', 'value': 'yoy'}
+        columns={(group_col, ''): group_col, 'value': 'yoy'}
     )
-    tdf = tdf.reset_index().merge(rdf, how='left', left_on=['label_yr', 'label_day'],
-                                  right_on=['label_yr', 'label_day'])
+    tdf = tdf.reset_index().merge(rdf, how='left', left_on=['label_yr', group_col],
+                                  right_on=['label_yr', group_col])
     tdf = tdf.set_index('date')
     tdf = tdf[(tdf['label_yr'] > tdf['label_yr'].iloc[0] + 1) |
-              ((tdf['label_yr'] == tdf['label_yr'].iloc[0] + 1) & (tdf['label_day'] >= tdf['label_day'].iloc[0] + 1))]
+              ((tdf['label_yr'] == tdf['label_yr'].iloc[0] + 1) & (tdf[group_col] >= tdf[group_col].iloc[0] + 1))]
     return tdf['yoy'].to_frame(ts_name)
 
 
