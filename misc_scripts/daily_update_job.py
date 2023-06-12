@@ -8,8 +8,9 @@ from pycmqlib3.utility.misc import day_shift, CHN_Holidays, is_workday, product_
 from pycmqlib3.analytics.tstool import response_curve
 from misc_scripts.aks_data_update import update_hist_fut_daily, update_spot_daily, \
     update_exch_receipt_table, update_exch_inv_table, update_rank_table
-from misc_scripts.factor_data_update import update_factor_data, update_port_position
-from misc_scripts.fun_factor_update import update_data_from_xl
+from misc_scripts.factor_data_update import update_factor_data
+from misc_scripts.auto_update_data_xl import update_data_from_xl
+from misc_scripts.port_position_update import update_port_pos
 from pycmqlib3.utility.email_tool import send_html_by_smtp
 from pycmqlib3.utility.process_wt_data import save_bars_to_dsb
 from pycmqlib3.utility import dbaccess, base
@@ -305,16 +306,8 @@ def run_update(tday=datetime.date.today()):
         missing_daily = job_status[update_field].get('eod_price', [])
         missing_factors = job_status[update_field].get('factor_data', [])
 
-    logging.info('updating factor strategy position...')
-    update_field = 'fact_pos_file'
-    if update_field not in job_status:
-        job_status[update_field] = False
-    pos_update = {}
-    try:
-        pos_update = update_port_position(run_date=edate)
-        job_status[update_field] = True
-    except:
-        job_status[update_field] = False
+    status, pos_update = update_port_pos(tday, email_notify=False)
+    job_status.update(status)
     save_status(filename, job_status)
 
     sdate = day_shift(tday, '-1b', CHN_Holidays)
