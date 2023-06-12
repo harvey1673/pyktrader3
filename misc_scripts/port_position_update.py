@@ -10,7 +10,7 @@ from pycmqlib3.utility.email_tool import send_html_by_smtp
 update_func_list = [
     'fun_data_xl_loading',
     'fun_factor_update',
-    #'fact_pos_file',
+    'fact_pos_file',
 ]
 
 
@@ -19,16 +19,15 @@ def update_port_pos(tday=datetime.date.today(), email_notify=True):
     logging.info('updating factor strategy position...')
     pos_update = {}
     for update_field in update_func_list:
-        try:
-            if update_field == 'fun_data_xl_loading':
-                update_data_from_xl()
-            elif update_field == 'fun_factor_update':
-                update_fun_factor(run_date=tday)
-            else:
-                pos_update = update_port_position(run_date=tday)
-            job_status[update_field] = True
-        except:
-            job_status[update_field] = False
+        if update_field == 'fun_data_xl_loading':
+            update_data_from_xl()
+        elif update_field == 'fun_factor_update':
+            update_fun_factor(run_date=tday)
+        else:
+            pos_update = update_port_position(run_date=tday)
+        job_status[update_field] = True
+        # except:
+        #     job_status[update_field] = False
 
     if email_notify:
         sub = '%s port pos update<%s>' % (LOCAL_PC_NAME, tday.strftime('%Y.%m.%d'))

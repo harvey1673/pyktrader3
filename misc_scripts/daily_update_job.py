@@ -1,4 +1,5 @@
 import sys
+
 import datetime
 import pandas as pd
 import json
@@ -15,6 +16,9 @@ from pycmqlib3.utility.email_tool import send_html_by_smtp
 from pycmqlib3.utility.process_wt_data import save_bars_to_dsb
 from pycmqlib3.utility import dbaccess, base
 from wtpy.wrapper import WtDataHelper
+if not sys.warnoptions:
+    import warnings
+    warnings.simplefilter("ignore")
 
 scenarios_elite = [
         ('tscarry', 'ryieldnmb', 2.0, 1, 120, 1, (None, {}, ''), [0.0, 0.0]),
@@ -382,9 +386,4 @@ if __name__ == "__main__":
                         format='%(name)s:%(funcName)s:%(lineno)d:%(asctime)s %(levelname)s %(message)s',
                         to_console=True,
                         console_level=logging.INFO)
-    update_data_from_xl()
     run_update(tday)
-
-    
-    
-
