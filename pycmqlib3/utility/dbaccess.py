@@ -161,6 +161,12 @@ def load_codes_from_edb(code_list, source=['ifind'], start_date=None, end_date=N
 
 
 def save_data_to_edb(xdf, source):
+    conn = create_engine('mysql+mysqlconnector://{user}:{passwd}@{host}/{dbase}'.format(
+        user=dbconfig['user'],
+        passwd=dbconfig['password'],
+        host=dbconfig['host'],
+        dbase=dbconfig['database']), echo=False)
+    func = mysql_replace_into
     error_list = []
     for index_name, freq, unit, index_code in xdf.columns:
         adf = xdf[(index_name, freq, unit, index_code)].to_frame('value').dropna()
@@ -173,10 +179,12 @@ def save_data_to_edb(xdf, source):
         adf['source'] = source
         adf['ref_name'] = '_'.join(index_name.split(':'))
         try:
-            insert_df_to_sql(adf, 'edb', is_replace=True)
+            # insert_df_to_sql(adf, 'edb', is_replace=True)
+            adf.to_sql('edb', con=conn, if_exists='append', index=False, method=func)
         except Exception as e:
             print("error: %s" % e)
             error_list.append(index_code)
+    conn.dispose()
     return error_list
 
 
