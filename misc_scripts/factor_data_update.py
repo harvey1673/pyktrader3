@@ -79,26 +79,9 @@ leadlag_port = {
 }
 
 port_pos_config = {
-    'PT_FACTPORT3_CAL_30b': {
-        'pos_loc': 'C:/dev/pyktrader3/process/paper_sim1',
-        'roll': 'CAL_30b',
-        'shift_mode': 1,
-        'strat_list': [
-            ('PT_FACTPORT3.json', 4600, 's1'),
-            ('PT_FACTPORT_HCRB.json', 30000, 's1'),
-        ], },
-    'PTSIM1_FACTPORT1_hot': {
-        'pos_loc': 'C:/dev/pyktrader3/process/paper_sim1',
-        'roll': 'hot',
-        'shift_mode': 2,
-        'strat_list': [
-            ('PTSIM1_FACTPORT1.json', 10300, 'd1'),
-            ('PTSIM1_HCRB.json', 26400, 'd1'),
-            ('PTSIM1_LEADLAG1.json', 16600, 'd1'),
-        ], },
 }
 
-pos_chg_notification = ['PTSIM1_FACTPORT1_hot']
+pos_chg_notification = []
 
 
 def update_factor_db(xdf, field, config, dbtable='fut_fact_data', flavor='mysql', start_date=None, end_date=None):
@@ -112,7 +95,9 @@ def update_factor_db(xdf, field, config, dbtable='fut_fact_data', flavor='mysql'
         df = df[df['date'] >= start_date]
     if end_date:
         df = df[df['date'] <= end_date]
+    df['date'] = pd.to_datetime(df['date'])
     df = df[['product_code', 'roll_label', 'exch', 'fact_name', 'freq', 'date', 'serial_no', 'serial_key', 'fact_val']]
+    #insert_df_to_sql(df, dbtable, is_replace=True)
     if flavor == 'mysql':
         conn = create_engine(
             'mysql+mysqlconnector://{user}:{passwd}@{host}/{dbase}'.format(user=dbconfig['user'],

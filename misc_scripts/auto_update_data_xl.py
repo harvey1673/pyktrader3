@@ -49,7 +49,7 @@ def update_data_from_xl(data_folder=LOCAL_NUTSTORE_FOLDER):
         ('ifind_data.xlsx', 'sector'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
                                         'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
     }
-    write_edb_by_xl_sheet(file_setup, data_folder=data_folder)
+    write_edb_by_xl_sheet(file_setup, data_folder=data_folder, lookback=30)
 
 
 if __name__ == "__main__":

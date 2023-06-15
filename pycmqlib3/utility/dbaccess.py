@@ -100,6 +100,45 @@ tick_field_rename_map = {
 }
 
 
+def insert_df_to_sql(df, dbtable, is_replace=False):
+    adf = df.copy()
+    cnx = connect(**dbconfig)
+    cursor = cnx.cursor()
+    cmd = "describe " + DB_QUOTE
+    cursor.execute(cmd % dbtable)
+    db_desc = cursor.fetchall()
+    allowed_key_map = dict([(row[0], row[1].decode('utf-8')) for row in db_desc])
+    keys = list(set(allowed_key_map.keys()).intersection(df.columns))
+    columns = ",".join(keys)
+    values_template = ",".join([DB_QUOTE] * len(keys))
+    for key in keys:
+        if allowed_key_map[key] == 'date':
+            adf[key] = adf[key].dt.strftime('%Y-%m-%d')
+        elif allowed_key_map[key] in ['datetime', 'timestamp']:
+            adf[key] = adf[key].dt.strftime("%Y-%m-%d %H:%M:%s")
+    adf = adf[keys]
+    if is_replace:
+        if USE_DB_TYPE == 'mysql':
+            cmd = "REPLACE"
+        else:
+            cmd = "INSERT OR REPLACE"
+    else:
+        if USE_DB_TYPE == 'mysql':
+            cmd = "INSERT IGNORE"
+        else:
+            cmd = "INSERT OR IGNORE"
+
+    stmt = "{cmd} INTO {table} ({variables}) VALUES ({value_format})".format(cmd=cmd,
+                                                                             table=dbtable,
+                                                                             variables=columns,
+                                                                             value_format=values_template)
+    args = adf.to_records(index=False)
+    args = [tuple(arg) for arg in args]
+    if len(args) > 0:
+        cursor.executemany(stmt, args)
+    cnx.commit()
+
+
 def load_codes_from_edb(code_list, source=['ifind'], start_date=None, end_date=None, column_name='index_name'):
     if isinstance(code_list, str):
         code_list = [code_list]
@@ -122,12 +161,6 @@ def load_codes_from_edb(code_list, source=['ifind'], start_date=None, end_date=N
 
 
 def save_data_to_edb(xdf, source):
-    conn = create_engine('mysql+mysqlconnector://{user}:{passwd}@{host}/{dbase}'.format( \
-        user=dbconfig['user'], \
-        passwd=dbconfig['password'], \
-        host=dbconfig['host'], \
-        dbase=dbconfig['database']), echo=False)
-    func = mysql_replace_into
     error_list = []
     for index_name, freq, unit, index_code in xdf.columns:
         adf = xdf[(index_name, freq, unit, index_code)].to_frame('value').dropna()
@@ -140,14 +173,15 @@ def save_data_to_edb(xdf, source):
         adf['source'] = source
         adf['ref_name'] = '_'.join(index_name.split(':'))
         try:
-            adf.to_sql('edb', con=conn, if_exists='append', index=False, method=func)
-        except:
+            insert_df_to_sql(adf, 'edb', is_replace=True)
+        except Exception as e:
+            print("error: %s" % e)
             error_list.append(index_code)
-    conn.dispose()
     return error_list
 
 
-def write_edb_by_xl_sheet(file_setup, data_folder=sec_bits.LOCAL_NUTSTORE_FOLDER):
+def write_edb_by_xl_sheet(file_setup, data_folder=sec_bits.LOCAL_NUTSTORE_FOLDER, lookback=20000):
+    sdate = pd.to_datetime("today") - pd.Timedelta(lookback, unit='D')
     error_list = []
     for data_file, sheet_name in file_setup:
         key = (data_file, sheet_name)
@@ -159,6 +193,7 @@ def write_edb_by_xl_sheet(file_setup, data_folder=sec_bits.LOCAL_NUTSTORE_FOLDER
         xdf = xdf.set_index('date')
         if file_setup[key]['drop_zero']:
             xdf = xdf.replace(0, np.nan)
+        xdf = xdf[xdf.index >= sdate]
         print(f"saving data for {data_file}:{sheet_name}, total cols:{len(xdf.columns)}")
         err = save_data_to_edb(xdf, file_setup[key]['source'])
         error_list += err
