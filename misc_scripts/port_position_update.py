@@ -25,6 +25,7 @@ def update_port_pos(tday=datetime.date.today(), email_notify=True):
             update_fun_factor(run_date=tday)
         else:
             pos_update = update_port_position(run_date=tday)
+        print(f"{update_field} is done")
         job_status[update_field] = True
         # except:
         #     job_status[update_field] = False
@@ -36,7 +37,7 @@ def update_port_pos(tday=datetime.date.today(), email_notify=True):
             html += "Position change for %s:<br>%s" % (key, pos_update[key].to_html())
         html += "</p></body></html>"
         send_html_by_smtp(EMAIL_HOTMAIL, NOTIFIERS, sub, html)
-    job_status['time'] = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    job_status['time'] = datetime.datetime.now().strftime("%Y%m%d_%H:%M:%S")
     filename = "C:\\dev\\data\\port_position_update.json"
     with open(filename, 'w') as ofile:
         json.dump(job_status, ofile, indent=4)
