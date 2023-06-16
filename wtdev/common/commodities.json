@@ -78,6 +78,19 @@
             "session": "FD0915",
             "holiday": "CHINA"
         },
+        "TL": {
+            "covermode": 0,
+            "pricemode": 0,
+            "category": 1,
+            "trademode": 0,
+            "precision": 2,
+            "pricetick": 0.01,
+            "volscale": 10000,
+            "name": "30年债",
+            "exchg": "CFFEX",
+            "session": "FD0915",
+            "holiday": "CHINA"
+        },
         "TS": {
             "covermode": 0,
             "pricemode": 0,
@@ -760,6 +773,19 @@
             "pricetick": 5.0,
             "volscale": 5,
             "name": "沪铝",
+            "exchg": "SHFE",
+            "session": "FN0100",
+            "holiday": "CHINA"
+        },
+        "ao": {
+            "covermode": 1,
+            "pricemode": 1,
+            "category": 1,
+            "trademode": 0,
+            "precision": 0,
+            "pricetick": 1.0,
+            "volscale": 20,
+            "name": "氧化铝",
             "exchg": "SHFE",
             "session": "FN0100",
             "holiday": "CHINA"
