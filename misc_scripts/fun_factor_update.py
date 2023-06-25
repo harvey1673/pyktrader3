@@ -7,8 +7,13 @@ from pycmqlib3.analytics.tstool import *
 from misc_scripts.factor_data_update import update_factor_db
 
 update_factors = {
-    'steel_margin_lvl_fast': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al'],
-    'strip_hsec_lvl_mid': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al'],
+    'steel_margin_lvl_fast': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
+    'strip_hsec_lvl_mid': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
+    'io_removal_lvl': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
+    'io_removal_lyoy': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
+    'io_millinv_lyoy': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
+    'io_invdays_lvl': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
+    'io_invdays_lyoy': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
 }
 
 
@@ -21,7 +26,16 @@ def update_fun_factor(run_date=datetime.date.today(), flavor='mysql'):
 
     data_df = load_codes_from_edb(index_map.keys(), source='ifind', column_name='index_code')
     data_df = data_df.rename(columns=index_map)
-    spot_df = process_spot_df(data_df.dropna(how='all').copy(deep=True))
+    spot_df = data_df.dropna(how='all').copy(deep=True)
+    spot_df = spot_df.reindex(index=cdate_rng)
+    for col in [
+        'io_inv_imp_mill(64)',
+        'io_inv_dom_mill(64)',
+        'io_invdays_imp_mill(64)'
+    ]:
+        spot_df[col] = spot_df[col].ffill().shift(-3).reindex(
+            index=pd.date_range(start=spot_df.index[0], end=spot_df.index[-1], freq='W-Fri'))
+    spot_df = process_spot_df(spot_df)
 
     for factor_name in update_factors.keys():
         feature, signal_func, param_rng, proc_func, chg_func, bullish, freq = signal_store[factor_name]

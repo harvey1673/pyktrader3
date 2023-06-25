@@ -3,34 +3,31 @@ from pycmqlib3.analytics.tstool import *
 
 
 signal_store = {
-    'io_removal_lvl_fast': ('io_removal_41ports', 'qtl', [20, 42, 2], '', 'pct_change', True, 'price'),
-    'io_removal_lyoy_mom': ('io_removal_41ports', 'qtl', [8, 12], 'lunar_yoy_w', 'pct_change', True, 'W-Fri'),
-    'io_removal_wow': ('io_removal_41ports', 'zscore', [48, 53], 'df1', 'pct_change', True, 'W-Fri'),
-
-    'io_inv_mill(64)_lvl_fast': ('io_inv_mill(64)', 'qtl', [20, 42, 2], '', 'pct_change', True, 'price'),
-    'io_inv_mill(64)_lyoy_mom': ('io_inv_mill(64)', 'qtl', [2, 4], 'lunar_yoy_wk', 'diff', True, 'W-Thu'),
-    'io_invdays_imp_mill(64)_lvl_fast': (
-    'io_invdays_imp_mill(64)', 'qtl', [20, 42, 2], '', 'pct_change', True, 'price'),
-    'io_invdays_imp_mill(64)_lyoy_mom': (
-    'io_invdays_imp_mill(64)', 'qtl', [8, 12], 'lunar_yoy_w', 'pct_change', True, 'W-Thu'),
+    'io_removal_lvl': ('io_removal_41ports', 'qtl', [20, 40, 2], '', 'diff', True, 'price'),
+    'io_removal_lyoy': ('io_removal_41ports', 'qtl', [8, 12], 'lunar_yoy_day', 'diff', True, 'W-Fri'),
+    'io_removal_wow': ('io_removal_41ports', 'zscore', [48, 53], 'df1', 'diff', True, 'W-Fri'),
+    'io_millinv_lvl': ('io_inv_mill(64)', 'qtl', [20, 40, 2], '', 'diff', True, 'price'),
+    'io_millinv_lyoy': ('io_inv_mill(64)', 'qtl', [2, 4], 'lunar_yoy_day', 'diff', True, 'W-Fri'),
+    'io_invdays_lvl': ('io_invdays_imp_mill(64)', 'qtl', [20, 40, 2], '', 'pct_change', True, 'price'),
+    'io_invdays_lyoy': ('io_invdays_imp_mill(64)', 'qtl', [2, 4], 'lunar_yoy_day', 'pct_change', True, 'W-Fri'),
 
     'io_port_inv_lvl_slow': ('io_inv_imp_31ports_w', 'zscore', [240, 255, 5], '', 'pct_change', False, 'price'),
 
     'steel_major5_inv_lvl_fast': ('steel_major5_inv', 'qtl', [20, 32, 4], '', 'diff', False, 'W-Fri'),
     'steel_social_inv_lvl_fast': ('steel_inv_social', 'zscore', [20, 32, 4], '', 'diff', False, 'W-Fri'),
-    'rebar_inv_social_lyoy_fast': ('rebar_inv_social', 'zscore', [20, 42, 2], 'lunar_yoy_w', 'diff', False, 'W-Fri'),
+    'rebar_inv_social_lyoy_fast': ('rebar_inv_social', 'zscore', [20, 42, 2], 'lunar_yoy_wk', 'diff', False, 'W-Fri'),
     'wirerod_inv_social_lyoy_fast': (
     'wirerod_inv_social', 'zscore', [20, 42, 2], 'lunar_yoy_w', 'diff', False, 'W-Fri'),
-    'hrc_inv_social_lyoy_fast': ('hrc_inv_social', 'zscore', [20, 42, 2], 'lunar_yoy_w', 'diff', False, 'W-Fri'),
-    'crc_inv_social_lyoy_fast': ('crc_inv_social', 'zscore', [20, 42, 2], 'lunar_yoy_w', 'diff', False, 'W-Fri'),
+    'hrc_inv_social_lyoy_fast': ('hrc_inv_social', 'zscore', [20, 42, 2], 'lunar_yoy_wk', 'diff', False, 'W-Fri'),
+    'crc_inv_social_lyoy_fast': ('crc_inv_social', 'zscore', [20, 42, 2], 'lunar_yoy_wk', 'diff', False, 'W-Fri'),
 
     'billet_inv_chg_slow': ('billet_inv_social_ts', 'zscore', [240, 252, 2], '', 'diff', False, 'price'),
 
     'pbf_prem_yoy': ('pbf_prem', 'zscore', [20, 42, 2], 'df250', 'diff', True),
-    # 'pbf_prem_lyoy_mom': ('pbf_prem', 'qtl', [12, 20, 2], 'lunar_yoy_w', 'diff', True),
+    # 'pbf_prem_lyoy_mom': ('pbf_prem', 'qtl', [12, 20, 2], 'lunar_yoy_wk', 'diff', True),
 
     'cons_steel_lyoy_slow': (
-    'cons_steel_transact_vol_china', 'zscore', [240, 255, 5], 'lunar_yoy_d', 'diff', True, 'price'),
+    'cons_steel_transact_vol_china', 'zscore', [240, 255, 5], 'lunar_yoy_day', 'diff', True, 'price'),
 
     # 'margin_sea_lvl_mid': ('hrc_margin_sb', 'zscore', [40, 82, 2], '', 'pct_change', True, 'price'),
     'sea_export_arb_lvl_mid': ('hrc_exp_sea_arb', 'zscore', [40, 82, 2], '', 'pct_change', True, 'price'),
