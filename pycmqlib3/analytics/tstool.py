@@ -565,13 +565,14 @@ def get_rolling_percentiles(vector, window=252, min_periods=None, use_abs=False)
     return percentiles
 
 
-def rolling_percentile(ts, win = 100, direction = 'max'):
+def rolling_percentile(ts, win=100, direction='max'):
+    ts = ts.dropna().copy(deep=True)
     data = ts.to_numpy()
     sw = sliding_window_view(data, win, axis=0).T
     scores_np = np.empty(len(ts))
     scores_np.fill(np.nan)
     scores_np[(win-1):] = ((sw <= sw[-1:, ...]).sum(axis=0).T / sw.shape[0]).flatten()
-    scores_np_ts = pd.Series(scores_np, index = ts.index)
+    scores_np_ts = (pd.Series(scores_np, index = ts.index) - 1/win) / (1 - 1/win)
     if direction == 'min':
         scores_np_ts = 1 - scores_np_ts
     return scores_np_ts
@@ -589,8 +590,12 @@ def zscore_ewm(ts, win):
     return (ts - ts.ewm(halflife=win, min_periods=win).mean())/ts.ewm(halflife=win, min_periods=win).std()
 
 
-def pct_score(ts, win):
-    return rolling_percentile(ts, win) * 2 -1.0
+def pct_score(ts: pd.Series, win: int):
+    if len(ts) < win:
+        res = pd.Series(0, index=ts.index)
+    else:
+        res = rolling_percentile(ts, win) * 2 -1.0
+    return res
 
 
 def ewmac(ts, win_s, win_l=None, ls_ratio=4):
@@ -639,7 +644,7 @@ def calc_conv_signal(feature_ts, signal_func, param_rng, signal_cap=None, proc_f
         elif signal_func == 'zscore_adj':
             signal_ts = zscore_adj_roll(feature_ts, win=win)
         elif signal_func == 'qtl':
-            signal_ts = pct_score(feature_ts, win=win)
+            signal_ts = pct_score(feature_ts.dropna(), win=win)
         else:
             continue
         if proc_func:

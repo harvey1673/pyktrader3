@@ -79,26 +79,26 @@ leadlag_port = {
 }
 
 port_pos_config = {
-    'PT_FACTPORT3_CAL_30b': {
-        'pos_loc': 'C:/dev/pyktrader3/process/paper_sim1',
-        'roll': 'CAL_30b',
-        'shift_mode': 1,
-        'strat_list': [
-            ('PT_FACTPORT3.json', 4600, 's1'),
-            ('PT_FACTPORT_HCRB.json', 30000, 's1'),
-        ], },
-    'PTSIM1_FACTPORT1_hot': {
-        'pos_loc': 'C:/dev/pyktrader3/process/paper_sim1',
-        'roll': 'hot',
-        'shift_mode': 2,
-        'strat_list': [
-            ('PTSIM1_FACTPORT1.json', 10300, 'd1'),
-            ('PTSIM1_HCRB.json', 26400, 'd1'),
-            ('PTSIM1_LEADLAG1.json', 16600, 'd1'),
-        ], },
+    # 'PT_FACTPORT3_CAL_30b': {
+    #     'pos_loc': 'C:/dev/pyktrader3/process/paper_sim1',
+    #     'roll': 'CAL_30b',
+    #     'shift_mode': 1,
+    #     'strat_list': [
+    #         ('PT_FACTPORT3.json', 4600, 's1'),
+    #         ('PT_FACTPORT_HCRB.json', 30000, 's1'),
+    #     ], },
+    # 'PTSIM1_FACTPORT1_hot': {
+    #     'pos_loc': 'C:/dev/pyktrader3/process/paper_sim1',
+    #     'roll': 'hot',
+    #     'shift_mode': 2,
+    #     'strat_list': [
+    #         ('PTSIM1_FACTPORT1.json', 10300, 'd1'),
+    #         ('PTSIM1_HCRB.json', 26400, 'd1'),
+    #         ('PTSIM1_LEADLAG1.json', 16600, 'd1'),
+    #     ], },
 }
 
-pos_chg_notification = ['PTSIM1_FACTPORT1_hot']
+pos_chg_notification = [] #'PTSIM1_FACTPORT1_hot'
 
 
 def update_factor_db(xdf, field, config, dbtable='fut_fact_data', flavor='mysql', start_date=None, end_date=None):

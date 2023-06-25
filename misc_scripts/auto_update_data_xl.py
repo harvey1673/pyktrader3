@@ -54,4 +54,3 @@ def update_data_from_xl(data_folder=LOCAL_NUTSTORE_FOLDER):
 
 if __name__ == "__main__":
     update_ifind_xlsheet(filename='C:/Users/harvey/Nutstore/1/Nutstore/ifind_data.xlsx')
-    update_data_from_xl()
