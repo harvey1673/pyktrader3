@@ -7,29 +7,27 @@ from pycmqlib3.utility.sec_bits import LOCAL_NUTSTORE_FOLDER
 from pycmqlib3.utility.dbaccess import write_edb_by_xl_sheet
 
 
-def update_ifind_xlsheet(filename='C:/Users/harvey/Nutstore/1/Nutstore/ifind_data.xlsx', wait_time=60):
+def update_ifind_xlsheet(filename='C:/Users/harvey/Nutstore/1/Nutstore/ifind_data.xlsx', wait_time=65):
     xl = win32com.client.DispatchEx("Excel.Application")
     wb = xl.Workbooks.open(filename)
     xl.Visible = True
     wb.Activate()
     time.sleep(10)
-    try:
-        win32gui.ShowWindow(xl.Hwnd, win32con.SW_RESTORE)
-        win32gui.EnableWindow(xl.Hwnd, True)
-        win32gui.SetForegroundWindow(xl.Hwnd)
-    except Exception as e:
-        print("error activating Excel window:", e)
     for s in range(len(wb.Sheets)):
         try:
             if wb.Sheets[s].name in ['hist']:
                 continue
+            win32gui.ShowWindow(xl.Hwnd, win32con.SW_RESTORE)
+            win32gui.EnableWindow(xl.Hwnd, True)
+            win32gui.SetForegroundWindow(xl.Hwnd)
             wb.Sheets[s].Activate()
             pyautogui.typewrite(['alt', 'y', '3', 'y', 'h', 'enter'], interval=0.5)
-            time.sleep(5)
+            time.sleep(3)
             pyautogui.hotkey("shift", "f9")
             time.sleep(wait_time)
             xl.CalculateUntilAsyncQueriesDone()
-        except:
+        except Exception as e:
+            print("error activating Excel window for update %s" % (wb.Sheets[s].name))
             continue
     wb.Close(SaveChanges=1)
     time.sleep(3)
