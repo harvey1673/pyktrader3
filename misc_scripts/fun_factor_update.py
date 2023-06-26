@@ -79,7 +79,7 @@ def update_fun_factor(run_date=datetime.date.today(), flavor='mysql'):
 
         if not bullish:
             signal_ts = -signal_ts
-        signal_ts = signal_ts.reindex(index=cdate_rng).ffill().reindex(index=bdate_rng)
+        signal_ts = signal_ts
         fact_config = {
             'roll_label': 'hot',
             'freq': 'd1',
@@ -89,7 +89,7 @@ def update_fun_factor(run_date=datetime.date.today(), flavor='mysql'):
         for asset in update_factors[factor_name]:
             fact_config['product_code'] = asset
             fact_config['exch'] = prod2exch(asset)
-            asset_df = pd.DataFrame(signal_ts.to_frame(factor_name), index=bdate_rng)
+            asset_df = pd.DataFrame(signal_ts.to_frame(factor_name), index=signal_ts.index)
             asset_df.index = asset_df.index.map(lambda x: x.date())
             update_factor_db(asset_df, factor_name, fact_config,
                              start_date=update_start,
