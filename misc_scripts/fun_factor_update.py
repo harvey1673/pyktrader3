@@ -17,13 +17,8 @@ update_factors = {
 }
 
 
-def update_fun_factor(run_date=datetime.date.today(), flavor='mysql'):
-    start_date = day_shift(run_date, '-3y')
-    update_start = day_shift(run_date, '-20b', CHN_Holidays)
-
-    cdate_rng = pd.date_range(start=start_date, end=run_date, freq='D', name='date')
-    bdate_rng = pd.bdate_range(start=start_date, end=run_date, freq='C', holidays=CHN_Holidays, name='date')
-
+def get_fun_data(start_date, end_date):
+    cdate_rng = pd.date_range(start=start_date, end=end_date, freq='D', name='date')
     data_df = load_codes_from_edb(index_map.keys(), source='ifind', column_name='index_code')
     data_df = data_df.rename(columns=index_map)
     spot_df = data_df.dropna(how='all').copy(deep=True)
@@ -36,6 +31,15 @@ def update_fun_factor(run_date=datetime.date.today(), flavor='mysql'):
         spot_df[col] = spot_df[col].ffill().shift(-3).reindex(
             index=pd.date_range(start=spot_df.index[0], end=spot_df.index[-1], freq='W-Fri'))
     spot_df = process_spot_df(spot_df)
+    return spot_df
+
+
+def update_fun_factor(run_date=datetime.date.today(), flavor='mysql'):
+    start_date = day_shift(run_date, '-3y')
+    update_start = day_shift(run_date, '-20b', CHN_Holidays)
+    cdate_rng = pd.date_range(start=start_date, end=run_date, freq='D', name='date')
+    bdate_rng = pd.bdate_range(start=start_date, end=run_date, freq='C', holidays=CHN_Holidays, name='date')
+    spot_df = get_fun_data(start_date, run_date)
 
     for factor_name in update_factors.keys():
         feature, signal_func, param_rng, proc_func, chg_func, bullish, freq = signal_store[factor_name]

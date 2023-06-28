@@ -3,7 +3,7 @@ import pyautogui
 import win32com.client
 import win32gui
 import win32con
-from pycmqlib3.utility.sec_bits import LOCAL_NUTSTORE_FOLDER
+from pycmqlib3.utility.sec_bits import LOCAL_NUTSTORE_FOLDER, IFIND_XL_HOTKEYS
 from pycmqlib3.utility.dbaccess import write_edb_by_xl_sheet
 
 
@@ -21,7 +21,7 @@ def update_ifind_xlsheet(filename='C:/Users/harvey/Nutstore/1/Nutstore/ifind_dat
             win32gui.EnableWindow(xl.Hwnd, True)
             win32gui.SetForegroundWindow(xl.Hwnd)
             wb.Sheets[s].Activate()
-            pyautogui.typewrite(['alt', 'y', '3', 'y', 'h', 'enter'], interval=0.5)
+            pyautogui.typewrite(IFIND_XL_HOTKEYS, interval=0.5)
             time.sleep(3)
             pyautogui.hotkey("shift", "f9")
             time.sleep(wait_time)
@@ -51,4 +51,6 @@ def update_data_from_xl(data_folder=LOCAL_NUTSTORE_FOLDER):
 
 
 if __name__ == "__main__":
-    update_ifind_xlsheet(filename='C:/Users/harvey/Nutstore/1/Nutstore/ifind_data.xlsx')
+    data_folder = LOCAL_NUTSTORE_FOLDER
+    filename = f'{data_folder}/ifind_data.xlsx'
+    update_ifind_xlsheet(filename=filename)
