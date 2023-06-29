@@ -5,7 +5,7 @@ import json
 from misc_scripts.factor_data_update import update_port_position
 from misc_scripts.fun_factor_update import update_fun_factor
 from misc_scripts.auto_update_data_xl import update_data_from_xl
-from pycmqlib3.utility.sec_bits import EMAIL_HOTMAIL, NOTIFIERS, LOCAL_PC_NAME
+from pycmqlib3.utility.sec_bits import EMAIL_HOTMAIL, NOTIFIERS, LOCAL_PC_NAME, EMAIL_NOTIFY
 from pycmqlib3.utility.email_tool import send_html_by_smtp
 update_func_list = [
     'fun_data_xl_loading',
@@ -14,7 +14,7 @@ update_func_list = [
 ]
 
 
-def update_port_pos(tday=datetime.date.today(), email_notify=True):
+def update_port_pos(tday=datetime.date.today(), email_notify=EMAIL_NOTIFY):
     job_status = {}
     logging.info('updating factor strategy position...')
     pos_update = {}
