@@ -9,7 +9,7 @@ from pycmqlib3.utility.dbaccess import save_data, get_fut_daily_from_db
 from pycmqlib3.utility.misc import CHN_Holidays, day_shift, is_workday, product_code, instID_adjust, inst2product
 from akshare.futures.cot import get_dce_rank_table, \
                                 get_czce_rank_table, get_shfe_rank_table, get_cffex_rank_table
-from akshare.futures import cons
+from akshare.futures import cons, symbol_var
 chn_calendar = cons.get_calendar()
 
 
@@ -28,13 +28,14 @@ def generate_calendar_json(start_date, end_date, filename, date_for="%Y%m%d"):
 def update_spot_daily(start_date=datetime.date.today(), end_date=datetime.date.today(), flavor='mysql'):
     dce_mkt = cons.market_exchange_symbols['dce']
     shfe_mkt = cons.market_exchange_symbols['shfe']
+    gfex_mkt = cons.market_exchange_symbols['gfex']
     df = ak.futures_spot_price_daily(start_date, end_date)
     df['date'] = df['date'].apply(lambda x: datetime.datetime.strptime(x, "%Y%m%d").date())
-    df['symbol'] = df['symbol'].apply(lambda x: x.lower() if x in dce_mkt + shfe_mkt else x)
+    df['symbol'] = df['symbol'].apply(lambda x: x.lower() if x in dce_mkt + shfe_mkt + gfex_mkt else x)
     df['source'] = '100ppi'
-    df['spotID']=df[['symbol','source']].agg('_'.join,axis=1)
+    df['spotID'] = df[['symbol', 'source']].agg('_'.join, axis=1)
     df['close'] = df['spot_price']
-    save_data('spot_daily', df[['spotID', 'date', 'close']], flavor = flavor)
+    save_data('spot_daily', df[['spotID', 'date', 'close']], flavor=flavor)
 
 
 def update_hist_fut_daily(start_date=datetime.date.today(),
@@ -265,13 +266,17 @@ def update_exch_receipt_table(start_date, end_date, flavor='mysql'):
                 print("no data for %s" % str(run_d))
                 excl_dates.append(run_d)
             else:
-                df['rcpt_label'] = df['var_label']
+                df['exch'] = df['var'].apply(lambda x: symbol_var.symbol_market(x).upper())
+                df['prod'] = df['var']
+                flag = df['exch'].isin(['DCE', 'SHFE', 'GFEX', 'INE'])
+                df.loc[flag, 'prod'] = df.loc[flag, 'prod'].str.lower()
+                flag = df['prod'].isin(product_code['INE'])
+                df['exch'][flag] = 'INE'
+                df['rcpt_label'] = df['prod']
                 df['date'] = df['date'].apply(lambda x: datetime.datetime.strptime(x, '%Y%m%d'))
                 df['rcpt_num'] = df['receipt'].astype('int32')
                 df = df[['date', 'exch', 'prod', 'rcpt_label', 'rcpt_num']]
-                flag = df['prod'].isin(product_code['INE'])
-                df['exch'][flag] = 'INE'
-                save_data('exch_receipts', df, flavor = flavor)
+                save_data('exch_receipts', df, flavor=flavor)
         else:
             warnings.warn(f"{run_d.strftime('%Y%m%d')}非交易日")
         run_d -= datetime.timedelta(days=1)
