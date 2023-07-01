@@ -266,6 +266,9 @@ def update_exch_receipt_table(start_date, end_date, flavor='mysql'):
                 print("no data for %s" % str(run_d))
                 excl_dates.append(run_d)
             else:
+                df['receipt'] = df['receipt'].fillna(0)
+                flag = df['receipt'].fillna(0).astype('str').str.isnumeric()
+                df.loc[~flag, 'receipt'] = 0
                 df['exch'] = df['var'].apply(lambda x: symbol_var.symbol_market(x).upper())
                 df['prod'] = df['var']
                 flag = df['exch'].isin(['DCE', 'SHFE', 'GFEX', 'INE'])
