@@ -7,6 +7,7 @@ from pycmqlib3.utility import dataseries, base
 from pycmqlib3.utility.misc import inst2product, prod2exch, inst2contmth, day_shift, sign, product_lotsize, CHN_Holidays, nearby
 import pycmqlib3.analytics.data_handler as dh
 from pycmqlib3.analytics.tstool import *
+from pycmqlib3.strategy.strat_util import generate_strat_position
 
 ferrous_products_mkts = ['rb', 'hc', 'i', 'j', 'jm']
 ferrous_mixed_mkts = ['ru', 'FG', 'ZC', 'SM', "SF"]
@@ -79,26 +80,36 @@ leadlag_port = {
 }
 
 port_pos_config = {
-    # 'PT_FACTPORT3_CAL_30b': {
-    #     'pos_loc': 'C:/dev/pyktrader3/process/paper_sim1',
-    #     'roll': 'CAL_30b',
-    #     'shift_mode': 1,
-    #     'strat_list': [
-    #         ('PT_FACTPORT3.json', 4600, 's1'),
-    #         ('PT_FACTPORT_HCRB.json', 30000, 's1'),
-    #     ], },
-    # 'PTSIM1_FACTPORT1_hot': {
-    #     'pos_loc': 'C:/dev/pyktrader3/process/paper_sim1',
-    #     'roll': 'hot',
-    #     'shift_mode': 2,
-    #     'strat_list': [
-    #         ('PTSIM1_FACTPORT1.json', 10300, 'd1'),
-    #         ('PTSIM1_HCRB.json', 26400, 'd1'),
-    #         ('PTSIM1_LEADLAG1.json', 16600, 'd1'),
-    #     ], },
+    'PT_FACTPORT3_CAL_30b': {
+        'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
+        'roll': 'CAL_30b',
+        'shift_mode': 1,
+        'strat_list': [
+            ('PT_FACTPORT3.json', 4600, 's1'),
+            ('PT_FACTPORT_HCRB.json', 30000, 's1'),
+        ], },
+    'PT_FACTPORT1_hot': {
+        'pos_loc': 'C:/dev/pyktrader3/process/pt_test1',
+        'roll': 'hot',
+        'shift_mode': 2,
+        'strat_list': [
+            ('PT_FACTPORT1.json', 10300, 'd1'),
+            ('PT_FACTPORT_HCRB.json', 26400, 'd1'),
+            ('PT_FACTPORT_LEADLAG1.json', 16600, 'd1'),
+        ], },
+    'PTSIM1_hot': {
+        'pos_loc': 'C:/dev/pyktrader3/process/pt_test1',
+        'roll': 'hot',
+        'shift_mode': 2,
+        'strat_list': [
+            ('PT_FACTPORT1.json', 10000, 'd1'),
+            ('PT_FACTPORT_HCRB.json', 20000, 'd1'),
+            ('PT_FACTPORT_LEADLAG1.json', 6000, 'd1'),
+            ('PT_FACTPORT_LEADLAG1.json', 9000, 'd1'),
+        ], },
 }
 
-pos_chg_notification = [] #'PTSIM1_FACTPORT1_hot'
+pos_chg_notification = ['PT_FACTPORT1_hot']
 
 
 def update_factor_db(xdf, field, config, dbtable='fut_fact_data', flavor='mysql', start_date=None, end_date=None):
@@ -346,7 +357,7 @@ def update_factor_data(product_list, scenarios, start_date, end_date,
 
     #leader-lagger
     fact_name = 'leadlag_d_mid'
-    leadlag_products = ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SM', 'UR', 'cu', 'al', 'zn', 'sn', 'ss', 'ni',
+    leadlag_products = ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SM', 'SF', 'UR', 'cu', 'al', 'zn', 'sn', 'ss', 'ni',
                         'l', 'pp', 'v', 'TA', 'sc', 'eb', 'eg', 'y', 'p', 'OI']
     for sector in leadlag_port:
         for asset in leadlag_port[sector]['lead']:
@@ -372,105 +383,6 @@ def update_factor_data(product_list, scenarios, start_date, end_date,
                 update_factor_db(asset_df, fact_name, fact_config, start_date=update_start, end_date=end_date,
                                  flavor=flavor)
     return factor_repo
-
-
-def generate_strat_position(cur_date, prod_list, factor_repo,
-                            repo_type='asset',
-                            roll_label='CAL_30b',
-                            freq='s1',
-                            pos_scaler=1000,
-                            fact_db_table='fut_fact_data',
-                            hist_fact_lookback=100,
-                            shift_mode=1):
-    if roll_label == 'CAL_30b':
-        freq = 's1'
-    fact_data = {}
-    factor_pos = {}
-    target_pos = {}
-    vol_weight = [1.0] * len(prod_list)
-    start_date = day_shift(cur_date, '-%sb' % (str(hist_fact_lookback)), CHN_Holidays)
-    if shift_mode == 1:
-        vol_key = 'atr'
-    else:
-        vol_key = 'pct_vol'
-    vol_df = load_factor_data(prod_list,
-                              factor_list=[vol_key],
-                              roll_label=roll_label,
-                              start=start_date,
-                              end=cur_date,
-                              freq=freq,
-                              db_table=fact_db_table)
-    vol_df = pd.pivot_table(vol_df[vol_df['fact_name'] == vol_key], values='fact_val',
-                            index=['date', 'serial_key'],
-                            columns=['product_code'],
-                            aggfunc='last')
-
-    fact_list = list(set([factor_repo[fact]['name'] for fact in factor_repo.keys()]))
-    if repo_type == 'port':
-        df = load_factor_data([], factor_list=fact_list, roll_label=roll_label,
-                              start=start_date, end=cur_date, freq=freq, db_table=fact_db_table)
-    else:
-        df = load_factor_data(prod_list, factor_list=fact_list, roll_label=roll_label,
-                              start=start_date, end=cur_date, freq=freq, db_table=fact_db_table)
-    for idx, prod in enumerate(prod_list):
-        vol_weight[idx] = vol_weight[idx]*pos_scaler/(vol_df[prod].iloc[-1]*product_lotsize[prod])
-    if repo_type == 'port':
-        xdf = pd.pivot_table(df, values='fact_val', index=['date', 'serial_key'],
-                             columns=['fact_name'], aggfunc='last')
-        for fact in factor_repo:
-            fact_data[fact] = pd.concat([xdf[fact]] * len(prod_list), axis=1)
-            fact_data[fact].columns = prod_list
-    else:
-        for fact in factor_repo:
-            xdf = pd.pivot_table(df[df['fact_name'] == factor_repo[fact]['name']],
-                                 values='fact_val',
-                                 index=['date', 'serial_key'],
-                                 columns=['product_code'],
-                                 aggfunc='last')
-            for prod in prod_list:
-                if prod not in xdf.columns:
-                    xdf[prod] = np.nan
-            fact_data[fact] = xdf[prod_list]
-    pos_sum = pd.DataFrame()
-
-    for fact in factor_repo:
-        rebal_freq = factor_repo[fact]['rebal']
-        weight = factor_repo[fact]['weight']
-        factor_pos[fact] = fact_data[fact].copy()
-        if factor_repo[fact]['type'] != 'pos':
-            if 'xs' in factor_repo[fact]['type']:
-                xs_split = factor_repo[fact]['type'].split('-')
-                if len(xs_split) <= 1:
-                    xs_signal = 'rank_cutoff'
-                else:
-                    xs_signal = xs_split[1]
-
-                if xs_signal == 'rank_cutoff':
-                    cutoff = factor_repo[fact]['threshold']
-                    lower_rank = int(len(prod_list) * cutoff) + 1
-                    upper_rank = len(prod_list) - int(len(prod_list) * cutoff)
-                    rank_df = factor_pos[fact].rank(axis=1)
-                    factor_pos[fact] = rank_df.gt(upper_rank, axis=0) * 1.0 - rank_df.lt(lower_rank, axis=0) * 1.0
-                elif xs_signal == 'demedian':
-                    median_ts = factor_pos[fact].quantile(0.5, axis=1)
-                    factor_pos[fact] = factor_pos[fact].sub(median_ts, axis=0)
-                elif xs_signal == 'demean':
-                    mean_ts = factor_pos[fact].mean(axis=1)
-                    factor_pos[fact] = factor_pos[fact].sub(mean_ts, axis=0)
-                elif xs_signal == 'rank':
-                    rank_df = factor_pos[fact].rank(axis=1)
-                    median_ts = rank_df.quantile(0.5, axis=1)
-                    factor_pos[fact] = rank_df.sub(median_ts, axis=0)/len(prod_list) * 2.0
-                elif len(xs_signal) > 0:
-                    print('unsupported xs signal types')
-            factor_pos[fact] = factor_pos[fact].rolling(rebal_freq).mean().fillna(0.0)
-        fact_pos = pd.Series(factor_pos[fact].iloc[-1] * weight, name=fact)
-        pos_sum = pos_sum.append(fact_pos)
-    pos_sum = pos_sum[prod_list].round(2)
-    net_pos = pos_sum.sum()
-    for idx, prodcode in enumerate(prod_list):
-        target_pos[prodcode] = net_pos[prodcode] * vol_weight[idx]
-    return target_pos, pos_sum
 
 
 def create_strat_json(product_list, freq, roll_rule, factor_repo,
@@ -520,7 +432,10 @@ def update_port_position(run_date=datetime.date.today()):
         roll = port_pos_config[port_name]['roll']
         shift_mode = port_pos_config[port_name]['shift_mode']
         port_file = port_name
-
+        if shift_mode == 1:
+            vol_key = 'atr'
+        else:
+            vol_key = 'pct_vol'
         for strat_file, pos_scaler, freq in port_pos_config[port_name]['strat_list']:
             config_file = f'{pos_loc}/settings/{strat_file}'
             with open(config_file, 'r') as fp:
@@ -536,15 +451,14 @@ def update_port_position(run_date=datetime.date.today()):
                 product = inst2product(under)
                 product_list.append(product)
 
-            strat_target, strat_sum = generate_strat_position(run_date, product_list, factor_repo,
-                                                            repo_type=repo_type,
-                                                            roll_label=roll,
-                                                            pos_scaler=pos_scaler,
-                                                            freq=freq,
-                                                            hist_fact_lookback=20,
-                                                            shift_mode=shift_mode)
-            pos_by_strat[strat_file] = strat_target
-
+            res = generate_strat_position(run_date, product_list, factor_repo,
+                                          repo_type=repo_type,
+                                          roll_label=roll,
+                                          pos_scaler=pos_scaler,
+                                          freq=freq,
+                                          hist_fact_lookback=20,
+                                          vol_key=vol_key)
+            strat_target = res['target_pos']
             for prod in strat_target:
                 if prod not in target_pos:
                     target_pos[prod] = 0
