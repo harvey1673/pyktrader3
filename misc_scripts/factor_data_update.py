@@ -8,6 +8,7 @@ from pycmqlib3.utility.misc import inst2product, prod2exch, inst2contmth, day_sh
 import pycmqlib3.analytics.data_handler as dh
 from pycmqlib3.analytics.tstool import *
 from pycmqlib3.strategy.strat_util import generate_strat_position
+from pycmqlib3.strategy.signal_repo import leadlag_port_d
 
 ferrous_products_mkts = ['rb', 'hc', 'i', 'j', 'jm']
 ferrous_mixed_mkts = ['ru', 'FG', 'ZC', 'SM', "SF"]
@@ -52,32 +53,6 @@ sim_start_dict = {'c': datetime.date(2011, 1, 1), 'm': datetime.date(2011, 1, 1)
                   }
 
 field_list = ['open', 'high', 'low', 'close', 'volume', 'openInterest', 'contract', 'shift']
-leadlag_port = {
-    'ferrous': {'lead': ['hc', 'rb', ],
-                'lag': ['rb', 'hc', 'i', 'j', 'jm', 'SM', ],
-                'param_rng': [40, 60, 2],
-                },
-    'constrs': {'lead': ['hc', 'rb', 'v'],
-                'lag': ['FG', 'SA', 'v', 'UR', ],
-                'param_rng': [40, 60, 2],
-                },
-    'petchem': {'lead': ['v'],
-                'lag': ['TA', 'MA', 'pp', 'eg', 'eb', 'PF', ],
-                'param_rng': [40, 60, 2],
-                },
-    'base': {'lead': ['al'],
-             'lag': ['al', 'ni', 'sn', 'ss', ],  # 'zn', 'cu'
-             'param_rng': [40, 60, 2],
-             },
-    'oil': {'lead': ['sc'],
-            'lag': ['sc', 'pg', 'bu', ],
-            'param_rng': [20, 30, 2],
-            },
-    'bean': {'lead': ['b'],
-             'lag': ['p', 'y', 'OI', ],
-             'param_rng': [60, 80, 2],
-             },
-}
 
 port_pos_config = {
     'PT_FACTPORT3_CAL_30b': {
@@ -359,8 +334,9 @@ def update_factor_data(product_list, scenarios, start_date, end_date,
     fact_name = 'leadlag_d_mid'
     leadlag_products = ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SM', 'SF', 'UR', 'cu', 'al', 'zn', 'sn', 'ss', 'ni',
                         'l', 'pp', 'v', 'TA', 'sc', 'eb', 'eg', 'y', 'p', 'OI']
-    for sector in leadlag_port:
-        for asset in leadlag_port[sector]['lead']:
+
+    for sector in leadlag_port_d:
+        for asset in leadlag_port_d[sector]['lead']:
             if asset not in data_cache:
                 xdf = dataseries.nearby(asset, 1, start_date=sdate, end_date=end_date, shift_mode=shift_mode,
                                         freq='d', roll_name='hot',
@@ -369,13 +345,13 @@ def update_factor_data(product_list, scenarios, start_date, end_date,
     for asset in leadlag_products:
         fact_config['product_code'] = asset
         fact_config['exch'] = prod2exch(asset)
-        for sector in leadlag_port:
-            if asset in leadlag_port[sector]['lag']:
+        for sector in leadlag_port_d:
+            if asset in leadlag_port_d[sector]['lag']:
                 signal_list = []
-                for lead_prod in leadlag_port[sector]['lead']:
+                for lead_prod in leadlag_port_d[sector]['lead']:
                     feature_ts = data_cache[lead_prod]['close']
                     signal_ts = calc_conv_signal(feature_ts.dropna(), 'qtl',
-                                                 leadlag_port[sector]['param_rng'], signal_cap=None)
+                                                 leadlag_port_d[sector]['param_rng'], signal_cap=None)
                     signal_list.append(signal_ts)
                 signal_ts = pd.concat(signal_list, axis=1).mean(axis=1)
                 asset_df = data_cache[asset].copy()

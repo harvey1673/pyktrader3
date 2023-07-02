@@ -35,6 +35,33 @@ signal_store = {
     'hc_rb_diff_lvl_fast': ('hc_rb_diff', 'zscore', [20, 40, 2], '', '', True, 'price'),
 }
 
+leadlag_port_d = {
+    # 'ferrous': {'lead': ['hc', 'rb', ],
+    #             'lag': [],
+    #             'param_rng': [40, 80, 2],
+    #             },
+    'constrs': {'lead': ['hc', 'rb', 'v'],
+                'lag': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SA', 'v', 'UR', 'SM', 'SF'],
+                'param_rng': [40, 80, 2],
+                },
+    'petchem': {'lead': ['v'],
+                'lag': ['TA', 'MA', 'pp', 'eg', 'eb', 'PF', ],
+                'param_rng': [40, 80, 2],
+                },
+    'base': {'lead': ['al'],
+             'lag': ['al', 'ni', 'sn', 'ss', ],  # 'zn', 'cu'
+             'param_rng': [40, 80, 2],
+             },
+    'oil': {'lead': ['sc'],
+            'lag': ['sc', 'pg', 'bu', ],
+            'param_rng': [20, 30, 2],
+            },
+    'bean': {'lead': ['b'],
+             'lag': ['p', 'y', 'OI', ],
+             'param_rng': [60, 80, 2],
+             },
+}
+
 
 def hc_rb_diff(df, input_args):
     shift_mode = input_args['shift_mode']
@@ -56,32 +83,7 @@ def hc_rb_diff(df, input_args):
 
 
 def leader_lagger(df, input_args):
-    leadlag_port = {
-        # 'ferrous': {'lead': ['hc', 'rb', ],
-        #             'lag': [],
-        #             'param_rng': [40, 80, 2],
-        #             },
-        'constrs': {'lead': ['hc', 'rb', 'v'],
-                    'lag': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SA', 'v', 'UR', 'SM', 'SF'],
-                    'param_rng': [40, 80, 2],
-                    },
-        'petchem': {'lead': ['v'],
-                    'lag': ['TA', 'MA', 'pp', 'eg', 'eb', 'PF', ],
-                    'param_rng': [40, 80, 2],
-                    },
-        'base': {'lead': ['al'],
-                 'lag': ['al', 'ni', 'sn', 'ss', ],  # 'zn', 'cu'
-                 'param_rng': [40, 80, 2],
-                 },
-        'oil': {'lead': ['sc'],
-                'lag': ['sc', 'pg', 'bu', ],
-                'param_rng': [20, 30, 2],
-                },
-        'bean': {'lead': ['b'],
-                 'lag': ['p', 'y', 'OI', ],
-                 'param_rng': [60, 80, 2],
-                 },
-    }
+    leadlag_port = leadlag_port_d
     product_list = input_args['product_list']
     signal_cap = input_args.get('signal_cap', None)
     conv_func = input_args.get('conv_func', 'qtl')
