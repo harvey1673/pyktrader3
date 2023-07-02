@@ -56,35 +56,27 @@ field_list = ['open', 'high', 'low', 'close', 'volume', 'openInterest', 'contrac
 
 port_pos_config = {
     'PT_FACTPORT3_CAL_30b': {
-        'pos_loc': 'C:/dev/pyktrader3/process/pt_test3',
+        'pos_loc': 'C:/dev/pyktrader3/process/paper_sim1',
         'roll': 'CAL_30b',
         'shift_mode': 1,
         'strat_list': [
-            ('PT_FACTPORT3.json', 4600, 's1'),
-            ('PT_FACTPORT_HCRB.json', 30000, 's1'),
+            ('PTSIM1_FACTPORT1.json', 10000, 's1'),
+            ('PTSIM1_HRCRB.json', 20000, 's1'),
+            ('PTSIM1_LL.json', 6000, 's1'),
         ], },
-    'PT_FACTPORT1_hot': {
-        'pos_loc': 'C:/dev/pyktrader3/process/pt_test1',
+    'PTSIM1_FACTPORT1_hot': {
+        'pos_loc': 'C:/dev/pyktrader3/process/paper_sim1',
         'roll': 'hot',
         'shift_mode': 2,
         'strat_list': [
-            ('PT_FACTPORT1.json', 10300, 'd1'),
-            ('PT_FACTPORT_HCRB.json', 26400, 'd1'),
-            ('PT_FACTPORT_LEADLAG1.json', 16600, 'd1'),
-        ], },
-    'PTSIM1_hot': {
-        'pos_loc': 'C:/dev/pyktrader3/process/pt_test1',
-        'roll': 'hot',
-        'shift_mode': 2,
-        'strat_list': [
-            ('PT_FACTPORT1.json', 10000, 'd1'),
-            ('PT_FACTPORT_HCRB.json', 20000, 'd1'),
-            ('PT_FACTPORT_LEADLAG1.json', 6000, 'd1'),
-            ('PT_FACTPORT_LEADLAG1.json', 9000, 'd1'),
+            ('PTSIM1_FACTPORT1.json', 10000, 'd1'),
+            ('PTSIM1_HRCRB.json', 20000, 'd1'),
+            ('PTSIM1_LL.json', 6000, 'd1'),
+            ('PTSIM1_FUNFER.json', 8000, 'd1'),
         ], },
 }
 
-pos_chg_notification = ['PT_FACTPORT1_hot']
+pos_chg_notification = ['PT_FACTPORT1_hot',]
 
 
 def update_factor_db(xdf, field, config, dbtable='fut_fact_data', flavor='mysql', start_date=None, end_date=None):
@@ -435,6 +427,7 @@ def update_port_position(run_date=datetime.date.today()):
                                           hist_fact_lookback=20,
                                           vol_key=vol_key)
             strat_target = res['target_pos']
+            pos_by_strat[strat_file] = strat_target
             for prod in strat_target:
                 if prod not in target_pos:
                     target_pos[prod] = 0
