@@ -1,5 +1,6 @@
 import pandas as pd
 from pycmqlib3.analytics.tstool import *
+from pycmqlib3.utility.misc import CHN_Holidays
 
 
 signal_store = {
@@ -13,31 +14,25 @@ signal_store = {
 
     'io_port_inv_lvl_slow': ('io_inv_imp_31ports_w', 'zscore', [240, 255, 5], '', 'pct_change', False, 'price'),
 
-    'steel_major5_inv_lvl_fast': ('steel_major5_inv', 'qtl', [20, 32, 4], '', 'diff', False, 'W-Fri'),
-    'steel_social_inv_lvl_fast': ('steel_inv_social', 'zscore', [20, 32, 4], '', 'diff', False, 'W-Fri'),
-    'rebar_inv_social_lyoy_fast': ('rebar_inv_social', 'zscore', [20, 42, 2], 'lunar_yoy_wk', 'diff', False, 'W-Fri'),
-    'wirerod_inv_social_lyoy_fast': (
-    'wirerod_inv_social', 'zscore', [20, 42, 2], 'lunar_yoy_w', 'diff', False, 'W-Fri'),
-    'hrc_inv_social_lyoy_fast': ('hrc_inv_social', 'zscore', [20, 42, 2], 'lunar_yoy_wk', 'diff', False, 'W-Fri'),
-    'crc_inv_social_lyoy_fast': ('crc_inv_social', 'zscore', [20, 42, 2], 'lunar_yoy_wk', 'diff', False, 'W-Fri'),
+    'steel_inv_lvl_fast': ('steel_major5_inv', 'qtl', [20, 32, 4], '', 'diff', False, 'W-Fri'),
+    'st_soinv_lvl_fast': ('steel_inv_social', 'zscore', [20, 32, 4], '', 'diff', False, 'W-Fri'),
+    'rb_soinv_lyoy_fast': ('rebar_inv_social', 'zscore', [20, 42, 2], 'lunar_yoy_day', 'diff', False, 'W-Fri'),
+    'wr_soinv_lyoy_fast': ('wirerod_inv_social', 'zscore', [20, 42, 2], 'lunar_yoy_day', 'diff', False, 'W-Fri'),
+    'hc_soinv_lyoy_fast': ('hrc_inv_social', 'zscore', [20, 42, 2], 'lunar_yoy_day', 'diff', False, 'W-Fri'),
+    'cc_soinv_lyoy_fast': ('crc_inv_social', 'zscore', [20, 42, 2], 'lunar_yoy_day', 'diff', False, 'W-Fri'),
 
     'billet_inv_chg_slow': ('billet_inv_social_ts', 'zscore', [240, 252, 2], '', 'diff', False, 'price'),
 
     'pbf_prem_yoy': ('pbf_prem', 'zscore', [20, 42, 2], 'df250', 'diff', True),
     # 'pbf_prem_lyoy_mom': ('pbf_prem', 'qtl', [12, 20, 2], 'lunar_yoy_wk', 'diff', True),
-
     'cons_steel_lyoy_slow': (
     'cons_steel_transact_vol_china', 'zscore', [240, 255, 5], 'lunar_yoy_day', 'diff', True, 'price'),
-
     # 'margin_sea_lvl_mid': ('hrc_margin_sb', 'zscore', [40, 82, 2], '', 'pct_change', True, 'price'),
     'sea_export_arb_lvl_mid': ('hrc_exp_sea_arb', 'zscore', [40, 82, 2], '', 'pct_change', True, 'price'),
-
     'steel_margin_lvl_fast': ('margin_hrc_macf', 'qtl', [20, 40, 2], '', 'pct_change', True, 'price'),
     'strip_hsec_lvl_mid': ('strip_hsec', 'qtl', [60, 80, 2], '', 'pct_change', True, 'price'),
     'macf_cfd_lvl_mid': ('macf_cfd', 'qtl', [40, 82, 2], '', 'pct_change', True, 'price'),
-
     'hc_rb_diff_lvl_fast': ('hc_rb_diff', 'zscore', [20, 40, 2], '', '', True, 'price'),
-
 }
 
 
@@ -62,21 +57,21 @@ def hc_rb_diff(df, input_args):
 
 def leader_lagger(df, input_args):
     leadlag_port = {
-        'ferrous': {'lead': ['hc', 'rb', ],
-                    'lag': ['rb', 'hc', 'i', 'j', 'jm', 'SM', ],
-                    'param_rng': [40, 60, 2],
-                    },
+        # 'ferrous': {'lead': ['hc', 'rb', ],
+        #             'lag': [],
+        #             'param_rng': [40, 80, 2],
+        #             },
         'constrs': {'lead': ['hc', 'rb', 'v'],
-                    'lag': ['FG', 'SA', 'v', 'UR', ],
-                    'param_rng': [40, 60, 2],
+                    'lag': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SA', 'v', 'UR', 'SM', 'SF'],
+                    'param_rng': [40, 80, 2],
                     },
         'petchem': {'lead': ['v'],
                     'lag': ['TA', 'MA', 'pp', 'eg', 'eb', 'PF', ],
-                    'param_rng': [40, 60, 2],
+                    'param_rng': [40, 80, 2],
                     },
         'base': {'lead': ['al'],
                  'lag': ['al', 'ni', 'sn', 'ss', ],  # 'zn', 'cu'
-                 'param_rng': [40, 60, 2],
+                 'param_rng': [40, 80, 2],
                  },
         'oil': {'lead': ['sc'],
                 'lag': ['sc', 'pg', 'bu', ],
@@ -104,4 +99,61 @@ def leader_lagger(df, input_args):
                 break
             else:
                 signal_df[asset] = 0
+    return signal_df
+
+
+def funda_signal_by_name(spot_df, signal_name, price_df=None, signal_cap=None):
+    feature, signal_func, param_rng, proc_func, chg_func, bullish, freq = signal_store[signal_name]
+    cdates = pd.date_range(start=spot_df.index[0], end=spot_df.index[-1], freq='D')
+    bdates = pd.bdate_range(start=spot_df.index[0], end=spot_df.index[-1], freq='C', holidays=CHN_Holidays)
+    if freq == 'price':
+        feature_ts = spot_df[feature].reindex(index=cdates).ffill().reindex(index=bdates)
+    elif len(freq) > 0:
+        feature_ts = spot_df[feature].reindex(index=cdates).ffill().reindex(
+            index=pd.date_range(start=spot_df.index[0], end=spot_df.index[-1], freq=freq))
+    else:
+        feature_ts = spot_df[feature].dropna()
+
+    if 'yoy' in proc_func:
+        if 'lunar' in proc_func:
+            label_func = lunar_label
+            label_args = {}
+        else:
+            label_func = calendar_label
+            label_args = {'anchor_date': {'month': 1, 'day': 1}}
+        if '_wk' in proc_func:
+            group_col = 'label_wk'
+        else:
+            group_col = 'label_day'
+        feature_ts = yoy_generic(feature_ts, label_func=label_func, group_col=group_col, func=chg_func,
+                                 label_args=label_args)
+    elif 'df' in proc_func:
+        n_diff = int(proc_func[2:])
+        feature_ts = getattr(feature_ts, chg_func)(n_diff)
+
+    if signal_func == 'seasonal_score_w':
+        signal_ts = seasonal_score(feature_ts.to_frame(),
+                                   backward=10,
+                                   forward=10,
+                                   rolling_years=3,
+                                   min_obs=10).reindex(index=bdates).ffill()
+    elif signal_func == 'seasonal_score_d':
+        signal_ts = seasonal_score(feature_ts.to_frame(), backward=15, forward=15, rolling_years=3, min_obs=30)
+    elif len(signal_func) > 0:
+        signal_ts = calc_conv_signal(feature_ts, signal_func=signal_func, param_rng=param_rng, signal_cap=signal_cap)
+    else:
+        signal_ts = feature_ts
+    signal_ts = signal_ts.reindex(index=bdates).ffill().dropna()
+    if not bullish:
+        signal_ts = -signal_ts
+    return signal_ts
+
+
+def custom_funda_signal(df, input_args):
+    product_list = input_args['product_list']
+    signal_cap = input_args.get('signal_cap', None)
+    funda_df = input_args['funda_data']
+    signal_name = input_args['signal_name']
+    signal_ts = funda_signal_by_name(funda_df, signal_name, price_df=df, signal_cap=signal_cap)
+    signal_df = pd.DataFrame(dict([(asset, signal_ts.shift(1)) for asset in product_list]))
     return signal_df
