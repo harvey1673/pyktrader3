@@ -50,5 +50,5 @@ if __name__ == "__main__":
         tday = datetime.datetime.strptime(args[0], "%Y%m%d").date()
     else:
         tday = datetime.date.today()
-    job_status, pos_update = update_port_pos(tday=datetime.date.today(), email_notify=True)
+    job_status, pos_update = update_port_pos(tday=datetime.date.today(), email_notify=EMAIL_NOTIFY)
     print(job_status, pos_update)
