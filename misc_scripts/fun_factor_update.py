@@ -28,7 +28,7 @@ def get_fun_data(start_date, end_date):
         'io_inv_dom_mill(64)',
         'io_invdays_imp_mill(64)'
     ]:
-        spot_df[col] = spot_df[col].ffill().shift(-3).reindex(
+        spot_df[col] = spot_df[col].shift(-3).ffill().reindex(
             index=pd.date_range(start=spot_df.index[0], end=spot_df.index[-1], freq='W-Fri'))
     spot_df = process_spot_df(spot_df)
     return spot_df
@@ -90,6 +90,7 @@ def update_fun_factor(run_date=datetime.date.today(), flavor='mysql'):
             'serial_key': '0',
             'serial_no': 0,
         }
+        #print(factor_name, signal_ts.tail(10))
         for asset in update_factors[factor_name]:
             fact_config['product_code'] = asset
             fact_config['exch'] = prod2exch(asset)
