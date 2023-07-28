@@ -31,31 +31,32 @@ month_code_map = {'f': 1,
                   'x': 11,
                   'z': 12}
 
-product_code = {'SHFE': ['cu', 'cu_Opt', 'al', 'ao', 'zn', 'al_Opt', 'zn_Opt', 'pb', 'wr', 'rb', 'fu', 'ru', 'ru_Opt', \
-                         'bu', 'hc', 'ag', 'au', 'au_Opt', 'sn', 'ni', 'sp', 'ss'],
-                'CFFEX': ['IF', 'TF', 'IO_Opt', 'T', 'TS', 'TL', 'IH', 'IC', 'IM', 'MO_Opt',],
-                'DCE': ['c', 'c_Opt', 'cs', 'j', 'jd', 'a', 'a_Opt', 'b', 'b_Opt','m', 'm_Opt', 'y', 'y_Opt', 'p', 'p_Opt',\
-                        'l', 'v', 'pp', 'l_Opt', 'v_Opt', 'pp_Opt', \
+product_code = {'SHFE': ['cu', 'cu_Opt', 'al', 'ao', 'zn', 'al_Opt', 'zn_Opt', 'pb', 'wr', 'rb', 'fu', 'ru', 'ru_Opt',
+                         'bu', 'hc', 'ag', 'au', 'au_Opt', 'sn', 'ni', 'sp', 'ss', 'br', 'br_Opt'],
+                'CFFEX': ['IF', 'TF', 'IO_Opt', 'T', 'TS', 'TL', 'IH', 'IC', 'IM', 'MO_Opt'],
+                'DCE': ['c', 'c_Opt', 'cs', 'j', 'jd', 'a', 'a_Opt', 'b', 'b_Opt', 'm', 'm_Opt', 'y', 'y_Opt',
+                        'p', 'p_Opt', 'l', 'v', 'pp', 'l_Opt', 'v_Opt', 'pp_Opt',
                         'jm', 'i', 'i_Opt', 'fb', 'bb', 'eg', 'rr', 'eb', 'pg', 'pg_Opt', 'lh'],
                 # 'ER', 'WS', 'WT',
-                'CZCE': ['WH', 'PM', 'CF', 'CF_Opt', 'CY', 'SR', 'SR_Opt', \
-                         'TA', 'TA_Opt', 'OI', 'OI_Opt', 'RI', 'ME', 'FG', 'RS', 'RM', 'RM_Opt', 'TC', \
-                         'JR', 'LR', 'MA', 'MA_Opt', 'SM', 'SF', 'ZC', 'ZC_Opt', 'AP', 'CJ', 'UR', 'SA', 'PF', 'PK', 'PK_Opt'],
+                'CZCE': ['WH', 'PM', 'CF', 'CF_Opt', 'CY', 'SR', 'SR_Opt',
+                         'TA', 'TA_Opt', 'OI', 'OI_Opt', 'RI', 'ME', 'FG', 'RS', 'RM', 'RM_Opt', 'TC',
+                         'JR', 'LR', 'MA', 'MA_Opt', 'SM', 'SF', 'ZC', 'ZC_Opt', 'AP', 'CJ', 'UR', 'SA',
+                         'PF', 'PK', 'PK_Opt'],
                 'INE': ['sc', 'nr', 'lu', 'bc'],
-                'GFEX': ['si', 'si_Opt'],
-                'SGX': ['fef', 'iolp', 'iac', 'm65f',], \
-                'LME': ['lsc', 'lsr', 'lhc',], \
-                'NYMEX': ['nhr', ],}
+                'GFEX': ['si', 'si_Opt', 'lc', 'lc_Opt'],
+                'SGX': ['fef', 'iolp', 'iac', 'm65f'],
+                'LME': ['lsc', 'lsr', 'lhc'],
+                'NYMEX': ['nhr', ]}
 
 CHN_Stock_Exch = {
     'SSE': ["000300", "510180", "510050", "11000011", "11000016", "11000021", "11000026", "000002", "000003", "000004",
             "000005", "000006", "11000031", "11000036", "10000036"],
     'SZE': ['399001', '399004', '399007']}
 
-option_market_products = ['m_Opt', 'c_Opt', 'a_Opt', 'b_Opt', 'y_Opt', 'p_Opt', \
-    'i_Opt', 'pg_Opt', 'l_Opt', 'pp_Opt', 'v_Opt', \
-    'OI_Opt', 'PK_Opt', 'SR_Opt', 'CF_Opt', 'TA_Opt', 'MA_Opt', 'RM_Opt', 'ZC_Opt',\
-    'cu_Opt', 'al_Opt', 'zn_Opt', 'ru_Opt', 'au_Opt', 'si_Opt',\
+option_market_products = ['m_Opt', 'c_Opt', 'a_Opt', 'b_Opt', 'y_Opt', 'p_Opt',
+    'i_Opt', 'pg_Opt', 'l_Opt', 'pp_Opt', 'v_Opt',
+    'OI_Opt', 'PK_Opt', 'SR_Opt', 'CF_Opt', 'TA_Opt', 'MA_Opt', 'RM_Opt', 'ZC_Opt',
+    'cu_Opt', 'al_Opt', 'zn_Opt', 'ru_Opt', 'au_Opt', 'si_Opt', 'lc_Opt', 'br_Opt',
     'ETF_Opt', 'IO_Opt', 'MO_Opt',]
 
 night_session_markets = {'cu': 1,
@@ -79,6 +80,7 @@ night_session_markets = {'cu': 1,
                          'au_Opt': 2,
                          'ru': 3,
                          'nr': 3,
+                         'br': 3,
                          'ru_Opt': 3,
                          'p': 3,
                          'p_Opt': 3,
@@ -265,6 +267,7 @@ product_lotsize = {'zn': 5,
                    'bc': 5,
                    'ru': 10,
                    'nr': 10,
+                   'br': 5,
                    'ru_Opt': 10,
                    'rb': 10,
                    'fu': 10,
@@ -362,6 +365,7 @@ product_lotsize = {'zn': 5,
                    'lu': 10,
                    'si': 5,
                    'si_Opt': 5,
+                   'lc': 1,
                    }
 
 product_ticksize = {
@@ -373,6 +377,7 @@ product_ticksize = {
                     'ru': 5,
                     'nr': 5,
                     'ru_Opt': 1,
+                    'br': 5,
                     'rb': 1,
                     'fu': 1,
                     'al': 5,
@@ -469,6 +474,7 @@ product_ticksize = {
                     'lu': 1.0,
                     'si': 5.0,
                     'si_Opt': 5.0,
+                    'lc': 50,
                     }
 
 
@@ -872,6 +878,8 @@ def get_opt_expiry(fut_inst, cont_mth, exch=''):
         else:
             expiry_month = datetime.date(cont_yr - 1, 11, 30)
         expiry = workdays.workday(expiry_month, 5, CHN_Holidays)
+    elif product in ['sc']:
+        expiry = workdays.workday(expiry_month, -13, CHN_Holidays)
     elif product in ['cu', 'ru', 'au', 'al', 'zn']:
         expiry = workdays.workday(expiry_month, -5, CHN_Holidays)
     elif product in ['fef']:
