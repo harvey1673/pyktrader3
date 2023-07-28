@@ -1,17 +1,12 @@
 import platform
 
 LOCAL_PC_NAME = 'LAPTOP-ROG'
-
 EMAIL_NOTIFY = False
-
 NOTIFIERS = ['harveywu@gmail.com']
-
 PROXY_CREDENTIALS = {'user': 'xxxxxx', 'passwd': 'xxxxxxx'}
-
 skype_user = {'user': 'wei.x.wu', 'pwd': 'HW@9619252y'}
-
 LOCAL_NUTSTORE_FOLDER = 'C:/Users/harvey/Nutstore/1/Nutstore'
-
+IFIND_XL_HOTKEYS = ['alt', 'y', '3', 'y', 'h', 'enter']
 dbconfig = {
     'user': 'harvey',
     'password':'9619252y',

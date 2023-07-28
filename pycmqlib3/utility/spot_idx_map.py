@@ -50,6 +50,12 @@ index_map = {
     'S002917532': 'ibeam_25',
     'S002917550': 'angle_50x5',
     'S002917279': 'highwire_6.5',
+    'S002959491': 'femn65si17_neimeng',
+    'S002959498': 'femn65si17_tj',
+    'S002959495': 'femn65si17_guangxi',
+    'S004378612': 'coal_5500_jingtang',
+    'S002882871': 'coal_5500_sx_qhd',
+    'S002837009': 'coal_5500_qhd',
 
     'S004018814': 'io_loading_14ports_ausbzl',
     'S004226190': 'io_inv_imp_mill_0_200',
@@ -72,20 +78,62 @@ index_map = {
 
     'S008618440': 'SM_inv_mill',
     'S008618447': 'SF_inv_mill',
-    'S009097506': 'long_inv_social',
-    'S009045420': 'steel_inv_social',
 
-    'S005580634': 'rebar_inv_social',
-    'S005580633': 'wirerod_inv_social',
+    'S005814718': 'rebar_inv_social',
     'S005580635': 'hrc_inv_social',
+    'S005580633': 'wirerod_inv_social',
     'S005580639': 'crc_inv_social',
     'S005580636': 'plate_inv_social',
+
+    'S009045420': 'steel_inv_social',
+    'S009097506': 'long_inv_social',
 
     'S004378418': 'rebar_inv_mill',
     'S004378419': 'wirerod_inv_mill',
     'S004378420': 'hrc_inv_mill',
     'S004378421': 'crc_inv_mill',
     'S004378422': 'plate_inv_mill',
+
+    'S005580641': 'rebar_inv_all',
+    'S005580642': 'wirerod_inv_all',
+    'S005580640': 'hrc_inv_all',
+    'S005580646': 'crc_inv_all',
+    'S005580643': 'plate_inv_all',
+
+    'S004039553': 'billet_inv_social_ts',
+
+    'S004303031': 'cu_lme_0m_3m_spd',
+    'S004303035': 'al_lme_0m_3m_spd',
+    'S004303034': 'zn_lme_0m_3m_spd',
+    'S004303033': 'pb_lme_0m_3m_spd',
+    'S004303032': 'sn_lme_0m_3m_spd',
+    'S004303036': 'ni_lme_0m_3m_spd',
+
+    'S003018859': 'cu_lme_3m_15m_spd',
+    'S003018860': 'cu_lme_3m_27m_spd',
+    'S004077505': 'cu_spot_sh',
+    'S004077504': 'cu_spot_bj',
+    'S003048722': 'cu_dianjie_spot_basis',
+    'S003048723': 'cu_pingshui_spot_basis',
+    'S003048724': 'cu_shengshui_spot_basis',
+    'S003048725': 'cu_shifa_spot_basis',
+    'S003048726': 'cu_guixi_spot_basis',
+
+    'S003018862': 'al_lme_3m_15m_spd',
+    'S003018863': 'al_lme_3m_27m_spd',
+    'S003018865': 'ni_lme_3m_15m_spd',
+    'S003018866': 'ni_lme_3m_27m_spd',
+    'S003018868': 'sn_lme_3m_15m_spd',
+    'S003018871': 'zn_lme_3m_15m_spd',
+    'S003018872': 'zn_lme_3m_27m_spd',
+    'S003018874': 'pb_lme_3m_15m_spd',
+    'S003018875': 'pb_lme_3m_27m_spd',
+    'S003018876': 'aa_lme_0m_3m_spd',
+    'S003018877': 'aa_lme_3m_15m_spd',
+    'S003018878': 'aa_lme_3m_27m_spd',
+
+    'S004630824': 'cu_mine_tc',
+
 }
 
 

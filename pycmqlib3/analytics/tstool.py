@@ -27,6 +27,187 @@ def multislice_many(df, label_map):
     return df.loc[:, idx_slice]
 
 
+def apply_vat(df, field_list=None, index_col=None, direction=1, with_ret=True):
+    if direction == 1:
+        vat_fac = [1.17, 1.16, 1.13]
+    else:
+        vat_fac = [1/1.17, 1/1.16, 1/1.13]
+    if field_list is None:
+        field_list = [col for col in df.columns if col != index_col]
+    if index_col is None:
+        idx = df.index
+    else:
+        idx = df[index_col]
+    cutoff_dates = [datetime.date(1980, 1, 1), datetime.date(2018, 5, 1), datetime.date(2019, 4, 1), datetime.date(2100, 1, 1)]
+    if type(idx[-1]).__name__ == 'Timestamp':
+        cutoff_dates = [ pd.Timestamp(d) for d in cutoff_dates]
+    if with_ret:
+        xdf = df.copy()
+    else:
+        xdf = df
+    for sd, ed, vat in zip(cutoff_dates[:-1], cutoff_dates[1:], vat_fac):
+        ind = (idx < ed) & (idx >= sd)
+        for field in field_list:
+            xdf[field][ind] = xdf[field][ind]/vat
+    if with_ret:
+        return xdf
+
+
+def vat_adj(ts, direction=1):
+    vat_fac = [1.17, 1.16, 1.13]
+    if direction != 1:
+        vat_fac = [1/1.17, 1/1.16, 1/1.13]
+    cutoff_dates = ['1970-01-01', '2018-05-01', '2019-04-01', '2100-01-01']
+    cutoff_dates = [pd.Timestamp(d) for d in cutoff_dates]
+    xts = ts.copy()
+    for sd, ed, vat in zip(cutoff_dates[:-1], cutoff_dates[1:], vat_fac):
+        ind = (ts.index < ed) & (ts.index >= sd)
+        xts[ind] = xts[ind]/vat
+    return xts
+
+
+def rolling_percentile(ts, win=100, direction='max'):
+    ts = ts.dropna().copy(deep=True)
+    data = ts.to_numpy()
+    sw = sliding_window_view(data, win, axis=0).T
+    scores_np = np.empty(len(ts))
+    scores_np.fill(np.nan)
+    scores_np[(win-1):] = ((sw <= sw[-1:, ...]).sum(axis=0).T / sw.shape[0]).flatten()
+    scores_np_ts = (pd.Series(scores_np, index = ts.index) - 1/win) / (1 - 1/win)
+    if direction == 'min':
+        scores_np_ts = 1 - scores_np_ts
+    return scores_np_ts
+
+
+def zscore_roll(ts, win):
+    return (ts - ts.rolling(win).mean())/ts.rolling(win).std()
+
+
+def zscore_adj_roll(ts, win):
+    return (ts - ts.rolling(win).mean())/ts.diff().rolling(win).std()/np.sqrt(win)
+
+
+def zscore_ewm(ts, win):
+    return (ts - ts.ewm(halflife=win, min_periods=win).mean())/ts.ewm(halflife=win, min_periods=win).std()
+
+
+def pct_score(ts: pd.Series, win: int):
+    if len(ts) < win:
+        res = pd.Series(0, index=ts.index)
+    else:
+        res = rolling_percentile(ts, win) * 2 -1.0
+    return res
+
+
+def ewmac(ts, win_s, win_l=None, ls_ratio=4):
+    if win_l is None:
+        win_l = ls_ratio * win_s
+    s1 = ts.ewm(halflife=win_s, min_periods=win_s).mean()
+    s2 = ts.ewm(halflife=win_l, min_periods=win_s).mean()
+    return s1-s2
+
+
+def conv_ewm(ts, h1s: list, h2s: list):
+    h1_rg = list(range(*h1s))
+    h2_rg = list(range(*h2s))
+    combinations = itertools.product(h1_rg, h2_rg)
+    collection = []
+    for h1, h2 in combinations:
+        collection.append(ewmac(ts, win_s=h1, win_l=h2).dropna())
+    conv = pd.concat(collection, axis=1).mean(axis=1)
+    return conv
+
+
+def risk_normalized(ts, win=252):
+    return ts/ts.ewm(halflife=win, min_periods=win, ignore_na=True).std()
+
+
+def norm_ewm(ts, win=80):
+    xs = ts.ewm(halflife=win, min_periods=win, ignore_na=True).mean()
+    vs = ts.ewm(halflife=win, min_periods=win, ignore_na=True).std()
+    return xs/vs
+
+
+def response_curve(y, response='linear', param=1):
+    ''' response curve to apply to a signal, either string or a 1D function f(x)'''
+    if not isinstance(response, str):  # 1D interpolation function
+        out = response(y)
+    elif response == 'reverting':
+        scale = (1 + 2 / param ** 2) ** 0.75
+        out = scale * y * np.exp(-0.5 * (y / param) ** 2)  # min/max on param
+    elif response == 'absorbing':
+        scale = 0.258198 * (1 + 6 / param ** 2) ** 1.75
+        out = scale * y ** 3 * np.exp(-1.5 * (y / param) ** 2)
+    elif response == 'sigmoid':
+        # no closed form as a function of the parameter for the 2 below?
+        # out = y*0+scale*(erf(y/param/np.sqrt(2))) # y*0 to maintain pandas shape through scipy
+        # out = y*0+scale*(2/(1+np.exp(-y/param/np.sqrt(2)))-1) # y*0 to maintain pandas shape through scipy
+        scale = 1 / np.sqrt(1 - np.sqrt(np.pi / 2) * param * np.exp(param ** 2 / 2) * math.erfc(param / np.sqrt(2)))
+        out = scale * y / np.sqrt(param ** 2 + y ** 2)
+    elif response == 'linear':
+        out = y
+    elif response == 'sign':
+        out = 1.0 if y >= 0 else -1.0
+    elif response == 'semilinear':
+        scale = 1 / np.sqrt(
+            param ** 2 + (1 - param ** 2) * math.erf(param / np.sqrt(2)) - 0.797885 * param * np.exp(-0.5 * param ** 2))
+        out = scale * np.minimum(param, np.maximum(-param, y))
+    elif response == 'buffer':
+        scale = 1 / np.sqrt(2 * (-param * stats.norm.pdf(param) + (1 + param ** 2) * stats.norm.cdf(-param)))
+        out = scale * (np.maximum(y - param, 0) + np.minimum(y + param, 0))
+    elif response == 'band':
+        scale = 1 / np.sqrt(1 - math.erf(param / np.sqrt(2)) + 0.797885 * param * np.exp(-0.5 * param ** 2))
+        out = y * (np.abs(y) > param)
+        out = out * scale
+    else:
+        raise Exception('unknown response curve')
+    return out
+
+
+def calc_conv_signal(feature_ts, signal_func, param_rng, signal_cap=None, vol_win=120):
+    sig_list = []
+    for win in range(*param_rng):
+        if signal_func == 'ema_dff':
+            signal_ts = feature_ts - feature_ts.ewm(win).mean()
+            signal_ts = risk_normalized(signal_ts, win=vol_win)
+        elif signal_func == 'ema':
+            signal_ts = feature_ts.ewm(win).mean()
+        elif signal_func == 'ema_dff_sgn':
+            signal_ts = np.sign(feature_ts - feature_ts.ewm(win).mean())
+        elif signal_func == 'ma_dff':
+            signal_ts = feature_ts - feature_ts.rolling(win).mean()
+            signal_ts = risk_normalized(signal_ts, win=vol_win)
+        elif signal_func == 'ma':
+            signal_ts = feature_ts.rolling(win).mean()
+        elif signal_func == 'ma_dff_sgn':
+            signal_ts = np.sign(feature_ts - feature_ts.rolling(win).mean())
+        elif signal_func == 'ewmac':
+            signal_ts = ewmac(feature_ts, win_s=win//10, ls_ratio=2)
+            signal_ts = risk_normalized(signal_ts, win=vol_win)
+        elif signal_func == 'zscore_biased':
+            signal_ts = feature_ts/feature_ts.rolling(win).std()
+        elif signal_func == 'zscore':
+            signal_ts = zscore_roll(feature_ts, win=win)
+        elif signal_func == 'zscore_adj':
+            signal_ts = zscore_adj_roll(feature_ts, win=win)
+        elif signal_func == 'qtl':
+            signal_ts = pct_score(feature_ts.dropna(), win=win)
+        elif signal_func == 'hlratio':
+            ll_feature = feature_ts.rolling(win).min()
+            hh_feature = feature_ts.rolling(win).max()
+            signal_ts = (feature_ts - ll_feature)/(hh_feature - ll_feature) * 2 - 1.0
+        else:
+            continue
+        if signal_cap:
+            signal_ts = cap(signal_ts, signal_cap[0], signal_cap[1])
+        sig_list.append(signal_ts)
+    if len(sig_list) > 0:
+        conv_signal = pd.concat(sig_list, axis=1).mean(axis=1)
+    else:
+        conv_signal = pd.Series()
+    return conv_signal
+
+
 def make_seasonal_df(ser, limit=1, fill=False, weekly_dense=False):
     df = ser.to_frame('data')
     if isinstance(df.index, pd.PeriodIndex):
@@ -143,45 +324,6 @@ def plot_df_on_2ax(df, left_on=[], right_on=[], left_style='-', right_style=':')
     ax2.legend(lines + lines2, labels + labels2, bbox_to_anchor=(1.04, 1), loc='upper left')
     ax.grid()
     plt.show()
-
-
-def apply_vat(df, field_list=None, index_col=None, direction=1, with_ret=True):
-    if direction == 1:
-        vat_fac = [1.17, 1.16, 1.13]
-    else:
-        vat_fac = [1/1.17, 1/1.16, 1/1.13]
-    if field_list is None:
-        field_list = [col for col in df.columns if col != index_col]
-    if index_col is None:
-        idx = df.index
-    else:
-        idx = df[index_col]
-    cutoff_dates = [datetime.date(1980, 1, 1), datetime.date(2018, 5, 1), datetime.date(2019, 4, 1), datetime.date(2100, 1, 1)]
-    if type(idx[-1]).__name__ == 'Timestamp':
-        cutoff_dates = [ pd.Timestamp(d) for d in cutoff_dates]
-    if with_ret:
-        xdf = df.copy()
-    else:
-        xdf = df
-    for sd, ed, vat in zip(cutoff_dates[:-1], cutoff_dates[1:], vat_fac):
-        ind = (idx < ed) & (idx >= sd)
-        for field in field_list:
-            xdf[field][ind] = xdf[field][ind]/vat
-    if with_ret:
-        return xdf
-
-
-def vat_adj(ts, direction=1):
-    vat_fac = [1.17, 1.16, 1.13]
-    if direction != 1:
-        vat_fac = [1/1.17, 1/1.16, 1/1.13]
-    cutoff_dates = ['1970-01-01', '2018-05-01', '2019-04-01', '2100-01-01']
-    cutoff_dates = [pd.Timestamp(d) for d in cutoff_dates]
-    xts = ts.copy()
-    for sd, ed, vat in zip(cutoff_dates[:-1], cutoff_dates[1:], vat_fac):
-        ind = (ts.index < ed) & (ts.index >= sd)
-        xts[ind] = xts[ind]/vat
-    return xts
 
 
 def lunar_label(df: pd.DataFrame, copy=True):
@@ -563,136 +705,6 @@ def get_rolling_percentiles(vector, window=252, min_periods=None, use_abs=False)
         percentiles = vector.rolling(window + 1, 
                                      min_peridos=min_periods).apply(lambda s: percentile(s[-1], s[:-1]), raw=True)
     return percentiles
-
-
-def rolling_percentile(ts, win=100, direction='max'):
-    ts = ts.dropna().copy(deep=True)
-    data = ts.to_numpy()
-    sw = sliding_window_view(data, win, axis=0).T
-    scores_np = np.empty(len(ts))
-    scores_np.fill(np.nan)
-    scores_np[(win-1):] = ((sw <= sw[-1:, ...]).sum(axis=0).T / sw.shape[0]).flatten()
-    scores_np_ts = (pd.Series(scores_np, index = ts.index) - 1/win) / (1 - 1/win)
-    if direction == 'min':
-        scores_np_ts = 1 - scores_np_ts
-    return scores_np_ts
-
-
-def zscore_roll(ts, win):
-    return (ts - ts.rolling(win).mean())/ts.rolling(win).std()
-
-
-def zscore_adj_roll(ts, win):
-    return (ts - ts.rolling(win).mean())/ts.diff().rolling(win).std()/np.sqrt(win)
-
-
-def zscore_ewm(ts, win):
-    return (ts - ts.ewm(halflife=win, min_periods=win).mean())/ts.ewm(halflife=win, min_periods=win).std()
-
-
-def pct_score(ts: pd.Series, win: int):
-    if len(ts) < win:
-        res = pd.Series(0, index=ts.index)
-    else:
-        res = rolling_percentile(ts, win) * 2 -1.0
-    return res
-
-
-def ewmac(ts, win_s, win_l=None, ls_ratio=4):
-    if win_l is None:
-        win_l = ls_ratio * win_s
-    s1 = ts.ewm(halflife=win_s, min_periods=win_s).mean()
-    s2 = ts.ewm(halflife=win_l, min_periods=win_s).mean()
-    return s1-s2
-
-
-def conv_ewm(ts, h1s: list, h2s: list):
-    h1_rg = list(range(*h1s))
-    h2_rg = list(range(*h2s))
-    combinations = itertools.product(h1_rg, h2_rg)
-    collection = []
-    for h1, h2 in combinations:
-        collection.append(ewmac(ts, win_s=h1, win_l=h2).dropna())
-    conv = pd.concat(collection, axis=1).mean(axis=1)
-    return conv
-
-
-def risk_normalized(ts, win=252):
-    return ts/ts.ewm(halflife=win, min_periods=win, ignore_na=True).std()
-
-
-def norm_ewm(ts, win=80):
-    xs = ts.ewm(halflife=win, min_periods=win, ignore_na=True).mean()
-    vs = ts.ewm(halflife=win, min_periods=win, ignore_na=True).std()
-    return xs/vs
-
-
-def calc_conv_signal(feature_ts, signal_func, param_rng, signal_cap=None, proc_func=None):
-    sig_list = []
-    for win in range(*param_rng):
-        if signal_func == 'ema':
-            signal_ts = feature_ts - feature_ts.ewm(win).mean()
-            signal_ts = risk_normalized(signal_ts, win=120)
-        elif signal_func == 'ma':
-            signal_ts = feature_ts - feature_ts.rolling(win).mean()
-            signal_ts = risk_normalized(signal_ts, win=120)
-        elif signal_func == 'ewmac':
-            signal_ts = ewmac(feature_ts, win_s=win//10, ls_ratio=4)
-            signal_ts = risk_normalized(signal_ts, win=120)
-        elif signal_func == 'zscore':
-            signal_ts = zscore_roll(feature_ts, win=win)
-        elif signal_func == 'zscore_adj':
-            signal_ts = zscore_adj_roll(feature_ts, win=win)
-        elif signal_func == 'qtl':
-            signal_ts = pct_score(feature_ts.dropna(), win=win)
-        else:
-            continue
-        if proc_func:
-            signal_ts = signal_ts.map(proc_func)
-        if signal_cap:
-            signal_ts = cap(signal_ts, signal_cap[0], signal_cap[1])
-        sig_list.append(signal_ts)
-    if len(sig_list) > 0:
-        conv_signal = pd.concat(sig_list, axis=1).mean(axis=1)
-    else:
-        conv_signal = pd.Series()
-    return conv_signal
-
-
-def response_curve(y, response='linear', param=1):
-    ''' response curve to apply to a signal, either string or a 1D function f(x)'''
-    if not isinstance(response, str):  # 1D interpolation function
-        out = response(y)
-    elif response == 'reverting':
-        scale = (1 + 2 / param ** 2) ** 0.75
-        out = scale * y * np.exp(-0.5 * (y / param) ** 2)  # min/max on param
-    elif response == 'absorbing':
-        scale = 0.258198 * (1 + 6 / param ** 2) ** 1.75
-        out = scale * y ** 3 * np.exp(-1.5 * (y / param) ** 2)
-    elif response == 'sigmoid':
-        # no closed form as a function of the parameter for the 2 below?
-        # out = y*0+scale*(erf(y/param/np.sqrt(2))) # y*0 to maintain pandas shape through scipy
-        # out = y*0+scale*(2/(1+np.exp(-y/param/np.sqrt(2)))-1) # y*0 to maintain pandas shape through scipy
-        scale = 1 / np.sqrt(1 - np.sqrt(np.pi / 2) * param * np.exp(param ** 2 / 2) * math.erfc(param / np.sqrt(2)))
-        out = scale * y / np.sqrt(param ** 2 + y ** 2)
-    elif response == 'linear':
-        out = y
-    elif response == 'sign':
-        out = 1.0 if y >= 0 else -1.0
-    elif response == 'semilinear':
-        scale = 1 / np.sqrt(
-            param ** 2 + (1 - param ** 2) * math.erf(param / np.sqrt(2)) - 0.797885 * param * np.exp(-0.5 * param ** 2))
-        out = scale * np.minimum(param, np.maximum(-param, y))
-    elif response == 'buffer':
-        scale = 1 / np.sqrt(2 * (-param * stats.norm.pdf(param) + (1 + param ** 2) * stats.norm.cdf(-param)))
-        out = scale * (np.maximum(y - param, 0) + np.minimum(y + param, 0))
-    elif response == 'band':
-        scale = 1 / np.sqrt(1 - math.erf(param / np.sqrt(2)) + 0.797885 * param * np.exp(-0.5 * param ** 2))
-        out = y * (np.abs(y) > param)
-        out = out * scale
-    else:
-        raise Exception('unknown response curve')
-    return out
 
 
 def get_scored_signal(signal, hl_smooth=20, hl_score=252, demean_signal=True, signal_cap=2):
