@@ -102,15 +102,6 @@ index_map = {
 
     'S004039553': 'billet_inv_social_ts',
 
-    'S004303031': 'cu_lme_0m_3m_spd',
-    'S004303035': 'al_lme_0m_3m_spd',
-    'S004303034': 'zn_lme_0m_3m_spd',
-    'S004303033': 'pb_lme_0m_3m_spd',
-    'S004303032': 'sn_lme_0m_3m_spd',
-    'S004303036': 'ni_lme_0m_3m_spd',
-
-    'S003018859': 'cu_lme_3m_15m_spd',
-    'S003018860': 'cu_lme_3m_27m_spd',
     'S004077505': 'cu_spot_sh',
     'S004077504': 'cu_spot_bj',
     'S003048722': 'cu_dianjie_spot_basis',
@@ -119,6 +110,21 @@ index_map = {
     'S003048725': 'cu_shifa_spot_basis',
     'S003048726': 'cu_guixi_spot_basis',
 
+    'S005808359': 'cu_lme_3m_close',
+    'S005808360': 'al_lme_3m_close',
+    'S005808361': 'pb_lme_3m_close',
+    'S005808362': 'zn_lme_3m_close',
+    'S005808363': 'sn_lme_3m_close',
+    'S005808364': 'ni_lme_3m_close',
+
+    'S004303031': 'cu_lme_0m_3m_spd',
+    'S004303035': 'al_lme_0m_3m_spd',
+    'S004303034': 'zn_lme_0m_3m_spd',
+    'S004303033': 'pb_lme_0m_3m_spd',
+    'S004303032': 'sn_lme_0m_3m_spd',
+    'S004303036': 'ni_lme_0m_3m_spd',
+    'S003018859': 'cu_lme_3m_15m_spd',
+    'S003018860': 'cu_lme_3m_27m_spd',
     'S003018862': 'al_lme_3m_15m_spd',
     'S003018863': 'al_lme_3m_27m_spd',
     'S003018865': 'ni_lme_3m_15m_spd',
@@ -133,7 +139,57 @@ index_map = {
     'S003018878': 'aa_lme_3m_27m_spd',
 
     'S004630824': 'cu_mine_tc',
+    "S006157941": "cu_prem_yangshan_warrant",
+    "S006157947": "cu_prem_yangshan_cny",
+    "S006157944": "cu_prem_yangshan_bl",
+    "S005068109": "al_prem_bonded_warrant",
+    "S005068106": "al_prem_bonded_bl",
+    "S005068436": "zn_prem_bonded_bl",
+    "S005068439": "zn_prem_bonded_warrant",
 
+    "S000025471": "cu_cjb_spot",
+    "S000025473": "al_cjb_spot",
+    "S000025475": "pb_cjb_spot",
+    "S000025476": "zn_cjb_spot",
+    "S000025478": "sn_cjb_spot",
+    "S000025479": "ni_cjb_spot",
+
+    "S002981535": "cu_smm1_spot",
+    "S002981536": "cu_smm1_prem_spot",
+    "S002981537": "cu_smm1_shifa_spot",
+    "S002981538": "cu_smm1_guixi_spot",
+    "S002865592": "al_smm0_spot",
+    "S002865578": "zn_smm0_spot",
+    "S002865583": "pb_smm1_spot",
+    "S002981539": "sn_smm1_spot",
+    "S002981540": "ni_smm1_spot",
+    "S002981541": "ni_smm1_jc_spot",
+    "S002981542": "ni_smm1_imp_spot",
+    "S010361921": "ni_cj1_spot",
+
+    "S009137283": "cu_cj_phybasis",
+    "S009137286": "cu_cjb_phybasis",
+    "S009137289": "al_cj_phybasis",
+    "S009137292": "al_cjb_phybasis",
+    "S008871816": "al_nanchu_phybasis",
+    "S005068421": 'zn_smm_phybasis',
+    "S005068427": 'zn_smm_imp_phybasis', #
+    "S008871823": "zn_nanchu_phybasis", # fut0
+    "S005068193": "ni_smm1_phybasis",
+    "S005068175": "ni_smm1_jc_phybasis",
+    "S005068169": "ni_smm1_ru_phybasis",
+
+    "S009160074": "cuscrap_1_spot_jzh",
+    "S009160107": "cuscrap_2_spot_jzh",
+
+    "S015202398": "cu_scrap1_diff_gd", # short history
+    "S015202399": "cu_scrap1_diff_tj",
+
+    "S008871802": "cu_rod_8_procfee_nanchu", # short history
+    "S008871805": "cu_rod_2.6_procfee_nanchu",
+    "S009621341": "al_rod_6063_procfee_jiangxi", # no good
+    "S009621410": "al_rod_6063_procfee_sichuan",
+    "S009621539": "al_rod_6063_procfee_gansu",
 }
 
 
