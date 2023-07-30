@@ -11,18 +11,14 @@ signal_store = {
     'io_millinv_lyoy': ('io_inv_mill(64)', 'qtl', [2, 4], 'lunar_yoy_day', 'diff', True, 'W-Fri'),
     'io_invdays_lvl': ('io_invdays_imp_mill(64)', 'qtl', [20, 40, 2], '', 'pct_change', True, 'price'),
     'io_invdays_lyoy': ('io_invdays_imp_mill(64)', 'qtl', [2, 4], 'lunar_yoy_day', 'pct_change', True, 'W-Fri'),
-
     'io_port_inv_lvl_slow': ('io_inv_imp_31ports_w', 'zscore', [240, 255, 5], '', 'pct_change', False, 'price'),
-
     'steel_inv_lvl_fast': ('steel_major5_inv', 'qtl', [20, 32, 4], '', 'diff', False, 'W-Fri'),
     'st_soinv_lvl_fast': ('steel_inv_social', 'zscore', [20, 32, 4], '', 'diff', False, 'W-Fri'),
     'rb_soinv_lyoy_fast': ('rebar_inv_social', 'zscore', [20, 42, 2], 'lunar_yoy_day', 'diff', False, 'W-Fri'),
     'wr_soinv_lyoy_fast': ('wirerod_inv_social', 'zscore', [20, 42, 2], 'lunar_yoy_day', 'diff', False, 'W-Fri'),
     'hc_soinv_lyoy_fast': ('hrc_inv_social', 'zscore', [20, 42, 2], 'lunar_yoy_day', 'diff', False, 'W-Fri'),
     'cc_soinv_lyoy_fast': ('crc_inv_social', 'zscore', [20, 42, 2], 'lunar_yoy_day', 'diff', False, 'W-Fri'),
-
     'billet_inv_chg_slow': ('billet_inv_social_ts', 'zscore', [240, 252, 2], '', 'diff', False, 'price'),
-
     'pbf_prem_yoy': ('pbf_prem', 'zscore', [20, 42, 2], 'df250', 'diff', True),
     # 'pbf_prem_lyoy_mom': ('pbf_prem', 'qtl', [12, 20, 2], 'lunar_yoy_wk', 'diff', True),
     'cons_steel_lyoy_slow': (
@@ -33,6 +29,31 @@ signal_store = {
     'strip_hsec_lvl_mid': ('strip_hsec', 'qtl', [60, 80, 2], '', 'pct_change', True, 'price'),
     'macf_cfd_lvl_mid': ('macf_cfd', 'qtl', [40, 82, 2], '', 'pct_change', True, 'price'),
     'hc_rb_diff_lvl_fast': ('hc_rb_diff', 'zscore', [20, 40, 2], '', '', True, 'price'),
+    'cu_prem_usd_zsa': ('cu_prem_yangshan_warrant', 'zscore_adj', [20, 30, 2], '', '', True, 'price'),
+    'cu_prem_usd_md': ('cu_prem_yangshan_warrant', 'ma_dff', [20, 30, 2], '', '', True, 'price'),
+    'cu_phybasis_zsa': ('cu_cjb_phybasis', 'zscore_adj', [40, 60, 2], 'sma10', 'pct_change', True, 'price'),  # great
+    'cu_phybasis_hlr': ('cu_cjb_phybasis', 'hlratio', [40, 60, 2], 'sma10', 'pct_change', True, 'price'),  # great
+
+    # too short
+    'cu_scrap1_margin_gd': ('cu_scrap1_diff_gd', 'qtl', [40, 60, 2], '', 'pct_change', True, 'price'),  # too short
+    'cu_scrap1_margin_tj': ('cu_scrap1_diff_tj', 'qtl', [40, 60, 2], '', 'pct_change', True, 'price'),  # too short
+    'cu_rod_procfee_2.6': ('cu_rod_2.6_procfee_nanchu', 'zscore_adj', [20, 30, 2], '', 'pct_change', True, 'price'),
+    'cu_rod_procfee_8.0': ('cu_rod_8_procfee_nanchu', 'zscore_adj', [20, 30, 2], '', 'pct_change', True, 'price'),
+
+    'lme_base_ts_mds': ('lme_base_ts', 'ma_dff_sgn', [10, 30, 2], '', '', True, 'price'),
+    'lme_base_ts_hlr': ('lme_base_ts', 'hlratio', [10, 20, 2], '', '', True, 'price'),
+
+}
+
+feature_to_feature_key_mapping = {
+    'lme_base_ts': {
+        'cu': 'cu_lme_3m_15m_spd',
+        'al': 'al_lme_3m_15m_spd',
+        'zn': 'zn_lme_3m_15m_spd',
+        'ni': 'ni_lme_0m_3m_spd',
+        'sn': 'sn_lme_0m_3m_spd',
+        'pb': 'pb_lme_0m_3m_spd',
+    }
 }
 
 leadlag_port_d = {
@@ -104,8 +125,12 @@ def leader_lagger(df, input_args):
     return signal_df
 
 
-def funda_signal_by_name(spot_df, signal_name, price_df=None, signal_cap=None):
-    feature, signal_func, param_rng, proc_func, chg_func, bullish, freq = signal_store[signal_name]
+def funda_signal_by_name(spot_df, signal_name, price_df=None,
+                         signal_cap=None, asset=None,
+                         signal_repo=signal_store, feature_key_map=feature_to_feature_key_mapping):
+    feature, signal_func, param_rng, proc_func, chg_func, bullish, freq = signal_repo[signal_name]
+    if asset and feature in feature_key_map:
+        feature = feature_key_map[feature].get(asset, feature)
     cdates = pd.date_range(start=spot_df.index[0], end=spot_df.index[-1], freq='D')
     bdates = pd.bdate_range(start=spot_df.index[0], end=spot_df.index[-1], freq='C', holidays=CHN_Holidays)
     if freq == 'price':
@@ -132,6 +157,14 @@ def funda_signal_by_name(spot_df, signal_name, price_df=None, signal_cap=None):
     elif 'df' in proc_func:
         n_diff = int(proc_func[2:])
         feature_ts = getattr(feature_ts, chg_func)(n_diff)
+    elif 'sma' in proc_func:
+        n_days = int(proc_func[3:])
+        feature_ts = feature_ts.rolling(n_days).mean()
+    elif 'ema' in proc_func:
+        n_days = int(proc_func[3:])
+        feature_ts = feature_ts.ewm(n_days).mean()
+    elif '_lr' in proc_func:
+        feature_ts = np.log(1+feature_ts)
 
     if signal_func == 'seasonal_score_w':
         signal_ts = seasonal_score(feature_ts.to_frame(),

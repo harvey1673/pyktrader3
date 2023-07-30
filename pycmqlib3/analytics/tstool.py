@@ -119,7 +119,7 @@ def conv_ewm(ts, h1s: list, h2s: list):
 
 
 def risk_normalized(ts, win=252):
-    return ts/ts.ewm(halflife=win, min_periods=win, ignore_na=True).std()
+    return ts/((ts**2).ewm(halflife=win, min_periods=win, ignore_na=True).mean()**0.5)
 
 
 def norm_ewm(ts, win=80):
@@ -171,7 +171,8 @@ def calc_conv_signal(feature_ts, signal_func, param_rng, signal_cap=None, vol_wi
             signal_ts = feature_ts - feature_ts.ewm(win).mean()
             signal_ts = risk_normalized(signal_ts, win=vol_win)
         elif signal_func == 'ema':
-            signal_ts = feature_ts.ewm(win).mean()
+            signal_ts = feature_ts.ewm(win, min_periods=win, ignore_na=True).mean()
+            signal_ts = signal_ts/risk_normalized(signal_ts, win=vol_win)
         elif signal_func == 'ema_dff_sgn':
             signal_ts = np.sign(feature_ts - feature_ts.ewm(win).mean())
         elif signal_func == 'ma_dff':
@@ -179,6 +180,7 @@ def calc_conv_signal(feature_ts, signal_func, param_rng, signal_cap=None, vol_wi
             signal_ts = risk_normalized(signal_ts, win=vol_win)
         elif signal_func == 'ma':
             signal_ts = feature_ts.rolling(win).mean()
+            signal_ts = signal_ts/risk_normalized(signal_ts, win=vol_win)
         elif signal_func == 'ma_dff_sgn':
             signal_ts = np.sign(feature_ts - feature_ts.rolling(win).mean())
         elif signal_func == 'ewmac':
