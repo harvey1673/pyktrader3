@@ -14,6 +14,10 @@ single_factors = {
     'io_millinv_lyoy': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
     'io_invdays_lvl': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
     'io_invdays_lyoy': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
+    'cu_prem_usd_zsa': ['cu'],
+    'cu_prem_usd_md': ['cu'],
+    'cu_phybasis_zsa': ['cu'],
+    'cu_phybasis_hlr': ['cu'],
 }
 
 factors_by_asset = {
@@ -65,9 +69,8 @@ def update_fun_factor(run_date=datetime.date.today(), flavor='mysql'):
                 save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=run_date, flavor=flavor)
         elif factor_name in single_factors:
             signal_ts = funda_signal_by_name(spot_df, factor_name, price_df=None, signal_cap=None)
-            signal_ts = signal_ts[update_start:].reset_index()
             for asset in single_factors[factor_name]:
-                save_signal_to_db(asset, factor_name, signal_ts, run_date=run_date, flavor=flavor)
+                save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=run_date, flavor=flavor)
 
 
 if __name__ == "__main__":
