@@ -189,6 +189,15 @@ def custom_funda_signal(df, input_args):
     signal_cap = input_args.get('signal_cap', None)
     funda_df = input_args['funda_data']
     signal_name = input_args['signal_name']
-    signal_ts = funda_signal_by_name(funda_df, signal_name, price_df=df, signal_cap=signal_cap)
-    signal_df = pd.DataFrame(dict([(asset, signal_ts.shift(1)) for asset in product_list]))
+    signal_type = input_args['signal_type']
+    if signal_type == 1:
+        signal_ts = funda_signal_by_name(funda_df, signal_name, price_df=df, signal_cap=signal_cap)
+        signal_df = pd.DataFrame(dict([(asset, signal_ts.shift(1)) for asset in product_list]))
+    else:
+        signal_df = pd.DataFrame()
+        for asset in product_list:
+            signal_ts = funda_signal_by_name(funda_df, signal_name, price_df=df, signal_cap=signal_cap, asset=asset)
+            signal_df[asset] = signal_ts
+        signal_df = signal_df.shift(1)
+        #print(signal_df)
     return signal_df
