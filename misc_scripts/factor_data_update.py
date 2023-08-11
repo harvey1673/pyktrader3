@@ -73,6 +73,7 @@ port_pos_config = {
             ('PTSIM1_HRCRB.json', 20000, 'd1'),
             ('PTSIM1_LL.json', 6000, 'd1'),
             ('PTSIM1_FUNFER.json', 8000, 'd1'),
+            ('PTSIM1_FUNBASE.json', 4000, 'd1'),
         ], },
 }
 

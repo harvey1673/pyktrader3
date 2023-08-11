@@ -131,6 +131,7 @@ def funda_signal_by_name(spot_df, signal_name, price_df=None,
     feature, signal_func, param_rng, proc_func, chg_func, bullish, freq = signal_repo[signal_name]
     if asset and feature in feature_key_map:
         feature = feature_key_map[feature].get(asset, feature)
+    feature_ts = spot_df[feature].dropna()
     cdates = pd.date_range(start=spot_df.index[0], end=spot_df.index[-1], freq='D')
     bdates = pd.bdate_range(start=spot_df.index[0], end=spot_df.index[-1], freq='C', holidays=CHN_Holidays)
     if freq == 'price':
@@ -138,8 +139,6 @@ def funda_signal_by_name(spot_df, signal_name, price_df=None,
     elif len(freq) > 0:
         feature_ts = spot_df[feature].reindex(index=cdates).ffill().reindex(
             index=pd.date_range(start=spot_df.index[0], end=spot_df.index[-1], freq=freq))
-    else:
-        feature_ts = spot_df[feature].dropna()
 
     if 'yoy' in proc_func:
         if 'lunar' in proc_func:
