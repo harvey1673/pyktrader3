@@ -132,13 +132,13 @@ def funda_signal_by_name(spot_df, signal_name, price_df=None,
     if asset and feature in feature_key_map:
         feature = feature_key_map[feature].get(asset, feature)
     feature_ts = spot_df[feature].dropna()
-    cdates = pd.date_range(start=spot_df.index[0], end=spot_df.index[-1], freq='D')
-    bdates = pd.bdate_range(start=spot_df.index[0], end=spot_df.index[-1], freq='C', holidays=CHN_Holidays)
+    cdates = pd.date_range(start=feature_ts.index[0], end=feature_ts.index[-1], freq='D')
+    bdates = pd.bdate_range(start=feature_ts.index[0], end=feature_ts.index[-1], freq='C', holidays=CHN_Holidays)
     if freq == 'price':
         feature_ts = spot_df[feature].reindex(index=cdates).ffill().reindex(index=bdates)
     elif len(freq) > 0:
         feature_ts = spot_df[feature].reindex(index=cdates).ffill().reindex(
-            index=pd.date_range(start=spot_df.index[0], end=spot_df.index[-1], freq=freq))
+            index=pd.date_range(start=feature_ts.index[0], end=feature_ts.index[-1], freq=freq))
 
     if 'yoy' in proc_func:
         if 'lunar' in proc_func:
@@ -177,9 +177,10 @@ def funda_signal_by_name(spot_df, signal_name, price_df=None,
         signal_ts = calc_conv_signal(feature_ts, signal_func=signal_func, param_rng=param_rng, signal_cap=signal_cap)
     else:
         signal_ts = feature_ts
-    signal_ts = signal_ts.reindex(index=bdates).ffill().dropna()
     if not bullish:
         signal_ts = -signal_ts
+    signal_ts = signal_ts.reindex(index=pd.bdate_range(
+        start=spot_df.index[0], end=spot_df.index[-1], freq='C', holidays=CHN_Holidays)).ffill().dropna()
     return signal_ts
 
 
@@ -191,12 +192,13 @@ def custom_funda_signal(df, input_args):
     signal_type = input_args['signal_type']
     if signal_type == 1:
         signal_ts = funda_signal_by_name(funda_df, signal_name, price_df=df, signal_cap=signal_cap)
+        signal_ts = signal_ts.reindex(index=df.index).ffill()
         signal_df = pd.DataFrame(dict([(asset, signal_ts.shift(1)) for asset in product_list]))
     else:
         signal_df = pd.DataFrame()
         for asset in product_list:
             signal_ts = funda_signal_by_name(funda_df, signal_name, price_df=df, signal_cap=signal_cap, asset=asset)
+            signal_ts = signal_ts.reindex(index=df.index).ffill()
             signal_df[asset] = signal_ts
         signal_df = signal_df.shift(1)
-        #print(signal_df)
     return signal_df

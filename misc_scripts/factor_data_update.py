@@ -435,9 +435,7 @@ def update_port_position(run_date=datetime.date.today()):
                 target_pos[prod] += strat_target[prod]
 
         for prodcode in target_pos:
-            if prodcode == 'CJ':
-                target_pos[prodcode] = int((target_pos[prodcode] / 4 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 4
-            elif prodcode == 'ZC':
+            if prodcode == 'ZC':
                 target_pos[prodcode] = int((target_pos[prodcode] / 2 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 2
             else:
                 target_pos[prodcode] = int(target_pos[prodcode] + (0.5 if target_pos[prodcode] > 0 else -0.5))
