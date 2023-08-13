@@ -13,9 +13,16 @@ signal_store = {
     'io_invdays_lyoy': ('io_invdays_imp_mill(64)', 'qtl', [2, 4], 'lunar_yoy_day', 'pct_change', True, 'W-Fri'),
     'io_port_inv_lvl_slow': ('io_inv_imp_31ports_w', 'zscore', [240, 255, 5], '', 'pct_change', False, 'price'),
     'steel_inv_lvl_fast': ('steel_major5_inv', 'qtl', [20, 32, 4], '', 'diff', False, 'W-Fri'),
-    'st_soinv_lvl_fast': ('steel_inv_social', 'zscore', [20, 32, 4], '', 'diff', False, 'W-Fri'),
-    'rb_soinv_lyoy_fast': ('rebar_inv_social', 'zscore', [20, 42, 2], 'lunar_yoy_day', 'diff', False, 'W-Fri'),
-    'wr_soinv_lyoy_fast': ('wirerod_inv_social', 'zscore', [20, 42, 2], 'lunar_yoy_day', 'diff', False, 'W-Fri'),
+    'steel_sinv_lyoy_qtl': ('steel_inv_social', 'qtl', [20, 32, 2], 'lunar_yoy_day', 'diff', False, ''),
+    'steel_sinv_lyoy_mqs': ('steel_inv_social', 'ma_dff_sgn', [5, 9, 1], 'lunar_yoy_day', 'diff', False, ''),
+
+    'rbhc_dmd_mds': ('rb_hc_dmd_diff', 'ma_dff_sgn', [5, 9, 1], '', 'diff', True, ''),
+    'rbhc_dmd_lyoy_mds': ('rb_hc_dmd_diff', 'ma_dff_sgn', [5, 9, 1], 'lunar_yoy_day', 'diff', True, ''),
+    'rbhc_sinv_mds': ('rb_hc_sinv_diff', 'ma_dff_sgn', [5, 9, 1], '', 'diff', False, ''),
+    'rbhc_sinv_lyoy_mds': ('rb_hc_sinv_diff', 'ma_dff_sgn', [5, 9, 1], 'lunar_yoy_day', 'diff', False, ''),
+
+    'rb_sinv_lyoy_fast': ('rebar_inv_social', 'zscore', [20, 42, 2], 'lunar_yoy_day', 'diff', False, 'W-Fri'),
+    'wr_sinv_lyoy_fast': ('wirerod_inv_social', 'zscore', [20, 42, 2], 'lunar_yoy_day', 'diff', False, 'W-Fri'),
     'hc_soinv_lyoy_fast': ('hrc_inv_social', 'zscore', [20, 42, 2], 'lunar_yoy_day', 'diff', False, 'W-Fri'),
     'cc_soinv_lyoy_fast': ('crc_inv_social', 'zscore', [20, 42, 2], 'lunar_yoy_day', 'diff', False, 'W-Fri'),
     'billet_inv_chg_slow': ('billet_inv_social_ts', 'zscore', [240, 252, 2], '', 'diff', False, 'price'),
@@ -189,11 +196,17 @@ def custom_funda_signal(df, input_args):
     signal_cap = input_args.get('signal_cap', None)
     funda_df = input_args['funda_data']
     signal_name = input_args['signal_name']
-    signal_type = input_args['signal_type']
+    signal_type = input_args.get('signal_type', 1)
     if signal_type == 1:
         signal_ts = funda_signal_by_name(funda_df, signal_name, price_df=df, signal_cap=signal_cap)
         signal_ts = signal_ts.reindex(index=df.index).ffill()
         signal_df = pd.DataFrame(dict([(asset, signal_ts.shift(1)) for asset in product_list]))
+    elif signal_type == 3:
+        signal_df = pd.DataFrame()
+        signal_ts = funda_signal_by_name(funda_df, signal_name, price_df=df, signal_cap=signal_cap)
+        if set(product_list) == set(['rb', 'hc']):
+            signal_df['rb'] = signal_ts.shift(1)
+            signal_df['hc'] = -signal_ts.shift(1)
     else:
         signal_df = pd.DataFrame()
         for asset in product_list:

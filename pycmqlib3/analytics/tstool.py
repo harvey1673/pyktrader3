@@ -128,6 +128,12 @@ def norm_ewm(ts, win=80):
     return xs/vs
 
 
+def hlratio(ts, win=80):
+    ll = ts.rolling(win).min()
+    hh = ts.rolling(win).max()
+    return (ts - ll) / (hh - ll) * 2 - 1.0
+
+
 def response_curve(y, response='linear', param=1):
     ''' response curve to apply to a signal, either string or a 1D function f(x)'''
     if not isinstance(response, str):  # 1D interpolation function
@@ -167,24 +173,22 @@ def response_curve(y, response='linear', param=1):
 def calc_conv_signal(feature_ts, signal_func, param_rng, signal_cap=None, vol_win=120):
     sig_list = []
     for win in range(*param_rng):
-        if signal_func == 'ema_dff':
+        if len(feature_ts) <= win:
+            continue
+        if signal_func == 'ma':
+            signal_ts = feature_ts.rolling(win, min_periods=win, ignore_na=True).mean()
+        elif signal_func == 'ema_dff':
             signal_ts = feature_ts - feature_ts.ewm(win).mean()
             signal_ts = risk_normalized(signal_ts, win=vol_win)
-        elif signal_func == 'ema':
-            signal_ts = feature_ts.ewm(win, min_periods=win, ignore_na=True).mean()
-            signal_ts = signal_ts/risk_normalized(signal_ts, win=vol_win)
         elif signal_func == 'ema_dff_sgn':
             signal_ts = np.sign(feature_ts - feature_ts.ewm(win).mean())
         elif signal_func == 'ma_dff':
             signal_ts = feature_ts - feature_ts.rolling(win).mean()
             signal_ts = risk_normalized(signal_ts, win=vol_win)
-        elif signal_func == 'ma':
-            signal_ts = feature_ts.rolling(win).mean()
-            signal_ts = signal_ts/risk_normalized(signal_ts, win=vol_win)
         elif signal_func == 'ma_dff_sgn':
             signal_ts = np.sign(feature_ts - feature_ts.rolling(win).mean())
         elif signal_func == 'ewmac':
-            signal_ts = ewmac(feature_ts, win_s=win//10, ls_ratio=2)
+            signal_ts = ewmac(feature_ts, win_s=win, ls_ratio=4, vol_win=vol_win)
             signal_ts = risk_normalized(signal_ts, win=vol_win)
         elif signal_func == 'zscore_biased':
             signal_ts = feature_ts/feature_ts.rolling(win).std()
@@ -195,9 +199,7 @@ def calc_conv_signal(feature_ts, signal_func, param_rng, signal_cap=None, vol_wi
         elif signal_func == 'qtl':
             signal_ts = pct_score(feature_ts.dropna(), win=win)
         elif signal_func == 'hlratio':
-            ll_feature = feature_ts.rolling(win).min()
-            hh_feature = feature_ts.rolling(win).max()
-            signal_ts = (feature_ts - ll_feature)/(hh_feature - ll_feature) * 2 - 1.0
+            signal_ts = hlratio(feature_ts, win=win)
         else:
             continue
         if signal_cap:

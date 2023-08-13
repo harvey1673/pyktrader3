@@ -100,6 +100,11 @@ index_map = {
     'S005580646': 'crc_inv_all',
     'S005580643': 'plate_inv_all',
 
+    'S004802760': 'rebar_prod_all',
+    'S004802761': 'wirerod_prod_all',
+    'S005580652': 'crc_prod_all',
+    'S005107854': 'hrc_prod_all',
+
     'S004039553': 'billet_inv_social_ts',
 
     'S004077505': 'cu_spot_sh',
@@ -195,12 +200,18 @@ index_map = {
 
 def process_spot_df(spot_df):
     spot_df['steel_inv_mill'] = spot_df['rebar_inv_mill'] + spot_df['wirerod_inv_mill'] + \
-                                spot_df['hrc_inv_mill'] + spot_df['crc_inv_mill'] + spot_df['plate_inv_mill']
+                                spot_df['hrc_inv_mill'] + spot_df['crc_inv_mill'] #+ spot_df['plate_inv_mill']
     spot_df['steel_inv_all'] = spot_df['steel_inv_social'] + spot_df['steel_inv_mill']
     spot_df['steel_social_inv'] = spot_df['rebar_inv_social'] + spot_df['wirerod_inv_social'] + \
-                                  spot_df['hrc_inv_social'] + spot_df['crc_inv_social'] + spot_df['plate_inv_social']
+                                  spot_df['hrc_inv_social'] + spot_df['crc_inv_social'] #+ spot_df['plate_inv_social']
     spot_df['long_social_inv'] = spot_df['rebar_inv_social'] + spot_df['wirerod_inv_social']
-    spot_df['flat_social_inv'] = spot_df['hrc_inv_social'] + spot_df['crc_inv_social'] + spot_df['plate_inv_social']
+    spot_df['flat_social_inv'] = spot_df['hrc_inv_social'] + spot_df['crc_inv_social'] #+ spot_df['plate_inv_social']
+    spot_df['rebar_app_dmd'] = spot_df['rebar_prod_all'] - spot_df['rebar_inv_all'].dropna().diff()
+    spot_df['wirerod_app_dmd'] = spot_df['wirerod_prod_all'] - spot_df['wirerod_inv_all'].dropna().diff()
+    spot_df['hrc_app_dmd'] = spot_df['hrc_prod_all'] - spot_df['hrc_inv_all'].dropna().diff()
+    spot_df['crc_app_dmd'] = spot_df['crc_prod_all'] - spot_df['crc_inv_all'].dropna().diff()
+    spot_df['rb_hc_dmd_diff'] = spot_df['rebar_app_dmd'] - spot_df['hrc_app_dmd']
+    spot_df['rb_hc_sinv_diff'] = spot_df['rebar_inv_social'].dropna().diff() - spot_df['hrc_inv_social'].dropna().diff()
 
     spot_df['crc_hrc'] = spot_df['crc_sh'] - spot_df['hrc_sh']
     spot_df['pipe_strip'] = spot_df['pipe_1.5x3.25'] - spot_df['strip_3.0x685']
