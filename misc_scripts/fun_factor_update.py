@@ -14,6 +14,8 @@ single_factors = {
     'io_millinv_lyoy': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
     'io_invdays_lvl': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
     'io_invdays_lyoy': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
+    'steel_sinv_lyoy_qtl': ['rb', 'hc', 'i', 'FG', 'v'],
+    'steel_sinv_lyoy_mqs': ['rb', 'hc', 'i', 'FG', 'v'],
     'cu_prem_usd_zsa': ['cu'],
     'cu_prem_usd_md': ['cu'],
     'cu_phybasis_zsa': ['cu'],
@@ -39,6 +41,13 @@ def get_fun_data(start_date, end_date):
     ]:
         spot_df[col] = spot_df[col].shift(-3).ffill().reindex(
             index=pd.date_range(start=spot_df.index[0], end=spot_df.index[-1], freq='W-Fri'))
+    for col in [
+        'rebar_inv_mill', 'wirerod_inv_mill', 'hrc_inv_mill', 'crc_inv_mill', 'plate_inv_mill',
+        'rebar_inv_social', 'wirerod_inv_social', 'hrc_inv_social', 'crc_inv_social', 'plate_inv_social',
+        'steel_inv_social', 'rebar_inv_all', 'rebar_prod_all', 'wirerod_prod_all', 'wirerod_inv_all',
+        'hrc_prod_all', 'hrc_inv_all', 'crc_prod_all', 'crc_inv_all',
+    ]:
+        spot_df[col] = spot_df[col].shift(-1)
     spot_df = process_spot_df(spot_df)
     return spot_df
 
