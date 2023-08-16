@@ -12,9 +12,8 @@ signal_store = {
     'io_invdays_lvl': ('io_invdays_imp_mill(64)', 'qtl', [20, 40, 2], '', 'pct_change', True, 'price'),
     'io_invdays_lyoy': ('io_invdays_imp_mill(64)', 'qtl', [2, 4], 'lunar_yoy_day', 'pct_change', True, 'W-Fri'),
     'io_port_inv_lvl_slow': ('io_inv_imp_31ports_w', 'zscore', [240, 255, 5], '', 'pct_change', False, 'price'),
-    'steel_inv_lvl_fast': ('steel_major5_inv', 'qtl', [20, 32, 4], '', 'diff', False, 'W-Fri'),
-    'steel_sinv_lyoy_qtl': ('steel_inv_social', 'qtl', [20, 32, 2], 'lunar_yoy_day', 'diff', False, ''),
-    'steel_sinv_lyoy_mqs': ('steel_inv_social', 'ma_dff_sgn', [5, 9, 1], 'lunar_yoy_day', 'diff', False, ''),
+    'steel_sinv_lyoy_zs': ('steel_inv_social', 'zscore', [24, 30, 2], 'lunar_yoy_day', 'diff', False, ''),
+    'steel_sinv_lyoy_mds': ('steel_inv_social', 'ma_dff_sgn', [5, 9, 1], 'lunar_yoy_day', 'diff', False, ''),
 
     'rbhc_dmd_mds': ('rb_hc_dmd_diff', 'ma_dff_sgn', [5, 9, 1], '', 'diff', True, ''),
     'rbhc_dmd_lyoy_mds': ('rb_hc_dmd_diff', 'ma_dff_sgn', [5, 9, 1], 'lunar_yoy_day', 'diff', True, ''),
@@ -28,8 +27,8 @@ signal_store = {
     'billet_inv_chg_slow': ('billet_inv_social_ts', 'zscore', [240, 252, 2], '', 'diff', False, 'price'),
     'pbf_prem_yoy': ('pbf_prem', 'zscore', [20, 42, 2], 'df250', 'diff', True),
     # 'pbf_prem_lyoy_mom': ('pbf_prem', 'qtl', [12, 20, 2], 'lunar_yoy_wk', 'diff', True),
-    'cons_steel_lyoy_slow': (
-    'cons_steel_transact_vol_china', 'zscore', [240, 255, 5], 'lunar_yoy_day', 'diff', True, 'price'),
+    'cons_steel_lyoy_slow': ('cons_steel_transact_vol_china', 'zscore', [240, 255, 5],
+                             'lunar_yoy_day', 'diff', True, 'price'),
     # 'margin_sea_lvl_mid': ('hrc_margin_sb', 'zscore', [40, 82, 2], '', 'pct_change', True, 'price'),
     'sea_export_arb_lvl_mid': ('hrc_exp_sea_arb', 'zscore', [40, 82, 2], '', 'pct_change', True, 'price'),
     'steel_margin_lvl_fast': ('margin_hrc_macf', 'qtl', [20, 40, 2], '', 'pct_change', True, 'price'),
@@ -197,10 +196,13 @@ def custom_funda_signal(df, input_args):
     funda_df = input_args['funda_data']
     signal_name = input_args['signal_name']
     signal_type = input_args.get('signal_type', 1)
-    if signal_type == 1:
-        signal_ts = funda_signal_by_name(funda_df, signal_name, price_df=df, signal_cap=signal_cap)
-        signal_ts = signal_ts.reindex(index=df.index).ffill()
-        signal_df = pd.DataFrame(dict([(asset, signal_ts.shift(1)) for asset in product_list]))
+    if signal_type == 0:
+        signal_df = pd.DataFrame()
+        for asset in product_list:
+            signal_ts = funda_signal_by_name(funda_df, signal_name, price_df=df, signal_cap=signal_cap, asset=asset)
+            signal_ts = signal_ts.reindex(index=df.index).ffill()
+            signal_df[asset] = signal_ts
+        signal_df = signal_df.shift(1)
     elif signal_type == 3:
         signal_df = pd.DataFrame()
         signal_ts = funda_signal_by_name(funda_df, signal_name, price_df=df, signal_cap=signal_cap)
@@ -208,10 +210,8 @@ def custom_funda_signal(df, input_args):
             signal_df['rb'] = signal_ts.shift(1)
             signal_df['hc'] = -signal_ts.shift(1)
     else:
-        signal_df = pd.DataFrame()
-        for asset in product_list:
-            signal_ts = funda_signal_by_name(funda_df, signal_name, price_df=df, signal_cap=signal_cap, asset=asset)
-            signal_ts = signal_ts.reindex(index=df.index).ffill()
-            signal_df[asset] = signal_ts
-        signal_df = signal_df.shift(1)
+        signal_ts = funda_signal_by_name(funda_df, signal_name, price_df=df, signal_cap=signal_cap)
+        signal_ts = signal_ts.reindex(index=df.index).ffill()
+        signal_df = pd.DataFrame(dict([(asset, signal_ts.shift(1)) for asset in product_list]))
+
     return signal_df
