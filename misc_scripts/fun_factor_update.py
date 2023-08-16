@@ -14,8 +14,8 @@ single_factors = {
     'io_millinv_lyoy': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
     'io_invdays_lvl': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
     'io_invdays_lyoy': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
-    'steel_sinv_lyoy_qtl': ['rb', 'hc', 'i', 'FG', 'v'],
-    'steel_sinv_lyoy_mqs': ['rb', 'hc', 'i', 'FG', 'v'],
+    'steel_sinv_lyoy_zs': ['rb', 'hc', 'i', 'FG', 'v'],
+    'steel_sinv_lyoy_mds': ['rb', 'hc', 'i', 'FG', 'v'],
     'cu_prem_usd_zsa': ['cu'],
     'cu_prem_usd_md': ['cu'],
     'cu_phybasis_zsa': ['cu'],
@@ -27,6 +27,12 @@ factors_by_asset = {
     'lme_base_ts_hlr': ['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
 }
 
+factors_by_spread = {
+    'rbhc_dmd_mds': [('rb', 1), ('hc', -1)],
+    'rbhc_dmd_lyoy_mds': [('rb', 1), ('hc', -1)],
+    'rbhc_sinv_mds': [('rb', 1), ('hc', -1)],
+    'rbhc_sinv_lyoy_mds': [('rb', 1), ('hc', -1)],
+}
 
 def get_fun_data(start_date, end_date):
     cdate_rng = pd.date_range(start=start_date, end=end_date, freq='D', name='date')
@@ -34,6 +40,7 @@ def get_fun_data(start_date, end_date):
     data_df = data_df.rename(columns=index_map)
     spot_df = data_df.dropna(how='all').copy(deep=True)
     spot_df = spot_df.reindex(index=cdate_rng)
+
     for col in [
         'io_inv_imp_mill(64)',
         'io_inv_dom_mill(64)',
@@ -41,6 +48,7 @@ def get_fun_data(start_date, end_date):
     ]:
         spot_df[col] = spot_df[col].shift(-3).ffill().reindex(
             index=pd.date_range(start=spot_df.index[0], end=spot_df.index[-1], freq='W-Fri'))
+
     for col in [
         'rebar_inv_mill', 'wirerod_inv_mill', 'hrc_inv_mill', 'crc_inv_mill', 'plate_inv_mill',
         'rebar_inv_social', 'wirerod_inv_social', 'hrc_inv_social', 'crc_inv_social', 'plate_inv_social',
@@ -70,16 +78,20 @@ def update_fun_factor(run_date=datetime.date.today(), flavor='mysql'):
     update_start = day_shift(run_date, '-60b', CHN_Holidays)
     spot_df = get_fun_data(start_date, run_date)
 
-    factor_list = [key for key in single_factors.keys()] + [key for key in factors_by_asset.keys()]
-    for factor_name in factor_list:
-        if factor_name in factors_by_asset:
-            for asset in factors_by_asset[factor_name]:
-                signal_ts = funda_signal_by_name(spot_df, factor_name, price_df=None, signal_cap=None, asset=asset)
-                save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=run_date, flavor=flavor)
-        elif factor_name in single_factors:
-            signal_ts = funda_signal_by_name(spot_df, factor_name, price_df=None, signal_cap=None)
-            for asset in single_factors[factor_name]:
-                save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=run_date, flavor=flavor)
+    for factor_name in factors_by_asset.keys():
+        for asset in factors_by_asset[factor_name]:
+            signal_ts = funda_signal_by_name(spot_df, factor_name, price_df=None, signal_cap=None, asset=asset)
+            save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=run_date, flavor=flavor)
+
+    for factor_name in single_factors:
+        signal_ts = funda_signal_by_name(spot_df, factor_name, price_df=None, signal_cap=None)
+        for asset in single_factors[factor_name]:
+            save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=run_date, flavor=flavor)
+
+    for factor_name in factors_by_spread.keys():
+        signal_ts = funda_signal_by_name(spot_df, factor_name, price_df=None, signal_cap=None)
+        for asset, weight in factors_by_spread[factor_name]:
+            save_signal_to_db(asset, factor_name, weight*signal_ts[update_start:], run_date=run_date, flavor=flavor)
 
 
 if __name__ == "__main__":
