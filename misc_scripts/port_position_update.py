@@ -5,6 +5,7 @@ import json
 from misc_scripts.factor_data_update import update_port_position
 from misc_scripts.fun_factor_update import update_fun_factor
 from misc_scripts.auto_update_data_xl import update_data_from_xl
+from pycmqlib3.utility.misc import day_shift, CHN_Holidays, is_workday
 from pycmqlib3.utility.sec_bits import EMAIL_HOTMAIL, NOTIFIERS, LOCAL_PC_NAME, EMAIL_NOTIFY
 from pycmqlib3.utility.email_tool import send_html_by_smtp
 update_func_list = [
@@ -49,6 +50,10 @@ if __name__ == "__main__":
     if len(args) >= 1:
         tday = datetime.datetime.strptime(args[0], "%Y%m%d").date()
     else:
-        tday = datetime.date.today()
-    job_status, pos_update = update_port_pos(tday=datetime.date.today(), email_notify=EMAIL_NOTIFY)
+        now = datetime.datetime.now()
+        tday = now.date()
+        if (~is_workday(tday, 'CHN')) or (now.time() < datetime.time(14, 59, 0)):
+            tday = day_shift(tday, '-1b', CHN_Holidays)
+    print("running for %s" % str(tday))
+    job_status, pos_update = update_port_pos(tday=tday, email_notify=EMAIL_NOTIFY)
     print(job_status, pos_update)

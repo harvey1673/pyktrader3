@@ -2,7 +2,7 @@ import sys
 from pycmqlib3.strategy.signal_repo import signal_store, funda_signal_by_name
 from pycmqlib3.utility.spot_idx_map import index_map, process_spot_df
 from pycmqlib3.utility.dbaccess import load_codes_from_edb
-from pycmqlib3.utility.misc import day_shift, CHN_Holidays, prod2exch
+from pycmqlib3.utility.misc import day_shift, CHN_Holidays, prod2exch, is_workday
 from pycmqlib3.analytics.tstool import *
 from misc_scripts.factor_data_update import update_factor_db
 
@@ -99,5 +99,9 @@ if __name__ == "__main__":
     if len(args) >= 1:
         tday = datetime.datetime.strptime(args[0], "%Y%m%d").date()
     else:
-        tday = datetime.date.today()
+        now = datetime.datetime.now()
+        tday = now.date()
+        if (~is_workday(tday, 'CHN')) or (now.time() < datetime.time(14, 59, 0)):
+            tday = day_shift(tday, '-1b', CHN_Holidays)
+    print("running for %s" % str(tday))
     update_fun_factor(run_date=tday)

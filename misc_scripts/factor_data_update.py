@@ -3,8 +3,9 @@ import json
 import copy
 from sqlalchemy import create_engine
 from pycmqlib3.utility.dbaccess import dbconfig, mysql_replace_into, connect, load_factor_data
-from pycmqlib3.utility import dataseries, base
-from pycmqlib3.utility.misc import inst2product, prod2exch, inst2contmth, day_shift, sign, product_lotsize, CHN_Holidays, nearby
+from pycmqlib3.utility import dataseries
+from pycmqlib3.utility.misc import inst2product, prod2exch, inst2contmth, day_shift, \
+    sign, is_workday, CHN_Holidays, nearby
 import pycmqlib3.analytics.data_handler as dh
 from pycmqlib3.analytics.tstool import *
 from pycmqlib3.strategy.strat_util import generate_strat_position
@@ -466,6 +467,9 @@ if __name__ == "__main__":
     if len(args) >= 1:
         tday = datetime.datetime.strptime(args[0], "%Y%m%d").date()
     else:
-        tday = datetime.date.today()
+        now = datetime.datetime.now()
+        tday = now.date()
+        if (~is_workday(tday, 'CHN')) or (now.time() < datetime.time(14, 59, 0)):
+            tday = day_shift(tday, '-1b', CHN_Holidays)
     update_port_position(run_date=tday)
 
