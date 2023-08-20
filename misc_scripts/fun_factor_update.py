@@ -1,7 +1,7 @@
 import sys
 from pycmqlib3.strategy.signal_repo import signal_store, funda_signal_by_name
 from pycmqlib3.utility.spot_idx_map import index_map, process_spot_df
-from pycmqlib3.utility.dbaccess import load_codes_from_edb
+from pycmqlib3.utility.dbaccess import load_codes_from_edb, load_factor_data
 from pycmqlib3.utility.misc import day_shift, CHN_Holidays, prod2exch, is_workday
 from pycmqlib3.analytics.tstool import *
 from misc_scripts.factor_data_update import update_factor_db
@@ -33,6 +33,12 @@ factors_by_spread = {
     'rbhc_sinv_mds': [('rb', 1), ('hc', -1)],
     'rbhc_sinv_lyoy_mds': [('rb', 1), ('hc', -1)],
 }
+
+factors_by_beta_neutral = {
+    'io_pinv31_lvl_zsa': [('rb', 'i', 1), ('hc', 'i', 1)],
+    'io_pinv45_lvl_hlr': [('rb', 'i', 1), ('hc', 'i', 1)],
+}
+
 
 def get_fun_data(start_date, end_date):
     cdate_rng = pd.date_range(start=start_date, end=end_date, freq='D', name='date')
@@ -92,6 +98,31 @@ def update_fun_factor(run_date=datetime.date.today(), flavor='mysql'):
         signal_ts = funda_signal_by_name(spot_df, factor_name, price_df=None, signal_cap=None)
         for asset, weight in factors_by_spread[factor_name]:
             save_signal_to_db(asset, factor_name, weight*signal_ts[update_start:], run_date=run_date, flavor=flavor)
+
+    for factor_name in factors_by_beta_neutral.keys():
+        signal_ts = funda_signal_by_name(spot_df, factor_name, price_df=None, signal_cap=None)
+        signal_df = pd.DataFrame(index=signal_ts.index)
+        signal_df['raw_sig'] = signal_ts
+        asset_list = []
+        for trade_asset, index_asset, weight in factors_by_beta_neutral[factor_name]:
+            asset_list = list(set(asset_list + [trade_asset, index_asset]))
+            if trade_asset not in signal_df.columns:
+                signal_df[trade_asset] = 0
+            if index_asset not in signal_df.columns:
+                signal_df[index_asset] = 0
+            key = '_'.join([trade_asset, index_asset, 'beta'])
+            beta_df = load_factor_data([key], factor_list=['trade_leg', 'index_leg'],
+                                       roll_label='hot',
+                                       start=start_date,
+                                       end=run_date,
+                                       freq='d1')
+            beta_df = pd.pivot_table(beta_df, index='date', columns=['fact_name'], values='fact_val', aggfunc='last')
+            signal_df['trade_ratio'] = beta_df['trade_leg']
+            signal_df['index_ratio'] = beta_df['index_leg']
+            signal_df[trade_asset] += signal_df['trade_ratio'] * signal_df['raw_sig'] * weight
+            signal_df[index_asset] += signal_df['index_ratio'] * signal_df['raw_sig'] * weight
+        for asset in asset_list:
+            save_signal_to_db(asset, factor_name, signal_df[asset][update_start:], run_date=run_date, flavor=flavor)
 
 
 if __name__ == "__main__":
