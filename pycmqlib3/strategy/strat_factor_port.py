@@ -79,10 +79,7 @@ class FactorPortTrader(Strategy):
         for idx, (under, prodcode) in enumerate(zip(self.underliers, self.prod_list)):
             if prodcode not in net_pos:
                 net_pos[prodcode] = 0
-            if prodcode == 'CJ':
-                self.target_pos[idx] = int(self.alloc_w[idx] * net_pos[prodcode]/4 +
-                                           (0.5 if net_pos[prodcode] > 0 else -0.5))*4
-            elif prodcode == 'ZC':
+            if prodcode == 'ZC':
                 self.target_pos[idx] = int(self.alloc_w[idx] * net_pos[prodcode]/2 +
                                            (0.5 if net_pos[prodcode] > 0 else -0.5))*2
             else:

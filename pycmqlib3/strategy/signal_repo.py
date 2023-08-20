@@ -12,6 +12,8 @@ signal_store = {
     'io_invdays_lvl': ('io_invdays_imp_mill(64)', 'qtl', [20, 40, 2], '', 'pct_change', True, 'price'),
     'io_invdays_lyoy': ('io_invdays_imp_mill(64)', 'qtl', [2, 4], 'lunar_yoy_day', 'pct_change', True, 'W-Fri'),
     'io_port_inv_lvl_slow': ('io_inv_imp_31ports_w', 'zscore', [240, 255, 5], '', 'pct_change', False, 'price'),
+    'io_pinv31_lvl_zsa': ('io_inv_31ports', 'zscore_adj', [24, 36, 2], '', 'pct_change', True, ''),
+    'io_pinv45_lvl_hlr': ('io_inv_45ports', 'hlratio', [24, 36, 2], '', 'pct_change', True, ''),
     'steel_sinv_lyoy_zs': ('steel_inv_social', 'zscore', [24, 30, 2], 'lunar_yoy_day', 'diff', False, ''),
     'steel_sinv_lyoy_mds': ('steel_inv_social', 'ma_dff_sgn', [5, 9, 1], 'lunar_yoy_day', 'diff', False, ''),
 
@@ -48,6 +50,31 @@ signal_store = {
 
     'lme_base_ts_mds': ('lme_base_ts', 'ma_dff_sgn', [10, 30, 2], '', '', True, 'price'),
     'lme_base_ts_hlr': ('lme_base_ts', 'hlratio', [10, 20, 2], '', '', True, 'price'),
+
+    'r007_qtl': ('r007_cn', 'qtl', [80, 120, 2], 'ema5', 'pct_change', True, 'price'),
+    'r_dr_spd_zs': ('r_dr_7d_spd', 'zscore', [20, 40, 2], 'ema5', 'pct_change', True, 'price'),
+    'shibor1m_qtl': ('shibor_1m', 'qtl', [40, 80, 2], 'ema3', 'pct_change', True, 'price'),
+
+    'cnh_mds': ('usdcnh_spot', 'ma_dff_sgn', [10, 30, 2], 'ema3', 'pct_change', False, 'price'),
+    'cnh_cny_zsa': ('cnh_cny_spd', 'zscore_adj', [10, 20, 2], 'ema10', 'pct_change', False, 'price'),
+    'cnyrr25_zsa': ('usdcny_rr25', 'zscore_adj', [10, 20, 2], 'ema10', 'pct_change', False, 'price'),
+
+    'vhsi_mds': ('vhsi', 'ma_dff_sgn', [10, 20, 2], '', 'pct_change', False, 'price'),
+    'vhsi_qtl': ('vhsi', 'qtl', [10, 30, 2], '', 'pct_change', False, 'price'),
+    'sse50iv_mds': ('sse50_etf_iv', 'ma_dff_sgn', [20, 30, 2], '', 'pct_change', False, 'price'),
+    'sse50iv_qtl': ('sse50_etf_iv', 'qtl', [20, 40, 2], '', 'pct_change', False, 'price'),
+    'eqmargin_zsa': ('eq_margin_outstanding_cn', 'zscore_adj', [10, 20, 2], '', 'pct_change', False, 'price'),
+    'eqmargin_zs': ('eq_margin_outstanding_cn', 'zscore_adj', [10, 20, 2], '', 'pct_change', False, 'price'),
+
+    '10ybe_mds': ('usggbe10', 'ma_dff_sgn', [10, 30, 2], '', 'pct_change', True, 'price'),
+    '10ybe_zsa': ('usggbe10', 'zscore_adj', [20, 40, 2], '', 'pct_change', True, 'price'),
+    '10y_2y_mds': ('usgg10yr_2yr_spd', 'ma_dff_sgn', [20, 30, 2], '', 'pct_change', True, 'price'),
+
+    'dxy_qtl_s': ('dxy', 'qtl', [40, 60, 2], '', 'pct_change', False, 'price'),
+    'dxy_qtl_l': ('dxy', 'qtl', [480, 520, 2], '', 'pct_change', False, 'price'),
+
+    'vix_mds': ('vix', 'ma_dff_sgn', [20, 40, 2], '', 'pct_change', False, 'price'),
+    'vix_zsa': ('vix', 'zscore_adj', [40, 60, 2], 'ema3', 'pct_change', False, 'price'),
 
 }
 
@@ -196,22 +223,52 @@ def custom_funda_signal(df, input_args):
     funda_df = input_args['funda_data']
     signal_name = input_args['signal_name']
     signal_type = input_args.get('signal_type', 1)
+    vol_win = input_args.get('vol_win', 20)
+
+    # get signal by asset
     if signal_type == 0:
         signal_df = pd.DataFrame()
         for asset in product_list:
             signal_ts = funda_signal_by_name(funda_df, signal_name, price_df=df, signal_cap=signal_cap, asset=asset)
             signal_ts = signal_ts.reindex(index=df.index).ffill()
             signal_df[asset] = signal_ts
-        signal_df = signal_df.shift(1)
+
+    # pair trading strategy, fixed ratio
     elif signal_type == 3:
         signal_df = pd.DataFrame()
         signal_ts = funda_signal_by_name(funda_df, signal_name, price_df=df, signal_cap=signal_cap)
         if set(product_list) == set(['rb', 'hc']):
-            signal_df['rb'] = signal_ts.shift(1)
-            signal_df['hc'] = -signal_ts.shift(1)
+            signal_df['rb'] = signal_ts
+            signal_df['hc'] = -signal_ts
+
+    # beta neutral last asseet is index asset
+    elif signal_type == 4:
+        signal_ts = funda_signal_by_name(funda_df, signal_name, price_df=df, signal_cap=signal_cap)
+        signal_df = pd.DataFrame(0, index=signal_ts.index, columns=product_list)
+        index_asset = product_list[-1]
+        beta_win = 122
+        for trade_asset in product_list[:-1]:
+            asset_df = df[[(index_asset, 'c1', 'close'),
+                           (trade_asset, 'c1', 'close')]].copy(deep=True).droplevel([1, 2], axis=1)
+            asset_df = asset_df.dropna(subset=[trade_asset]).ffill()
+            for asset in asset_df:
+                asset_df[f'{asset}_pct'] = asset_df[asset].pct_change().fillna(0)
+                asset_df[f'{asset}_pct_ma'] = asset_df[f'{asset}_pct'].rolling(5).mean()
+                asset_df[f'{asset}_vol'] = asset_df[f'{asset}_pct'].rolling(vol_win).std()
+            asset_df['beta'] = asset_df[f'{index_asset}_pct_ma'].rolling(beta_win).cov(
+                asset_df[f'{trade_asset}_pct_ma']) / asset_df[f'{index_asset}_pct_ma'].rolling(beta_win).var()
+            asset_df['signal'] = signal_ts
+            asset_df = asset_df.ffill()
+            asset_df['pct'] = asset_df[f'{trade_asset}_pct'] - asset_df['beta'] * asset_df[f'{index_asset}_pct']
+            asset_df['vol'] = asset_df['pct'].rolling(vol_win).std()
+            signal_df[trade_asset] += signal_ts * asset_df[f'{trade_asset}_vol']/asset_df['vol']
+            signal_df[index_asset] -= signal_ts * asset_df['beta'] * asset_df[f'{index_asset}_vol'] / asset_df['vol']
+
+    # apply same signal to all assets
     else:
         signal_ts = funda_signal_by_name(funda_df, signal_name, price_df=df, signal_cap=signal_cap)
         signal_ts = signal_ts.reindex(index=df.index).ffill()
-        signal_df = pd.DataFrame(dict([(asset, signal_ts.shift(1)) for asset in product_list]))
+        signal_df = pd.DataFrame(dict([(asset, signal_ts) for asset in product_list]))
 
+    signal_df = signal_df.shift(1)
     return signal_df

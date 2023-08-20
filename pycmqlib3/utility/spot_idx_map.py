@@ -1,4 +1,32 @@
 index_map = {
+    # macro
+    'G002600770': 'usgg2yr',
+    'G002600774': 'usgg10yr',
+    'G002600783': 'usggt10yr',
+    'G013233151': 'usggbe5',
+    'G005172253': 'usgg10yr_2yr_spd',
+
+    'G002600791': 'libor3m',
+    'G002600885': 'dxy',
+    #'G002601505': 'vix',
+    'G003082203': 'vix',
+    'G003082207': 'vvix',
+    'G003082211': 'vxeem',
+    'G003082215': 'vxd', # Vol for DJ
+    'G003082227': 'vxn', # Vol for Nasdaq
+    'G002945506': 'ted_spd',
+
+    'L001619493': 'dr007_cn',
+    'L004317616': 'fr007_cn',
+    'L004317619': 'fdr007_cn',
+    'L004366599': 'usdcny_on',
+    'L004366605': 'usdcny_1m',
+    'L015211333': 'cnh_hibor_1m',
+    'M002816451': 'shibor_1m',
+    'M002816452': 'shibor_3m',
+    'M002816455': 'shibor_1y',
+    'M002816576': 'r007_cn',
+    # ferrous
     'S000020892': 'hrc_sh',
     'S000020891': 'hrc_gz',
     'S002859801': 'hrc_tj',
@@ -107,6 +135,7 @@ index_map = {
 
     'S004039553': 'billet_inv_social_ts',
 
+    # base
     'S004077505': 'cu_spot_sh',
     'S004077504': 'cu_spot_bj',
     'S003048722': 'cu_dianjie_spot_basis',
@@ -199,6 +228,10 @@ index_map = {
 
 
 def process_spot_df(spot_df):
+    spot_df['usggbe10'] = spot_df['usgg10yr'] - spot_df['usggt10yr']
+    spot_df['r_dr_7d_spd'] = spot_df['r007_cn'] - spot_df['dr007_cn']
+
+    #spot_df['usgg10yr_2yr_spd'] = spot_df['usgg10yr'] - spot_df['usgg2yr']
     spot_df['steel_inv_mill'] = spot_df['rebar_inv_mill'] + spot_df['wirerod_inv_mill'] + \
                                 spot_df['hrc_inv_mill'] + spot_df['crc_inv_mill'] #+ spot_df['plate_inv_mill']
     spot_df['steel_inv_all'] = spot_df['steel_inv_social'] + spot_df['steel_inv_mill']

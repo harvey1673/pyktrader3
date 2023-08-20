@@ -38,18 +38,20 @@ def update_data_from_xl(data_folder=LOCAL_NUTSTORE_FOLDER, lookback=30):
     file_setup = {
         # ('ifind_data.xlsx', 'hist'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
         #                                 'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
-        ('ifind_data.xlsx', 'const'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
-                                        'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
         ('ifind_data.xlsx', 'daily'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
                                        'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
+        ('ifind_data.xlsx', 'base_daily'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
+                                            'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
+        ('ifind_data.xlsx', 'macro_daily'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
+                                            'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
         ('ifind_data.xlsx', 'weekly'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
                                         'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
+        ('ifind_data.xlsx', 'base_wkly'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
+                                           'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
+        ('ifind_data.xlsx', 'const'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
+                                       'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
         ('ifind_data.xlsx', 'sector'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
                                         'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
-        ('ifind_data.xlsx', 'base_daily'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
-                                        'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
-        ('ifind_data.xlsx', 'base_wkly'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
-                                            'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
     }
     write_edb_by_xl_sheet(file_setup, data_folder=data_folder, lookback=lookback)
 

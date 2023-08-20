@@ -130,6 +130,7 @@ def update_factor_data(product_list, scenarios, start_date, end_date,
 
     factor_repo = {}
     data_cache = {}
+    vol_win = 20
     for idx, asset in enumerate(product_list):
         sdate = max(sim_start_dict.get(asset, start_date), start_date)
         print("loading mkt = %s, end_date=%s, shift_mode=%s" % (asset, end_date, shift_mode))
@@ -155,7 +156,6 @@ def update_factor_data(product_list, scenarios, start_date, end_date,
         df1 = df1[col_list]
         df1['contmth'] = df1['contract'].apply(lambda x: inst2contmth(x))
         df1['mth'] = df1['contmth'].apply(lambda x: x // 100 * 12 + x % 100)
-        vol_win = 20
         df1['atr'] = dh.ATR(df1, vol_win).fillna(method='bfill')
 
         df2 = df2[col_list]
@@ -323,6 +323,31 @@ def update_factor_data(product_list, scenarios, start_date, end_date,
             # hc_df[fact_name] = hc_df[fact_name].apply(lambda x: max(min(x, hc_df[fact_name].quantile(0.975)),
             #                                                         hc_df[fact_name].quantile(0.025)))
             update_factor_db(hc_df, fact_name, fact_config, start_date=update_start, end_date=end_date, flavor=flavor)
+
+    #beta neutral
+    beta_win = 122
+    asset_pairs = [('rb', 'i'), ('hc', 'i')]
+    fact_config['exch'] = 'xasset'
+    for trade_asset, index_asset in asset_pairs:
+        if (trade_asset not in product_list) or (index_asset not in product_list):
+            continue
+        key = '_'.join([trade_asset, index_asset, 'beta'])
+        fact_config['product_code'] = key
+        asset_df = pd.DataFrame(index=data_cache[index_asset].index)
+        asset_df[trade_asset] = data_cache[trade_asset]['pct_chg'].fillna(0)
+        asset_df[index_asset] = data_cache[index_asset]['pct_chg'].fillna(0)
+        asset_df = asset_df.dropna(subset=[trade_asset]).ffill()
+        for asset in asset_df:
+            asset_df[f'{asset}_pct'] = asset_df[asset].rolling(5).mean()
+            asset_df[f'{asset}_vol'] = asset_df[asset].rolling(vol_win).std()
+        asset_df['beta'] = asset_df[f'{index_asset}_pct'].rolling(beta_win).cov(
+            asset_df[f'{trade_asset}_pct']) / asset_df[f'{index_asset}_pct'].rolling(beta_win).var()
+        asset_df['pct_chg'] = asset_df[trade_asset] - asset_df['beta'] * asset_df[index_asset].fillna(0)
+        asset_df['pct_vol'] = asset_df['pct_chg'].rolling(vol_win).std()
+        asset_df['trade_leg'] = asset_df[f'{trade_asset}_vol']/asset_df['pct_vol']
+        asset_df['index_leg'] = - asset_df[f'{index_asset}_vol'] / asset_df['pct_vol'] * asset_df['beta']
+        for field in ['pct_vol', 'beta', 'trade_leg', 'index_leg']:
+            update_factor_db(asset_df, field, fact_config, start_date=update_start, end_date=end_date, flavor=flavor)
 
     #leader-lagger
     fact_name = 'leadlag_d_mid'

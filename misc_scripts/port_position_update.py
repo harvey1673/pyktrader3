@@ -52,7 +52,7 @@ if __name__ == "__main__":
     else:
         now = datetime.datetime.now()
         tday = now.date()
-        if (~is_workday(tday, 'CHN')) or (now.time() < datetime.time(14, 59, 0)):
+        if (not is_workday(tday, 'CHN')) or (now.time() < datetime.time(14, 59, 0)):
             tday = day_shift(tday, '-1b', CHN_Holidays)
     print("running for %s" % str(tday))
     job_status, pos_update = update_port_pos(tday=tday, email_notify=EMAIL_NOTIFY)
