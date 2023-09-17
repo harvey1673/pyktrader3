@@ -25,6 +25,7 @@ single_factors = {
 factors_by_asset = {
     'lme_base_ts_mds': ['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
     'lme_base_ts_hlr': ['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
+    'base_phybas_carry_ma': ['cu', 'al', 'zn', 'ni', 'sn'],
 }
 
 factors_by_spread = {
