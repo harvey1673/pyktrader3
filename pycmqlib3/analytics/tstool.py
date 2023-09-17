@@ -176,7 +176,14 @@ def calc_conv_signal(feature_ts, signal_func, param_rng, signal_cap=None, vol_wi
         if len(feature_ts) <= win:
             continue
         if signal_func == 'ma':
-            signal_ts = feature_ts.rolling(win, min_periods=win, ignore_na=True).mean()
+            signal_ts = feature_ts.rolling(win, min_periods=win//2).mean() \
+                        / feature_ts.abs().rolling(vol_win, min_periods=vol_win//2).mean()
+        elif signal_func == 'ma_sgn':
+            signal_ts = np.sign(feature_ts.rolling(win).mean())
+        elif signal_func == 'ema':
+            signal_ts = feature_ts.ewm(win).mean()/feature_ts.abs().ewm(vol_win).mean()
+        elif signal_func == 'ema_sgn':
+            signal_ts = np.sign(feature_ts.ewm(win).mean())
         elif signal_func == 'ema_dff':
             signal_ts = feature_ts - feature_ts.ewm(win).mean()
             signal_ts = risk_normalized(signal_ts, win=vol_win)
@@ -530,7 +537,7 @@ def ts_score(df_in, hl_mean, hl_vol, min_obs_mean=0, fill_backward_mean=True, mi
 def np_nanmean_nowarning(nd_in, axis=0, keepdims=True):
     import warnings
     with warnings.catch_warnings():
-        warnings.simplefilter('ignore', category=warnings.RuntimeWarnings)
+        warnings.simplefilter('ignore', category=RuntimeWarning)
         means = np.nanmean(nd_in, axis=axis, keepdims=keepdims)
     return means
 

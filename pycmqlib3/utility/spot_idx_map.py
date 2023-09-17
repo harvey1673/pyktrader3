@@ -136,14 +136,6 @@ index_map = {
     'S004039553': 'billet_inv_social_ts',
 
     # base
-    'S004077505': 'cu_spot_sh',
-    'S004077504': 'cu_spot_bj',
-    'S003048722': 'cu_dianjie_spot_basis',
-    'S003048723': 'cu_pingshui_spot_basis',
-    'S003048724': 'cu_shengshui_spot_basis',
-    'S003048725': 'cu_shifa_spot_basis',
-    'S003048726': 'cu_guixi_spot_basis',
-
     'S005808359': 'cu_lme_3m_close',
     'S005808360': 'al_lme_3m_close',
     'S005808361': 'pb_lme_3m_close',
@@ -192,6 +184,8 @@ index_map = {
     "S002981536": "cu_smm1_prem_spot",
     "S002981537": "cu_smm1_shifa_spot",
     "S002981538": "cu_smm1_guixi_spot",
+    'S004077505': 'cu_spot_sh',
+    'S004077504': 'cu_spot_bj',
     "S002865592": "al_smm0_spot",
     "S002865578": "zn_smm0_spot",
     "S002865583": "pb_smm1_spot",
@@ -201,17 +195,35 @@ index_map = {
     "S002981542": "ni_smm1_imp_spot",
     "S010361921": "ni_cj1_spot",
 
+    'S003048722': 'cu_smm_phybasis',
+    'S003048723': 'cu_flat_phybasis',
+    'S003048724': 'cu_prem_phybasis',
+    'S003048725': 'cu_shifa_phybasis',
+    'S003048726': 'cu_guixi_phybasis',
     "S009137283": "cu_cj_phybasis",
     "S009137286": "cu_cjb_phybasis",
+    "S009621955": "cu_sh_phybasis",
+
+    "S003048727": "al_smm0_phybasis",
+    "S004031017": "al_sh_phybasis",
     "S009137289": "al_cj_phybasis",
     "S009137292": "al_cjb_phybasis",
     "S008871816": "al_nanchu_phybasis",
-    "S005068421": 'zn_smm_phybasis',
+    "S008527822": "al_wm0_phybasis_low",
+    "S008527823": "al_wm0_phybasis_high",
+
+    "S005068421": 'zn_smm0_sh_phybasis',
+    "S005068424": 'zn_smm1_sh_phybasis',
     "S005068427": 'zn_smm_imp_phybasis', #
     "S008871823": "zn_nanchu_phybasis", # fut0
+    "S008527843": 'zn_wm0_phybasis',
+    "S008527848": 'zn_wm1_phybasis',
+
     "S005068193": "ni_smm1_phybasis",
     "S005068175": "ni_smm1_jc_phybasis",
     "S005068169": "ni_smm1_ru_phybasis",
+    "S005068211": "pb_smm1_sh_phybasis",
+    "S005068409": "sn_smm1_sh_phybasis",
 
     "S009160074": "cuscrap_1_spot_jzh",
     "S009160107": "cuscrap_2_spot_jzh",

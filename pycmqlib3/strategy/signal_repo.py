@@ -51,6 +51,8 @@ signal_store = {
     'lme_base_ts_mds': ('lme_base_ts', 'ma_dff_sgn', [10, 30, 2], '', '', True, 'price'),
     'lme_base_ts_hlr': ('lme_base_ts', 'hlratio', [10, 20, 2], '', '', True, 'price'),
 
+    'base_phybas_carry_ma': ('base_phybas_carry', 'ma', [1, 2], '', '', True, 'price'),
+
     'r007_qtl': ('r007_cn', 'qtl', [80, 120, 2], 'ema5', 'pct_change', True, 'price'),
     'r_dr_spd_zs': ('r_dr_7d_spd', 'zscore', [20, 40, 2], 'ema5', 'pct_change', True, 'price'),
     'shibor1m_qtl': ('shibor_1m', 'qtl', [40, 80, 2], 'ema3', 'pct_change', True, 'price'),
@@ -86,6 +88,21 @@ feature_to_feature_key_mapping = {
         'ni': 'ni_lme_0m_3m_spd',
         'sn': 'sn_lme_0m_3m_spd',
         'pb': 'pb_lme_0m_3m_spd',
+    },
+    'base_phybas_carry': {
+        'cu': 'cu_smm_phybasis',
+        'al': 'al_smm0_phybasis',
+        'zn': 'zn_smm1_sh_phybasis',
+        'pb': 'pb_smm1_sh_phybasis',
+        'ni': 'ni_smm1_jc_phybasis',
+        'sn': 'sn_smm1_sh_phybasis',
+    }
+}
+
+param_rng_by_feature_key = {
+    'base_phybas_carry': {
+        'cu': [10, 20],
+        'al': [10, 20]
     }
 }
 
@@ -163,7 +180,10 @@ def funda_signal_by_name(spot_df, signal_name, price_df=None,
                          signal_repo=signal_store, feature_key_map=feature_to_feature_key_mapping):
     feature, signal_func, param_rng, proc_func, chg_func, bullish, freq = signal_repo[signal_name]
     if asset and feature in feature_key_map:
-        feature = feature_key_map[feature].get(asset, feature)
+        new_feature = feature_key_map[feature].get(asset, feature)
+        if feature in param_rng_by_feature_key:
+            param_rng = param_rng_by_feature_key[feature].get(asset, param_rng)
+        feature = new_feature
     feature_ts = spot_df[feature].dropna()
     cdates = pd.date_range(start=feature_ts.index[0], end=feature_ts.index[-1], freq='D')
     bdates = pd.bdate_range(start=feature_ts.index[0], end=feature_ts.index[-1], freq='C', holidays=CHN_Holidays)
