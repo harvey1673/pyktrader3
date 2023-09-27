@@ -1,6 +1,6 @@
 import pandas as pd
 from pycmqlib3.analytics.tstool import *
-from pycmqlib3.utility.misc import CHN_Holidays
+from pycmqlib3.utility.misc import CHN_Holidays, day_shift
 
 
 signal_store = {
@@ -172,6 +172,21 @@ def leader_lagger(df, input_args):
                 break
             else:
                 signal_df[asset] = 0
+    return signal_df
+
+
+def long_break(df, input_args):
+    product_list = input_args['product_list']
+    gaps = input_args.get('gaps', 7)
+    days = input_args.get('days', 2)
+    signal_df = pd.DataFrame(index=df.index, columns=product_list)
+    signal_ts = df.index.map(lambda x:
+                             1 if ((day_shift(x.date(), f'{days}b', CHN_Holidays) - x.date()).days >= gaps) or
+                                  ((x.date() - day_shift(x.date(), f'-{days}b', CHN_Holidays)).days >= gaps)
+                             else 0)
+    signal_ts = pd.Series(signal_ts, index=df.index)
+    for asset in product_list:
+        signal_df[asset] = signal_ts
     return signal_df
 
 
