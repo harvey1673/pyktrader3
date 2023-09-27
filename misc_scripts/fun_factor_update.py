@@ -6,6 +6,16 @@ from pycmqlib3.utility.misc import day_shift, CHN_Holidays, prod2exch, is_workda
 from pycmqlib3.analytics.tstool import *
 from misc_scripts.factor_data_update import update_factor_db
 
+
+def long_hol_signal(spot_df, days=2, gaps=7):
+    sig_ts = spot_df.index.map(lambda x:
+                               1 if ((day_shift(x.date(), f'{days}b', CHN_Holidays) - x.date()).days >= gaps) or
+                                    ((x.date() - day_shift(x.date(), f'-{days}b', CHN_Holidays)).days >= gaps)
+                               else 0)
+    sig_ts = pd.Series(sig_ts, index=spot_df.index)
+    return sig_ts
+
+
 single_factors = {
     'steel_margin_lvl_fast': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
     'strip_hsec_lvl_mid': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
@@ -38,6 +48,17 @@ factors_by_spread = {
 factors_by_beta_neutral = {
     'io_pinv31_lvl_zsa': [('rb', 'i', 1), ('hc', 'i', 1)],
     'io_pinv45_lvl_hlr': [('rb', 'i', 1), ('hc', 'i', 1)],
+}
+
+factors_by_func = {
+    "long_hol_2b": {
+        'assets': ['rb', 'hc', 'i', 'j', 'jm', 'ru', 'FG', 'SM', 'SF',
+                   'cu', 'zn', 'sn', 'ni', 'ss', 'pb', 'al',
+                   'l', 'pp', 'v', 'TA', 'sc', 'eb', 'eg', 'UR', 'lu',
+                   'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'CF', 'jd', 'AP', 'lh'],
+        'func': long_hol_signal,
+        'args': {'days': 2, 'gaps': 7}
+    }
 }
 
 
@@ -93,6 +114,13 @@ def update_fun_factor(run_date=datetime.date.today(), flavor='mysql'):
     for factor_name in single_factors:
         signal_ts = funda_signal_by_name(spot_df, factor_name, price_df=None, signal_cap=None)
         for asset in single_factors[factor_name]:
+            save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=run_date, flavor=flavor)
+
+    for factor_name in factors_by_func:
+        func = factors_by_func[factor_name]['func']
+        func_args = factors_by_func[factor_name]['args']
+        signal_ts = func(spot_df, **func_args)
+        for asset in factors_by_func[factor_name]['assets']:
             save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=run_date, flavor=flavor)
 
     for factor_name in factors_by_spread.keys():
