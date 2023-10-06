@@ -227,6 +227,7 @@ index_map = {
 
     "S009160074": "cuscrap_1_spot_jzh",
     "S009160107": "cuscrap_2_spot_jzh",
+    'S005971281': 'cu_mine_inv_ports',
 
     "S015202398": "cu_scrap1_diff_gd", # short history
     "S015202399": "cu_scrap1_diff_tj",
@@ -236,6 +237,19 @@ index_map = {
     "S009621341": "al_rod_6063_procfee_jiangxi", # no good
     "S009621410": "al_rod_6063_procfee_sichuan",
     "S009621539": "al_rod_6063_procfee_gansu",
+
+    "S006161499": "cu_inv_social_all",
+    "S005363047": "al_inv_social_all",
+    "S006161627": "zn_inv_social_3p",
+    "S006161628": "zn_inv_social_7p",
+    "S006161636": "ni_inv_social_6p",
+    'S013735402': "sn_inv_social_all",
+    'S006161617': 'pb_inv_social_5p',
+    'S006167225': 'bauxite_inv_az_ports',
+    'S006167236': 'alumina_inv_az_ports',
+    'S011258021': 'bauxite_inv_ports_inv',
+    'S012937595': 'si_inv_social_all',
+    'S006563225': 'al_6063rod_inv__social'
 }
 
 
