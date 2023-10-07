@@ -219,6 +219,19 @@ def calc_conv_signal(feature_ts, signal_func, param_rng, signal_cap=None, vol_wi
     return conv_signal
 
 
+def signal_hump(signal_ts, gap=0.2):
+    sig_np = signal_ts.to_numpy()
+    pos_np = np.zeros(len(sig_np))
+    if ~np.isnan(sig_np[0]):
+        pos_np[0] = sig_np[0]
+    for idx in range(1, len(sig_np)):
+        if (~np.isnan(sig_np[idx])) and (abs(pos_np[idx-1] - sig_np[idx]) >= gap):
+            pos_np[idx] = sig_np[idx]
+        else:
+            pos_np[idx] = pos_np[idx-1]
+    return pd.Series(pos_np, index=signal_ts.index)
+
+
 def make_seasonal_df(ser, limit=1, fill=False, weekly_dense=False):
     df = ser.to_frame('data')
     if isinstance(df.index, pd.PeriodIndex):

@@ -2,7 +2,7 @@ import sys
 from pycmqlib3.strategy.signal_repo import signal_store, funda_signal_by_name
 from pycmqlib3.utility.spot_idx_map import index_map, process_spot_df
 from pycmqlib3.utility.dbaccess import load_codes_from_edb, load_factor_data
-from pycmqlib3.utility.misc import day_shift, CHN_Holidays, prod2exch, is_workday
+from pycmqlib3.utility.misc import day_shift, CHN_Holidays, prod2exch, is_workday, nearby
 from pycmqlib3.analytics.tstool import *
 from misc_scripts.factor_data_update import update_factor_db
 
@@ -26,6 +26,7 @@ single_factors = {
     'io_invdays_lyoy': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
     'steel_sinv_lyoy_zs': ['rb', 'hc', 'i', 'FG', 'v'],
     'steel_sinv_lyoy_mds': ['rb', 'hc', 'i', 'FG', 'v'],
+    'fef_c1_c2_ratio_or_qtl': ['rb', 'hc', 'j'],
     'cu_prem_usd_zsa': ['cu'],
     'cu_prem_usd_md': ['cu'],
     'cu_phybasis_zsa': ['cu'],
@@ -36,6 +37,7 @@ factors_by_asset = {
     'lme_base_ts_mds': ['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
     'lme_base_ts_hlr': ['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
     'base_phybas_carry_ma': ['cu', 'al', 'zn', 'ni', 'sn'],
+    'base_inv_mds': ['cu', 'al', 'zn', 'ni'],
 }
 
 factors_by_spread = {
@@ -48,6 +50,7 @@ factors_by_spread = {
 factors_by_beta_neutral = {
     'io_pinv31_lvl_zsa': [('rb', 'i', 1), ('hc', 'i', 1)],
     'io_pinv45_lvl_hlr': [('rb', 'i', 1), ('hc', 'i', 1)],
+    'fef_c1_c2_ratio_spd_qtl': [('rb', 'i', 1), ('hc', 'i', 1), ('j', 'i', 1)],
 }
 
 factors_by_func = {
@@ -85,6 +88,17 @@ def get_fun_data(start_date, end_date):
     ]:
         spot_df[col] = spot_df[col].shift(-1)
     spot_df = process_spot_df(spot_df)
+    fef_nb1 = nearby('FEF', n=2,
+                     start_date=start_date,
+                     end_date=end_date,
+                     roll_rule='-2b', freq='d', shift_mode=0)
+    fef_nb2 = nearby('FEF', n=3,
+                     start_date=start_date,
+                     end_date=end_date,
+                     roll_rule='-2b', freq='d', shift_mode=0)
+    fef_data = pd.concat([fef_nb1['settle'].to_frame('FEFc1'), fef_nb2['settle'].to_frame('FEFc2')], axis=1).dropna()
+    fef_data['FEF_c1_c2_ratio'] = fef_data['FEFc1']/fef_data['FEFc2']
+    spot_df['FEF_c1_c2_ratio'] = fef_data['FEF_c1_c2_ratio']
     return spot_df
 
 
@@ -148,6 +162,7 @@ def update_fun_factor(run_date=datetime.date.today(), flavor='mysql'):
             beta_df = pd.pivot_table(beta_df, index='date', columns=['fact_name'], values='fact_val', aggfunc='last')
             signal_df['trade_ratio'] = beta_df['trade_leg']
             signal_df['index_ratio'] = beta_df['index_leg']
+            signal_df = signal_df.ffill()
             signal_df[trade_asset] += signal_df['trade_ratio'] * signal_df['raw_sig'] * weight
             signal_df[index_asset] += signal_df['index_ratio'] * signal_df['raw_sig'] * weight
         for asset in asset_list:

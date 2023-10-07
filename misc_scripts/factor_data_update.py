@@ -116,7 +116,7 @@ def update_factor_data(product_list, scenarios, start_date, end_date,
                        freq='d',
                        flavor='mysql',
                        shift_mode=1):
-    col_list = ['open', 'high', 'low','close', 'volume', 'openInterest', 'contract', 'shift']
+    col_list = ['open', 'high', 'low', 'close', 'volume', 'openInterest', 'contract', 'shift']
     update_start = day_shift(end_date, '-20b', CHN_Holidays)
 
     fact_config = {}
@@ -326,7 +326,7 @@ def update_factor_data(product_list, scenarios, start_date, end_date,
 
     #beta neutral
     beta_win = 122
-    asset_pairs = [('rb', 'i'), ('hc', 'i')]
+    asset_pairs = [('rb', 'i'), ('hc', 'i'), ('j', 'i')]
     fact_config['exch'] = 'xasset'
     for trade_asset, index_asset in asset_pairs:
         if (trade_asset not in product_list) or (index_asset not in product_list):

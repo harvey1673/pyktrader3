@@ -37,21 +37,25 @@ signal_store = {
     'strip_hsec_lvl_mid': ('strip_hsec', 'qtl', [60, 80, 2], '', 'pct_change', True, 'price'),
     'macf_cfd_lvl_mid': ('macf_cfd', 'qtl', [40, 82, 2], '', 'pct_change', True, 'price'),
     'hc_rb_diff_lvl_fast': ('hc_rb_diff', 'zscore', [20, 40, 2], '', '', True, 'price'),
+
+    'fef_c1_c2_ratio_or_qtl': ('FEF_c1_c2_ratio', 'qtl', [30, 60, 2], '', '', False, ''),
+    'fef_c1_c2_ratio_spd_qtl': ('FEF_c1_c2_ratio', 'qtl', [30, 60, 2], '', '', False, ''),
+
     'cu_prem_usd_zsa': ('cu_prem_yangshan_warrant', 'zscore_adj', [20, 30, 2], '', '', True, 'price'),
     'cu_prem_usd_md': ('cu_prem_yangshan_warrant', 'ma_dff', [20, 30, 2], '', '', True, 'price'),
     'cu_phybasis_zsa': ('cu_cjb_phybasis', 'zscore_adj', [40, 60, 2], 'sma10', 'pct_change', True, 'price'),  # great
     'cu_phybasis_hlr': ('cu_cjb_phybasis', 'hlratio', [40, 60, 2], 'sma10', 'pct_change', True, 'price'),  # great
+
+    'lme_base_ts_mds': ('lme_base_ts', 'ma_dff_sgn', [10, 30, 2], '', '', True, 'price'),
+    'lme_base_ts_hlr': ('lme_base_ts', 'hlratio', [10, 20, 2], '', '', True, 'price'),
+    'base_phybas_carry_ma': ('base_phybas_carry', 'ma', [1, 2], '', '', True, 'price'),
+    'base_inv_mds': ('base_inv', 'ma_dff_sgn', [180, 240, 2], '', '', False, 'price'),
 
     # too short
     'cu_scrap1_margin_gd': ('cu_scrap1_diff_gd', 'qtl', [40, 60, 2], '', 'pct_change', True, 'price'),  # too short
     'cu_scrap1_margin_tj': ('cu_scrap1_diff_tj', 'qtl', [40, 60, 2], '', 'pct_change', True, 'price'),  # too short
     'cu_rod_procfee_2.6': ('cu_rod_2.6_procfee_nanchu', 'zscore_adj', [20, 30, 2], '', 'pct_change', True, 'price'),
     'cu_rod_procfee_8.0': ('cu_rod_8_procfee_nanchu', 'zscore_adj', [20, 30, 2], '', 'pct_change', True, 'price'),
-
-    'lme_base_ts_mds': ('lme_base_ts', 'ma_dff_sgn', [10, 30, 2], '', '', True, 'price'),
-    'lme_base_ts_hlr': ('lme_base_ts', 'hlratio', [10, 20, 2], '', '', True, 'price'),
-
-    'base_phybas_carry_ma': ('base_phybas_carry', 'ma', [1, 2], '', '', True, 'price'),
 
     'r007_qtl': ('r007_cn', 'qtl', [80, 120, 2], 'ema5', 'pct_change', True, 'price'),
     'r_dr_spd_zs': ('r_dr_7d_spd', 'zscore', [20, 40, 2], 'ema5', 'pct_change', True, 'price'),
@@ -96,6 +100,16 @@ feature_to_feature_key_mapping = {
         'pb': 'pb_smm1_sh_phybasis',
         'ni': 'ni_smm1_jc_phybasis',
         'sn': 'sn_smm1_sh_phybasis',
+    },
+    'base_inv': {
+        'cu': 'cu_inv_social_all',
+        'al': 'al_inv_social_all',
+        'zn': 'zn_inv_social_3p',
+        'ni': 'ni_inv_social_6p',
+        'pb': 'pb_inv_social_5p',
+        'sn': 'sn_inv_social_all',
+        'si': 'si_inv_social_all',
+        'ao': 'bauxite_inv_az_ports',
     }
 }
 
@@ -247,8 +261,8 @@ def funda_signal_by_name(spot_df, signal_name, price_df=None,
         signal_ts = feature_ts
     if not bullish:
         signal_ts = -signal_ts
-    signal_ts = signal_ts.reindex(index=pd.bdate_range(
-        start=spot_df.index[0], end=spot_df.index[-1], freq='C', holidays=CHN_Holidays)).ffill().dropna()
+    # signal_ts = signal_ts.reindex(index=pd.bdate_range(
+    #     start=spot_df.index[0], end=spot_df.index[-1], freq='C', holidays=CHN_Holidays)).ffill().dropna()
     return signal_ts
 
 
@@ -265,13 +279,22 @@ def custom_funda_signal(df, input_args):
         signal_df = pd.DataFrame()
         for asset in product_list:
             signal_ts = funda_signal_by_name(funda_df, signal_name, price_df=df, signal_cap=signal_cap, asset=asset)
-            signal_ts = signal_ts.reindex(index=df.index).ffill()
+            signal_ts = signal_ts.reindex(
+                index=pd.date_range(start=df.index[0],
+                                    end=df.index[-1],
+                                    freq='C'
+                                    )).ffill().reindex(index=df.index)
             signal_df[asset] = signal_ts
 
     # pair trading strategy, fixed ratio
     elif signal_type == 3:
         signal_df = pd.DataFrame()
         signal_ts = funda_signal_by_name(funda_df, signal_name, price_df=df, signal_cap=signal_cap)
+        signal_ts = signal_ts.reindex(
+            index=pd.date_range(start=df.index[0],
+                                end=df.index[-1],
+                                freq='C'
+                                )).ffill().reindex(index=df.index)
         if set(product_list) == set(['rb', 'hc']):
             signal_df['rb'] = signal_ts
             signal_df['hc'] = -signal_ts
@@ -296,13 +319,18 @@ def custom_funda_signal(df, input_args):
             asset_df = asset_df.ffill()
             asset_df['pct'] = asset_df[f'{trade_asset}_pct'] - asset_df['beta'] * asset_df[f'{index_asset}_pct']
             asset_df['vol'] = asset_df['pct'].rolling(vol_win).std()
+            asset_df = asset_df.reindex(index=signal_ts.index).ffill()
             signal_df[trade_asset] += signal_ts * asset_df[f'{trade_asset}_vol']/asset_df['vol']
             signal_df[index_asset] -= signal_ts * asset_df['beta'] * asset_df[f'{index_asset}_vol'] / asset_df['vol']
 
     # apply same signal to all assets
     else:
         signal_ts = funda_signal_by_name(funda_df, signal_name, price_df=df, signal_cap=signal_cap)
-        signal_ts = signal_ts.reindex(index=df.index).ffill()
+        signal_ts = signal_ts.reindex(
+            index=pd.date_range(start=df.index[0],
+                                end=df.index[-1],
+                                freq='C'
+                                )).ffill().reindex(index=df.index)
         signal_df = pd.DataFrame(dict([(asset, signal_ts) for asset in product_list]))
 
     signal_df = signal_df.shift(1)
