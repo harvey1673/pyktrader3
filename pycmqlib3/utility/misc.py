@@ -10,6 +10,7 @@ import pandas as pd
 import json
 from . import dbaccess
 from typing import Union, List
+import exchange_calendars as ec
 
 BDAYS_PER_YEAR = 245.0
 AMERICAN_OPTION_STEPS = 40
@@ -31,6 +32,8 @@ month_code_map = {'f': 1,
                   'x': 11,
                   'z': 12}
 
+rev_month_code_map = {v: k for k, v in month_code_map.items()}
+
 product_code = {'SHFE': ['cu', 'cu_Opt', 'al', 'ao', 'zn', 'al_Opt', 'zn_Opt', 'pb', 'wr', 'rb', 'fu', 'ru', 'ru_Opt',
                          'bu', 'hc', 'ag', 'au', 'au_Opt', 'sn', 'ni', 'sp', 'ss', 'br', 'br_Opt'],
                 'CFFEX': ['IF', 'TF', 'IO_Opt', 'T', 'TS', 'TL', 'IH', 'IC', 'IM', 'MO_Opt'],
@@ -44,7 +47,7 @@ product_code = {'SHFE': ['cu', 'cu_Opt', 'al', 'ao', 'zn', 'al_Opt', 'zn_Opt', '
                          'PF', 'PK', 'PK_Opt'],
                 'INE': ['sc', 'nr', 'lu', 'bc', 'ec'],
                 'GFEX': ['si', 'si_Opt', 'lc', 'lc_Opt'],
-                'SGX': ['fef', 'iolp', 'iac', 'm65f'],
+                'SGX': ['FEF', 'M65F'],
                 'LME': ['lsc', 'lsr', 'lhc'],
                 'NYMEX': ['nhr', ]}
 
@@ -514,6 +517,23 @@ def update_holidays_from_aks(filename='C:/dev/akshare/akshare/file_fold/calendar
         json.dump(output, ofile, indent=4)
 
 
+def get_hols_by_ec(exch='DCE', start_date=datetime.date(2008, 1, 1), end_date=datetime.date.today()):
+    exch_map = {
+        'DCE': 'XSHG',
+        'SHFE': 'XSHG',
+        'INE': 'XSHG',
+        'CZCE': 'XSHG',
+        'CFFEX': 'XSHG',
+        'GFEX': 'XSHG',
+        'SGX': 'XSES',
+        'CME': 'CMES',
+    }
+    ec_cal = ec.get_calendar(exch_map[exch])
+    bdays = ec_cal.sessions_in_range(start_date, end_date)
+    hols = [cdate.date() for cdate in pd.date_range(start=start_date, end=end_date, freq='B') if cdate not in bdays]
+    return hols
+
+
 def get_hols_from_json(filename='C:/dev/pyktrader3/wtdev/common/holidays.json', key='CHINA'):
     f = open(filename)
     hols_dict = json.load(f)
@@ -818,8 +838,11 @@ def inst_to_exch(inst):
 
 def get_hols_by_exch(exch):
     hols = []
-    if exch in ['DCE', 'CFFEX', 'CZCE', 'SHFE', 'INE', 'GFEX', 'SSE', 'SZSE',]:
+    if exch in ['DCE', 'CFFEX', 'CZCE', 'SHFE', 'INE', 'GFEX', 'SSE', 'SZSE']:
         hols = CHN_Holidays
+    elif exch == 'SGX':
+        edate = datetime.date.today() + datetime.timedelta(days=60)
+        hols = get_hols_by_ec(exch='SGX', start_date=datetime.date(2008, 1, 1), end_date=edate)
     return hols
 
 

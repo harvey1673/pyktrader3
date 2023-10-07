@@ -5,10 +5,12 @@ import json
 from misc_scripts.factor_data_update import update_port_position
 from misc_scripts.fun_factor_update import update_fun_factor
 from misc_scripts.auto_update_data_xl import update_data_from_xl
+from misc_scripts.sgx_daily_update import fetch_daily_eod, fetch_fef_3pm_close
 from pycmqlib3.utility.misc import day_shift, CHN_Holidays, is_workday
 from pycmqlib3.utility.sec_bits import EMAIL_HOTMAIL, NOTIFIERS, LOCAL_PC_NAME, EMAIL_NOTIFY
 from pycmqlib3.utility.email_tool import send_html_by_smtp
 update_func_list = [
+    'fetch_sgx_eod',
     'fun_data_xl_loading',
     'fun_factor_update',
     'fact_pos_file',
@@ -24,6 +26,9 @@ def update_port_pos(tday=datetime.date.today(), email_notify=EMAIL_NOTIFY):
             update_data_from_xl()
         elif update_field == 'fun_factor_update':
             update_fun_factor(run_date=tday)
+        elif update_field == 'fetch_sgx_eod':
+            fetch_daily_eod()
+            fetch_fef_3pm_close(cdate=tday)
         else:
             pos_update = update_port_position(run_date=tday)
         print(f"{update_field} is done")

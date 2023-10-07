@@ -20,11 +20,12 @@ def generate_strat_position(cur_date, prod_list, factor_repo,
     target_pos = {}
     vol_weight = [1.0] * len(prod_list)
     start_date = day_shift(cur_date, '-%sb' % (str(hist_fact_lookback)), CHN_Holidays)
+    end_date = day_shift(day_shift(cur_date, '1b', CHN_Holidays), '-1d')
     vol_df = load_factor_data(prod_list,
                               factor_list=[vol_key],
                               roll_label=roll_label,
                               start=start_date,
-                              end=cur_date,
+                              end=end_date,
                               freq=freq,
                               db_table=fact_db_table)
     vol_df = pd.pivot_table(vol_df[vol_df['fact_name'] == vol_key], values='fact_val',
@@ -35,10 +36,10 @@ def generate_strat_position(cur_date, prod_list, factor_repo,
     fact_list = list(set([factor_repo[fact]['name'] for fact in factor_repo.keys()]))
     if repo_type == 'port':
         df = load_factor_data([], factor_list=fact_list, roll_label=roll_label,
-                              start=start_date, end=cur_date, freq=freq, db_table=fact_db_table)
+                              start=start_date, end=end_date, freq=freq, db_table=fact_db_table)
     else:
         df = load_factor_data(prod_list, factor_list=fact_list, roll_label=roll_label,
-                              start=start_date, end=cur_date, freq=freq, db_table=fact_db_table)
+                              start=start_date, end=end_date, freq=freq, db_table=fact_db_table)
     for idx, prod in enumerate(prod_list):
         vol_weight[idx] = vol_weight[idx]*pos_scaler/(vol_df[prod].iloc[-1]*product_lotsize[prod])
     if repo_type == 'port':
