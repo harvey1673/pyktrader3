@@ -66,6 +66,7 @@ factors_by_func = {
 
 
 def get_fun_data(start_date, end_date):
+    end_date = day_shift(day_shift(end_date, '1b', CHN_Holidays), '-1d')
     cdate_rng = pd.date_range(start=start_date, end=end_date, freq='D', name='date')
     data_df = load_codes_from_edb(index_map.keys(), source='ifind', column_name='index_code')
     data_df = data_df.rename(columns=index_map)
@@ -89,11 +90,11 @@ def get_fun_data(start_date, end_date):
         spot_df[col] = spot_df[col].shift(-1)
     spot_df = process_spot_df(spot_df)
     fef_nb1 = nearby('FEF', n=2,
-                     start_date=start_date,
+                     start_date=max(start_date, datetime.date(2015, 9, 1)),
                      end_date=end_date,
                      roll_rule='-2b', freq='d', shift_mode=0)
     fef_nb2 = nearby('FEF', n=3,
-                     start_date=start_date,
+                     start_date=max(start_date, datetime.date(2015, 9, 1)),
                      end_date=end_date,
                      roll_rule='-2b', freq='d', shift_mode=0)
     fef_data = pd.concat([fef_nb1['settle'].to_frame('FEFc1'), fef_nb2['settle'].to_frame('FEFc2')], axis=1).dropna()
@@ -118,29 +119,30 @@ def save_signal_to_db(asset, factor_name, signal_ts, run_date, roll_label='hot',
 def update_fun_factor(run_date=datetime.date.today(), flavor='mysql'):
     start_date = day_shift(run_date, '-3y')
     update_start = day_shift(run_date, '-60b', CHN_Holidays)
-    spot_df = get_fun_data(start_date, run_date)
+    next_bdate = day_shift(run_date, '1b', CHN_Holidays)
+    spot_df = get_fun_data(start_date, next_bdate)
 
     for factor_name in factors_by_asset.keys():
         for asset in factors_by_asset[factor_name]:
             signal_ts = funda_signal_by_name(spot_df, factor_name, price_df=None, signal_cap=None, asset=asset)
-            save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=run_date, flavor=flavor)
+            save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=next_bdate, flavor=flavor)
 
     for factor_name in single_factors:
         signal_ts = funda_signal_by_name(spot_df, factor_name, price_df=None, signal_cap=None)
         for asset in single_factors[factor_name]:
-            save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=run_date, flavor=flavor)
+            save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=next_bdate, flavor=flavor)
 
     for factor_name in factors_by_func:
         func = factors_by_func[factor_name]['func']
         func_args = factors_by_func[factor_name]['args']
         signal_ts = func(spot_df, **func_args)
         for asset in factors_by_func[factor_name]['assets']:
-            save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=run_date, flavor=flavor)
+            save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=next_bdate, flavor=flavor)
 
     for factor_name in factors_by_spread.keys():
         signal_ts = funda_signal_by_name(spot_df, factor_name, price_df=None, signal_cap=None)
         for asset, weight in factors_by_spread[factor_name]:
-            save_signal_to_db(asset, factor_name, weight*signal_ts[update_start:], run_date=run_date, flavor=flavor)
+            save_signal_to_db(asset, factor_name, weight*signal_ts[update_start:], run_date=next_bdate, flavor=flavor)
 
     for factor_name in factors_by_beta_neutral.keys():
         signal_ts = funda_signal_by_name(spot_df, factor_name, price_df=None, signal_cap=None)
@@ -166,7 +168,7 @@ def update_fun_factor(run_date=datetime.date.today(), flavor='mysql'):
             signal_df[trade_asset] += signal_df['trade_ratio'] * signal_df['raw_sig'] * weight
             signal_df[index_asset] += signal_df['index_ratio'] * signal_df['raw_sig'] * weight
         for asset in asset_list:
-            save_signal_to_db(asset, factor_name, signal_df[asset][update_start:], run_date=run_date, flavor=flavor)
+            save_signal_to_db(asset, factor_name, signal_df[asset][update_start:], run_date=next_bdate, flavor=flavor)
 
 
 if __name__ == "__main__":
