@@ -20,7 +20,7 @@ def generate_strat_position(cur_date, prod_list, factor_repo,
     target_pos = {}
     vol_weight = [1.0] * len(prod_list)
     start_date = day_shift(cur_date, '-%sb' % (str(hist_fact_lookback)), CHN_Holidays)
-    end_date = day_shift(day_shift(cur_date, '1b', CHN_Holidays), '-1d')
+    end_date = day_shift(cur_date, '1b', CHN_Holidays)
     vol_df = load_factor_data(prod_list,
                               factor_list=[vol_key],
                               roll_label=roll_label,
