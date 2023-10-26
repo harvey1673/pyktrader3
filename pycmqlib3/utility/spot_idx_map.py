@@ -249,7 +249,7 @@ index_map = {
     'S006167236': 'alumina_inv_az_ports',
     'S011258021': 'bauxite_inv_ports_inv',
     'S012937595': 'si_inv_social_all',
-    'S006563225': 'al_6063rod_inv__social'
+    'S006563225': 'al_6063rod_inv_social'
 }
 
 
