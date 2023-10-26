@@ -93,10 +93,11 @@ scenarios_test = [
 ]
 
 mixed_metal_mkts = ['rb', 'hc', 'i', 'j', 'jm', 'ru', 'FG', 'cu', 'al', 'zn', 'ni']
-commod_mkts = ['rb', 'hc', 'i', 'j', 'jm', 'ru', 'FG', 'cu', 'al', 'zn', 'pb', 'ni', 'sn',
-               'l', 'pp', 'v', 'TA', 'sc', 'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'CF', 'jd',
-               'AP', 'SM', 'SF', 'ss', 'CJ', 'UR', 'eb', 'eg', 'pg', 'T', 'PK', 'PF', 'lh',
-               'MA', 'SR', 'cs', 'TF', 'lu', 'fu']
+commod_mkts = [
+    'rb', 'hc', 'i', 'j', 'jm', 'ru', 'FG', 'SM', 'SF', 'cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ss',
+    'l', 'pp', 'v', 'TA', 'sc', 'lu', 'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'CF', 'jd', 'lh',
+    'AP', 'CJ', 'UR', 'eb', 'eg', 'pg', 'T', 'PK', 'PF', 'MA', 'SR', 'cs', 'TF', 'fu',
+]
 
 scenarios_all = [
     ('tscarry', 'ryieldnmb', 2.8, 1, 120, 1, (None, {}, ''), [0.0, 0.0]),

@@ -66,8 +66,8 @@ factors_by_func = {
 
 
 def get_fun_data(start_date, end_date):
-    end_date = day_shift(day_shift(end_date, '1b', CHN_Holidays), '-1d')
-    cdate_rng = pd.date_range(start=start_date, end=end_date, freq='D', name='date')
+    e_date = day_shift(day_shift(end_date, '1b', CHN_Holidays), '-1d')
+    cdate_rng = pd.date_range(start=start_date, end=e_date, freq='D', name='date')
     data_df = load_codes_from_edb(index_map.keys(), source='ifind', column_name='index_code')
     data_df = data_df.rename(columns=index_map)
     spot_df = data_df.dropna(how='all').copy(deep=True)
