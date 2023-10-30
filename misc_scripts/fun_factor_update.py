@@ -37,7 +37,7 @@ factors_by_asset = {
     'lme_base_ts_mds': ['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
     'lme_base_ts_hlr': ['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
     'base_phybas_carry_ma': ['cu', 'al', 'zn', 'ni', 'sn'],
-    'base_inv_mds': ['cu', 'al', 'zn', 'ni'],
+    'base_inv_mds': ['cu', 'al', 'zn', 'ni', 'sn', 'pb'],
 }
 
 factors_by_spread = {
@@ -65,8 +65,8 @@ factors_by_func = {
 }
 
 
-def get_fun_data(start_date, end_date):
-    e_date = day_shift(day_shift(end_date, '1b', CHN_Holidays), '-1d')
+def get_fun_data(start_date, run_date):
+    e_date = day_shift(day_shift(run_date, '2b', CHN_Holidays), '-1d')
     cdate_rng = pd.date_range(start=start_date, end=e_date, freq='D', name='date')
     data_df = load_codes_from_edb(index_map.keys(), source='ifind', column_name='index_code')
     data_df = data_df.rename(columns=index_map)
@@ -91,11 +91,11 @@ def get_fun_data(start_date, end_date):
     spot_df = process_spot_df(spot_df)
     fef_nb1 = nearby('FEF', n=2,
                      start_date=max(start_date, datetime.date(2015, 9, 1)),
-                     end_date=end_date,
+                     end_date=run_date,
                      roll_rule='-2b', freq='d', shift_mode=0)
     fef_nb2 = nearby('FEF', n=3,
                      start_date=max(start_date, datetime.date(2015, 9, 1)),
-                     end_date=end_date,
+                     end_date=run_date,
                      roll_rule='-2b', freq='d', shift_mode=0)
     fef_data = pd.concat([fef_nb1['settle'].to_frame('FEFc1'), fef_nb2['settle'].to_frame('FEFc2')], axis=1).dropna()
     fef_data['FEF_c1_c2_ratio'] = fef_data['FEFc1']/fef_data['FEFc2']
@@ -120,7 +120,7 @@ def update_fun_factor(run_date=datetime.date.today(), flavor='mysql'):
     start_date = day_shift(run_date, '-3y')
     update_start = day_shift(run_date, '-60b', CHN_Holidays)
     next_bdate = day_shift(run_date, '1b', CHN_Holidays)
-    spot_df = get_fun_data(start_date, next_bdate)
+    spot_df = get_fun_data(start_date, run_date)
 
     for factor_name in factors_by_asset.keys():
         for asset in factors_by_asset[factor_name]:
