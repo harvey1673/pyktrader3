@@ -841,7 +841,7 @@ def get_hols_by_exch(exch):
     if exch in ['DCE', 'CFFEX', 'CZCE', 'SHFE', 'INE', 'GFEX', 'SSE', 'SZSE']:
         hols = CHN_Holidays
     elif exch == 'SGX':
-        edate = datetime.date.today() + datetime.timedelta(days=60)
+        edate = day_shift(datetime.date(datetime.date.today().year, 12, 31), '-1b')
         hols = get_hols_by_ec(exch='SGX', start_date=datetime.date(2008, 1, 1), end_date=edate)
     return hols
 

@@ -419,7 +419,10 @@ def create_strat_json(product_list, freq, roll_rule, factor_repo,
 
 
 def update_port_position(run_date=datetime.date.today()):
-    pos_update = {}
+    results = {
+        'pos_update': {},
+        'details': {}
+    }
     for port_name in port_pos_config.keys():
         target_pos = {}
         pos_by_strat = {}
@@ -454,6 +457,7 @@ def update_port_position(run_date=datetime.date.today()):
                                           hist_fact_lookback=20,
                                           vol_key=vol_key)
             strat_target = res['target_pos']
+            results['details'][f'{port_name}:{strat_file}'] = res['pos_sum']
             pos_by_strat[strat_file] = strat_target
             for prod in strat_target:
                 if prod not in target_pos:
@@ -483,8 +487,8 @@ def update_port_position(run_date=datetime.date.today()):
                 curr_pos = json.load(fp)
             pos_df = pd.DataFrame({'cur': curr_pos, 'tgt': target_pos})
             pos_df['diff'] = pos_df['tgt'] - pos_df['cur']
-            pos_update[port_file] = pos_df
-    return pos_update
+            results['pos_update'][port_file] = pos_df
+    return results
 
 
 if __name__ == "__main__":
@@ -496,5 +500,4 @@ if __name__ == "__main__":
         tday = now.date()
         if (~is_workday(tday, 'CHN')) or (now.time() < datetime.time(14, 59, 0)):
             tday = day_shift(tday, '-1b', CHN_Holidays)
-    update_port_position(run_date=tday)
-
+    res = update_port_position(run_date=tday)
