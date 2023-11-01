@@ -21,6 +21,7 @@ def update_port_pos(tday=datetime.date.today(), email_notify=EMAIL_NOTIFY):
     job_status = {}
     logging.info('updating factor strategy position...')
     pos_update = {}
+    details = {}
     for update_field in update_func_list:
         if update_field == 'fun_data_xl_loading':
             update_data_from_xl()
@@ -30,7 +31,9 @@ def update_port_pos(tday=datetime.date.today(), email_notify=EMAIL_NOTIFY):
             fetch_daily_eod()
             fetch_fef_3pm_close(cdate=tday)
         else:
-            pos_update = update_port_position(run_date=tday)
+            res = update_port_position(run_date=tday)
+            pos_update = res['pos_update']
+            details = res['details']
         print(f"{update_field} is done")
         job_status[update_field] = True
         # except:
@@ -41,6 +44,8 @@ def update_port_pos(tday=datetime.date.today(), email_notify=EMAIL_NOTIFY):
         html = "<html><head></head><body><p><br>"
         for key in pos_update:
             html += "Position change for %s:<br>%s" % (key, pos_update[key].to_html())
+        for key in details:
+            html += "Signal details for %s:<br>%s" % (key, details[key].to_html())
         html += "</p></body></html>"
         send_html_by_smtp(EMAIL_HOTMAIL, NOTIFIERS, sub, html)
     job_status['time'] = datetime.datetime.now().strftime("%Y%m%d_%H:%M:%S")
