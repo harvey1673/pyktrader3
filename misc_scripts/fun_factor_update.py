@@ -66,7 +66,7 @@ factors_by_func = {
 
 
 def get_fun_data(start_date, run_date):
-    e_date = day_shift(day_shift(run_date, '2b', CHN_Holidays), '-1d')
+    e_date = day_shift(run_date, '5b', CHN_Holidays)
     cdate_rng = pd.date_range(start=start_date, end=e_date, freq='D', name='date')
     data_df = load_codes_from_edb(index_map.keys(), source='ifind', column_name='index_code')
     data_df = data_df.rename(columns=index_map)
@@ -100,6 +100,7 @@ def get_fun_data(start_date, run_date):
     fef_data = pd.concat([fef_nb1['settle'].to_frame('FEFc1'), fef_nb2['settle'].to_frame('FEFc2')], axis=1).dropna()
     fef_data['FEF_c1_c2_ratio'] = fef_data['FEFc1']/fef_data['FEFc2']
     spot_df['FEF_c1_c2_ratio'] = fef_data['FEF_c1_c2_ratio']
+    spot_df = spot_df.dropna(how='all')
     return spot_df
 
 
@@ -119,30 +120,30 @@ def save_signal_to_db(asset, factor_name, signal_ts, run_date, roll_label='hot',
 def update_fun_factor(run_date=datetime.date.today(), flavor='mysql'):
     start_date = day_shift(run_date, '-3y')
     update_start = day_shift(run_date, '-60b', CHN_Holidays)
-    next_bdate = day_shift(run_date, '1b', CHN_Holidays)
+    cutoff_date = day_shift(day_shift(run_date, '1b', CHN_Holidays), '-1d')
     spot_df = get_fun_data(start_date, run_date)
 
     for factor_name in factors_by_asset.keys():
         for asset in factors_by_asset[factor_name]:
             signal_ts = funda_signal_by_name(spot_df, factor_name, price_df=None, signal_cap=None, asset=asset)
-            save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=next_bdate, flavor=flavor)
+            save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=cutoff_date, flavor=flavor)
 
     for factor_name in single_factors:
         signal_ts = funda_signal_by_name(spot_df, factor_name, price_df=None, signal_cap=None)
         for asset in single_factors[factor_name]:
-            save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=next_bdate, flavor=flavor)
+            save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=cutoff_date, flavor=flavor)
 
     for factor_name in factors_by_func:
         func = factors_by_func[factor_name]['func']
         func_args = factors_by_func[factor_name]['args']
         signal_ts = func(spot_df, **func_args)
         for asset in factors_by_func[factor_name]['assets']:
-            save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=next_bdate, flavor=flavor)
+            save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=cutoff_date, flavor=flavor)
 
     for factor_name in factors_by_spread.keys():
         signal_ts = funda_signal_by_name(spot_df, factor_name, price_df=None, signal_cap=None)
         for asset, weight in factors_by_spread[factor_name]:
-            save_signal_to_db(asset, factor_name, weight*signal_ts[update_start:], run_date=next_bdate, flavor=flavor)
+            save_signal_to_db(asset, factor_name, weight*signal_ts[update_start:], run_date=cutoff_date, flavor=flavor)
 
     for factor_name in factors_by_beta_neutral.keys():
         signal_ts = funda_signal_by_name(spot_df, factor_name, price_df=None, signal_cap=None)
@@ -168,7 +169,7 @@ def update_fun_factor(run_date=datetime.date.today(), flavor='mysql'):
             signal_df[trade_asset] += signal_df['trade_ratio'] * signal_df['raw_sig'] * weight
             signal_df[index_asset] += signal_df['index_ratio'] * signal_df['raw_sig'] * weight
         for asset in asset_list:
-            save_signal_to_db(asset, factor_name, signal_df[asset][update_start:], run_date=next_bdate, flavor=flavor)
+            save_signal_to_db(asset, factor_name, signal_df[asset][update_start:], run_date=cutoff_date, flavor=flavor)
 
 
 if __name__ == "__main__":

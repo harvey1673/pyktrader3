@@ -214,14 +214,13 @@ def funda_signal_by_name(spot_df, signal_name, price_df=None,
             param_rng = param_rng_by_feature_key[feature].get(asset, param_rng)
         feature = new_feature
     feature_ts = spot_df[feature].dropna()
-    last_date = day_shift(feature_ts.index[-1], '1b', CHN_Holidays)
-    cdates = pd.date_range(start=feature_ts.index[0], end=last_date, freq='D')
-    bdates = pd.bdate_range(start=feature_ts.index[0], end=last_date, freq='C', holidays=CHN_Holidays)
+    cdates = pd.date_range(start=feature_ts.index[0], end=feature_ts.index[-1], freq='D')
+    bdates = pd.bdate_range(start=feature_ts.index[0], end=feature_ts.index[-1], freq='C', holidays=CHN_Holidays)
     if freq == 'price':
         feature_ts = spot_df[feature].reindex(index=cdates).ffill().reindex(index=bdates)
     elif len(freq) > 0:
         feature_ts = spot_df[feature].reindex(index=cdates).ffill().reindex(
-            index=pd.date_range(start=feature_ts.index[0], end=last_date, freq=freq))
+            index=pd.date_range(start=feature_ts.index[0], end=feature_ts.index[-1], freq=freq))
 
     if 'yoy' in proc_func:
         if 'lunar' in proc_func:
