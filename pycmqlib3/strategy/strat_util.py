@@ -20,7 +20,7 @@ def generate_strat_position(cur_date, prod_list, factor_repo,
     target_pos = {}
     vol_weight = [1.0] * len(prod_list)
     start_date = day_shift(cur_date, '-%sb' % (str(hist_fact_lookback)), CHN_Holidays)
-    end_date = day_shift(cur_date, '1b', CHN_Holidays)
+    end_date = day_shift(day_shift(cur_date, '1b', CHN_Holidays), '-1d')
     vol_df = load_factor_data(prod_list,
                               factor_list=[vol_key],
                               roll_label=roll_label,
@@ -98,10 +98,12 @@ def generate_strat_position(cur_date, prod_list, factor_repo,
                 elif len(xs_signal) > 0:
                     print('unsupported xs signal types')
             factor_pos[fact] = factor_pos[fact].rolling(rebal_freq).mean().fillna(0.0)
+        factor_pos[fact] = factor_pos[fact].ffill()
         fact_pos = pd.Series(factor_pos[fact].iloc[-1] * weight, name=fact)
         pos_sum = pos_sum.append(fact_pos)
     pos_sum = pos_sum[prod_list].round(2)
     net_pos = pos_sum.sum()
+    pos_sum = pos_sum.append(pd.Series(net_pos, name='sum'))
     for idx, prodcode in enumerate(prod_list):
         target_pos[prodcode] = net_pos[prodcode] * vol_weight[idx]
     res['target_pos'] = target_pos
