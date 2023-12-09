@@ -983,7 +983,7 @@ def nearby(prodcode, n = 1, start_date = None, end_date = None, roll_rule = '-20
                 df['shift'] = df['shift'] + math.log(shift)
                 for ticker in ['open', 'high', 'low', 'close']:
                     df[ticker] = df[ticker] * shift
-        df = df.append(new_df)
+        df = pd.concat([df, new_df])
         sdate = exp + datetime.timedelta(days=1)
     return df
 
