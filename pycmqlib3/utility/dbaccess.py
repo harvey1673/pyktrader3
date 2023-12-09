@@ -73,7 +73,7 @@ def mysql_replace_into(table, conn, keys, data_iter):
         return s
 
     data = [dict(zip(keys, row)) for row in data_iter]
-    conn.execute(table.table.insert(replace_string=""), data)
+    conn.execute(table.table.insert(), data)
 
 
 tick_field_rename_map = {

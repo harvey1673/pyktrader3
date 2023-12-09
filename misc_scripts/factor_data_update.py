@@ -56,29 +56,20 @@ sim_start_dict = {'c': datetime.date(2011, 1, 1), 'm': datetime.date(2011, 1, 1)
 field_list = ['open', 'high', 'low', 'close', 'volume', 'openInterest', 'contract', 'shift']
 
 port_pos_config = {
-    'PT_FACTPORT3_CAL_30b': {
-        'pos_loc': 'C:/dev/pyktrader3/process/paper_sim1',
-        'roll': 'CAL_30b',
-        'shift_mode': 1,
-        'strat_list': [
-            ('PTSIM1_FACTPORT1.json', 10000, 's1'),
-            ('PTSIM1_HRCRB.json', 20000, 's1'),
-            ('PTSIM1_LL.json', 6000, 's1'),
-        ], },
     'PTSIM1_FACTPORT1_hot': {
-        'pos_loc': 'C:/dev/pyktrader3/process/paper_sim1',
+        'pos_loc': 'C:/dev/pyktrader3/process/pt_test1',
         'roll': 'hot',
         'shift_mode': 2,
         'strat_list': [
-            ('PTSIM1_FACTPORT1.json', 10000, 'd1'),
+            ('PTSIM1_FACTPORT.json', 10000, 'd1'),
             ('PTSIM1_HRCRB.json', 20000, 'd1'),
             ('PTSIM1_LL.json', 6000, 'd1'),
             ('PTSIM1_FUNFER.json', 8000, 'd1'),
-            ('PTSIM1_FUNBASE.json', 4000, 'd1'),
+            ('PTSIM1_FUNBASE.json', 8000, 'd1'),
         ], },
 }
 
-pos_chg_notification = ['PT_FACTPORT1_hot',]
+pos_chg_notification = ['PTSIM1_FACTPORT1_hot']
 
 
 def update_factor_db(xdf, field, config, dbtable='fut_fact_data', flavor='mysql', start_date=None, end_date=None):
@@ -465,8 +456,8 @@ def update_port_position(run_date=datetime.date.today()):
                 target_pos[prod] += strat_target[prod]
 
         for prodcode in target_pos:
-            if prodcode == 'ZC':
-                target_pos[prodcode] = int((target_pos[prodcode] / 2 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 2
+            if prodcode == 'UR':
+                target_pos[prodcode] = int((target_pos[prodcode] / 4 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 4
             else:
                 target_pos[prodcode] = int(target_pos[prodcode] + (0.5 if target_pos[prodcode] > 0 else -0.5))
 

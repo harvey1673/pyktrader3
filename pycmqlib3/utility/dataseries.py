@@ -212,5 +212,5 @@ def nearby(code, n=1, start_date=None, end_date=None,
                 for ticker in ['open', 'high', 'low', 'close', 'settle']:
                     if ticker in df.columns:
                         df[ticker] = df[ticker] * shift
-        df = df.append(new_df)
+        df = pd.concat([df, new_df])
     return df.rename(columns={'instID': 'contract'})
