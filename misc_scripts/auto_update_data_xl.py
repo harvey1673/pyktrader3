@@ -7,7 +7,7 @@ from pycmqlib3.utility.sec_bits import LOCAL_NUTSTORE_FOLDER, IFIND_XL_HOTKEYS
 from pycmqlib3.utility.dbaccess import write_edb_by_xl_sheet
 
 
-def update_ifind_xlsheet(filename='C:/Users/harvey/Nutstore/1/Nutstore/ifind_data.xlsx', wait_time=65):
+def update_ifind_xlsheet(filename='C:/Users/harvey/Nutstore/1/Nutstore/ifind_data.xlsx', wait_time=60):
     xl = win32com.client.DispatchEx("Excel.Application")
     wb = xl.Workbooks.open(filename)
     xl.Visible = True
@@ -17,6 +17,12 @@ def update_ifind_xlsheet(filename='C:/Users/harvey/Nutstore/1/Nutstore/ifind_dat
         try:
             if wb.Sheets[s].name in ['hist']:
                 continue
+            wtime = wait_time
+            is_daily = False
+            if 'daily' in wb.Sheets[s].name:
+                is_daily=True
+            else:
+                wtime = wait_time // 2 
             win32gui.ShowWindow(xl.Hwnd, win32con.SW_RESTORE)
             win32gui.EnableWindow(xl.Hwnd, True)
             win32gui.SetForegroundWindow(xl.Hwnd)
@@ -24,7 +30,12 @@ def update_ifind_xlsheet(filename='C:/Users/harvey/Nutstore/1/Nutstore/ifind_dat
             pyautogui.typewrite(IFIND_XL_HOTKEYS, interval=0.5)
             time.sleep(3)
             pyautogui.hotkey("shift", "f9")
-            time.sleep(wait_time)
+            time.sleep(wtime)
+            if is_daily:
+                pyautogui.typewrite(IFIND_XL_HOTKEYS, interval=0.5)
+                time.sleep(3)
+                pyautogui.hotkey("shift", "f9")
+                time.sleep(3)
             xl.CalculateUntilAsyncQueriesDone()
         except Exception as e:
             print("error activating Excel window for update %s" % (wb.Sheets[s].name))
