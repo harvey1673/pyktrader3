@@ -65,8 +65,8 @@ def generate_strat_position(cur_date, prod_list, factor_repo,
                 elif ('exec_assets' in factor_repo[fact]) and (prod in factor_repo[fact]['exec_assets']):
                     xdf[prod] = np.nan
             fact_data[fact] = xdf[prod_list]
-    pos_sum = pd.DataFrame()
 
+    pos_sum = pd.DataFrame(index=prod_list)
     for fact in factor_repo:
         rebal_freq = factor_repo[fact]['rebal']
         weight = factor_repo[fact]['weight']
@@ -99,14 +99,12 @@ def generate_strat_position(cur_date, prod_list, factor_repo,
                     print('unsupported xs signal types')
             factor_pos[fact] = factor_pos[fact].rolling(rebal_freq).mean().fillna(0.0)
         factor_pos[fact] = factor_pos[fact].ffill()
-        fact_pos = pd.Series(factor_pos[fact].iloc[-1] * weight, name=fact)
-        pos_sum = pos_sum.append(fact_pos)
-    pos_sum = pos_sum[prod_list].round(2)
-    net_pos = pos_sum.sum()
-    pos_sum = pos_sum.append(pd.Series(net_pos, name='sum'))
+        pos_sum[fact] = pd.Series(factor_pos[fact].iloc[-1] * weight, name=fact)
+    pos_sum['sum'] = pos_sum.sum(axis=1)
+    pos_sum = pos_sum.round(2)
     for idx, prodcode in enumerate(prod_list):
-        target_pos[prodcode] = net_pos[prodcode] * vol_weight[idx]
+        target_pos[prodcode] = pos_sum.loc[prodcode, 'sum'] * vol_weight[idx]
     res['target_pos'] = target_pos
-    res['pos_sum'] = pos_sum
+    res['pos_sum'] = pos_sum.T
     res['vol_weight'] = vol_weight
     return res

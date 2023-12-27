@@ -4,9 +4,7 @@ import functools
 import logging.handlers
 import logging
 import decorator
-from inspect import (
-            getargspec,
-        )
+
 
 MY_FORMAT = '%(name)s:%(funcName)s:%(lineno)d:%(asctime)s %(levelname)s %(message)s'
 CONSOLE_FORMAT = '%(asctime)s%(message)s'

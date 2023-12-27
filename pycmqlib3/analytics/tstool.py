@@ -11,7 +11,7 @@ import statsmodels.formula.api as smf
 import scipy.stats as stats
 from pykalman import KalmanFilter
 import seaborn as sns
-import holidays
+import lunardate
 from matplotlib import font_manager
 from .stats_test import test_mean_reverting, half_life
 from statsmodels.tsa.stattools import coint, adfuller
@@ -368,8 +368,7 @@ def lunar_label(df: pd.DataFrame, copy=True):
     else:
         data_daily = df
     bds = data_daily.index
-    cny_date_map = dict([(yr, pd.Timestamp([item[0] for item in holidays.China(years=int(yr)).items()
-                                            if item[1] == 'Chinese New Year (Spring Festival)'][0]))
+    cny_date_map = dict([(yr, pd.Timestamp(lunardate.LunarDate(yr, 1, 1).toSolarDate()))
                          for yr in range(bds[0].year-1, bds[-1].year+2)])
     days_to_cny = pd.DataFrame(data_daily.index.map(find_nearest_cny).tolist(),
                                index=data_daily.index,
@@ -594,9 +593,20 @@ def xs_score(df_in, demean=True, hl=None):
     else:
         vols = exp_smooth(vols_raw, hl)
         
-    data_scored = df_demeaned.values/np.repeat(vols.values.resahpe([len(vols.index), 1]),
+    data_scored = df_demeaned.values/np.repeat(vols.values.reshape([len(vols.index), 1]),
                                                len(df_in.columns), axis=1)
-    df_out = pd.dataFframe(data_scored, index=df_in.index, columns=df_in.columns)
+    df_out = pd.DataFrame(data_scored, index=df_in.index, columns=df_in.columns)
+    return df_out
+
+
+def xs_rank(df_in, cutoff=0.5):
+    prod_count = df_in.apply(lambda x: x.count if x.count() > 0 else np.nan, axis=1)
+    rank_df = df_in.rank(axis=1)
+    median_ts = rank_df.quantile(0.5, axis=1)
+    df_out = rank_df.sub(median_ts, axis=0).div(prod_count - 1, axis=0) * 2.0
+    if cutoff < 0.5:
+        df_out = df_out[(df_out <= -1 + cutoff * 2) | (df_out >= 1 - cutoff * 2)].fillna(0)
+    df_out = df_out.div(df_out.abs().sum(axis=1)/2, axis=0)
     return df_out
 
 
