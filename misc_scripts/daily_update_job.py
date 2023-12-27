@@ -193,7 +193,7 @@ scenarios_all = [
 
 
 run_settings = [
-    ('commod_cal', commod_mkts, scenarios_all, 'CAL_30b', 's1', 1),
+    #('commod_cal', commod_mkts, scenarios_all, 'CAL_30b', 's1', 1),
     ('commod_hot', commod_mkts, scenarios_all, 'hot', 'd1', 2),
     #('commod_exp', commod_mkts, scenarios_all, 'expiry', 'd1', 2),
 ]
