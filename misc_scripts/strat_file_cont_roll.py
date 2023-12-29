@@ -1,21 +1,9 @@
 import json
 from pycmqlib3.utility.sec_bits import LOCAL_NUTSTORE_FOLDER
 from pycmqlib3.utility.misc import inst2product
+from misc_scripts.factor_data_update import port_pos_config
 
 hotmap_file = f"{LOCAL_NUTSTORE_FOLDER}/hotmap_prod.json"
-strat_list = [
-    "C:/dev/pyktrader3/process/pt_test3/settings/PT_FACTPORT3.json",
-    "C:/dev/pyktrader3/process/pt_test3/settings/PT_FACTPORT_HCRB.json",
-    "C:/dev/pyktrader3/process/pt_test3/settings/PT_FACTPORT_LEADLAG1.json",
-    "C:/dev/pyktrader3/process/pt_test3/settings/PT_FUNDA_FERROUS.json",
-    "C:/dev/pyktrader3/process/pt_test3/settings/PT_FUNDA_BASE.json",
-
-    "C:/dev/pyktrader3/process/pt_test1/settings/PTSIM1_FACTPORT.json",
-    "C:/dev/pyktrader3/process/pt_test1/settings/PTSIM1_HRCRB.json",
-    "C:/dev/pyktrader3/process/pt_test1/settings/PTSIM1_LL.json",
-    "C:/dev/pyktrader3/process/pt_test1/settings/PTSIM1_FUNFER.json",
-    "C:/dev/pyktrader3/process/pt_test1/settings/PTSIM1_FUNBASE.json",
-]
 
 
 def update_roll_cont():
@@ -26,6 +14,12 @@ def update_roll_cont():
     for exch in hotmap:
         cont_map.update(hotmap[exch])
 
+    strat_list = []
+    for key in port_pos_config:
+        pos_loc = port_pos_config[key]['pos_loc']
+        strat_by_pos = [f'{pos_loc}/settings/{strname}' for (strname, w, roll) in port_pos_config[key]['strat_list']]
+        strat_list += strat_by_pos
+    strat_list = list(set(strat_list))
     for strat_file in strat_list:
         with open(strat_file, 'r') as fp:
             strat_conf = json.load(fp)

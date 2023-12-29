@@ -81,7 +81,7 @@ def load_processed_fut_by_product(prodcode, start_date=None, end_date=None, freq
             flag = flag | (xdf['instID'].shift(w) != xdf['instID'])
     if roll_win > 1:
         xdf.loc[flag, 'roll_ind'] = np.nan
-    xdf['roll_ind'] = xdf['roll_ind'].fillna(method='bfill')
+    xdf['roll_ind'] = xdf['roll_ind'].bfill()
     xdf = xdf[xdf['roll_ind'] >= min_thres]
     return xdf
 
@@ -137,7 +137,7 @@ def rolling_fut_cont(xdf, nb_cont=2, cont_thres=10_000, roll_mode=1, curr_roll=p
     except ValueError:
         print(data_list, date_list)
         return {'roll_map': pd.DataFrame(), 'new': pd.DataFrame()}
-    roll_map = curr_roll.append(new_roll)
+    roll_map = pd.concat([curr_roll, new_roll])
     results = {'roll_map': roll_map, 'new': new_roll}
     return results
 

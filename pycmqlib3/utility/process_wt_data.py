@@ -147,7 +147,7 @@ def load_fut_by_product(code, start_date, end_date, freq='d', folder_loc='C:/dev
         else:
             continue
         dst_df = convert_wt_data(dst_df, cont, freq=freq)
-        out_df = out_df.append(dst_df)
+        out_df = pd.concat([out_df, dst_df])
     out_df = out_df[(out_df['date']>=start_date)&(out_df['date']<=end_date)].reset_index(drop=True)
     return out_df
 
@@ -329,7 +329,7 @@ def save_bars_to_wt_store(exchange_list=['DCE', 'CZCE', 'SHFE', 'INE', 'CFFEX'],
                                 curr_df['time'] = curr_df['time'] - 199000000000
                                 curr_df = curr_df[curr_df['date'] >= cutoff_date]
                                 mdf = mdf[mdf['date'] < cutoff_date]
-                                mdf = mdf.append(curr_df)
+                                mdf = pd.concat([mdf, curr_df])
                         mdf['time'] = mdf['time'].astype('int64')
                         save_bars_to_dsb(mdf[mcol_list], contract=cont, folder_loc=f'{dst_folder}/{period}/{exch}',
                                          period='m1')
@@ -353,7 +353,7 @@ def save_bars_to_wt_store(exchange_list=['DCE', 'CZCE', 'SHFE', 'INE', 'CFFEX'],
                                 curr_df['time'] = curr_df['time'] - 199000000000
                                 curr_df = curr_df[curr_df['date'] >= cutoff_date]
                                 m5df = m5df[m5df['date'] < cutoff_date]
-                                m5df = m5df.append(curr_df)
+                                m5df = pd.concat([m5df, curr_df])
                         m5df['time'] = m5df['time'].astype('int64')
                         save_bars_to_dsb(m5df[mcol_list], contract=cont, folder_loc=f'{dst_folder}/{period}/{exch}',
                                          period='m5')
@@ -380,7 +380,7 @@ def save_bars_to_wt_store(exchange_list=['DCE', 'CZCE', 'SHFE', 'INE', 'CFFEX'],
                                 curr_df['time'] = curr_df['time'] - 199000000000
                                 curr_df = curr_df[curr_df['date'] >= cutoff_date]
                                 ddf = ddf[ddf['date'] < cutoff_date]
-                                ddf = ddf.append(curr_df)
+                                ddf = pd.concat([ddf, curr_df])
                         ddf['time'] = ddf['time'].astype('int64')
                         save_bars_to_dsb(ddf[dcol_list], contract=cont, folder_loc=f'{dst_folder}/{period}/{exch}',
                                          period='d')
@@ -496,7 +496,7 @@ def combine_bars_wt_store(src_folder, dst_folder, target_folder, cutoff=None):
                     if cutoff:
                         src_df = src_df[src_df['date'] < cutoff]
                         dst_df = dst_df[dst_df['date'] >= cutoff]
-                        dst_df = src_df.append(dst_df)
+                        dst_df = pd.concat([src_df, dst_df])
                 else:
                     if update_flag:
                         continue
