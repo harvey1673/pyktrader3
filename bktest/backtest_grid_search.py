@@ -50,7 +50,7 @@ daily_start_dict = { 'c': datetime.date(2011,1,1), 'm': datetime.date(2011,1,1),
     'PM':datetime.date(2013,10,1), 'RM':datetime.date(2013,1,1),  'SR':datetime.date(2013,1,1),
     'FG':datetime.date(2013,1,1),  'OI':datetime.date(2013,5,1),  'RI':datetime.date(2013,1,1),
     'WH':datetime.date(2014,5,1),  'pp':datetime.date(2014,5,1),
-    'IF':datetime.date(2010,5,1),  'MA':datetime.date(2012,1,1),  'TF':datetime.date(2019,6,1),
+    'IF':datetime.date(2010,5,1),  'MA':datetime.date(2015,1,1),  'TF':datetime.date(2019,6,1),
     'IH':datetime.date(2015,5,1),  'IC':datetime.date(2015,5,1),  'cs':datetime.date(2015,2,1),
     'jd':datetime.date(2014,5,1),  'ni':datetime.date(2015,9,1),  'sn':datetime.date(2017,5,1),
     'ZC':datetime.date(2013,11,1), 'hc':datetime.date(2016, 4, 1), 'SM': datetime.date(2017,1,1),
@@ -123,7 +123,7 @@ def load_hist_data(start_date, end_date,
                 adf['mth'] = adf['contmth'].apply(lambda x: x // 100 * 12 + x % 100)
                 adf['product'] = prodcode
                 adf['code'] = f'c{nb + 1}'
-                data_df = data_df.append(adf)
+                data_df = pd.concat([data_df, adf])
             except:
                 error_list.append((prodcode, nb))
 
