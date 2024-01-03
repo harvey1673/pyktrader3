@@ -548,8 +548,13 @@ def get_hols_by_ec(exch='DCE', start_date=datetime.date(2008, 1, 1), end_date=da
         'CME': 'CMES',
     }
     ec_cal = ec.get_calendar(exch_map[exch])
-    bdays = ec_cal.sessions_in_range(start_date, end_date)
-    hols = [cdate.date() for cdate in pd.date_range(start=start_date, end=end_date, freq='B') if cdate not in bdays]
+    if exch == 'SGX':
+        hols = [cdate.date() for cdate in pd.date_range(start=start_date, end='20231229', freq='B') if ec_cal.is_session(cdate) is False]
+        hols += [datetime.date(2024,1,1), datetime.date(2024,2,12), datetime.date(2024,3, 29), datetime.date(2024,4,10), 
+                 datetime.date(2024,5,1), datetime.date(2024,5,22), datetime.date(2024,6,17), datetime.date(2024,8,9), 
+                 datetime.date(2024,10,31), datetime.date(2024,12,25)]
+    else:
+        hols = [cdate.date() for cdate in pd.date_range(start=start_date, end=end_date, freq='B') if ec_cal.is_session(cdate) is False]
     return hols
 
 
