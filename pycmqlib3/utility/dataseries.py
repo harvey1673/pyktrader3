@@ -4,7 +4,7 @@ import json
 import datetime
 from pycmqlib3.utility import misc
 from pycmqlib3.utility.dbaccess import prod_main_cont_exch
-from pycmqlib3.utility.process_wt_data import load_fut_by_product, load_bars_to_df
+from pycmqlib3.utility.process_wt_data import load_fut_by_product, load_bars_by_code
 from matplotlib import font_manager
 font = font_manager.FontProperties(fname='C:/windows/fonts/simsun.ttc')
 
@@ -167,10 +167,6 @@ def nearby(code, n=1, start_date=None, end_date=None,
     else:
         start_date = pd.to_datetime(str(start_date)).date()
     hols = misc.get_hols_by_exch(exch)
-    if freq in ['m', 'd']:
-        period = f'{freq}1'
-    else:
-        period = freq
     start_date = misc.day_shift(misc.day_shift(start_date, '-1b', hols), '1b', hols)
     end_date = misc.day_shift(misc.day_shift(end_date, '1b', hols), '-1b', hols)
 
@@ -187,9 +183,8 @@ def nearby(code, n=1, start_date=None, end_date=None,
                 continue
             e_date = min(end_date, misc.day_shift(nxt_date, '-1b', hols))
         if s_date <= e_date:
-            product, contmth = misc.inst2product(row['to'], rtn_contmth=True)
-            code = '.'.join([exch, product, str(contmth)])
-            new_df = load_bars_to_df(code, period=period, start_time=s_date, end_time=e_date)
+            code = '.'.join([exch, row['to']])
+            new_df = load_bars_by_code(code, freq=freq, start_date=s_date, end_date=e_date)
             if len(new_df) > 0:
                 new_df['shift'] = 0.0
             else:
