@@ -98,11 +98,11 @@ def convert_wt_data(df, cont, freq='d'):
     df['date'] = df['date'].apply(lambda x: datetime.date(x//10000, (x % 10000)//100, x % 100))
     df = df.rename(columns={'hold': 'openInterest'})
     df['instID'] = cont
-    if freq == 'd':
+    if freq in ['d', 'day', 'd1']:
         col_list = ['instID', 'date', 'open', 'high', 'low', 'close', 'volume', 'openInterest', 'diff_oi', 'settle']
     else:
         num_m = 1
-        if len(freq)>1:
+        if len(freq) > 1:
             num_m = int(freq[1:])
         df['datetime'] = df['bartime'].astype('str').apply(lambda s: datetime.datetime.strptime(s, '%Y%m%d%H%M') -
                                                                      datetime.timedelta(minutes=num_m))
@@ -160,6 +160,33 @@ def load_hist_bars_to_df(code, start_date=None, end_date=None,
     dtHelper = WtDataHelper()
     period = 'day'
     if freq in ['m', 'm1']:
+        period = 'min1'
+    elif freq in ['m5']:
+        period = 'min5'
+    mdf = dtHelper.read_dsb_bars(f'{folder_loc}/{period}/{exch}/{instID}.dsb')
+    if mdf:
+        mdf = mdf.to_df().rename(columns={'hold': 'openInterest', 'diff': 'diff_oi'})
+        mdf = convert_wt_data(mdf, instID, freq=freq)
+        if start_date:
+            mdf = mdf[mdf['date'] >= start_date]
+        if end_date:
+            mdf = mdf[mdf['date'] <= end_date]
+        mdf = mdf.reset_index(drop=True)
+        if index_col:
+            mdf = mdf.set_index(index_col)
+    return mdf
+
+
+def load_bars_by_code(code, start_date=None, end_date=None,
+                    index_col=None,
+                    freq='d',
+                    folder_loc='C:/dev/wtdev/storage/his'):
+    exch, instID = code.split('.')
+    dtHelper = WtDataHelper()
+    period = 'day'
+    if freq == ['d', 'd1']:
+        period = 'day'
+    elif freq in ['m', 'm1']:
         period = 'min1'
     elif freq in ['m5']:
         period = 'min5'
