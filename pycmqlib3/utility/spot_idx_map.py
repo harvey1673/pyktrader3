@@ -64,6 +64,11 @@ index_map = {
     'S008061203': 'coke_ts_xb',
     'S008061232': 'coke_sh_xb',
     'S008061213': 'coke_changzhi_xb',
+    'S004238793': "coke_shandong",
+    'S004238790': "coke_hebei",
+    'S004238796': "coke_henan",
+    'S002877257': "ckc_a10v24s08_lvliang",
+    'S002877258': "ckc_a9v18s10_lvliang",
 
     'S002917675': 'strip_2.5x355',
     'S002917688': 'strip_3.0x685',
@@ -78,9 +83,6 @@ index_map = {
     'S002917532': 'ibeam_25',
     'S002917550': 'angle_50x5',
     'S002917279': 'highwire_6.5',
-    'S002959491': 'femn65si17_neimeng',
-    'S002959498': 'femn65si17_tj',
-    'S002959495': 'femn65si17_guangxi',
     'S004378612': 'coal_5500_jingtang',
     'S002882871': 'coal_5500_sx_qhd',
     'S002837009': 'coal_5500_qhd',
@@ -104,8 +106,36 @@ index_map = {
     'S005961326': 'io_removal_45ports',
     'S008618299': 'consteel_daily_sales',
 
-    'S008618440': 'SM_inv_mill',
-    'S008618447': 'SF_inv_mill',
+    "S005470470": 'fg_5mm_shahe',
+    "S004242725": "fg_100ppi",  # x80 = RMB/ton
+    "S002825712": "pvc_cac2_north",
+    "S002825715": "pvc_cac2_east",
+    "S002825718": "pvc_cac2_south",
+    "S002825721": "pvc_cac2_central",
+    "S002825734": "sa_heavy_north",
+    "S002825740": "sa_heavy_east",
+    "S002825733": "sa_light_north",
+    "S002825739": "sa_light_east",
+    "S002959491": "sm_65s17_neimeng",
+    "S002959498": "sm_65s17_tj",
+    "S002959495": "sm_65s17_guangxi",
+    "S002959499": "sm_65s17_gansu",
+    "S004789784": "sf_72_ningxia",
+    "S004789790": "sf_72_neimeng",
+    "S004789786": "sf_72_gansu",
+
+    'S008618440': 'sm_inv_mill',
+    'S008618447': 'sf_inv_mill',
+    "S005696248": "fg_inv_mill",
+    "S005439547": "v_inv_social",
+    "S005439586": 'sa_inv_mill_all',
+    "S011319484": "sh_inv_mill_all",
+    "S003138068": "coke_inv_ports_tj", # 20110121
+    "S003138069": "coke_inv_ports_lyg", # 20110121
+    "S003138070": "coke_inv_ports_rz", # 20110121
+    "S010338984": "coke_inv_ports", # 20211217
+    "S012116529": "ckc_inv_ports", # 20220107
+    "S009341306": "ckc_inv_cokery", #20210115
 
     'S005814718': 'rebar_inv_social',
     'S005580635': 'hrc_inv_social',
@@ -194,6 +224,8 @@ index_map = {
     "S002981541": "ni_smm1_jc_spot",
     "S002981542": "ni_smm1_imp_spot",
     "S010361921": "ni_cj1_spot",
+    "S004785205": "ss_304_gross_wuxi",
+    "S004785215": "ss_304_wuxi_phybasis",
 
     'S003048722': 'cu_smm_phybasis',
     'S003048723': 'cu_flat_phybasis',
@@ -247,9 +279,25 @@ index_map = {
     'S006161617': 'pb_inv_social_5p',
     'S006167225': 'bauxite_inv_az_ports',
     'S006167236': 'alumina_inv_az_ports',
+    'S004425326': 'alumina_inv_ports',
     'S011258021': 'bauxite_inv_ports_inv',
+
     'S012937595': 'si_inv_social_all',
-    'S006563225': 'al_6063rod_inv_social'
+    'S006563225': 'al_6063rod_inv_social',
+    "S006161096": "ss_inv_social_all",
+    "S006161093": "ss_inv_social_200",
+    "S006161094": "ss_inv_social_300",
+    "S006161095": "ss_inv_social_400",
+
+    "S000025546": "au_td_sge",
+    "S003057206": "ag_td_sgx",
+    "S002808967": "container_exp_scfi",
+    "S008527041": "alumina_spot_shanxi",
+    "S008527032": "alumina_spot_guangxi",
+    "S008527044": "alumina_spot_henan",
+    "S008527035": "alumina_spot_guizhou",
+    "S004077728": "alumina_spot_qd",
+    "S002865625": 'si'
 }
 
 

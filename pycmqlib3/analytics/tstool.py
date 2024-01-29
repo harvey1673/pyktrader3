@@ -99,12 +99,16 @@ def pct_score(ts: pd.Series, win: int):
     return res
 
 
-def ewmac(ts, win_s, win_l=None, ls_ratio=4):
+def ewmac(ts, win_s, win_l=None, ls_ratio=4, vol_win=0):
     if win_l is None:
         win_l = ls_ratio * win_s
     s1 = ts.ewm(halflife=win_s, min_periods=win_s).mean()
     s2 = ts.ewm(halflife=win_l, min_periods=win_s).mean()
-    return s1-s2
+    if vol_win == 0:
+        sig = s1 - s2
+    else:
+        sig = risk_normalized(s1-s2, vol_win)
+    return sig
 
 
 def conv_ewm(ts, h1s: list, h2s: list):
@@ -119,7 +123,7 @@ def conv_ewm(ts, h1s: list, h2s: list):
 
 
 def risk_normalized(ts, win=252):
-    return ts/((ts**2).ewm(halflife=win, min_periods=win, ignore_na=True).mean()**0.5)
+    return ts/ts.ewm(halflife=win, min_periods=win, ignore_na=True).std()
 
 
 def norm_ewm(ts, win=80):
@@ -219,6 +223,30 @@ def calc_conv_signal(feature_ts, signal_func, param_rng, signal_cap=None, vol_wi
     return conv_signal
 
 
+def signal_hysteresis(signal_ts, enter_threshold, exit_gap):
+    sig_np = signal_ts.to_numpy()
+    pos_np = np.zeros(len(sig_np))
+    for idx in range(1, len(sig_np)):
+        score = sig_np[idx]
+        if pos_np[idx-1] == 0 and abs(score) > enter_threshold:
+            pos_np[idx] = np.sign(score)
+        if pos_np[idx-1] > 0:
+            if score <= enter_threshold - exit_gap and abs(score) <= enter_threshold:
+                pos_np[idx] = 0
+            elif score <= enter_threshold - exit_gap and abs(score) > enter_threshold:
+                pos_np[idx] = -1
+            else:
+                pos_np[idx] = pos_np[idx-1]
+        elif pos_np[idx-1] < 0:
+            if score >= - (enter_threshold - exit_gap) and abs(score) <= enter_threshold:
+                pos_np[idx] = 0
+            elif score >= -(enter_threshold - exit_gap) and abs(score) > enter_threshold:
+                pos_np[idx] = 1
+            else:
+                pos_np[idx] = pos_np[idx-1]
+    return pd.series(pos_np, index=signal_ts.index)
+
+
 def signal_hump(signal_ts, gap=0.2):
     sig_np = signal_ts.to_numpy()
     pos_np = np.zeros(len(sig_np))
@@ -261,6 +289,23 @@ def make_seasonal_df(ser, limit=1, fill=False, weekly_dense=False):
     if type(ser.index) == pd.PeriodIndex and ser.index.freqstr[0] == 'W':
         df = df.ffill(limit=4)
 
+    return df
+
+
+def make_lunar_df(ser, limit=1, fill=False, group_col='label_day'):
+    df = ser.to_frame('data')
+    if isinstance(df.index, pd.PeriodIndex):
+        df.index = df.index.to_timestamp()
+    elif isinstance(df.index, pd.Index):
+        df.index = pd.to_datetime(df.index)
+    else:
+        pass
+    tdf = lunar_label(df)
+    df = pd.pivot_table(tdf, values='data', index=group_col, columns='label_yr', aggfunc='last')
+    if fill:
+        df = df.fillna(method='ffill', limit=limit)
+    if type(ser.index) == pd.PeriodIndex and ser.index.freqstr[0] == 'W':
+        df = df.ffill(limit=4)
     return df
 
 
@@ -325,6 +370,33 @@ def plot_seasonal_df(ts, cutoff=None, title='', convert_seasonal=True):
         if yr == curr_yr:
             ax.text(xts.index[ts_mask][-1], xts.values[ts_mask][-1],
                     "%s: %.1fs" % (xts.index[ts_mask][-1].strftime("%b-%d"), xts.values[ts_mask][-1]))
+    plt.title(title, fontproperties=font)
+    ax.grid(True)
+    plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    plt.show()
+
+
+def plot_lunar_df(ts, cutoff=None, title='', group_col='label_day', convert_seasonal=True):
+    if convert_seasonal:
+        xdf = make_lunar_df(ts[cutoff:], group_col=group_col)
+    else:
+        xdf = ts.copy()
+    curr_yr = max(xdf.columns)
+    fig, ax = plt.subplots()
+    for yr in xdf.columns:
+        if yr == curr_yr:
+            marker = 'o'
+            linestyle = '-'
+        else:
+            marker = '.'
+            linestyle = '--'
+        xts = xdf[yr]
+        ts_mask = np.isfinite(xts)
+        plt.plot(xts.index[ts_mask], xts.values[ts_mask], linestyle=linestyle, marker=marker, label=yr)
+
+        if yr == curr_yr:
+            ax.text(xts.index[ts_mask][-1], xts.values[ts_mask][-1],
+                    "%s: %.1fs" % (xts.index[ts_mask][-1], xts.values[ts_mask][-1]))
     plt.title(title, fontproperties=font)
     ax.grid(True)
     plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
@@ -653,7 +725,7 @@ def seasonal_score(signal_df, **kwargs):
     return pd.DataFrame(df).T.reindex_like(signal_df)
 
 
-def seasonal_group_helper(df_in, func, score_cols, yr_col='year', group_col='days',
+def seasonal_group_helper(df_in, func, score_cols, yr_col='label_yr', group_col='label_wk',
                           min_obs=0, backward=1, forward=1, split_zero=True,
                           rolling_years=100, **kwargs):
     df_in = df_in.copy(deep=True)
@@ -666,17 +738,20 @@ def seasonal_group_helper(df_in, func, score_cols, yr_col='year', group_col='day
         curr_yr = df_in.loc[t_date, yr_col]
         curr_grp = df_in.loc[t_date, group_col]
         mask = (df_in.index < t_date) & (df_in[yr_col] >= curr_yr - rolling_years) & (df_in[yr_col] < curr_yr)
-        grp_floor = max(curr_grp - backward, group_min)
-        grp_cap = min(curr_grp + forward, group_max)
-        if curr_grp >= 0:
-            if split_zero:
-                grp_floor = max(0, grp_floor)
-            grp_floor = min(grp_floor, group_max - backward - forward)
-        else:
-            if split_zero:
-                grp_cap = max(0, grp_cap)
-            grp_cap = max(grp_cap, group_min + backward + forward)
-        mask = mask & (df_in[group_col] >= grp_floor) & (df_in[group_col] <= grp_cap)
+        grp_rng = []
+        for grp_id in range(curr_grp - backward, curr_grp + forward+1):
+            gid = grp_id
+            if gid < group_min:
+                gid += (group_max - group_min + 1)
+            elif gid > group_max:
+                gid -= (group_max - group_min + 1)
+            grp_rng.append(gid)
+        if split_zero:
+            if curr_grp >=0:
+                grp_rng = [gid for gid in grp_rng if gid >= 0]
+            else:
+                grp_rng = [gid for gid in grp_rng if gid < 0]
+        mask = mask & (df_in[group_col].isin(grp_rng))
         sample_period = df_in[mask]
         if sample_period.empty or (min_obs is not None and len(sample_period) < min_obs):
             continue
@@ -687,7 +762,6 @@ def seasonal_group_helper(df_in, func, score_cols, yr_col='year', group_col='day
 def seasonal_group_score(signal_df, score_cols, **kwargs):
     def agg_func(sample_df):
         return (sample_df.iloc[-1] - sample_df.mean()) / sample_df.std()
-
     df = seasonal_group_helper(df_in=signal_df, func=agg_func, score_cols=score_cols, **kwargs)
     return pd.DataFrame(df).T
 
@@ -695,7 +769,6 @@ def seasonal_group_score(signal_df, score_cols, **kwargs):
 def rolling_deseasonal(raw_df, **kwargs):
     def agg_func(sample_df):
         return sample_df.iloc[-1] - sample_df.mean()
-
     df = seasonal_helper(df_in=raw_df, func=agg_func, **kwargs)
     return pd.DataFrame(df).T.reindex_like(raw_df)
 

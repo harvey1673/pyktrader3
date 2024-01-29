@@ -5,7 +5,7 @@ from pycmqlib3.utility.misc import CHN_Holidays, day_shift
 
 signal_store = {
     'io_removal_lvl': ('io_removal_41ports', 'qtl', [20, 40, 2], '', 'diff', True, 'price'),
-    'io_removal_lyoy': ('io_removal_41ports', 'qtl', [8, 12], 'lunar_yoy_day', 'diff', True, 'W-Fri'),
+    'io_removal_lyoy': ('io_removal_41ports', 'qtl', [6, 10], 'lunar_yoy_day', 'diff', True, 'W-Fri'),
     'io_removal_wow': ('io_removal_41ports', 'zscore', [48, 53], 'df1', 'diff', True, 'W-Fri'),
     'io_millinv_lvl': ('io_inv_mill(64)', 'qtl', [20, 40, 2], '', 'diff', True, 'price'),
     'io_millinv_lyoy': ('io_inv_mill(64)', 'qtl', [2, 4], 'lunar_yoy_day', 'diff', True, 'W-Fri'),
@@ -47,9 +47,13 @@ signal_store = {
     'cu_phybasis_hlr': ('cu_cjb_phybasis', 'hlratio', [40, 60, 2], 'sma10', 'pct_change', True, 'price'),  # great
 
     'lme_base_ts_mds': ('lme_base_ts', 'ma_dff_sgn', [10, 30, 2], '', '', True, 'price'),
+    'lme_base_ts_mds_xdemean': ('lme_base_ts', 'ma_dff_sgn', [10, 30, 4], '', '', True, 'price'),
     'lme_base_ts_hlr': ('lme_base_ts', 'hlratio', [10, 20, 2], '', '', True, 'price'),
+    'lme_base_ts_hlr_xdemean': ('lme_base_ts', 'hlratio', [10, 20, 2], '', '', True, 'price'),
     'base_phybas_carry_ma': ('base_phybas_carry', 'ma', [1, 2], '', '', True, 'price'),
+    'base_phybas_carry_ma_xdemean': ('base_phybas_carry', 'ma', [1, 2], '', '', True, 'price'),
     'base_inv_mds': ('base_inv', 'ma_dff_sgn', [180, 240, 2], '', '', False, 'price'),
+    'base_inv_mds_xdemean': ('base_inv', 'ma_dff_sgn', [180, 240, 2], '', '', False, 'price'),
 
     # too short
     'cu_scrap1_margin_gd': ('cu_scrap1_diff_gd', 'qtl', [40, 60, 2], '', 'pct_change', True, 'price'),  # too short
@@ -208,6 +212,8 @@ def funda_signal_by_name(spot_df, signal_name, price_df=None,
                          signal_cap=None, asset=None,
                          signal_repo=signal_store, feature_key_map=feature_to_feature_key_mapping):
     feature, signal_func, param_rng, proc_func, chg_func, bullish, freq = signal_repo[signal_name]
+    vol_win = 120
+    post_func = ''
     if asset and feature in feature_key_map:
         new_feature = feature_key_map[feature].get(asset, feature)
         if feature in param_rng_by_feature_key:
@@ -238,6 +244,8 @@ def funda_signal_by_name(spot_df, signal_name, price_df=None,
     elif 'df' in proc_func:
         n_diff = int(proc_func[2:])
         feature_ts = getattr(feature_ts, chg_func)(n_diff)
+    elif 'flr' in proc_func:
+        feature_ts = feature_ts.apply(lambda x: max(x-param_rng[0], 0) / param_rng[1])
     elif 'sma' in proc_func:
         n_days = int(proc_func[3:])
         feature_ts = feature_ts.rolling(n_days).mean()
@@ -256,13 +264,23 @@ def funda_signal_by_name(spot_df, signal_name, price_df=None,
     elif signal_func == 'seasonal_score_d':
         signal_ts = seasonal_score(feature_ts.to_frame(), backward=15, forward=15, rolling_years=3, min_obs=30)
     elif len(signal_func) > 0:
-        signal_ts = calc_conv_signal(feature_ts, signal_func=signal_func, param_rng=param_rng, signal_cap=signal_cap)
+        signal_ts = calc_conv_signal(feature_ts, signal_func=signal_func, param_rng=param_rng,
+                                     signal_cap=signal_cap, vol_win=vol_win)
     else:
         signal_ts = feature_ts
     if not bullish:
         signal_ts = -signal_ts
     # signal_ts = signal_ts.reindex(index=pd.bdate_range(
     #     start=spot_df.index[0], end=spot_df.index[-1], freq='C', holidays=CHN_Holidays)).ffill().dropna()
+    if 'ema' in post_func:
+        n_win = int(post_func[3])
+        signal_ts = signal_ts.ewm(n_win, ignore_na=True).mean()
+    elif 'sma' in post_func:
+        n_win = int(post_func[3:])
+        signal_ts = signal_ts.rolling(n_win).mean()
+    elif 'hmp' in post_func:
+        hump_lvl = float(post_func[3:])
+        signal_ts = signal_hump(signal_ts, hump_lvl)
     return signal_ts
 
 
