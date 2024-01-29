@@ -8,11 +8,33 @@ from misc_scripts.factor_data_update import update_factor_db
 
 
 def long_hol_signal(spot_df, days=2, gaps=7):
+    idx = pd.date_range(spot_df.index[0])
     sig_ts = spot_df.index.map(lambda x:
                                1 if ((day_shift(x.date(), f'{days}b', CHN_Holidays) - x.date()).days >= gaps) or
                                     ((x.date() - day_shift(x.date(), f'-{days}b', CHN_Holidays)).days >= gaps)
                                else 0)
     sig_ts = pd.Series(sig_ts, index=spot_df.index)
+    return sig_ts
+
+
+def cnc_hol_seasonality(df_pxchg, pre_days=2, post_days=2):
+    sig_ts = pd.Series(0, index=pd.date_range(start=df_pxchg.index[0],
+                                              end=df_pxchg.index[-1] + pd.DateOffset(days=30), freq='B'))
+    for yr in range(sig_ts.index[0].year, sig_ts.index[-1].year+1):
+        cny_date = pd.Timestamp(lunardate.LunarDate(yr,1,1).toSolarDate())
+        for (evt_d, befdays, aftdays) in \
+                [(cny_date, pre_days, post_days),
+                 (pd.Timestamp(datetime.date(yr, 5, 1)), 2, 2),
+                 (pd.Timestamp(datetime.date(yr, 10, 1)), 2, 2)]:
+            flag = pd.Series(sig_ts.index < evt_d, index=sig_ts.index) & pd.Series(
+                sig_ts.index.map(lambda d: day_shift(d.date(), f'{befdays}b', CHN_Holidays) > evt_d),
+                index=sig_ts.index)
+            sig_ts[flag] = 1
+            flag = pd.Series(sig_ts.index >= evt_d, index=sig_ts.index) & pd.Series(
+                sig_ts.index.map(lambda d: day_shift(d.date(), f'-{aftdays}b', CHN_Holidays) < evt_d),
+                index=sig_ts.index)
+            sig_ts[flag] = 1
+    sig_ts = sig_ts.reindex(index=df_pxchg.index).ffill()
     return sig_ts
 
 
@@ -55,12 +77,12 @@ factors_by_beta_neutral = {
 
 factors_by_func = {
     "long_hol_2b": {
-        'assets': ['rb', 'hc', 'i', 'j', 'jm', 'ru', 'FG', 'SM', 'SF',
-                   'cu', 'zn', 'sn', 'ni', 'ss', 'pb', 'al',
-                   'l', 'pp', 'v', 'TA', 'sc', 'eb', 'eg', 'UR', 'lu',
-                   'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'CF', 'jd', 'AP', 'lh'],
-        'func': long_hol_signal,
-        'args': {'days': 2, 'gaps': 7}
+        'assets': ['rb', 'hc', 'i', 'j', 'jm', 'FG',
+                   'cu', 'zn', 'sn', 'ni', 'ss', 'al',
+                   'l', 'pp', 'v', 'TA', 'sc', 'eb', 'eg', 'lu',
+                   'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'CF'],
+        'func': cnc_hol_seasonality,
+        'args': {'pre_days': 10, 'post_days': 5}
     }
 }
 
