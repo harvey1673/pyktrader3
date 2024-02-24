@@ -8,6 +8,72 @@ from datetime import date, timedelta
 from pycmqlib3.utility.misc import get_first_day_of_month, Holiday_Map, day_shift
 
 
+def trend_signal(df_pxchg, ma_fast, ma_slow, sig_win=252, smooth=1, cap=2.0, rolling='ewm'):
+    trend_s = pd.DataFrame(index=df_pxchg.index, columns=df_pxchg.columns)
+    for col in df_pxchg.columns:
+        px_ts = (1 + df_pxchg[col].dropna()).comprod()
+        ma_dist = getattr(px_ts, rolling)(ma_fast).mean() - getattr(px_ts, rolling)(ma_slow).mean()
+    trend_s = getattr(trend_s, rolling)(smooth).mean()
+    trend_s = trend_s.clip(-cap, cap)
+    return trend_s
+
+
+def signal_perf_eval(signal_df, df_pxchg, vol_win=20, cost_dict={}, trdcost=0):
+    vol_df = pd.DataFrame(index=df_pxchg.index, columns=df_pxchg.columns)
+    asset_pnl = pd.DataFrame(index=df_pxchg.index, columns=df_pxchg.columns)
+    asset_pnl_w_cost = pd.DataFrame(index=df_pxchg.index, columns=df_pxchg.columns)
+    for col in df_pxchg.columns:
+        vol_df[col] = df_pxchg[col].dropna().rolling(vol_win).std()
+    vol_df = vol_df.ffill()
+    holding_df = pd.DataFrame(index=df_pxchg.index, columns=df_pxchg.columns)
+    for col in df_pxchg.columns:
+        holding_df[col] = (signal_df[col]/vol_df[col]).shift(1)
+        asset_pnl[col] = holding_df[col].shift(1) * df_pxchg[col]
+        asset_pnl_w_cost[col] = asset_pnl[col] - cost_dict.get(col, trdcost) * holding_df[col].diff().abs()
+    pnl_per_trade = 100 * 100 * asset_pnl.mean(axis=0)/holding_df.diff().abs().mean()
+    turnover = 100 * holding_df.diff().abs().mean()/holding_df.abs().mean()
+    res = {
+        'holding': holding_df,
+        'asset_pnl': asset_pnl,
+        'asset_pnl_w_cost': asset_pnl_w_cost,
+        'portfolio_pnl': asset_pnl.mean(axis=1),
+        'portfolio_pnl_w_cost': asset_pnl_w_cost.mean(axis=1),
+        'pnl_per_trade': pnl_per_trade,
+        'turnover': turnover
+    }
+    return res
+
+
+def calc_strat_beta_residual(pnl_strat, pnl_idx, cutoff=None):
+    strat_name = pnl_strat.name
+    if type(strat_name).__name__ != 'str' or len(strat_name) == 0:
+        strat_name = 'strat'
+    idx_name = pnl_idx.name
+    if type(idx_name).__name__ != 'str' or len(idx_name) == 0:
+        idx_name = 'benchmark'
+    pnl_df = pd.concat([pnl_idx, pnl_strat], axis=1)
+    pnl_df.columns = [idx_name, strat_name]
+    if cutoff is None:
+        cutoff = pnl_df.index[0]
+    else:
+        cutoff = pd.to_datetime(cutoff)
+    beta = (pnl_df[cutoff:].cov() / pnl_df[idx_name][cutoff:].var())[idx_name].iloc[1]
+    correl = pnl_df[cutoff:].corr()[idx_name].iloc[1]
+
+    residual_pnl = pnl_df[strat_name] - beta * pnl_df[idx_name]
+    residual_pnl_sharpe = np.sqrt(252) * residual_pnl[cutoff:].mean() / residual_pnl[cutoff:].std()
+    res = {
+        'beta': beta,
+        'corr': correl,
+        'resid_sr': residual_pnl_sharpe,
+        'std_strat': pnl_df[strat_name].std(),
+        'std_index': pnl_df[idx_name].std(),
+        'date_range': str(cutoff.date()) + '-' + str(pnl_df.index[-1].date()),
+        'resid_pnl': residual_pnl
+    }
+    return res
+
+
 def sharpe(ts, cum_pnl=True, business_days_per_year=tstool.PNL_BDAYS):
     if cum_pnl:
         ts = ts.diff(1).dropna()
@@ -70,6 +136,7 @@ def calc_perf_by_tenors(ts, tenors, metric='sharpe', business_days_per_year=244)
 class MetricsBase(object):
     def __init__(self, holdings, returns, portfolio_obj=None, limits=None,
                  shift_holdings=0, backtest=True, hols='CHN',
+                 cost_dict={}, trdcost=0,
                  business_days_per_year=tstool.PNL_BDAYS):
         holdings.index = pd.to_datetime(holdings.index)
         returns.index = pd.to_datetime(returns.index)
@@ -79,6 +146,7 @@ class MetricsBase(object):
         self.portfolio_obj = portfolio_obj
         self.date_range = self.holdings.index
         self.universe = self.holdings.columns
+        self.cost_dict = dict([(asset, cost_dict.get(asset, trdcost)) for asset in self.universe])
         self.holidays = Holiday_Map.get(hols, [])
         self.business_days_per_year = business_days_per_year
 
@@ -182,7 +250,7 @@ class MetricsBase(object):
     def _calc_pnl(self, holdings):
         if holdings is None:
             holdings = self.holdings
-        return holdings.multiply(self.returns)
+        return holdings.multiply(self.returns) - holdings.diff().abs().assign(**self.cost_dict).fillna(0)
 
     def _lagged_asset_pnl(self, holdings=None, shift=0):
         if holdings is None:

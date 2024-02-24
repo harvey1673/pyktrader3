@@ -223,28 +223,32 @@ def calc_conv_signal(feature_ts, signal_func, param_rng, signal_cap=None, vol_wi
     return conv_signal
 
 
-def signal_hysteresis(signal_ts, enter_threshold, exit_gap):
+def signal_hysteresis(signal_ts, enter_threshold, exit_gap, use_sgn=True):
     sig_np = signal_ts.to_numpy()
     pos_np = np.zeros(len(sig_np))
     for idx in range(1, len(sig_np)):
         score = sig_np[idx]
+        if use_sgn:
+            pos = np.sign(score)
+        else:
+            pos = score
         if pos_np[idx-1] == 0 and abs(score) > enter_threshold:
-            pos_np[idx] = np.sign(score)
+            pos_np[idx] = pos
         if pos_np[idx-1] > 0:
             if score <= enter_threshold - exit_gap and abs(score) <= enter_threshold:
                 pos_np[idx] = 0
             elif score <= enter_threshold - exit_gap and abs(score) > enter_threshold:
-                pos_np[idx] = -1
+                pos_np[idx] = pos
             else:
                 pos_np[idx] = pos_np[idx-1]
         elif pos_np[idx-1] < 0:
             if score >= - (enter_threshold - exit_gap) and abs(score) <= enter_threshold:
                 pos_np[idx] = 0
             elif score >= -(enter_threshold - exit_gap) and abs(score) > enter_threshold:
-                pos_np[idx] = 1
+                pos_np[idx] = pos
             else:
                 pos_np[idx] = pos_np[idx-1]
-    return pd.series(pos_np, index=signal_ts.index)
+    return pd.Series(pos_np, index=signal_ts.index)
 
 
 def signal_hump(signal_ts, gap=0.2):
@@ -471,18 +475,23 @@ def lunar_yoy(ts, group_col='label_day', func='diff'):
     return tdf['yoy'].to_frame(ts_name)
 
 
-def calendar_label(data_df: pd.DataFrame, anchor_date={'month': 1, 'day': 1}, copy=True):
+def calendar_label(data_df: pd.DataFrame, copy=True): # anchor_date={'month': 1, 'day': 1},
     if copy:
         data_daily = data_df.copy()
     else:
         data_daily = data_df
-    data_daily['anchor_dates'] = data_daily.index.map(lambda d: datetime.date(d.year, **anchor_date)
-                                                      if d.date() >= datetime.date(d.year, **anchor_date)
-                                                      else datetime.date(d.year-1, **anchor_date))
-    data_daily['label_yr'] = data_daily['anchor_dates'].map(lambda d: d.year)
-    data_daily['label_day'] = (data_daily.index - pd.to_datetime(data_daily['anchor_dates'])).map(lambda x: x.days)
-    data_daily['label_wk'] = data_daily['label_day'] // 7
-    data_daily = data_daily.drop(columns=['anchor_dates'])
+    data_daily.index = pd.to_datetime(data_daily.index)
+    data_daily['label_yr'] = data_daily.index.map(lambda d:d.year)
+    data_daily['label_mth'] = data_daily.index.map(lambda d: d.month)
+    data_daily['label_wk'] = data_daily.index.map(lambda d: d.week)
+    data_daily['label_day'] = data_daily.index.map(lambda d: d.dayofyear)
+    # data_daily['anchor_dates'] = data_daily.index.map(lambda d: datetime.date(d.year, **anchor_date)
+    #                                                   if d.date() >= datetime.date(d.year, **anchor_date)
+    #                                                   else datetime.date(d.year-1, **anchor_date))
+    # data_daily['label_yr'] = data_daily['anchor_dates'].map(lambda d: d.year)
+    # data_daily['label_day'] = (data_daily.index - pd.to_datetime(data_daily['anchor_dates'])).map(lambda x: x.days)
+    # data_daily['label_wk'] = data_daily['label_day'] // 7
+    # data_daily = data_daily.drop(columns=['anchor_dates'])
     return data_daily
 
 
@@ -508,6 +517,53 @@ def yoy_generic(ts, label_func=lunar_label, func='diff', interpolate=False, grou
     tdf = tdf[(tdf['label_yr'] > tdf['label_yr'].iloc[0] + 1) |
               ((tdf['label_yr'] == tdf['label_yr'].iloc[0] + 1) & (tdf[group_col] >= tdf[group_col].iloc[0] + 1))]
     return tdf['yoy'].to_frame(ts_name)
+
+
+def stitched_yoy(ts, func='diff', interpolate=False, group_col='label_day',
+                 switch_period=[(12, 1, 12, 31), (3, 15, 4, 14)]):
+    ts_name = ts.name
+    dts = ts.dropna()
+    lyoy_ts = yoy_generic(dts, label_func=lunar_label, func=func, interpolate=interpolate, group_col=group_col)
+    cyoy_ts = yoy_generic(dts, label_func=calendar_label, func=func, interpolate=interpolate, group_col=group_col)
+    data_df = pd.concat([lyoy_ts[ts_name].to_frame('lyoy'), cyoy_ts[ts_name].to_frame('cyoy')], axis=1).ffill()
+
+    weight_df = pd.DataFrame(index=pd.date_range(start=datetime.date(dts.index[0].year-1, 12, 1),
+                                                 end=datetime.date(dts.index[-1].year, 12, 31), freq='D'))
+    weight_df['mth'] = weight_df.index.map(lambda d: d.month)
+    weight_df['day'] = weight_df.index.map(lambda d: d.day)
+    weight_df['w'] = np.nan
+    flag = ((weight_df['mth'] == switch_period[0][0]) & (weight_df['day'] == switch_period[0][1])) | \
+           ((weight_df['mth'] == switch_period[1][2]) & (weight_df['day'] == switch_period[1][3]))
+    weight_df.loc[flag, 'w'] = 1
+    flag = ((weight_df['mth'] == switch_period[0][2]) & (weight_df['day'] == switch_period[0][3])) | \
+           ((weight_df['mth'] == switch_period[1][0]) & (weight_df['day'] == switch_period[1][1]))
+    weight_df.loc[flag, 'w'] = 0
+    wdf = (weight_df[['w']].interpolate(method='linear', limit_area='inside').ffill().bfill())\
+        .reindex(index=data_df.index)
+    data_df['w_c'] = wdf['w']
+    data_df['yoy'] = data_df['cyoy'] * data_df['w_c'] + data_df['lyoy'] * (1-data_df['w_c'])
+    return data_df['yoy'].to_frame(ts_name)
+
+
+def stitched_yoy2(ts, func='diff', interpolate=False, group_col='label_day',
+                 switch_period=[-75, -45, 30, 50]):
+    ts_name = ts.name
+    dts = ts.dropna()
+    lyoy_ts = yoy_generic(dts, label_func=lunar_label, func=func, interpolate=interpolate, group_col=group_col)
+    cyoy_ts = yoy_generic(dts, label_func=calendar_label, func=func, interpolate=interpolate, group_col=group_col)
+    data_df = pd.concat([lyoy_ts[ts_name].to_frame('lyoy'), cyoy_ts[ts_name].to_frame('cyoy')], axis=1).ffill()
+
+    weight_df = lunar_label(pd.DataFrame(index=data_df.index))
+    weight_df['w'] = np.nan
+    flag = (weight_df['label_day'] <= switch_period[0]) | (weight_df['label_day'] >= switch_period[3])
+    weight_df.loc[flag, 'w'] = 1
+    flag = (weight_df['label_day'] >= switch_period[1]) & (weight_df['label_day'] <= switch_period[2])
+    weight_df.loc[flag, 'w'] = 0
+    wdf = (weight_df[['w']].interpolate(method='linear', limit_area='inside').ffill().bfill())\
+        .reindex(index=data_df.index)
+    data_df['w_c'] = wdf['w']
+    data_df['yoy'] = data_df['cyoy'] * data_df['w_c'] + data_df['lyoy'] * (1-data_df['w_c'])
+    return data_df['yoy'].to_frame(ts_name)
 
 
 def calendar_aggregation(df_in, period='monthly', how='returns'):
@@ -726,7 +782,7 @@ def seasonal_score(signal_df, **kwargs):
 
 
 def seasonal_group_helper(df_in, func, score_cols, yr_col='label_yr', group_col='label_wk',
-                          min_obs=0, backward=1, forward=1, split_zero=True,
+                          min_obs=0, backward=1, forward=1, split_zero=True, yr_shift=0,
                           rolling_years=100, **kwargs):
     df_in = df_in.copy(deep=True)
     if type(score_cols) == str:
@@ -737,7 +793,8 @@ def seasonal_group_helper(df_in, func, score_cols, yr_col='label_yr', group_col=
     for t_date in df_in.index:
         curr_yr = df_in.loc[t_date, yr_col]
         curr_grp = df_in.loc[t_date, group_col]
-        mask = (df_in.index < t_date) & (df_in[yr_col] >= curr_yr - rolling_years) & (df_in[yr_col] < curr_yr)
+        mask = (df_in.index <= t_date) & (df_in[yr_col] >= curr_yr - rolling_years) & \
+               (df_in[yr_col] <= curr_yr - yr_shift)
         grp_rng = []
         for grp_id in range(curr_grp - backward, curr_grp + forward+1):
             gid = grp_id
@@ -764,6 +821,107 @@ def seasonal_group_score(signal_df, score_cols, **kwargs):
         return (sample_df.iloc[-1] - sample_df.mean()) / sample_df.std()
     df = seasonal_group_helper(df_in=signal_df, func=agg_func, score_cols=score_cols, **kwargs)
     return pd.DataFrame(df).T
+
+def calc_funda_signal(spot_df, feature, signal_func, param_rng,
+                      proc_func='', chg_func='diff', bullish=True,
+                      freq='price', signal_cap=None, bdates=None,
+                      post_func='', vol_win=120):
+    feature_ts = spot_df[feature].dropna()
+    start_date = feature_ts.index[0]
+    end_date = feature_ts.index[-1]
+    cdates = pd.date_range(start=start_date, end=end_date, freq='D')
+    if bdates is None:
+        bdates = pd.bdate_range(start=start_date, end=end_date, freq='B')
+    if len(freq) > 0 and freq != 'price':
+        feature_ts = spot_df[feature].reindex(index=cdates).ffill().reindex(
+            index=pd.date_range(start=start_date, end=end_date, freq=freq)).ffill()
+    if 'yoy' in proc_func:
+        if 'lunar' in proc_func:
+            label_func = lunar_label
+            label_args = {}
+        elif 'cal' in proc_func:
+            label_func = calendar_label
+            label_args = {}
+        else:
+            label_func = None
+        if '_wk' in proc_func:
+            group_col = 'label_wk'
+        else:
+            group_col = 'label_day'
+        if label_func is None:
+            feature_ts = stitched_yoy(feature_ts, group_col=group_col, func=chg_func)
+        else:
+            feature_ts = yoy_generic(feature_ts,
+                                     label_func=label_func,
+                                     group_col=group_col,
+                                     func=chg_func,
+                                     label_args=label_args)
+            feature_ts = feature_ts[feature]
+        if freq == 'price':
+            feature_ts = feature_ts.reindex(index=cdates).ffill().reindex(index=bdates)
+    else:
+        if freq == 'price':
+            feature_ts = feature_ts.reindex(index=cdates).ffill().reindex(index=bdates)
+        if 'df' in proc_func:
+            n_diff = int(proc_func[2:])
+            feature_ts = getattr(feature_ts, chg_func)(n_diff)
+        elif 'sma' in proc_func:
+            n_days = int(proc_func[3:])
+            feature_ts = feature_ts.rolling(n_days).mean()
+        elif 'ema' in proc_func:
+            n_days = int(proc_func[3:])
+            feature_ts = feature_ts.ewm(n_days).mean()
+        elif '_lr' in proc_func:
+            feature_ts = np.log(1+feature_ts)
+        elif 'csum' in proc_func:
+            feature_ts = feature_ts.cumsum()
+
+    if signal_func == 'seasonal_score_w':
+        signal_ts = seasonal_score(feature_ts.to_frame(),
+                                   backward=param_rng[0],
+                                   forward=param_rng[1],
+                                   rolling_years=param_rng[2],
+                                   min_obs=10)[feature]
+    elif signal_func == 'seasonal_score_d':
+        signal_ts = seasonal_score(feature_ts.to_frame(),
+                                   backward=param_rng[0],
+                                   forward=param_rng[1],
+                                   rolling_years=param_rng[2],
+                                   min_obs=40)[feature]
+    elif signal_func == 'rng':
+        signal_ts = feature_ts.apply(lambda x: max(min(x-param_rng[0], param_rng[1]), -param_rng[1])/param_rng[2])
+    elif signal_func == 'dbl_th':
+        if len(chg_func) > 0:
+            signal_ts = eval(chg_func)(feature_ts, param_rng[2])
+        else:
+            signal_ts = feature_ts
+        signal_ts = signal_ts.apply(lambda x: np.sign(x) if abs(x) >= param_rng[0] else 0)
+    elif signal_func == 'hysteresis':
+        if len(param_rng) > 2:
+            use_sgn = (param_rng[2] > 0)
+        else:
+            use_sgn = True
+        signal_ts = signal_hysteresis(feature_ts, param_rng[0], param_rng[1], use_sgn=use_sgn)
+    elif len(signal_func) > 0:
+        signal_ts = calc_conv_signal(feature_ts, signal_func=signal_func, param_rng=param_rng,
+                                     signal_cap=signal_cap, vol_win=vol_win)
+    else:
+        signal_ts = feature_ts
+    if not bullish:
+        signal_ts = -signal_ts
+
+    signal_ts = signal_ts.reindex(index=cdates).ffill().reindex(index=bdates)
+
+    if post_func[:3] == 'ema':
+        n_win = int(post_func[3])
+        signal_ts = signal_ts.ewm(n_win, ignore_na=True).mean()
+    elif post_func[:3] == 'sma':
+        n_win = int(post_func[3:])
+        signal_ts = signal_ts.rolling(n_win).mean()
+    elif post_func[:3] == 'hmp':
+        hump_lvl = float(post_func[3:])
+        signal_ts = signal_hump(signal_ts, hump_lvl)
+    return signal_ts
 
 
 def rolling_deseasonal(raw_df, **kwargs):
