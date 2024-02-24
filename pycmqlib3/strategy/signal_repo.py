@@ -1,6 +1,7 @@
 import pandas as pd
 from pycmqlib3.analytics.tstool import *
 from pycmqlib3.utility.misc import CHN_Holidays, day_shift
+from pycmqlib3.utility.exch_ctd_func import *
 
 
 signal_store = {
@@ -52,9 +53,12 @@ signal_store = {
     'lme_base_ts_hlr_xdemean': ('lme_base_ts', 'hlratio', [10, 20, 2], '', '', True, 'price'),
     'base_phybas_carry_ma': ('base_phybas_carry', 'ma', [1, 2], '', '', True, 'price'),
     'base_phybas_carry_ma_xdemean': ('base_phybas_carry', 'ma', [1, 2], '', '', True, 'price'),
-    'base_inv_mds': ('base_inv', 'ma_dff_sgn', [180, 240, 2], '', '', False, 'price'),
-    'base_inv_mds_xdemean': ('base_inv', 'ma_dff_sgn', [180, 240, 2], '', '', False, 'price'),
-
+    'metal_pbc_ema': ('metal_pbc', 'ema', [10, 20], '', '', True, 'price'),
+    'metal_pbc_ema_xdemean': ('metal_pbc', 'ema', [10, 20], '', '', True, 'price'),
+    'base_inv_mds': ('metal_inv', 'ma_dff_sgn', [180, 240, 2], '', '', False, 'price'),
+    'base_inv_mds_xdemean': ('metal_inv', 'ma_dff_sgn', [180, 240, 2], '', '', False, 'price'),
+    'metal_inv_hlr': ('metal_inv', 'hlratio', [240, 260, 2], '', '', False, 'price'),
+    'metal_inv_hlr_xdemean': ('metal_inv', 'hlratio', [240, 260, 2], '', '', False, 'price'),
     # too short
     'cu_scrap1_margin_gd': ('cu_scrap1_diff_gd', 'qtl', [40, 60, 2], '', 'pct_change', True, 'price'),  # too short
     'cu_scrap1_margin_tj': ('cu_scrap1_diff_tj', 'qtl', [40, 60, 2], '', 'pct_change', True, 'price'),  # too short
@@ -105,6 +109,27 @@ feature_to_feature_key_mapping = {
         'ni': 'ni_smm1_jc_phybasis',
         'sn': 'sn_smm1_sh_phybasis',
     },
+    'metal_pbc': {
+        "cu": "cu_smm1_spot",
+        "al": "al_smm0_spot",
+        "zn": "zn_smm0_spot",
+        "pb": "pb_smm1_spot",
+        "sn": "sn_smm1_spot",
+        "ni": "ni_smm1_spot",
+        "ss": "ss_304_gross_wuxi",
+        "ao": "alumina_spot_qd",
+        "si": "si_553_spot_smm",
+        "rb": "rebar_sh",
+        "hc": "hrc_sh",
+        "i": "io_ctd_spot",
+        "j": "coke_sh_xb",
+        "jm": "ckc_a10v24s08_lvliang",
+        "FG": "fg_5mm_shahe",
+        "SM": "sm_65s17_neimeng",
+        "SF": "sf_72_ningxia",
+        "v": "pvc_cac2_east",
+        "SA": "sa_heavy_east",
+    },
     'base_inv': {
         'cu': 'cu_inv_social_all',
         'al': 'al_inv_social_all',
@@ -114,6 +139,17 @@ feature_to_feature_key_mapping = {
         'sn': 'sn_inv_social_all',
         'si': 'si_inv_social_all',
         'ao': 'bauxite_inv_az_ports',
+        'ss': "ss_inv_social_300",
+        'rb': 'rebar_inv_social',
+        'hc': 'hrc_inv_social',
+        'j': "coke_inv_ports_tj",
+        'jm': "ckc_inv_cokery",
+        'v': "v_inv_social",
+        'i': 'io_inv_45ports',
+        'SM': 'sm_inv_mill',
+        'SF': 'sf_inv_mill',
+        'FG': "fg_inv_mill",
+        'SA': 'sa_inv_mill_all',
     }
 }
 
@@ -216,6 +252,18 @@ def funda_signal_by_name(spot_df, signal_name, price_df=None,
     post_func = ''
     if asset and feature in feature_key_map:
         new_feature = feature_key_map[feature].get(asset, feature)
+        if feature == 'metal_pbc':
+            if price_df is None:
+                print("ERROR: no future price is passed for metal_pbc")
+                return pd.Series()
+            spot_df['date'] = pd.to_datetime(spot_df.index)
+            spot_df[f'{asset}_c1'] = price_df[(asset, 'c1', 'close')] / np.exp(price_df[(asset, 'c1', 'shift')])
+            spot_df[f'{asset}_expiry'] = pd.to_datetime(price_df[(asset, 'c1', 'expiry')])
+            if asset == 'i':
+                spot_df['io_ctd_spot'] = io_ctd_basis(spot_df, price_df[('i', 'c1', 'expiry')])
+            spot_df[f'{asset}_phybasis'] = (np.log(spot_df[new_feature]) - np.log(spot_df[f'{asset}_c1'])) / \
+                                           (spot_df[f'{asset}_expiry'] - spot_df['date']).dt.days * 365
+            new_feature = f'{asset}_phybasis'
         if feature in param_rng_by_feature_key:
             param_rng = param_rng_by_feature_key[feature].get(asset, param_rng)
         feature = new_feature
@@ -234,13 +282,13 @@ def funda_signal_by_name(spot_df, signal_name, price_df=None,
             label_args = {}
         else:
             label_func = calendar_label
-            label_args = {'anchor_date': {'month': 1, 'day': 1}}
+            label_args = {}
         if '_wk' in proc_func:
             group_col = 'label_wk'
         else:
             group_col = 'label_day'
         feature_ts = yoy_generic(feature_ts, label_func=label_func, group_col=group_col, func=chg_func,
-                                 label_args=label_args)
+                                 label_args=label_args)[feature]
     elif 'df' in proc_func:
         n_diff = int(proc_func[2:])
         feature_ts = getattr(feature_ts, chg_func)(n_diff)

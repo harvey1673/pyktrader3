@@ -1,3 +1,5 @@
+import pandas as pd
+
 index_map = {
     # macro
     'G002600770': 'usgg2yr',
@@ -297,11 +299,53 @@ index_map = {
     "S008527044": "alumina_spot_henan",
     "S008527035": "alumina_spot_guizhou",
     "S004077728": "alumina_spot_qd",
-    "S002865625": 'si'
+    "S002865625": 'si_553_spot_smm',
+
+    "M002845714": "csi300_idx",
+    "M002845725": "csi500_idx",
+    "M012963695": "csi1000_idx",
+    "M009042848": "sw_sector_idx_basemetal",
+    "M009042858": "sw_sector_idx_prop",
+    "M009042864": "sw_sector_idx_const",
+    "M009042847": 'sw_sector_idx_steel',
+    "M003588167": "zx_sector_idx_const",
+    "M003588182": "zx_sector_idx_prop",
+    "M003588162": "zx_sector_idx_basemetal",
+    "M003588164": "zx_sector_idx_steel",
 }
 
 
-def process_spot_df(spot_df):
+def data_wkday_adj(data_df, col_list, shift_map={0: -4, 1: -5, 2: 1, 3: 0, 4: -1, 5: -2, 6: -3}):
+    col_list = [col for col in col_list if col in data_df.columns]
+    data_df = data_df.reindex(
+        index=pd.date_range(
+            start=data_df.index[0],
+            end=data_df.index[-1] + pd.DateOffset(days=max(shift_map.values())),
+            freq='D'))
+    ddf = data_df[col_list].dropna(how='all').copy(deep=True)
+    ddf['date'] = ddf.index
+    ddf['date'] = ddf['date'].map(lambda d: d + pd.DateOffset(days=shift_map.get(d.weekday(), 0)))
+    ddf = ddf.set_index('date')
+    for col in col_list:
+        data_df[col] = ddf[col]
+    return data_df
+
+
+def adj_publish_time(spot_df):
+    col_list = ['io_inv_imp_mill(64)', 'io_inv_dom_mill(64)', 'io_invdays_imp_mill(64)']
+    shift_map = {0: -4, 1: -5, 2: 1, 3: 0, 4: -1, 5: -2, 6: -3}
+    spot_df = data_wkday_adj(spot_df, col_list, shift_map=shift_map)
+
+    col_list = ['rebar_inv_mill', 'wirerod_inv_mill', 'hrc_inv_mill', 'crc_inv_mill', 'plate_inv_mill',
+                'rebar_inv_social', 'wirerod_inv_social', 'hrc_inv_social', 'crc_inv_social', 'plate_inv_social']
+    shift_map = {0: -4, 1: -5, 2: -6, 3: 0, 4: -1, 5: -2, 6: -3}
+    spot_df = data_wkday_adj(spot_df, col_list, shift_map=shift_map)
+    return spot_df
+
+
+def process_spot_df(spot_df, adjust_time=False):
+    if adjust_time:
+        spot_df = adj_publish_time(spot_df)
     spot_df['usggbe10'] = spot_df['usgg10yr'] - spot_df['usggt10yr']
     spot_df['r_dr_7d_spd'] = spot_df['r007_cn'] - spot_df['dr007_cn']
 
@@ -340,4 +384,5 @@ def process_spot_df(spot_df):
     spot_df['margin_hrc_pbf'] = spot_df['hrc_sh'] - 1.7 * spot_df['pbf_cfd'] - 0.45 * spot_df['coke_xuzhou_xb']
     spot_df['margin_hrc_macf'] = spot_df['hrc_sh'] - 1.7 * spot_df['macf_cfd'] - 0.45 * spot_df['coke_xuzhou_xb']
     spot_df['strip_hsec'] = spot_df['strip_3.0x685'] - spot_df['hsec_400x200']
+
     return spot_df

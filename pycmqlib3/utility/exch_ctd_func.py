@@ -82,7 +82,7 @@ def io_brand_adj(brand_name):
 
     if (fe >= 56) and (si <= 8.5) and (al <= 3.5) and (p <= 0.15) and (s <= 0.2):
         X = 1.5
-        fe_adj = (fe - 61, 0) * 10 * X + min(fe - 60, 0) * 10 * 1.5 + max(fe - 63.5, 0) * 10
+        fe_adj = (fe - 61) * 10 * X + min(fe - 60, 0) * 15 + max(fe - 63.5, 0) * 10
         si_adj = -max(si - 4.5, 0) * 10 - max(si - 6.5, 0) * 5 - min(si - 4.5, 0) * 5
         al_adj = -max(al - 2.5, 0) * 30 - max(min(al - 2.5, 0), -1.5) * 20
         p_adj = -max(p - 0.1, 0) * 1000 - max(p - 0.12, 0) * 500
