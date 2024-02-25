@@ -1,5 +1,6 @@
 from pycmqlib3.utility.misc import day_shift, sign, product_lotsize, CHN_Holidays
 from pycmqlib3.utility.dbaccess import load_factor_data
+from pycmqlib3.analytics.tstool import *
 import pandas as pd
 import numpy as np
 
@@ -64,11 +65,20 @@ def generate_strat_position(cur_date, prod_list, factor_repo,
                     xdf[prod] = np.nan
                 elif ('exec_assets' in factor_repo[fact]) and (prod in factor_repo[fact]['exec_assets']):
                     xdf[prod] = np.nan
-            fact_data[fact] = xdf[prod_list]
+            fact_data[fact] = xdf[prod_list].ffill()
 
     pos_sum = pd.DataFrame(index=prod_list)
     for fact in factor_repo:
-        rebal_freq = factor_repo[fact]['rebal']
+        rebal = factor_repo[fact]['rebal']
+        if type(rebal) == str:
+            rebal_freq = int(rebal[3:])
+            if rebal[:3] == 'sma':
+                rebal_func = 'rolling'
+            else:
+                rebal_func = 'ewm'
+        else:
+            rebal_func = 'rolling'
+            rebal_freq = rebal
         weight = factor_repo[fact]['weight']
         factor_pos[fact] = fact_data[fact].copy()
         if factor_repo[fact]['type'] != 'pos':
@@ -78,7 +88,6 @@ def generate_strat_position(cur_date, prod_list, factor_repo,
                     xs_signal = 'rank_cutoff'
                 else:
                     xs_signal = xs_split[1]
-
                 if xs_signal == 'rank_cutoff':
                     cutoff = factor_repo[fact]['threshold']
                     lower_rank = int(len(prod_list) * cutoff) + 1
@@ -95,9 +104,13 @@ def generate_strat_position(cur_date, prod_list, factor_repo,
                     rank_df = factor_pos[fact].rank(axis=1)
                     median_ts = rank_df.quantile(0.5, axis=1)
                     factor_pos[fact] = rank_df.sub(median_ts, axis=0)/len(prod_list) * 2.0
+                elif xs_signal == 'xdemean':
+                    factor_pos[fact] = xs_demean(factor_pos[fact])
+                elif xs_signal == 'xscore':
+                    factor_pos[fact] = xs_score(factor_pos[fact])
                 elif len(xs_signal) > 0:
                     print('unsupported xs signal types')
-            factor_pos[fact] = factor_pos[fact].rolling(rebal_freq).mean().fillna(0.0)
+            factor_pos[fact] = getattr(factor_pos[fact], rebal_func)(rebal_freq).mean().fillna(0.0)
         factor_pos[fact] = factor_pos[fact].ffill()
         pos_sum[fact] = pd.Series(factor_pos[fact].iloc[-1] * weight, name=fact)
     pos_sum['sum'] = pos_sum.sum(axis=1)

@@ -55,8 +55,8 @@ signal_store = {
     'base_phybas_carry_ma_xdemean': ('base_phybas_carry', 'ma', [1, 2], '', '', True, 'price'),
     'metal_pbc_ema': ('metal_pbc', 'ema', [10, 20], '', '', True, 'price'),
     'metal_pbc_ema_xdemean': ('metal_pbc', 'ema', [10, 20], '', '', True, 'price'),
-    'base_inv_mds': ('metal_inv', 'ma_dff_sgn', [180, 240, 2], '', '', False, 'price'),
-    'base_inv_mds_xdemean': ('metal_inv', 'ma_dff_sgn', [180, 240, 2], '', '', False, 'price'),
+    'base_inv_mds': ('base_inv', 'ma_dff_sgn', [180, 240, 2], '', '', False, 'price'),
+    'base_inv_mds_xdemean': ('base_inv', 'ma_dff_sgn', [180, 240, 2], '', '', False, 'price'),
     'metal_inv_hlr': ('metal_inv', 'hlratio', [240, 260, 2], '', '', False, 'price'),
     'metal_inv_hlr_xdemean': ('metal_inv', 'hlratio', [240, 260, 2], '', '', False, 'price'),
     # too short
@@ -109,6 +109,16 @@ feature_to_feature_key_mapping = {
         'ni': 'ni_smm1_jc_phybasis',
         'sn': 'sn_smm1_sh_phybasis',
     },
+    'base_inv': {
+        'cu': 'cu_inv_social_all',
+        'al': 'al_inv_social_all',
+        'zn': 'zn_inv_social_3p',
+        'ni': 'ni_inv_social_6p',
+        'pb': 'pb_inv_social_5p',
+        'sn': 'sn_inv_social_all',
+        'si': 'si_inv_social_all',
+        'ao': 'bauxite_inv_az_ports',
+    },
     'metal_pbc': {
         "cu": "cu_smm1_spot",
         "al": "al_smm0_spot",
@@ -130,7 +140,7 @@ feature_to_feature_key_mapping = {
         "v": "pvc_cac2_east",
         "SA": "sa_heavy_east",
     },
-    'base_inv': {
+    'metal_inv': {
         'cu': 'cu_inv_social_all',
         'al': 'al_inv_social_all',
         'zn': 'zn_inv_social_3p',
@@ -251,7 +261,7 @@ def funda_signal_by_name(spot_df, signal_name, price_df=None,
     vol_win = 120
     post_func = ''
     if asset and feature in feature_key_map:
-        new_feature = feature_key_map[feature].get(asset, feature)
+        asset_feature = feature_key_map[feature].get(asset, feature)
         if feature == 'metal_pbc':
             if price_df is None:
                 print("ERROR: no future price is passed for metal_pbc")
@@ -261,12 +271,12 @@ def funda_signal_by_name(spot_df, signal_name, price_df=None,
             spot_df[f'{asset}_expiry'] = pd.to_datetime(price_df[(asset, 'c1', 'expiry')])
             if asset == 'i':
                 spot_df['io_ctd_spot'] = io_ctd_basis(spot_df, price_df[('i', 'c1', 'expiry')])
-            spot_df[f'{asset}_phybasis'] = (np.log(spot_df[new_feature]) - np.log(spot_df[f'{asset}_c1'])) / \
+            spot_df[f'{asset}_phybasis'] = (np.log(spot_df[asset_feature]) - np.log(spot_df[f'{asset}_c1'])) / \
                                            (spot_df[f'{asset}_expiry'] - spot_df['date']).dt.days * 365
-            new_feature = f'{asset}_phybasis'
+            asset_feature = f'{asset}_phybasis'
         if feature in param_rng_by_feature_key:
             param_rng = param_rng_by_feature_key[feature].get(asset, param_rng)
-        feature = new_feature
+        feature = asset_feature
     feature_ts = spot_df[feature].dropna()
     cdates = pd.date_range(start=feature_ts.index[0], end=feature_ts.index[-1], freq='D')
     bdates = pd.bdate_range(start=feature_ts.index[0], end=feature_ts.index[-1], freq='C', holidays=CHN_Holidays)
