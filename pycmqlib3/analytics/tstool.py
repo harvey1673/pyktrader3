@@ -15,7 +15,7 @@ import lunardate
 from matplotlib import font_manager
 from .stats_test import test_mean_reverting, half_life
 from statsmodels.tsa.stattools import coint, adfuller
-from pycmqlib3.utility.misc import invert_dict
+from pycmqlib3.utility.misc import invert_dict, CHN_Holidays
 font = font_manager.FontProperties(fname='C:\\windows\\fonts\\simsun.ttc')
 PNL_BDAYS = 244
 
@@ -822,6 +822,7 @@ def seasonal_group_score(signal_df, score_cols, **kwargs):
     df = seasonal_group_helper(df_in=signal_df, func=agg_func, score_cols=score_cols, **kwargs)
     return pd.DataFrame(df).T
 
+
 def calc_funda_signal(spot_df, feature, signal_func, param_rng,
                       proc_func='', chg_func='diff', bullish=True,
                       freq='price', signal_cap=None, bdates=None,
@@ -831,7 +832,7 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
     end_date = feature_ts.index[-1]
     cdates = pd.date_range(start=start_date, end=end_date, freq='D')
     if bdates is None:
-        bdates = pd.bdate_range(start=start_date, end=end_date, freq='B')
+        bdates = pd.bdate_range(start=start_date, end=end_date, freq='C', holidays=CHN_Holidays)
     if len(freq) > 0 and freq != 'price':
         feature_ts = spot_df[feature].reindex(index=cdates).ffill().reindex(
             index=pd.date_range(start=start_date, end=end_date, freq=freq)).ffill()
@@ -856,7 +857,7 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
                                      group_col=group_col,
                                      func=chg_func,
                                      label_args=label_args)
-            feature_ts = feature_ts[feature]
+        feature_ts = feature_ts[feature]
         if freq == 'price':
             feature_ts = feature_ts.reindex(index=cdates).ffill().reindex(index=bdates)
     else:
@@ -875,6 +876,8 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
             feature_ts = np.log(1+feature_ts)
         elif 'csum' in proc_func:
             feature_ts = feature_ts.cumsum()
+        elif 'floor' == proc_func:
+            feature_ts = feature_ts.apply(lambda x: max(x - param_rng[0], 0) / param_rng[1])
 
     if signal_func == 'seasonal_score_w':
         signal_ts = seasonal_score(feature_ts.to_frame(),
@@ -897,21 +900,24 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
             signal_ts = feature_ts
         signal_ts = signal_ts.apply(lambda x: np.sign(x) if abs(x) >= param_rng[0] else 0)
     elif signal_func == 'hysteresis':
-        if len(param_rng) > 2:
-            use_sgn = (param_rng[2] > 0)
+        if len(chg_func) > 0:
+            signal_ts = eval(chg_func)(feature_ts, param_rng[1])
+        else:
+            signal_ts = feature_ts
+        if len(param_rng) > 3:
+            use_sgn = (param_rng[3] > 0)
         else:
             use_sgn = True
-        signal_ts = signal_hysteresis(feature_ts, param_rng[0], param_rng[1], use_sgn=use_sgn)
+        signal_ts = signal_hysteresis(signal_ts, param_rng[0], param_rng[2], use_sgn=use_sgn)
     elif len(signal_func) > 0:
         signal_ts = calc_conv_signal(feature_ts, signal_func=signal_func, param_rng=param_rng,
                                      signal_cap=signal_cap, vol_win=vol_win)
     else:
         signal_ts = feature_ts
+
     if not bullish:
         signal_ts = -signal_ts
-
     signal_ts = signal_ts.reindex(index=cdates).ffill().reindex(index=bdates)
-
     if post_func[:3] == 'ema':
         n_win = int(post_func[3])
         signal_ts = signal_ts.ewm(n_win, ignore_na=True).mean()

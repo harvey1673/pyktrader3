@@ -4,6 +4,8 @@ import pycmqlib3.analytics.data_handler as dh
 from pycmqlib3.utility import misc
 from pycmqlib3.analytics.btmetrics import *
 from pycmqlib3.analytics.tstool import *
+from pycmqlib3.utility import dataseries
+from misc_scripts.fun_factor_update import get_fun_data, load_hist_fut_prices
 from pycmqlib3.strategy.signal_repo import *
 
 
@@ -289,4 +291,39 @@ def get_beta_neutral_returns(df, asset_pairs):
         beta_ret_dict[key] = asset_df[key].dropna()
         betas_dict[key] = asset_df['beta']
     return beta_ret_dict, betas_dict
+
+
+def load_fun_data(tday=datetime.date.today()):
+    tday = pd.to_datetime(tday)
+    try:
+        spot_df = pd.read_parquet("C:/dev/data/spot_df_%s.parquet" % tday.strftime("%Y%m%d"))
+    except:
+        spot_df = get_fun_data(start_date=pd.Timestamp('20060101'), run_date=tday)
+        try:
+            spot_df.to_parquet("C:/dev/data/spot_df_%s.parquet" % tday.strftime("%Y%m%d"))
+            print("spot_df data saved")
+        except:
+            print("spot_df save error")
+    return spot_df
+
+
+def load_cnc_fut(tday=datetime.date.today()):
+    tday = pd.to_datetime(tday)
+    try:
+        df = pd.read_parquet("C:/dev/data/cnc_fut_df_%s.parquet" % tday.strftime("%Y%m%d"))
+    except:
+        commod_mkts = [
+            'rb', 'hc', 'i', 'j', 'jm', 'ru', 'FG', 'SM', 'SF',
+            'cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ss',
+            'l', 'pp', 'v', 'TA', 'sc', 'lu', 'eb', 'eg', 'pg', 'PF', 'MA', 'fu',
+            'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'CF', 'jd', 'lh',
+            'AP', 'CJ', 'UR', 'PK', 'SR', 'cs', 'si', 'ao', 'T', 'TF',
+        ]
+        df = load_hist_fut_prices(commod_mkts, start_date=datetime.date(2008, 1, 1), end_date=tday)
+        try:
+            df.to_parquet("C:/dev/data/spot_df_%s.parquet" % tday.strftime("%Y%m%d"))
+            print("cnc_fut_df data saved")
+        except:
+            print("cnc_fut_df save error")
+    return df
 

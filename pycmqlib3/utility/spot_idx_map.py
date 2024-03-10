@@ -385,4 +385,26 @@ def process_spot_df(spot_df, adjust_time=False):
     spot_df['margin_hrc_macf'] = spot_df['hrc_sh'] - 1.7 * spot_df['macf_cfd'] - 0.45 * spot_df['coke_xuzhou_xb']
     spot_df['strip_hsec'] = spot_df['strip_3.0x685'] - spot_df['hsec_400x200']
 
+    asset_pairs = [
+        ("sw_sector_idx_prop", 'csi500_idx', 'prop_sw_csi500'),
+        ("sw_sector_idx_const", 'csi500_idx', 'const_sw_csi500'),
+        ("sw_sector_idx_steel", 'csi500_idx', 'steel_sw_csi500'),
+        ("sw_sector_idx_basemetal", 'csi500_idx', 'base_sw_csi500'),
+        ("zx_sector_idx_prop", 'csi500_idx', 'prop_zx_csi500'),
+        ("zx_sector_idx_const", 'csi500_idx', 'const_zx_csi500'),
+        ("zx_sector_idx_steel", 'csi500_idx', 'steel_zx_csi500'),
+        ("zx_sector_idx_basemetal", 'csi500_idx', 'base_zx_csi500'),
+    ]
+    beta_win = 245
+    for trade_asset, index_asset, key in asset_pairs:
+        asset_df = spot_df[[index_asset, trade_asset]].dropna().copy(deep=True)
+        for asset in asset_df:
+            asset_df[f"{asset}_pct"] = asset_df[asset].pct_change().rolling(5).mean()
+        asset_df['beta'] = asset_df[f"{index_asset}_pct"].rolling(beta_win).cov(
+            asset_df[f"{trade_asset}_pct"]) / asset_df[f"{index_asset}_pct"].rolling(beta_win).var()
+        asset_df['ret'] = asset_df[trade_asset].pct_change() - asset_df['beta'] * asset_df[
+            index_asset].pct_change().fillna(0)
+        spot_df[key + "_ret"] = asset_df['ret'].dropna()
+        spot_df[key + '_beta'] = asset_df['beta']
+        spot_df[key + '_val'] = asset_df['ret'].dropna().cumsum()
     return spot_df

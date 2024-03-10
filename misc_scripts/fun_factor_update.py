@@ -1,5 +1,5 @@
 import sys
-from pycmqlib3.strategy.signal_repo import signal_store, funda_signal_by_name
+from pycmqlib3.strategy.signal_repo import signal_store, get_funda_signal_from_store
 from pycmqlib3.utility.spot_idx_map import index_map, process_spot_df
 from pycmqlib3.utility.dbaccess import load_codes_from_edb, load_factor_data
 from pycmqlib3.utility import dataseries
@@ -181,7 +181,7 @@ def load_hist_fut_prices(markets, start_date, end_date,
 
 def update_fun_factor(run_date=datetime.date.today(), flavor='mysql'):
     start_date = day_shift(run_date, '-4y')
-    update_start = day_shift(run_date, '-60b', CHN_Holidays)
+    update_start = day_shift(run_date, '-120b', CHN_Holidays)
     markets = ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si',
                'rb', 'hc', 'i', 'j', 'jm', 'SM', 'SF', 'v', 'FG', 'SA']
     price_df = load_hist_fut_prices(markets, start_date=start_date, end_date=run_date)
@@ -202,13 +202,23 @@ def update_fun_factor(run_date=datetime.date.today(), flavor='mysql'):
                          start_date=pd.to_datetime(update_start),
                          end_date=pd.to_datetime(run_date), flavor=flavor)
 
+    asset_factors = []
     for factor_name in factors_by_asset.keys():
+        if factor_name[-8:] == '_xdemean':
+            db_fact_name = factor_name[:-8]
+        elif factor_name[-7:] == '_xscore':
+            db_fact_name = factor_name[:-7]
+        else:
+            db_fact_name = factor_name
+        if db_fact_name in asset_factors:
+            continue
         for asset in factors_by_asset[factor_name]:
-            signal_ts = funda_signal_by_name(spot_df, factor_name, price_df=price_df, signal_cap=[-2, 2], asset=asset)
-            save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=cutoff_date, flavor=flavor)
+            signal_ts = get_funda_signal_from_store(spot_df, factor_name, price_df=price_df, signal_cap=[-2, 2], asset=asset)
+            save_signal_to_db(asset, db_fact_name, signal_ts[update_start:], run_date=cutoff_date, flavor=flavor)
+        asset_factors.append(db_fact_name)
 
     for factor_name in single_factors:
-        signal_ts = funda_signal_by_name(spot_df, factor_name, price_df=price_df, signal_cap=[-2, 2])
+        signal_ts = get_funda_signal_from_store(spot_df, factor_name, price_df=price_df, signal_cap=[-2, 2])
         for asset in single_factors[factor_name]:
             save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=cutoff_date, flavor=flavor)
 
@@ -220,12 +230,12 @@ def update_fun_factor(run_date=datetime.date.today(), flavor='mysql'):
             save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=cutoff_date, flavor=flavor)
 
     for factor_name in factors_by_spread.keys():
-        signal_ts = funda_signal_by_name(spot_df, factor_name, price_df=price_df, signal_cap=[-2, 2])
+        signal_ts = get_funda_signal_from_store(spot_df, factor_name, price_df=price_df, signal_cap=[-2, 2])
         for asset, weight in factors_by_spread[factor_name]:
             save_signal_to_db(asset, factor_name, weight*signal_ts[update_start:], run_date=cutoff_date, flavor=flavor)
 
     for factor_name in factors_by_beta_neutral.keys():
-        signal_ts = funda_signal_by_name(spot_df, factor_name, price_df=price_df, signal_cap=[-2, 2])
+        signal_ts = get_funda_signal_from_store(spot_df, factor_name, price_df=price_df, signal_cap=[-2, 2])
         signal_df = pd.DataFrame(index=signal_ts.index)
         signal_df['raw_sig'] = signal_ts
         asset_list = []

@@ -59,6 +59,18 @@ signal_store = {
     'base_inv_mds_xdemean': ('base_inv', 'ma_dff_sgn', [180, 240, 2], '', '', False, 'price'),
     'metal_inv_hlr': ('metal_inv', 'hlratio', [240, 260, 2], '', '', False, 'price'),
     'metal_inv_hlr_xdemean': ('metal_inv', 'hlratio', [240, 260, 2], '', '', False, 'price'),
+    'metal_inv_lyoy_hlr': ('metal_inv', 'hlratio', [240, 260, 2], '', '', False, 'price'),
+    'metal_inv_lyoy_hlr_xdemean': ('metal_inv', 'hlratio', [240, 260, 2], '', '', False, 'price'),
+
+    "base_etf_mom_zsa": ("base_sw_csi500_ret", "zcore_adj", [20, 40, 1], "csum", "", True, ""),
+    "base_etf_mom_ewm": ("base_sw_csi500_ret", "ewmac", [2, 4, 1], "csum", "", True, ""),
+    "const_etf_mom_zsa": ("const_sw_csi500_ret", "zcore_adj", [20, 40, 1], "csum", "", True, ""),
+    "const_etf_mom_ewm": ("const_sw_csi500_ret", "ewmac", [2, 4, 1], "csum", "", True, ""),
+
+    "prop_etf_mom_dbth_zs": ("prop_sw_csi500_ret", "hysteresis", [1, 120, 0.5], "ema3", "zscore_roll", True, ""),
+    "prop_etf_mom_dbth_qtl": ("prop_sw_csi500_ret", "dbl_th", [0.75, 120, 0], "ema3", "pct_score", True, ""),
+    "prop_etf_mom_dbth_qtl2": ("prop_sw_csi500_ret", "dbl_th", [0.8, 240, 1], "ema3", "pct_score", True, ""),
+
     # too short
     'cu_scrap1_margin_gd': ('cu_scrap1_diff_gd', 'qtl', [40, 60, 2], '', 'pct_change', True, 'price'),  # too short
     'cu_scrap1_margin_tj': ('cu_scrap1_diff_tj', 'qtl', [40, 60, 2], '', 'pct_change', True, 'price'),  # too short
@@ -254,7 +266,7 @@ def long_break(df, input_args):
     return signal_df
 
 
-def funda_signal_by_name(spot_df, signal_name, price_df=None,
+def get_funda_signal_from_store(spot_df, signal_name, price_df=None,
                          signal_cap=None, asset=None,
                          signal_repo=signal_store, feature_key_map=feature_to_feature_key_mapping):
     feature, signal_func, param_rng, proc_func, chg_func, bullish, freq = signal_repo[signal_name]
@@ -354,7 +366,7 @@ def custom_funda_signal(df, input_args):
     if signal_type == 0:
         signal_df = pd.DataFrame()
         for asset in product_list:
-            signal_ts = funda_signal_by_name(funda_df, signal_name, price_df=df, signal_cap=signal_cap, asset=asset)
+            signal_ts = get_funda_signal_from_store(funda_df, signal_name, price_df=df, signal_cap=signal_cap, asset=asset)
             signal_ts = signal_ts.reindex(
                 index=pd.date_range(start=df.index[0],
                                     end=df.index[-1],
@@ -365,7 +377,7 @@ def custom_funda_signal(df, input_args):
     # pair trading strategy, fixed ratio
     elif signal_type == 3:
         signal_df = pd.DataFrame()
-        signal_ts = funda_signal_by_name(funda_df, signal_name, price_df=df, signal_cap=signal_cap)
+        signal_ts = get_funda_signal_from_store(funda_df, signal_name, price_df=df, signal_cap=signal_cap)
         signal_ts = signal_ts.reindex(
             index=pd.date_range(start=df.index[0],
                                 end=df.index[-1],
@@ -377,7 +389,7 @@ def custom_funda_signal(df, input_args):
 
     # beta neutral last asseet is index asset
     elif signal_type == 4:
-        signal_ts = funda_signal_by_name(funda_df, signal_name, price_df=df, signal_cap=signal_cap)
+        signal_ts = get_funda_signal_from_store(funda_df, signal_name, price_df=df, signal_cap=signal_cap)
         signal_df = pd.DataFrame(0, index=signal_ts.index, columns=product_list)
         index_asset = product_list[-1]
         beta_win = 122
@@ -401,7 +413,7 @@ def custom_funda_signal(df, input_args):
 
     # apply same signal to all assets
     else:
-        signal_ts = funda_signal_by_name(funda_df, signal_name, price_df=df, signal_cap=signal_cap)
+        signal_ts = get_funda_signal_from_store(funda_df, signal_name, price_df=df, signal_cap=signal_cap)
         signal_ts = signal_ts.reindex(
             index=pd.date_range(start=df.index[0],
                                 end=df.index[-1],
