@@ -55,6 +55,13 @@ single_factors = {
     'cu_prem_usd_md': ['cu'],
     'cu_phybasis_zsa': ['cu'],
     'cu_phybasis_hlr': ['cu'],
+    "base_etf_mom_zsa": ["cu", "al", "zn", "pb", "ni", "sn"],
+    "base_etf_mom_ewm": ["cu", "al", "zn", "pb", "ni", "sn"],
+    "const_etf_mom_zsa": ["rb", "hc", "i", "j", "jm", "FG", "v"],
+    "const_etf_mom_ewm": ["rb", "hc", "i", "j", "jm", "FG", "v"],
+    "prop_etf_mom_dbth_zs": ["rb", "hc", "i", "FG", "v"],
+    "prop_etf_mom_dbth_qtl": ["rb", "hc", "i", "FG", "v"],
+    "prop_etf_mom_dbth_qtl2": ["rb", "hc", "i", "FG", "v"],
 }
 
 factors_by_asset = {
@@ -64,11 +71,11 @@ factors_by_asset = {
     'base_inv_mds': ['cu', 'al', 'zn', 'ni', 'sn', 'pb'],
     'metal_pbc_ema': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si',
                       'rb', 'hc', 'i', 'j', 'jm', 'SM', 'SF', 'v', 'FG', 'SA'],
-    'metal_pbc_ema_xdemean': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si',
-                              'rb', 'hc', 'i', 'j', 'jm', 'SM', 'SF', 'v', 'FG', 'SA'],
+    # 'metal_pbc_ema_xdemean': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si',
+    #                           'rb', 'hc', 'i', 'j', 'jm', 'SM', 'SF', 'v', 'FG', 'SA'],
     'metal_inv_hlr': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si',
                       'rb', 'hc', 'i', 'j', 'jm', 'SM', 'SF', 'v', 'FG', 'SA'],
-    'metal_inv_hlr_xdemean': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si',
+    'metal_inv_lyoy_hlr': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si',
                               'rb', 'hc', 'i', 'j', 'jm', 'SM', 'SF', 'v', 'FG', 'SA'],
 }
 
@@ -208,12 +215,17 @@ def update_fun_factor(run_date=datetime.date.today(), flavor='mysql'):
             db_fact_name = factor_name[:-8]
         elif factor_name[-7:] == '_xscore':
             db_fact_name = factor_name[:-7]
+        elif factor_name[-6:] == '_xrank':
+            db_fact_name = factor_name[:-6]
         else:
             db_fact_name = factor_name
         if db_fact_name in asset_factors:
             continue
         for asset in factors_by_asset[factor_name]:
-            signal_ts = get_funda_signal_from_store(spot_df, factor_name, price_df=price_df, signal_cap=[-2, 2], asset=asset)
+            signal_ts = get_funda_signal_from_store(spot_df, factor_name,
+                                                    price_df=price_df,
+                                                    signal_cap=[-2, 2],
+                                                    asset=asset)
             save_signal_to_db(asset, db_fact_name, signal_ts[update_start:], run_date=cutoff_date, flavor=flavor)
         asset_factors.append(db_fact_name)
 
