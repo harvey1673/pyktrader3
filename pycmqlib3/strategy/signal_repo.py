@@ -57,15 +57,15 @@ signal_store = {
     'metal_pbc_ema_xdemean': ('metal_pbc', 'ema', [10, 20], '', '', True, 'price'),
     'base_inv_mds': ('base_inv', 'ma_dff_sgn', [180, 240, 2], '', '', False, 'price'),
     'base_inv_mds_xdemean': ('base_inv', 'ma_dff_sgn', [180, 240, 2], '', '', False, 'price'),
-    'metal_inv_hlr': ('metal_inv', 'hlratio', [240, 260, 2], '', '', False, 'price'),
-    'metal_inv_hlr_xdemean': ('metal_inv', 'hlratio', [240, 260, 2], '', '', False, 'price'),
-    'metal_inv_lyoy_hlr': ('metal_inv', 'hlratio', [240, 260, 2], '', '', False, 'price'),
-    'metal_inv_lyoy_hlr_xdemean': ('metal_inv', 'hlratio', [240, 260, 2], '', '', False, 'price'),
+    'metal_inv_hlr': ('metal_inv', 'hlratio', [240, 250], '', '', False, 'price'),
+    'metal_inv_hlr_xdemean': ('metal_inv', 'hlratio', [240, 250, 2], '', '', False, 'price'),
+    'metal_inv_lyoy_hlr': ('metal_inv', 'hlratio', [240, 250], 'lunar_yoy_day', 'pct_change', False, 'price'),
+    'metal_inv_lyoy_hlr_xdemean': ('metal_inv', 'hlratio', [240, 250], 'lunar_yoy_day', 'pct_change', False, 'price'),
 
     "base_etf_mom_zsa": ("base_sw_csi500_ret", "zcore_adj", [20, 40, 1], "csum", "", True, ""),
     "base_etf_mom_ewm": ("base_sw_csi500_ret", "ewmac", [2, 4, 1], "csum", "", True, ""),
-    "const_etf_mom_zsa": ("const_sw_csi500_ret", "zcore_adj", [20, 40, 1], "csum", "", True, ""),
-    "const_etf_mom_ewm": ("const_sw_csi500_ret", "ewmac", [2, 4, 1], "csum", "", True, ""),
+    "const_etf_mom_zsa": ("const_sw_csi500_ret", "zcore_adj", [40, 80, 2], "csum", "", True, ""),
+    "const_etf_mom_ewm": ("const_sw_csi500_ret", "ewmac", [2, 5, 1], "csum", "", True, ""),
 
     "prop_etf_mom_dbth_zs": ("prop_sw_csi500_ret", "hysteresis", [1, 120, 0.5], "ema3", "zscore_roll", True, ""),
     "prop_etf_mom_dbth_qtl": ("prop_sw_csi500_ret", "dbl_th", [0.75, 120, 0], "ema3", "pct_score", True, ""),
@@ -364,15 +364,17 @@ def custom_funda_signal(df, input_args):
 
     # get signal by asset
     if signal_type == 0:
-        signal_df = pd.DataFrame()
+        signal_df = pd.DataFrame(index=pd.date_range(start=df.index[0], end=df.index[-1], freq='C'))
         for asset in product_list:
-            signal_ts = get_funda_signal_from_store(funda_df, signal_name, price_df=df, signal_cap=signal_cap, asset=asset)
-            signal_ts = signal_ts.reindex(
-                index=pd.date_range(start=df.index[0],
-                                    end=df.index[-1],
-                                    freq='C'
-                                    )).ffill().reindex(index=df.index)
-            signal_df[asset] = signal_ts
+            signal_df[asset] = get_funda_signal_from_store(funda_df, signal_name,
+                                                           price_df=df, signal_cap=signal_cap, asset=asset)
+        signal_df = signal_df.ffill().reindex(index=df.index)
+        if "xdemean" in signal_name:
+            signal_df = xs_demean(signal_df)
+        elif "xscore" in signal_name:
+            signal_df = xs_score(signal_df)
+        elif "xrank" in signal_name:
+            signal_df = xs_rank(signal_df, 0.2)
 
     # pair trading strategy, fixed ratio
     elif signal_type == 3:

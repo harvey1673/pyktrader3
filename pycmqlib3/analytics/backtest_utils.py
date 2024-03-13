@@ -319,9 +319,9 @@ def load_cnc_fut(tday=datetime.date.today()):
             'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'CF', 'jd', 'lh',
             'AP', 'CJ', 'UR', 'PK', 'SR', 'cs', 'si', 'ao', 'T', 'TF',
         ]
-        df = load_hist_fut_prices(commod_mkts, start_date=datetime.date(2008, 1, 1), end_date=tday)
+        df = load_hist_fut_prices(commod_mkts, start_date=datetime.date(2008, 1, 1), end_date=tday, nb_cont=2)
         try:
-            df.to_parquet("C:/dev/data/spot_df_%s.parquet" % tday.strftime("%Y%m%d"))
+            df.to_parquet("C:/dev/data/cnc_fut_df_%s.parquet" % tday.strftime("%Y%m%d"))
             print("cnc_fut_df data saved")
         except:
             print("cnc_fut_df save error")
