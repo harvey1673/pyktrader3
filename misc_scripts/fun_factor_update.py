@@ -1,4 +1,7 @@
 import sys
+
+import pandas as pd
+
 from pycmqlib3.strategy.signal_repo import get_funda_signal_from_store
 from pycmqlib3.utility.spot_idx_map import index_map, process_spot_df
 from pycmqlib3.utility.dbaccess import load_codes_from_edb, load_factor_data
@@ -23,17 +26,17 @@ def cnc_hol_seasonality(df_pxchg, pre_days=2, post_days=2):
     sig_ts = pd.Series(0, index=pd.date_range(start=df_pxchg.index[0],
                                               end=df_pxchg.index[-1] + pd.DateOffset(days=30), freq='B'))
     for yr in range(sig_ts.index[0].year, sig_ts.index[-1].year+1):
-        cny_date = pd.Timestamp(lunardate.LunarDate(yr,1,1).toSolarDate())
+        cny_date = pd.Timestamp(lunardate.LunarDate(yr, 1, 1).toSolarDate())
         for (evt_d, befdays, aftdays) in \
                 [(cny_date, pre_days, post_days),
                  (pd.Timestamp(datetime.date(yr, 5, 1)), 2, 2),
                  (pd.Timestamp(datetime.date(yr, 10, 1)), 2, 2)]:
             flag = pd.Series(sig_ts.index < evt_d, index=sig_ts.index) & pd.Series(
-                sig_ts.index.map(lambda d: day_shift(d.date(), f'{befdays}b', CHN_Holidays) > evt_d),
+                sig_ts.index.map(lambda d: pd.Timestamp(day_shift(d.date(), f'{befdays}b', CHN_Holidays)) > evt_d),
                 index=sig_ts.index)
             sig_ts[flag] = 1
             flag = pd.Series(sig_ts.index >= evt_d, index=sig_ts.index) & pd.Series(
-                sig_ts.index.map(lambda d: day_shift(d.date(), f'-{aftdays}b', CHN_Holidays) < evt_d),
+                sig_ts.index.map(lambda d: pd.Timestamp(day_shift(d.date(), f'-{aftdays}b', CHN_Holidays)) < evt_d),
                 index=sig_ts.index)
             sig_ts[flag] = 1
     sig_ts = sig_ts.reindex(index=df_pxchg.index).ffill()
@@ -184,7 +187,7 @@ def load_hist_fut_prices(markets, start_date, end_date,
             xdf['mth'] = xdf['contmth'].apply(lambda x: x // 100 * 12 + x % 100)
             xdf['product'] = prodcode
             xdf['code'] = f'c{nb + 1}'
-            data_df = data_df.append(xdf)
+            data_df = pd.concat([data_df, xdf])
     df = pd.pivot_table(data_df.reset_index(), index='date', columns=['product', 'code'], values=list(fields),
                         aggfunc='last')
     df = df.reorder_levels([1, 2, 0], axis=1).sort_index(axis=1)
