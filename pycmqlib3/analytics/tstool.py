@@ -832,7 +832,7 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
     end_date = feature_ts.index[-1]
     cdates = pd.date_range(start=start_date, end=end_date, freq='D')
     if bdates is None:
-        bdates = pd.bdate_range(start=start_date, end=end_date, freq='C', holidays=CHN_Holidays)
+        bdates = pd.bdate_range(start=start_date, end=end_date, freq='C')
     if len(freq) > 0 and freq != 'price':
         feature_ts = spot_df[feature].reindex(index=cdates).ffill().reindex(
             index=pd.date_range(start=start_date, end=end_date, freq=freq)).ffill()
