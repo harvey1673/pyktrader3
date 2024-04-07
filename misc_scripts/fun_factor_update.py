@@ -69,8 +69,8 @@ single_factors = {
 factors_by_asset = {
     'lme_base_ts_mds': ['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
     'lme_base_ts_hlr': ['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
-    'base_phybas_carry_ma': ['cu', 'al', 'zn', 'ni', 'sn'],
-    'base_inv_mds': ['cu', 'al', 'zn', 'ni', 'sn', 'pb'],
+    'base_phybas_carry_ma': ['cu', 'al', 'zn', 'ni', 'sn', 'pb'],
+    'base_inv_mds': ['cu', 'al', 'zn', 'ni', 'sn', 'pb', 'ss', 'si', 'ao'],
     'base_tc_1y_zs': ['cu', 'pb', 'zn'],
     'base_cifprem_1y_zs': ['cu', 'al', 'zn', 'ni'],
     'base_phybasmom_1m_zs': ['cu', 'al', 'zn', 'ni', 'pb', 'sn'],
