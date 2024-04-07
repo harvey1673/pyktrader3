@@ -23,7 +23,7 @@ def generate_strat_position(cur_date, prod_list, factor_repo,
     start_date = day_shift(cur_date, '-%sb' % (str(hist_fact_lookback)), CHN_Holidays)
     end_date = day_shift(day_shift(cur_date, '1b', CHN_Holidays), '-1d')
     cdates = pd.date_range(start=start_date, end=end_date, freq='D')
-    bdates = pd.bdate_range(start=start_date, end=end_date, freq='C', holidays=CHN_Holidays)
+    bdates = pd.bdate_range(start=start_date, end=end_date, freq='C')
     vol_df = load_factor_data(prod_list,
                               factor_list=[vol_key],
                               roll_label=roll_label,
@@ -82,7 +82,7 @@ def generate_strat_position(cur_date, prod_list, factor_repo,
             rebal_func = 'rolling'
             rebal_freq = rebal
         weight = factor_repo[fact]['weight']
-        factor_pos[fact] = fact_data[fact].copy().reindex(index=cdates).ffill().reindex(index=bdates)
+        factor_pos[fact] = fact_data[fact].copy().ffill()
         if factor_repo[fact]['type'] != 'pos':
             if 'xs' in factor_repo[fact]['type']:
                 xs_split = factor_repo[fact]['type'].split('-')
