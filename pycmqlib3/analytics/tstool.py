@@ -895,7 +895,7 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
         signal_ts = feature_ts.apply(lambda x: max(min(x-param_rng[0], param_rng[1]), -param_rng[1])/param_rng[2])
     elif signal_func == 'dbl_th':
         if len(chg_func) > 0:
-            signal_ts = eval(chg_func)(feature_ts, param_rng[2])
+            signal_ts = eval(chg_func)(feature_ts, param_rng[1])
         else:
             signal_ts = feature_ts
         signal_ts = signal_ts.apply(lambda x: np.sign(x) if abs(x) >= param_rng[0] else 0)
