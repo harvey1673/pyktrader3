@@ -32,7 +32,7 @@ def generate_strat_position(cur_date, prod_list, factor_repo,
                               freq=freq,
                               db_table=fact_db_table)
     vol_df = pd.pivot_table(vol_df[vol_df['fact_name'] == vol_key], values='fact_val',
-                            index=['date', 'serial_key'],
+                            index='date',
                             columns=['product_code'],
                             aggfunc='last')
 
@@ -46,7 +46,7 @@ def generate_strat_position(cur_date, prod_list, factor_repo,
     for idx, prod in enumerate(prod_list):
         vol_weight[idx] = vol_weight[idx]*pos_scaler/(vol_df[prod].iloc[-1]*product_lotsize[prod])
     if repo_type == 'port':
-        xdf = pd.pivot_table(df, values='fact_val', index=['date', 'serial_key'],
+        xdf = pd.pivot_table(df, values='fact_val', index='date',
                              columns=['fact_name'], aggfunc='last')
         for fact in factor_repo:
             fact_data[fact] = pd.concat([xdf[fact]] * len(prod_list), axis=1)
@@ -59,7 +59,7 @@ def generate_strat_position(cur_date, prod_list, factor_repo,
         for fact in factor_repo:
             xdf = pd.pivot_table(df[df['fact_name'] == factor_repo[fact]['name']],
                                  values='fact_val',
-                                 index=['date', 'serial_key'],
+                                 index='date',
                                  columns=['product_code'],
                                  aggfunc='last')
             for prod in prod_list:

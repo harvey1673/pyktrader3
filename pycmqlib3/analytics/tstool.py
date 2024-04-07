@@ -917,16 +917,17 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
 
     if not bullish:
         signal_ts = -signal_ts
-    signal_ts = signal_ts.reindex(index=cdates).ffill().reindex(index=bdates)
-    if post_func[:3] == 'ema':
-        n_win = int(post_func[3])
-        signal_ts = signal_ts.ewm(n_win, ignore_na=True).mean()
-    elif post_func[:3] == 'sma':
-        n_win = int(post_func[3:])
-        signal_ts = signal_ts.rolling(n_win).mean()
-    elif post_func[:3] == 'hmp':
-        hump_lvl = float(post_func[3:])
-        signal_ts = signal_hump(signal_ts, hump_lvl)
+    if len(post_func) > 0:
+        signal_ts = signal_ts.reindex(index=cdates).ffill().reindex(index=bdates)
+        if post_func[:3] == 'ema':
+            n_win = int(post_func[3])
+            signal_ts = signal_ts.ewm(n_win, ignore_na=True).mean()
+        elif post_func[:3] == 'sma':
+            n_win = int(post_func[3:])
+            signal_ts = signal_ts.rolling(n_win).mean()
+        elif post_func[:3] == 'hmp':
+            hump_lvl = float(post_func[3:])
+            signal_ts = signal_hump(signal_ts, hump_lvl)
     return signal_ts
 
 

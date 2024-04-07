@@ -8,11 +8,11 @@ signal_store = {
     'io_removal_lvl': [['rb', 'hc', 'i', 'j', 'jm', 'v', 'FG', 'cu'],
                        ['io_removal_41ports', 'qtl', [20, 40, 2], '', '', True, 'price', 'sma2', 120]],
     'io_removal_lyoy': [['rb', 'hc', 'i', 'j', 'jm', 'v', 'FG', 'cu'],
-                        ['io_removal_41ports', 'qtl', [6, 10], 'lunar_yoy_day', 'diff', True, 'W-Fri', 'sma1', 120]],
+                        ['io_removal_41ports', 'qtl', [6, 10], 'lunar_yoy_day', 'diff', True, 'W-Fri', '', 120]],
     'io_removal_wow': [['i'],
                        ['io_removal_41ports', 'zscore', [48, 53], 'df1', 'diff', True, 'W-Fri', "", 120]],
     'io_millinv_lvl': [['i'],
-                       ['io_inv_mill(64)', 'qtl', [20, 40, 2], '', 'diff', True, 'price', '', 120]],
+                       ['io_inv_mill(64)', 'qtl', [20, 40, 2], '', '', True, 'price', '', 120]],
     'io_millinv_lyoy': [['rb', 'hc', 'i', 'j', 'jm', 'FG'],
                         ['io_inv_mill(64)', 'qtl', [2, 4], 'lunar_yoy_day', 'diff', True, 'W-Fri', '', 120]],
     'io_invdays_lvl': [['rb', 'hc', 'i', 'j', 'jm', 'v', 'FG', 'cu', 'al'],
@@ -22,23 +22,26 @@ signal_store = {
     # 'io_port_inv_lvl_slow': [['i'],
     #                          ['io_inv_imp_31ports_w', 'zscore', [240, 255, 5], '', '', False, 'price', "", 120]],
 
-    'ioarb_px_hlr': [['rb', 'hc', 'i'], ['io_on_off_arb', 'hlratio', [40, 80, 2], 'sma2', '', False, 'price', '', 120]],
-    'ioarb_px_hlrhys': [['rb', 'hc', 'i'], ['io_on_off_arb', 'hlratio', [40, 80, 2], 'sma2', '', False, 'price', '', 120]],
-    'ioarb_spd_qtl_1y': [['rb_i', 'hc_i'], ['io_on_off_arb', 'qtl', [240, 260, 2], 'sma2', '', False, 'price', '', 120]],
+    'ioarb_px_hlr': [['rb', 'hc', 'i'],
+                     ['io_on_off_arb', 'hlratio', [40, 80, 2], 'sma2', '', False, 'price', '', 120]],
+    'ioarb_px_hlrhys': [['rb', 'hc', 'i'],
+                        ['io_on_off_arb', 'hlratio', [40, 80, 2], 'sma2', '', False, 'price', '', 120]],
+    'ioarb_spd_qtl_1y': [['rb_i', 'hc_i'],
+                         ['io_on_off_arb', 'qtl', [240, 260, 2], 'sma2', '', False, 'price', '', 120]],
     'io_pinv31_lvl_zsa': [['rb_i', 'hc_i'],
-                          ['io_inv_31ports', 'zscore_adj', [8, 56, 4], '', 'pct_change', True, '', "sma2", 120]],
+                          ['io_inv_31ports', 'zscore_adj', [8, 56, 4], '', '', True, '', "sma2", 120]],
     'io_pinv45_lvl_hlr': [['rb_i', 'hc_i'],
-                          ['io_inv_45ports', 'hlratio', [8, 56, 4], '', 'pct_change', True, '', "sma2", 120]],
+                          ['io_inv_45ports', 'hlratio', [8, 56, 4], '', '', True, '', "sma2", 120]],
     'steel_sinv_lyoy_zs': [['rb', 'hc', 'i', 'FG', 'v'],
                            ['steel_inv_social', 'zscore', [24, 30, 2], 'lunar_yoy_day', 'diff', False, '', "", 120]],
     'steel_sinv_lyoy_mds': [['rb', 'hc', 'i', 'FG', 'v'],
                            ['steel_inv_social', 'ma_dff_sgn', [5, 9, 1], 'lunar_yoy_day', 'diff', False, '', "", 120]],
     'rbhc_dmd_mds': [['rb-hc'],
-                     ['rb_hc_dmd_diff', 'ma_dff_sgn', [5, 9, 1], '', 'diff', True, '', "", 120]],
+                     ['rb_hc_dmd_diff', 'ma_dff_sgn', [5, 9, 1], '', '', True, '', "", 120]],
     'rbhc_dmd_lyoy_mds': [['rb-hc'],
                           ['rb_hc_dmd_diff', 'ma_dff_sgn', [5, 9, 1], 'lunar_yoy_day', 'diff', True, '', "", 120]],
     'rbhc_sinv_mds': [['rb-hc'],
-                      ['rb_hc_sinv_diff', 'ma_dff_sgn', [5, 9, 1], '', 'diff', False, '', "", 120]],
+                      ['rb_hc_sinv_diff', 'ma_dff_sgn', [5, 9, 1], '', '', False, '', "", 120]],
     'rbhc_sinv_lyoy_mds': [['rb-hc'],
                            ['rb_hc_sinv_diff', 'ma_dff_sgn', [5, 9, 1], 'lunar_yoy_day', 'diff', False, '', "", 120]],
 
@@ -49,7 +52,7 @@ signal_store = {
     # 'billet_inv_chg_slow': ('billet_inv_social_ts', 'zscore', [240, 252, 2], '', 'diff', False, 'price'),
     'pbf_yoy_qtl': [['fef', 'i'], ["pbf_prem", 'qtl', [20, 30, 2], "cal_yoy",  "diff", True, "", "", 120]],
     'pbf_yoy_eds': [['fef', 'i'], ["pbf_prem", 'ema_dff_sgn', [5, 15, 1], "cal_yoy",  "diff", True, "", "", 120]],
-    'pbf_spd': [['rb_i', "hc_i"], ["pbf_prem", 'zscore_adj', [40, 80, 2], "",  "diff", False, "", "", 120]],
+    'pbf_spd': [['rb_i', "hc_i"], ["pbf_prem", 'zscore_adj', [40, 80, 2], "",  "", False, "", "", 120]],
     'cons_steel_lyoy_slow': [['rb', 'i', 'hc'],
                              ['cons_steel_transact_vol_china', 'zscore', [240, 255, 5],
                               'lunar_yoy_day', 'diff', True, 'price', "", 120]],
@@ -57,11 +60,11 @@ signal_store = {
     'sea_export_arb_lvl_mid': [['hc', 'rb'],
                                ['hrc_exp_sea_arb', 'zscore', [40, 82, 2], '', '', True, 'price', "", 120]],
     'steel_margin_lvl_fast': [['rb', 'hc', 'i', 'j'],
-                              ['margin_hrc_macf', 'qtl', [20, 40, 2], '', 'pct_change', True, 'price', "", 120]],
+                              ['margin_hrc_macf', 'qtl', [20, 40, 2], '', '', True, 'price', "", 120]],
     'strip_hsec_lvl_mid': [['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM', 'cu'],
                            ['strip_hsec', 'qtl', [60, 80, 2], '', '', True, 'price', "", 120]],
     'macf_cfd_lvl_mid': [['i'],
-                         ['macf_cfd', 'qtl', [40, 82, 2], '', 'pct_change', True, 'price', "", 120]],
+                         ['macf_cfd', 'qtl', [40, 82, 2], '', '', True, 'price', "", 120]],
     'hc_rb_diff_lvl_fast': [['rb', 'hc', 'i', 'j', 'jm', 'cu', 'al'],
                             ['hc_rb_diff', 'zscore', [20, 40, 2], '', '', True, 'price', "", 120]],
     'fef_c1_c2_ratio_or_qtl': [['rb', 'hc', 'j'],
@@ -96,13 +99,16 @@ signal_store = {
                              ['base_phybas', 'zscore', [230, 250, 2], 'sma2', '', True, 'price', "", 120]],
     'base_phybasmom_1y_zs_xdemean': [['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
                                      ['base_phybas', 'zscore', [230, 250, 2], 'sma2', '', True, 'price', "", 120]],
-    'base_cifprem_1y_zs': [['cu', 'al', 'zn', 'ni'], ['prem_bonded_warrant', 'zscore', [230, 250, 2], '', '', True, 'price', "", 120]],
-    'base_cifprem_1y_zs_xdemean': [['cu', 'al', 'zn', 'ni'], ['prem_bonded_warrant', 'zscore', [230, 250, 2], '', '', True, 'price', "", 120]],
+    'base_cifprem_1y_zs': [['cu', 'al', 'zn', 'ni'],
+                           ['prem_bonded_warrant', 'zscore', [230, 250, 2], '', '', True, 'price', "", 120]],
+    'base_cifprem_1y_zs_xdemean': [['cu', 'al', 'zn', 'ni'],
+                                   ['prem_bonded_warrant', 'zscore', [230, 250, 2], '', '', True, 'price', "", 120]],
     'base_tc_1y_zs': [['cu', 'pb', 'zn'], ['base_tc', 'zscore', [230, 250, 2], '', '', False, 'price', "", 120]],
 
     'metal_pbc_ema': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'v', 'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss'],
                       ['metal_pbc', 'ema', [10, 20], '', '', True, 'price', "", 120]],
-    'metal_pbc_ema_xdemean': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'v', 'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss'],
+    'metal_pbc_ema_xdemean': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'v',
+                               'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss'],
                               ['metal_pbc', 'ema', [10, 20], '', '', True, 'price', "", 120]],
     'base_inv_mds': [['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
                      ['base_inv', 'ma_dff_sgn', [180, 240, 2], '', '', False, 'price', "", 120]],
@@ -110,11 +116,14 @@ signal_store = {
                              ['base_inv', 'ma_dff_sgn', [180, 240, 2], '', '', False, 'price', "", 120]],
     'metal_inv_hlr': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'v', 'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss'],
                       ['metal_inv', 'hlratio', [240, 250], '', '', False, 'price', "", 120]],
-    'metal_inv_hlr_xdemean': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'v', 'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss'],
+    'metal_inv_hlr_xdemean': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'v',
+                               'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss'],
                               ['metal_inv', 'hlratio', [240, 250, 2], '', '', False, 'price', "", 120]],
-    'metal_inv_lyoy_hlr': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'v', 'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss'],
+    'metal_inv_lyoy_hlr': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'v',
+                            'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss'],
                            ['metal_inv', 'hlratio', [240, 250], 'lunar_yoy_day', 'pct_change', False, 'price', "", 120]],
-    'metal_inv_lyoy_hlr_xdemean': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'v', 'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss'],
+    'metal_inv_lyoy_hlr_xdemean': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'v',
+                                    'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss'],
                                    ['metal_inv', 'hlratio', [240, 250], 'lunar_yoy_day',
                                     'pct_change', False, 'price', "", 120]],
 
@@ -410,11 +419,12 @@ def custom_funda_signal(df, input_args):
 
     # get signal by asset
     if signal_type == 0:
-        signal_df = pd.DataFrame(index=pd.date_range(start=df.index[0], end=df.index[-1], freq='C'))
+        signal_df = pd.DataFrame(index=pd.date_range(start=df.index[0], end=df.index[-1], freq='D'))
         for asset in product_list:
             signal_df[asset] = get_funda_signal_from_store(funda_df, signal_name,
                                                            price_df=df, signal_cap=signal_cap, asset=asset)
-        signal_df = signal_df.ffill().reindex(index=df.index)
+        signal_df = signal_df.reindex(index=pd.date_range(start=df.index[0], end=df.index[-1], freq='D'))\
+            .ffill().reindex(index=df.index)
         if "xdemean" in signal_name:
             signal_df = xs_demean(signal_df)
         elif "xscore" in signal_name:
@@ -429,7 +439,7 @@ def custom_funda_signal(df, input_args):
         signal_ts = signal_ts.reindex(
             index=pd.date_range(start=df.index[0],
                                 end=df.index[-1],
-                                freq='C'
+                                freq='D'
                                 )).ffill().reindex(index=df.index)
         if set(product_list) == set(['rb', 'hc']):
             signal_df['rb'] = signal_ts
@@ -438,7 +448,7 @@ def custom_funda_signal(df, input_args):
     # beta neutral last asseet is index asset
     elif signal_type == 4:
         signal_ts = get_funda_signal_from_store(funda_df, signal_name, price_df=df, signal_cap=signal_cap)
-        signal_df = pd.DataFrame(0, index=signal_ts.index, columns=product_list)
+        signal_df = pd.DataFrame(0, index=df.index, columns=product_list)
         index_asset = product_list[-1]
         beta_win = 122
         for trade_asset in product_list[:-1]:
@@ -465,7 +475,7 @@ def custom_funda_signal(df, input_args):
         signal_ts = signal_ts.reindex(
             index=pd.date_range(start=df.index[0],
                                 end=df.index[-1],
-                                freq='C'
+                                freq='D'
                                 )).ffill().reindex(index=df.index)
         signal_df = pd.DataFrame(dict([(asset, signal_ts) for asset in product_list]))
 
