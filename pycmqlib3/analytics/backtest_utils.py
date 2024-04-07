@@ -237,7 +237,7 @@ def get_px_chg(df, exec_mode='open', chg_type='px', contract='c1'):
 
 def run_backtest(df, input_args):
     product_list = input_args['product_list']
-    vol_win = input_args['std_win']
+    std_win = input_args['std_win']
     total_risk = input_args.get('total_risk', 5000000.0)
     shift_mode = input_args.get('shift_mode', 2)
     asset_scaling = input_args.get('asset_scaling', False)
@@ -254,23 +254,24 @@ def run_backtest(df, input_args):
         signal_df = signal_df[signal_df.index <= pd.to_datetime(end_date)]
 
     if shift_mode == 1:
-        vol_df = get_asset_vols(df, product_list, vol_win=vol_win, vol_type='atr')
+        vol_df = get_asset_vols(df, product_list, vol_win=std_win, vol_type='atr')
     elif shift_mode == 2:
-        vol_df = get_asset_vols(df, product_list, vol_win=vol_win, vol_type='pct_chg')
+        vol_df = get_asset_vols(df, product_list, vol_win=std_win, vol_type='pct_chg')
     else:
-        vol_df = get_asset_vols(df, product_list, vol_win=vol_win, vol_type='close')
+        vol_df = get_asset_vols(df, product_list, vol_win=std_win, vol_type='close')
 
     holding = generate_holding_from_signal(signal_df, vol_df,
                                            risk_scaling=total_risk,
                                            asset_scaling=asset_scaling)
+
     if shift_mode == 2:
         df_pxchg = get_px_chg(df, exec_mode=exec_mode, chg_type='pct', contract='c1')
     else:
         df_pxchg = get_px_chg(df, exec_mode=exec_mode, chg_type='px', contract='c1')
-    df_pxchg = df_pxchg.reindex(index=holding.index)
+    #df_pxchg = df_pxchg.reindex(index=holding.index)
 
     bt_metrics = MetricsBase(holdings=holding[product_list],
-                             returns=df_pxchg[product_list])
+                             returns=df_pxchg[product_list], shift_holdings=1)
     return bt_metrics
 
 
@@ -313,11 +314,11 @@ def load_cnc_fut(tday=datetime.date.today()):
         df = pd.read_parquet("C:/dev/data/cnc_fut_df_%s.parquet" % tday.strftime("%Y%m%d"))
     except:
         commod_mkts = [
-            'rb', 'hc', 'i', 'j', 'jm', 'ru', 'FG', 'SM', 'SF',
-            'cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ss',
-            'l', 'pp', 'v', 'TA', 'sc', 'lu', 'eb', 'eg', 'pg', 'PF', 'MA', 'fu',
-            'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'CF', 'jd', 'lh',
-            'AP', 'CJ', 'UR', 'PK', 'SR', 'cs', 'si', 'ao', 'T', 'TF',
+            'rb', 'hc', 'i', 'j', 'jm', 'FG', 'SM', 'SF', 'SA', 'ru', 'nr',
+            'cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ss', 'si', 'ao', 'bc',
+            'l', 'pp', 'v', 'TA', 'sc', 'lu', 'eb', 'eg', 'pg', 'PF', 'MA', 'fu', 'bu',
+            'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'CF', 'jd', 'lh', 'b', 'CY', 'cs',
+            'AP', 'CJ', 'UR', 'PK', 'SR', 'T', 'TF'
         ]
         df = load_hist_fut_prices(commod_mkts, start_date=datetime.date(2008, 1, 1), end_date=tday, nb_cont=2)
         try:

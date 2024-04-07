@@ -1,4 +1,5 @@
 import pandas as pd
+from pycmqlib3.analytics.tstool import vat_adj
 
 index_map = {
     # macro
@@ -8,6 +9,10 @@ index_map = {
     'G013233151': 'usggbe5',
     'G005172253': 'usgg10yr_2yr_spd',
 
+    'M004147024': 'usdcnh_spot',
+    'M011202650': 'usdcnh_close',
+    'M004147023': 'usdcny_spot', # 4:00pm
+    'M004370159': 'usdcny_spot2', # 4:30pm
     'G002600791': 'libor3m',
     'G002600885': 'dxy',
     #'G002601505': 'vix',
@@ -29,6 +34,9 @@ index_map = {
     'M002816455': 'shibor_1y',
     'M002816576': 'r007_cn',
     # ferrous
+    'S003019324': 'plt62',
+    'S002808964': 'plt58',
+    'S002808963': 'plt65',
     'S000020892': 'hrc_sh',
     'S000020891': 'hrc_gz',
     'S002859801': 'hrc_tj',
@@ -125,6 +133,9 @@ index_map = {
     "S004789784": "sf_72_ningxia",
     "S004789790": "sf_72_neimeng",
     "S004789786": "sf_72_gansu",
+    "S005068112": "sm_65s17_shmet",
+    "S005068030": "sf_72_shmet",
+    "S005068027": "sf_75_shmet",
 
     'S008618440': 'sm_inv_mill',
     'S008618447': 'sf_inv_mill',
@@ -197,13 +208,51 @@ index_map = {
     'S003018878': 'aa_lme_3m_27m_spd',
 
     'S004630824': 'cu_mine_tc',
-    "S006157941": "cu_prem_yangshan_warrant",
-    "S006157947": "cu_prem_yangshan_cny",
-    "S006157944": "cu_prem_yangshan_bl",
+    #'S011211693': 'cu_25conc_tc',
+    'S005951203': 'pb_60conc_tc_ports',
+    'S006158372': 'pb_50conc_tc_hunan',
+    'S006158375': 'pb_50conc_tc_yunnan',
+    'S006158378': 'pb_50conc_tc_guangxi',
+    'S006158381': 'pb_50conc_tc_neimeng',
+    'S006158384': 'pb_50conc_tc_henan',
+    'S009620177': 'sn_60conc_tc_jiangxi',
+    'S009620198': 'sn_60conc_tc_guangxi',
+    'S009620213': 'sn_40conc_tc_yunnan',
+    'S016702541': 'zn_50conc_tc_neimeng',
+    'S016702544': 'zn_50conc_tc_yunnan',
+    'S016702547': 'zn_50conc_tc_hunan',
+    'S016702550': 'zn_50conc_tc_guangxi',
+    'S016702553': 'zn_50conc_tc_henan',
+    'S016702556': 'zn_50conc_tc_sichuan',
+    'S016702559': 'zn_50conc_tc_shanaxi',
+    'S016702562': 'zn_48conc_tc_ports',
+
+    'S003797045': 'ni_1.8conc_spot_php_lianyungang',
+    "S005068187": "ni_1.5conc_spot_rz",
+    'S005102262': 'sn_60conc_spot_guangxi',
+    'S009137295': 'ni_nis_cjb_spot',
+    'S009200268': 'ni_nis_spot_gi',
+    'S009273405': 'ni_nis_spot_battery',
+    'S009620789': 'ni_npi_10-15_sh',
+    'S020207789': 'ni_mhp_34_ports',
+
+    "S006157941": "cu_prem_bonded_warrant",
+    "S006157947": "cu_prem_bonded_cny",
+    "S006157944": "cu_prem_bonded_cif",
     "S005068109": "al_prem_bonded_warrant",
-    "S005068106": "al_prem_bonded_bl",
-    "S005068436": "zn_prem_bonded_bl",
+    "S005068106": "al_prem_bonded_cif",
+    "S005068427": 'zn_prem_smm_import',
     "S005068439": "zn_prem_bonded_warrant",
+    "S005068436": "zn_prem_bonded_cif",
+    "S005068184": 'ni_prem_bonded_warrant',
+    "S005068181": 'ni_prem_bonded_cif',
+    "S009200256": "ni_prem_import",
+    "S005068220": 'pb_prem_bonded_warrant',
+    "S005068217": 'pb_prem_bonded_cif',
+    "S005068331": 'cu_prem_bonded_warrant_er',
+    "S005068328": 'cu_prem_bonded_warrant_sx',
+    "S005068337": 'cu_prem_bonded_cif_er',
+    "S005068334": 'cu_prem_bonded_cif_sx',
 
     "S000025471": "cu_cjb_spot",
     "S000025473": "al_cjb_spot",
@@ -239,6 +288,7 @@ index_map = {
     "S009621955": "cu_sh_phybasis",
 
     "S003048727": "al_smm0_phybasis",
+    "S005068103": "al_a00_phybasis_shmet",
     "S004031017": "al_sh_phybasis",
     "S009137289": "al_cj_phybasis",
     "S009137292": "al_cjb_phybasis",
@@ -248,7 +298,6 @@ index_map = {
 
     "S005068421": 'zn_smm0_sh_phybasis',
     "S005068424": 'zn_smm1_sh_phybasis',
-    "S005068427": 'zn_smm_imp_phybasis', #
     "S008871823": "zn_nanchu_phybasis", # fut0
     "S008527843": 'zn_wm0_phybasis',
     "S008527848": 'zn_wm1_phybasis',
@@ -259,8 +308,10 @@ index_map = {
     "S005068211": "pb_smm1_sh_phybasis",
     "S005068409": "sn_smm1_sh_phybasis",
 
-    "S009160074": "cuscrap_1_spot_jzh",
-    "S009160107": "cuscrap_2_spot_jzh",
+    "S009160074": "cu_scrap_1_spot_jzh",
+    "S009160107": "cu_scrap_2_spot_jzh",
+    "S009626046": "al_scrap_shreded_spot_foshan",
+    "S009626791": "ni_scrap_spot_foshan",
     'S005971281': 'cu_mine_inv_ports',
 
     "S015202398": "cu_scrap1_diff_gd", # short history
@@ -380,7 +431,8 @@ def process_spot_df(spot_df, adjust_time=False):
     spot_df['highwire_billet'] = spot_df['highwire_6.5'] - spot_df['billet_ts']
 
     spot_df['io_inv_mill(64)'] = spot_df['io_inv_imp_mill(64)'] + spot_df['io_inv_dom_mill(64)']
-
+    spot_df['io_on_off_arb'] = vat_adj(spot_df['pbf_cfd'] - 25) / spot_df['usdcnh_spot'] / 0.915 / 61.5 * 62 \
+                               - spot_df['plt62']
     spot_df['margin_hrc_pbf'] = spot_df['hrc_sh'] - 1.7 * spot_df['pbf_cfd'] - 0.45 * spot_df['coke_xuzhou_xb']
     spot_df['margin_hrc_macf'] = spot_df['hrc_sh'] - 1.7 * spot_df['macf_cfd'] - 0.45 * spot_df['coke_xuzhou_xb']
     spot_df['strip_hsec'] = spot_df['strip_3.0x685'] - spot_df['hsec_400x200']

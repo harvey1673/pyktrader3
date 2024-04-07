@@ -1,5 +1,5 @@
 import sys
-from pycmqlib3.strategy.signal_repo import signal_store, get_funda_signal_from_store
+from pycmqlib3.strategy.signal_repo import get_funda_signal_from_store
 from pycmqlib3.utility.spot_idx_map import index_map, process_spot_df
 from pycmqlib3.utility.dbaccess import load_codes_from_edb, load_factor_data
 from pycmqlib3.utility import dataseries
@@ -48,6 +48,8 @@ single_factors = {
     'io_millinv_lyoy': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
     'io_invdays_lvl': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
     'io_invdays_lyoy': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
+    'ioarb_px_hlr': ['rb', 'hc', 'i'],
+    'ioarb_px_hlrhys': ['rb', 'hc', 'i'],
     'steel_sinv_lyoy_zs': ['rb', 'hc', 'i', 'FG', 'v'],
     'steel_sinv_lyoy_mds': ['rb', 'hc', 'i', 'FG', 'v'],
     'fef_c1_c2_ratio_or_qtl': ['rb', 'hc', 'j'],
@@ -57,11 +59,11 @@ single_factors = {
     'cu_phybasis_hlr': ['cu'],
     "base_etf_mom_zsa": ["cu", "al", "zn", "pb", "ni", "sn"],
     "base_etf_mom_ewm": ["cu", "al", "zn", "pb", "ni", "sn"],
-    "const_etf_mom_zsa": ["rb", "hc", "i", "j", "jm", "FG", "v"],
-    "const_etf_mom_ewm": ["rb", "hc", "i", "j", "jm", "FG", "v"],
-    "prop_etf_mom_dbth_zs": ["rb", "hc", "i", "FG", "v"],
-    "prop_etf_mom_dbth_qtl": ["rb", "hc", "i", "FG", "v"],
-    "prop_etf_mom_dbth_qtl2": ["rb", "hc", "i", "FG", "v"],
+    "const_etf_mom_zsa": ["rb", "i", "j", "FG", "v"],
+    "const_etf_mom_ewm": ["rb", "i", "j", "FG", "v"],
+    "prop_etf_mom_dbth_zs": ["rb", "i", "FG", "v"],
+    "prop_etf_mom_dbth_qtl": ["rb", "i", "FG", "v"],
+    "prop_etf_mom_dbth_qtl2": ["rb", "i", "FG", "v"],
 }
 
 factors_by_asset = {
@@ -69,14 +71,18 @@ factors_by_asset = {
     'lme_base_ts_hlr': ['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
     'base_phybas_carry_ma': ['cu', 'al', 'zn', 'ni', 'sn'],
     'base_inv_mds': ['cu', 'al', 'zn', 'ni', 'sn', 'pb'],
+    'base_tc_1y_zs': ['cu', 'pb', 'zn'],
+    'base_cifprem_1y_zs': ['cu', 'al', 'zn', 'ni'],
+    'base_phybasmom_1m_zs': ['cu', 'al', 'zn', 'ni', 'pb', 'sn'],
+    'base_phybasmom_1y_zs': ['cu', 'al', 'zn', 'ni', 'pb', 'sn'],
     'metal_pbc_ema': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si',
-                      'rb', 'hc', 'i', 'j', 'jm', 'SM', 'SF', 'v', 'FG', 'SA'],
+                      'rb', 'hc', 'i', 'SM', 'SF', 'v', 'FG', 'SA'],
     # 'metal_pbc_ema_xdemean': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si',
     #                           'rb', 'hc', 'i', 'j', 'jm', 'SM', 'SF', 'v', 'FG', 'SA'],
     'metal_inv_hlr': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si',
-                      'rb', 'hc', 'i', 'j', 'jm', 'SM', 'SF', 'v', 'FG', 'SA'],
+                      'rb', 'hc', 'i', 'SM', 'SF', 'v', 'FG', 'SA'],
     'metal_inv_lyoy_hlr': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si',
-                              'rb', 'hc', 'i', 'j', 'jm', 'SM', 'SF', 'v', 'FG', 'SA'],
+                           'rb', 'hc', 'i', 'SM', 'SF', 'v', 'FG', 'SA'],
 }
 
 factors_by_spread = {
@@ -89,6 +95,7 @@ factors_by_spread = {
 factors_by_beta_neutral = {
     'io_pinv31_lvl_zsa': [('rb', 'i', 1), ('hc', 'i', 1)],
     'io_pinv45_lvl_hlr': [('rb', 'i', 1), ('hc', 'i', 1)],
+    'ioarb_spd_qtl_1y': [('rb', 'i', 1), ('hc', 'i', 1)],
     'fef_c1_c2_ratio_spd_qtl': [('rb', 'i', 1), ('hc', 'i', 1), ('j', 'i', 1)],
 }
 
