@@ -204,6 +204,7 @@ feature_to_feature_key_mapping = {
         'sn': 'sn_inv_social_all',
         'si': 'si_inv_social_all',
         'ao': 'bauxite_inv_az_ports',
+        'ss': "ss_inv_social_300",
     },
     'metal_pbc': {
         "cu": "cu_smm1_spot",
