@@ -104,16 +104,19 @@ signal_store = {
     'base_cifprem_1y_zs_xdemean': [['cu', 'al', 'zn', 'ni'],
                                    ['prem_bonded_warrant', 'zscore', [230, 250, 2], '', '', True, 'price', "", 120]],
     'base_tc_1y_zs': [['cu', 'pb', 'zn'], ['base_tc', 'zscore', [230, 250, 2], '', '', False, 'price', "", 120]],
-
+    'base_inv_mds': [['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
+                     ['base_inv', 'ma_dff_sgn', [180, 240, 2], '', '', False, 'price', "", 120]],
+    'base_inv_mds_xdemean': [['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
+                             ['base_inv', 'ma_dff_sgn', [180, 240, 2], '', '', False, 'price', "", 120]],
     'metal_pbc_ema': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'v', 'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss'],
                       ['metal_pbc', 'ema', [10, 20], '', '', True, 'price', "", 120]],
     'metal_pbc_ema_xdemean': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'v',
                                'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss'],
                               ['metal_pbc', 'ema', [10, 20], '', '', True, 'price', "", 120]],
-    'base_inv_mds': [['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
-                     ['base_inv', 'ma_dff_sgn', [180, 240, 2], '', '', False, 'price', "", 120]],
-    'base_inv_mds_xdemean': [['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
-                             ['base_inv', 'ma_dff_sgn', [180, 240, 2], '', '', False, 'price', "", 120]],
+    'metal_mom_hlrhys': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'v', 'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss'],
+                         ['metal_px', 'hysteresis', [0.7, 60, 0.1], '', 'hlratio', True, 'price', "ema1", 120]],
+    'metal_mom_hlrhys_xdemean': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'v', 'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss'],
+                         ['metal_px', 'hysteresis', [0.7, 60, 0.1], '', 'hlratio', True, 'price', "ema1", 120]],
     'metal_inv_hlr': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'v', 'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss'],
                       ['metal_inv', 'hlratio', [240, 250], '', '', False, 'price', "", 120]],
     'metal_inv_hlr_xdemean': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'v',
@@ -236,6 +239,7 @@ feature_to_feature_key_mapping = {
         "v": "pvc_cac2_east",
         "SA": "sa_heavy_east",
     },
+    'metal_px': {},
     'metal_inv': {
         'cu': 'cu_inv_social_all',
         'al': 'al_inv_social_all',
@@ -397,6 +401,12 @@ def get_funda_signal_from_store(spot_df, signal_name, price_df=None,
             spot_df[f'{asset}_phybasis'] = (np.log(spot_df[asset_feature]) - np.log(spot_df[f'{asset}_c1'])) / \
                                            (spot_df[f'{asset}_expiry'] - spot_df['date']).dt.days * 365
             asset_feature = f'{asset}_phybasis'
+        if feature == 'metal_px':
+            if price_df is None:
+                print("ERROR: no future price is passed for metal_pbc")
+                return pd.Series()
+            spot_df[f'{asset}_px'] = price_df[(asset, 'c1', 'close')]
+            asset_feature = f'{asset}_px'
         if feature in param_rng_by_feature_key:
             param_rng = param_rng_by_feature_key[feature].get(asset, param_rng)
         if feature in proc_func_by_feature_key:
