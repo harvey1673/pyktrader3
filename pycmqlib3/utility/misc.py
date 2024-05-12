@@ -1000,13 +1000,15 @@ def nearby(prodcode, n = 1, start_date = None, end_date = None, roll_rule = '-20
             if shift_mode == 1:
                 shift = tmp_df['close'][-1] - df['close'][-1]
                 df['shift'] = df['shift'] + shift
-                for ticker in ['open', 'high', 'low', 'close']:
-                    df[ticker] = df[ticker] + shift
+                for ticker in ['open', 'high', 'low', 'close', 'settle']:
+                    if ticker in df.columns:
+                        df[ticker] = df[ticker] + shift
             else:
                 shift = float(tmp_df['close'][-1])/float(df['close'][-1])
                 df['shift'] = df['shift'] + math.log(shift)
-                for ticker in ['open', 'high', 'low', 'close']:
-                    df[ticker] = df[ticker] * shift
+                for ticker in ['open', 'high', 'low', 'close', 'settle']:
+                    if ticker in df.columns:
+                        df[ticker] = df[ticker] * shift
         df = pd.concat([df, new_df])
         sdate = exp + datetime.timedelta(days=1)
     return df

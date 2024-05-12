@@ -350,6 +350,7 @@ index_map = {
     "S008527044": "alumina_spot_henan",
     "S008527035": "alumina_spot_guizhou",
     "S004077728": "alumina_spot_qd",
+    "S010596302": "alumina_aus_fob",
     "S002865625": 'si_553_spot_smm',
 
     "M002845714": "csi300_idx",
@@ -430,6 +431,7 @@ def process_spot_df(spot_df, adjust_time=False):
     spot_df['angle_billet'] = spot_df['angle_50x5'] - spot_df['billet_ts']
     spot_df['highwire_billet'] = spot_df['highwire_6.5'] - spot_df['billet_ts']
 
+    spot_df['io_inv_removal_ratio_41p'] = spot_df['io_inv_41ports'] / spot_df['io_removal_41ports']
     spot_df['io_inv_mill(64)'] = spot_df['io_inv_imp_mill(64)'] + spot_df['io_inv_dom_mill(64)']
     spot_df['io_on_off_arb'] = vat_adj(spot_df['pbf_cfd'] - 25) / spot_df['usdcnh_spot'] / 0.915 / 61.5 * 62 \
                                - spot_df['plt62']
