@@ -51,11 +51,14 @@ single_factors = {
     'io_millinv_lyoy': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
     'io_invdays_lvl': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
     'io_invdays_lyoy': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
+    'io_inv_rmv_ratio_1y': ['i'],
     'ioarb_px_hlr': ['rb', 'hc', 'i'],
     'ioarb_px_hlrhys': ['rb', 'hc', 'i'],
     'steel_sinv_lyoy_zs': ['rb', 'hc', 'i', 'FG', 'v'],
     'steel_sinv_lyoy_mds': ['rb', 'hc', 'i', 'FG', 'v'],
     'fef_c1_c2_ratio_or_qtl': ['rb', 'hc', 'j'],
+    'fef_fly_ratio_or_qtl': ['rb', 'hc', 'j'],
+    'fef_basmom_or_qtl': ['rb', 'hc', 'j'],
     'cu_prem_usd_zsa': ['cu'],
     'cu_prem_usd_md': ['cu'],
     'cu_phybasis_zsa': ['cu'],
@@ -101,7 +104,8 @@ factors_by_beta_neutral = {
     'io_pinv31_lvl_zsa': [('rb', 'i', 1), ('hc', 'i', 1)],
     'io_pinv45_lvl_hlr': [('rb', 'i', 1), ('hc', 'i', 1)],
     'ioarb_spd_qtl_1y': [('rb', 'i', 1), ('hc', 'i', 1)],
-    'fef_c1_c2_ratio_spd_qtl': [('rb', 'i', 1), ('hc', 'i', 1), ('j', 'i', 1)],
+    'fef_c1_c2_ratio_spd_qtl': [('rb', 'i', 1), ('hc', 'i', 1)],
+    'fef_basmom_spd_qtl': [('rb', 'i', 1), ('hc', 'i', 1)],
 }
 
 factors_by_func = {
@@ -140,17 +144,30 @@ def get_fun_data(start_date, run_date):
     ]:
         spot_df[col] = spot_df[col].shift(-1)
     spot_df = process_spot_df(spot_df)
-    fef_nb1 = nearby('FEF', n=2,
-                     start_date=max(start_date, datetime.date(2015, 9, 1)),
-                     end_date=run_date,
-                     roll_rule='-2b', freq='d', shift_mode=0)
-    fef_nb2 = nearby('FEF', n=3,
-                     start_date=max(start_date, datetime.date(2015, 9, 1)),
-                     end_date=run_date,
-                     roll_rule='-2b', freq='d', shift_mode=0)
-    fef_data = pd.concat([fef_nb1['settle'].to_frame('FEFc1'), fef_nb2['settle'].to_frame('FEFc2')], axis=1).dropna()
-    fef_data['FEF_c1_c2_ratio'] = fef_data['FEFc1']/fef_data['FEFc2']
-    spot_df['FEF_c1_c2_ratio'] = fef_data['FEF_c1_c2_ratio']
+    fef_list = []
+    for nb in [2, 3, 4]:
+        fef_nb = nearby('FEF', n=nb,
+                        start_date=max(start_date, datetime.date(2016, 7, 1)),
+                        end_date=run_date,
+                        roll_rule='-3b', freq='d', shift_mode=2)
+        fef_nb.loc[fef_nb['settle'] <= 0, 'settle'] = np.nan
+        fef_nb.loc[fef_nb['close'] <= 0, 'close'] = np.nan
+        fef_list.append(fef_nb['settle'].to_frame(f'FEFc{nb-1}'))
+        fef_list.append(fef_nb['close'].to_frame(f'FEFc{nb-1}_close'))
+        fef_list.append(fef_nb['shift'].to_frame(f'FEFc{nb-1}_shift'))
+    fef_data = pd.concat(fef_list, axis=1)
+    spot_df = pd.concat([spot_df, fef_data], axis=1)
+    spot_df['FEF_c1_c2_ratio'] = (spot_df['FEFc1']/np.exp(spot_df['FEFc1_shift'])) / \
+                                 (spot_df['FEFc2']/np.exp(spot_df['FEFc2_shift']))
+    spot_df['FEF_c123fly_ratio'] = spot_df['FEFc1'] * spot_df['FEFc3'] / \
+                                   (spot_df['FEFc2'] * spot_df['FEFc2']) * \
+                                   np.exp(2 * spot_df['FEFc2_shift'] - spot_df['FEFc1_shift'] - spot_df['FEFc3_shift'])
+    spot_df['FEF_ryield'] = (np.log(spot_df['FEFc1'] / np.exp(spot_df['FEFc1_shift'])) -
+                             np.log(spot_df['FEFc2'] / np.exp(spot_df['FEFc2_shift']))) * 12
+    spot_df['FEF_basmom'] = np.log(1 + spot_df['FEFc1'].dropna().pct_change()) - \
+                            np.log(1 + spot_df['FEFc2'].dropna().pct_change())
+    spot_df['FEF_basmom10'] = spot_df['FEF_basmom'].dropna().rolling(10).sum()
+    spot_df['FEF_basmom5'] = spot_df['FEF_basmom'].dropna().rolling(5).sum()
     spot_df = spot_df.dropna(how='all')
     return spot_df
 
