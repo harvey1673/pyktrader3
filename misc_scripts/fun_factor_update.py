@@ -58,7 +58,8 @@ single_factors = {
     'steel_sinv_lyoy_mds': ['rb', 'hc', 'i', 'FG', 'v'],
     'fef_c1_c2_ratio_or_qtl': ['rb', 'hc', 'j'],
     'fef_fly_ratio_or_qtl': ['rb', 'hc', 'j'],
-    'fef_basmom_or_qtl': ['rb', 'hc', 'j'],
+    'fef_basmom_or_qtl': ['rb', 'hc'],
+    'fef_basmom5_or_qtl': ['rb', 'hc'],
     'cu_prem_usd_zsa': ['cu'],
     'cu_prem_usd_md': ['cu'],
     'cu_phybasis_zsa': ['cu'],
@@ -78,6 +79,7 @@ factors_by_asset = {
     'base_phybas_carry_ma': ['cu', 'al', 'zn', 'ni', 'sn', 'pb'],
     'base_inv_mds': ['cu', 'al', 'zn', 'ni', 'sn', 'pb', 'ss', 'si', 'ao'],
     'base_tc_1y_zs': ['cu', 'pb', 'zn'],
+    'base_tc_2y_zs': ['cu', 'pb', 'sn'],
     'base_cifprem_1y_zs': ['cu', 'al', 'zn', 'ni'],
     'base_phybasmom_1m_zs': ['cu', 'al', 'zn', 'ni', 'pb', 'sn'],
     'base_phybasmom_1y_zs': ['cu', 'al', 'zn', 'ni', 'pb', 'sn'],
@@ -105,7 +107,7 @@ factors_by_beta_neutral = {
     'io_pinv45_lvl_hlr': [('rb', 'i', 1), ('hc', 'i', 1)],
     'ioarb_spd_qtl_1y': [('rb', 'i', 1), ('hc', 'i', 1)],
     'fef_c1_c2_ratio_spd_qtl': [('rb', 'i', 1), ('hc', 'i', 1)],
-    'fef_basmom_spd_qtl': [('rb', 'i', 1), ('hc', 'i', 1)],
+    'fef_basmom5_spd_qtl': [('rb', 'i', 1), ('hc', 'i', 1)],
 }
 
 factors_by_func = {
@@ -127,23 +129,22 @@ def get_fun_data(start_date, run_date):
     data_df = data_df.rename(columns=index_map)
     spot_df = data_df.dropna(how='all').copy(deep=True)
     spot_df = spot_df.reindex(index=cdate_rng)
-
-    for col in [
-        'io_inv_imp_mill(64)',
-        'io_inv_dom_mill(64)',
-        'io_invdays_imp_mill(64)'
-    ]:
-        spot_df[col] = spot_df[col].shift(-3).ffill().reindex(
-            index=pd.date_range(start=spot_df.index[0], end=spot_df.index[-1], freq='W-Fri'))
-
-    for col in [
-        'rebar_inv_mill', 'wirerod_inv_mill', 'hrc_inv_mill', 'crc_inv_mill', 'plate_inv_mill',
-        'rebar_inv_social', 'wirerod_inv_social', 'hrc_inv_social', 'crc_inv_social', 'plate_inv_social',
-        'steel_inv_social', 'rebar_inv_all', 'rebar_prod_all', 'wirerod_prod_all', 'wirerod_inv_all',
-        'hrc_prod_all', 'hrc_inv_all', 'crc_prod_all', 'crc_inv_all',
-    ]:
-        spot_df[col] = spot_df[col].shift(-1)
-    spot_df = process_spot_df(spot_df)
+    # for col in [
+    #     'io_inv_imp_mill(64)',
+    #     'io_inv_dom_mill(64)',
+    #     'io_invdays_imp_mill(64)'
+    # ]:
+    #     spot_df[col] = spot_df[col].shift(-3).ffill().reindex(
+    #         index=pd.date_range(start=spot_df.index[0], end=spot_df.index[-1], freq='W-Fri'))
+    #
+    # for col in [
+    #     'rebar_inv_mill', 'wirerod_inv_mill', 'hrc_inv_mill', 'crc_inv_mill', 'plate_inv_mill',
+    #     'rebar_inv_social', 'wirerod_inv_social', 'hrc_inv_social', 'crc_inv_social', 'plate_inv_social',
+    #     'steel_inv_social', 'rebar_inv_all', 'rebar_prod_all', 'wirerod_prod_all', 'wirerod_inv_all',
+    #     'hrc_prod_all', 'hrc_inv_all', 'crc_prod_all', 'crc_inv_all',
+    # ]:
+    #     spot_df[col] = spot_df[col].shift(-1)
+    spot_df = process_spot_df(spot_df, adjust_time=True)
     fef_list = []
     for nb in [2, 3, 4]:
         fef_nb = nearby('FEF', n=nb,
@@ -156,6 +157,7 @@ def get_fun_data(start_date, run_date):
         fef_list.append(fef_nb['close'].to_frame(f'FEFc{nb-1}_close'))
         fef_list.append(fef_nb['shift'].to_frame(f'FEFc{nb-1}_shift'))
     fef_data = pd.concat(fef_list, axis=1)
+    fef_data.index = pd.to_datetime(fef_data.index)
     spot_df = pd.concat([spot_df, fef_data], axis=1)
     spot_df['FEF_c1_c2_ratio'] = (spot_df['FEFc1']/np.exp(spot_df['FEFc1_shift'])) / \
                                  (spot_df['FEFc2']/np.exp(spot_df['FEFc2_shift']))

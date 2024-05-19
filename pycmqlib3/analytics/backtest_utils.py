@@ -7,6 +7,7 @@ from pycmqlib3.analytics.tstool import *
 from pycmqlib3.utility import dataseries
 from misc_scripts.fun_factor_update import get_fun_data, load_hist_fut_prices
 from pycmqlib3.strategy.signal_repo import *
+from bktest.backtest_grid_search import load_hist_data
 
 
 def get_asset_vols(df, product_list, vol_win, vol_type='atr'):
@@ -308,10 +309,10 @@ def load_fun_data(tday=datetime.date.today()):
     return spot_df
 
 
-def load_cnc_fut(tday=datetime.date.today()):
+def load_cnc_fut(tday=datetime.date.today(), type='cnc'):
     tday = pd.to_datetime(tday)
     try:
-        df = pd.read_parquet("C:/dev/data/cnc_fut_df_%s.parquet" % tday.strftime("%Y%m%d"))
+        df = pd.read_parquet(f"C:/dev/data/{type}_fut_df_%s.parquet" % tday.strftime("%Y%m%d"))
     except:
         commod_mkts = [
             'rb', 'hc', 'i', 'j', 'jm', 'FG', 'SM', 'SF', 'SA', 'ru', 'nr',
@@ -320,11 +321,22 @@ def load_cnc_fut(tday=datetime.date.today()):
             'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'CF', 'jd', 'lh', 'b', 'CY', 'cs',
             'AP', 'CJ', 'UR', 'PK', 'SR', 'T', 'TF'
         ]
-        df = load_hist_fut_prices(commod_mkts, start_date=datetime.date(2008, 1, 1), end_date=tday, nb_cont=2)
+        if type == 'cal':
+            df, error_list = load_hist_data(
+                start_date=datetime.date(2011, 1, 1),
+                end_date=tday,
+                roll_name='CAL_30b',
+                sim_markets=commod_mkts,
+                freq='d',
+                shift_mode=2
+            )
+            print(error_list)
+        else:
+            df = load_hist_fut_prices(commod_mkts, start_date=datetime.date(2008, 1, 1), end_date=tday, nb_cont=2)
         try:
-            df.to_parquet("C:/dev/data/cnc_fut_df_%s.parquet" % tday.strftime("%Y%m%d"))
-            print("cnc_fut_df data saved")
+            df.to_parquet(f"C:/dev/data/{type}_fut_df_%s.parquet" % tday.strftime("%Y%m%d"))
+            print(f"{type}_fut_df data saved")
         except:
-            print("cnc_fut_df save error")
+            print(f"{type}_fut_df save error")
     return df
 
