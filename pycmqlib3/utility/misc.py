@@ -954,16 +954,17 @@ def default_next_main_contract(inst, start_date=datetime.date(2006, 1, 1), end_d
     return [c for c in contlist if c > inst][0]
 
 
-def nearby(prodcode, n = 1, start_date = None, end_date = None, roll_rule = '-20b', freq = 'd', shift_mode = 0, database = None, dbtbl_prefix = ''):
+def nearby(prodcode, n=1, start_date=None, end_date=None, roll_rule='-20b', freq='d', shift_mode=0,
+           roll_col='close', database=None, dbtbl_prefix=''):
     contlist, exp_dates, _ = cont_expiry_list(prodcode, start_date, end_date, roll_rule)
     if prodcode == 'sn':
         if 'sn2001' in contlist:
             idx = contlist.index('sn2001')
-            exp_dates[idx] = max(datetime.date(2019,12,26), exp_dates[idx])
+            exp_dates[idx] = max(datetime.date(2019, 12, 26), exp_dates[idx])
     elif prodcode == 'ni':
         if ('ni1905' in contlist) and ('ni1901' in contlist):
             idx = contlist.index('ni1901')
-            exp_dates[idx] = max(datetime.date(2018,12,27), exp_dates[idx])
+            exp_dates[idx] = max(datetime.date(2018, 12, 27), exp_dates[idx])
     sdate = start_date
     dbconf = copy.deepcopy(dbaccess.dbconfig)
     if database:
@@ -998,13 +999,13 @@ def nearby(prodcode, n = 1, start_date = None, end_date = None, roll_rule = '-20
                 last_date = df.index[-1]
             tmp_df = dbaccess.load_daily_data_to_df(cnx, dbtbl_prefix + 'fut_daily', nb_cont, last_date, last_date)
             if shift_mode == 1:
-                shift = tmp_df['close'][-1] - df['close'][-1]
+                shift = tmp_df[roll_col][-1] - df[roll_col][-1]
                 df['shift'] = df['shift'] + shift
                 for ticker in ['open', 'high', 'low', 'close', 'settle']:
                     if ticker in df.columns:
                         df[ticker] = df[ticker] + shift
             else:
-                shift = float(tmp_df['close'][-1])/float(df['close'][-1])
+                shift = float(tmp_df[roll_col][-1])/float(df[roll_col][-1])
                 df['shift'] = df['shift'] + math.log(shift)
                 for ticker in ['open', 'high', 'low', 'close', 'settle']:
                     if ticker in df.columns:

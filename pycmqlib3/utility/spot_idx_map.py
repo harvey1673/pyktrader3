@@ -95,7 +95,7 @@ index_map = {
     'S002917279': 'highwire_6.5',
     'S004378612': 'coal_5500_jingtang',
     'S002882871': 'coal_5500_sx_qhd',
-    'S002837009': 'coal_5500_qhd',
+    'S002837009': 'coal_5500_qhd', # not good
 
     'S004018814': 'io_loading_14ports_ausbzl',
     'S004226190': 'io_inv_imp_mill_0_200',
@@ -350,6 +350,7 @@ index_map = {
     "S008527044": "alumina_spot_henan",
     "S008527035": "alumina_spot_guizhou",
     "S004077728": "alumina_spot_qd",
+    "S010596299": "alumina_spot_cnports",
     "S010596302": "alumina_aus_fob",
     "S002865625": 'si_553_spot_smm',
 
@@ -377,6 +378,7 @@ def data_wkday_adj(data_df, col_list, shift_map={0: -4, 1: -5, 2: 1, 3: 0, 4: -1
     ddf = data_df[col_list].dropna(how='all').copy(deep=True)
     ddf['date'] = ddf.index
     ddf['date'] = ddf['date'].map(lambda d: d + pd.DateOffset(days=shift_map.get(d.weekday(), 0)))
+    ddf = ddf.drop_duplicates(subset=['date'], keep='first')
     ddf = ddf.set_index('date')
     for col in col_list:
         data_df[col] = ddf[col]
@@ -384,12 +386,18 @@ def data_wkday_adj(data_df, col_list, shift_map={0: -4, 1: -5, 2: 1, 3: 0, 4: -1
 
 
 def adj_publish_time(spot_df):
-    col_list = ['io_inv_imp_mill(64)', 'io_inv_dom_mill(64)', 'io_invdays_imp_mill(64)']
+    col_list = [
+        'io_inv_imp_mill(64)', 'io_inv_dom_mill(64)', 'io_invdays_imp_mill(64)',
+    ]
     shift_map = {0: -4, 1: -5, 2: 1, 3: 0, 4: -1, 5: -2, 6: -3}
     spot_df = data_wkday_adj(spot_df, col_list, shift_map=shift_map)
 
-    col_list = ['rebar_inv_mill', 'wirerod_inv_mill', 'hrc_inv_mill', 'crc_inv_mill', 'plate_inv_mill',
-                'rebar_inv_social', 'wirerod_inv_social', 'hrc_inv_social', 'crc_inv_social', 'plate_inv_social']
+    col_list = [
+        'rebar_inv_mill', 'wirerod_inv_mill', 'hrc_inv_mill', 'crc_inv_mill', 'plate_inv_mill',
+        'rebar_inv_social', 'wirerod_inv_social', 'hrc_inv_social', 'crc_inv_social', 'plate_inv_social',
+        'steel_inv_social', 'rebar_inv_all', 'rebar_prod_all', 'wirerod_prod_all', 'wirerod_inv_all',
+        'hrc_prod_all', 'hrc_inv_all', 'crc_prod_all', 'crc_inv_all',
+    ]
     shift_map = {0: -4, 1: -5, 2: -6, 3: 0, 4: -1, 5: -2, 6: -3}
     spot_df = data_wkday_adj(spot_df, col_list, shift_map=shift_map)
     return spot_df
@@ -432,12 +440,15 @@ def process_spot_df(spot_df, adjust_time=False):
     spot_df['highwire_billet'] = spot_df['highwire_6.5'] - spot_df['billet_ts']
 
     spot_df['io_inv_removal_ratio_41p'] = spot_df['io_inv_41ports'] / spot_df['io_removal_41ports']
+    spot_df['io_inv_rmv_pctchg_41p'] = spot_df['io_inv_removal_ratio_41p'].dropna().pct_change()
     spot_df['io_inv_mill(64)'] = spot_df['io_inv_imp_mill(64)'] + spot_df['io_inv_dom_mill(64)']
     spot_df['io_on_off_arb'] = vat_adj(spot_df['pbf_cfd'] - 25) / spot_df['usdcnh_spot'] / 0.915 / 61.5 * 62 \
                                - spot_df['plt62']
     spot_df['margin_hrc_pbf'] = spot_df['hrc_sh'] - 1.7 * spot_df['pbf_cfd'] - 0.45 * spot_df['coke_xuzhou_xb']
     spot_df['margin_hrc_macf'] = spot_df['hrc_sh'] - 1.7 * spot_df['macf_cfd'] - 0.45 * spot_df['coke_xuzhou_xb']
     spot_df['strip_hsec'] = spot_df['strip_3.0x685'] - spot_df['hsec_400x200']
+    if ('coal_5500_sx_qhd' in spot_df.columns) and ('coal_5500_qhd' in spot_df.columns):
+        spot_df.loc[:'2022-02-11', 'coal_5500_sx_qhd'] = spot_df.loc[:'2022-02-11', 'coal_5500_qhd']
 
     asset_pairs = [
         ("sw_sector_idx_prop", 'csi500_idx', 'prop_sw_csi500'),
