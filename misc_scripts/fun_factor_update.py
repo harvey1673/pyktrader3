@@ -56,10 +56,17 @@ single_factors = {
     'ioarb_px_hlrhys': ['rb', 'hc', 'i'],
     'steel_sinv_lyoy_zs': ['rb', 'hc', 'i', 'FG', 'v'],
     'steel_sinv_lyoy_mds': ['rb', 'hc', 'i', 'FG', 'v'],
+    'rbsales_lyoy_mom_lt': ['rb', 'hc', 'i'],
     'fef_c1_c2_ratio_or_qtl': ['rb', 'hc', 'j'],
     'fef_fly_ratio_or_qtl': ['rb', 'hc', 'j'],
     'fef_basmom_or_qtl': ['rb', 'hc'],
     'fef_basmom5_or_qtl': ['rb', 'hc'],
+    "al_alumina_qtl": ['al'],
+    "al_alumina_yoy_qtl": ['al'],
+    "al_coal_qtl": ['al'],
+    "ni_nis_mom_qtl": ['ni'],
+    "ni_ore_qtl": ['ni'],
+    "sn_conc_spot_hlr": ['sn'],
     'cu_prem_usd_zsa': ['cu'],
     'cu_prem_usd_md': ['cu'],
     'cu_phybasis_zsa': ['cu'],
@@ -100,6 +107,7 @@ factors_by_spread = {
     'rbhc_dmd_lyoy_mds': [('rb', 1), ('hc', -1)],
     'rbhc_sinv_mds': [('rb', 1), ('hc', -1)],
     'rbhc_sinv_lyoy_mds': [('rb', 1), ('hc', -1)],
+    'rbsales_lyoy_spd_st': [('rb', 1), ('hc', -1)],
 }
 
 factors_by_beta_neutral = {

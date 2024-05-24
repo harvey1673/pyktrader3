@@ -836,48 +836,54 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
     if len(freq) > 0 and freq != 'price':
         feature_ts = spot_df[feature].reindex(index=cdates).ffill().reindex(
             index=pd.date_range(start=start_date, end=end_date, freq=freq)).ffill()
-    if 'yoy' in proc_func:
-        if 'lunar' in proc_func:
-            label_func = lunar_label
-            label_args = {}
-        elif 'cal' in proc_func:
-            label_func = calendar_label
-            label_args = {}
-        else:
-            label_func = None
-        if '_wk' in proc_func:
-            group_col = 'label_wk'
-        else:
-            group_col = 'label_day'
-        if label_func is None:
-            feature_ts = stitched_yoy(feature_ts, group_col=group_col, func=chg_func)
-        else:
-            feature_ts = yoy_generic(feature_ts,
-                                     label_func=label_func,
-                                     group_col=group_col,
-                                     func=chg_func,
-                                     label_args=label_args)
-        feature_ts = feature_ts[feature]
-        if freq == 'price':
-            feature_ts = feature_ts.reindex(index=cdates).ffill().reindex(index=bdates)
+    if '|' in proc_func:
+        proc_func_list = proc_func.split('|')
     else:
-        if freq == 'price':
-            feature_ts = feature_ts.reindex(index=cdates).ffill().reindex(index=bdates)
-        if 'df' in proc_func:
-            n_diff = int(proc_func[2:])
-            feature_ts = getattr(feature_ts, chg_func)(n_diff)
-        elif 'sma' in proc_func:
-            n_days = int(proc_func[3:])
-            feature_ts = feature_ts.rolling(n_days).mean()
-        elif 'ema' in proc_func:
-            n_days = int(proc_func[3:])
-            feature_ts = feature_ts.ewm(n_days).mean()
-        elif '_lr' in proc_func:
-            feature_ts = np.log(1+feature_ts)
-        elif 'csum' in proc_func:
-            feature_ts = feature_ts.cumsum()
-        elif 'floor' == proc_func:
-            feature_ts = feature_ts.apply(lambda x: max(x - param_rng[0], 0) / param_rng[1])
+        proc_func_list = [proc_func]
+
+    for pfunc in proc_func_list:
+        if 'yoy' in pfunc:
+            if 'lunar' in pfunc:
+                label_func = lunar_label
+                label_args = {}
+            elif 'cal' in pfunc:
+                label_func = calendar_label
+                label_args = {}
+            else:
+                label_func = None
+            if '_wk' in pfunc:
+                group_col = 'label_wk'
+            else:
+                group_col = 'label_day'
+            if label_func is None:
+                feature_ts = stitched_yoy(feature_ts, group_col=group_col, func=chg_func)
+            else:
+                feature_ts = yoy_generic(feature_ts,
+                                         label_func=label_func,
+                                         group_col=group_col,
+                                         func=chg_func,
+                                         label_args=label_args)
+            feature_ts = feature_ts[feature]
+            if freq == 'price':
+                feature_ts = feature_ts.reindex(index=cdates).ffill().reindex(index=bdates)
+        else:
+            if freq == 'price':
+                feature_ts = feature_ts.reindex(index=cdates).ffill().reindex(index=bdates)
+            if 'df' in pfunc:
+                n_diff = int(pfunc[2:])
+                feature_ts = getattr(feature_ts, chg_func)(n_diff)
+            elif 'sma' in pfunc:
+                n_days = int(pfunc[3:])
+                feature_ts = feature_ts.rolling(n_days).mean()
+            elif 'ema' in pfunc:
+                n_days = int(pfunc[3:])
+                feature_ts = feature_ts.ewm(n_days).mean()
+            elif '_lr' in pfunc:
+                feature_ts = np.log(1+feature_ts)
+            elif 'csum' in pfunc:
+                feature_ts = feature_ts.cumsum()
+            elif 'floor' == pfunc:
+                feature_ts = feature_ts.apply(lambda x: max(x - param_rng[0], 0) / param_rng[1])
 
     if signal_func == 'seasonal_score_w':
         signal_ts = seasonal_score(feature_ts.to_frame(),
@@ -919,15 +925,20 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
         signal_ts = -signal_ts
     if len(post_func) > 0:
         signal_ts = signal_ts.reindex(index=cdates).ffill().reindex(index=bdates)
-        if post_func[:3] == 'ema':
-            n_win = int(post_func[3])
-            signal_ts = signal_ts.ewm(n_win, ignore_na=True).mean()
-        elif post_func[:3] == 'sma':
-            n_win = int(post_func[3:])
-            signal_ts = signal_ts.rolling(n_win).mean()
-        elif post_func[:3] == 'hmp':
-            hump_lvl = float(post_func[3:])
-            signal_ts = signal_hump(signal_ts, hump_lvl)
+        if '|' in post_func:
+            post_func_list = post_func.split('|')
+        else:
+            post_func_list = [post_func]
+        for pfunc in post_func_list:
+            if pfunc[:3] == 'ema':
+                n_win = int(pfunc[3])
+                signal_ts = signal_ts.ewm(n_win, ignore_na=True).mean()
+            elif pfunc[:3] == 'sma':
+                n_win = int(pfunc[3:])
+                signal_ts = signal_ts.rolling(n_win).mean()
+            elif pfunc[:3] == 'hmp':
+                hump_lvl = float(pfunc[3:])
+                signal_ts = signal_hump(signal_ts, hump_lvl)
     return signal_ts
 
 

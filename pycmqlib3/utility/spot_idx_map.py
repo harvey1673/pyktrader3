@@ -114,7 +114,8 @@ index_map = {
     'S005961310': 'io_removal_31ports',
     'S005961321': 'io_removal_41ports',
     'S005961326': 'io_removal_45ports',
-    'S008618299': 'consteel_daily_sales',
+    'S008618299': 'consteel_dsales_mysteel',
+    'S005656437': 'consteel_dsales_banksteel',
 
     "S005470470": 'fg_5mm_shahe',
     "S004242725": "fg_100ppi",  # x80 = RMB/ton
