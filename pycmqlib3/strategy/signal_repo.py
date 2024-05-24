@@ -105,8 +105,12 @@ signal_store = {
     # 'hc_soinv_lyoy_fast': ('hrc_inv_social', 'zscore', [20, 42, 2], 'lunar_yoy_day', 'diff', False, 'W-Fri'),
     # 'cc_soinv_lyoy_fast': ('crc_inv_social', 'zscore', [20, 42, 2], 'lunar_yoy_day', 'diff', False, 'W-Fri'),
     # 'billet_inv_chg_slow': ('billet_inv_social_ts', 'zscore', [240, 252, 2], '', 'diff', False, 'price'),
-    'cons_steel_lyoy_slow': [['rb', 'i', 'hc'],
-                             ['cons_steel_transact_vol_china', 'zscore', [240, 255, 5],
+    'rbsales_lyoy_spd_st': [['rb-hc'],
+                            ['consteel_dsales_mysteel', 'zscore', [20, 40, 2],
+                             'lunar_yoy_day|ema3', 'diff', True, 'price', "ema1", 120]],
+
+    'rbsales_lyoy_mom_lt': [['rb', 'i', 'hc'],
+                             ['consteel_dsales_mysteel', 'zscore', [230, 250, 2],
                               'lunar_yoy_day', 'diff', True, 'price', "", 120]],
 
     # 'margin_sea_lvl_mid': ('hrc_margin_sb', 'zscore', [40, 82, 2], '', 'pct_change', True, 'price'),
