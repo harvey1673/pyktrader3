@@ -56,7 +56,8 @@ single_factors = {
     'ioarb_px_hlrhys': ['rb', 'hc', 'i'],
     'steel_sinv_lyoy_zs': ['rb', 'hc', 'i', 'FG', 'v'],
     'steel_sinv_lyoy_mds': ['rb', 'hc', 'i', 'FG', 'v'],
-    'rbsales_lyoy_mom_lt': ['rb', 'hc', 'i'],
+    'rbsales_lyoy_mom_lt': ['rb'],
+    'rb_sales_inv_ratio_lyoy': ['rb'],
     'fef_c1_c2_ratio_or_qtl': ['rb', 'hc', 'j'],
     'fef_fly_ratio_or_qtl': ['rb', 'hc', 'j'],
     'fef_basmom_or_qtl': ['rb', 'hc'],
@@ -264,12 +265,16 @@ def update_fun_factor(run_date=datetime.date.today(), flavor='mysql'):
             signal_ts = get_funda_signal_from_store(spot_df, factor_name,
                                                     price_df=price_df,
                                                     signal_cap=[-2, 2],
-                                                    asset=asset)
+                                                    asset=asset,
+                                                    curr_date=run_date)
             save_signal_to_db(asset, db_fact_name, signal_ts[update_start:], run_date=cutoff_date, flavor=flavor)
         asset_factors.append(db_fact_name)
 
     for factor_name in single_factors:
-        signal_ts = get_funda_signal_from_store(spot_df, factor_name, price_df=price_df, signal_cap=[-2, 2])
+        signal_ts = get_funda_signal_from_store(spot_df, factor_name,
+                                                price_df=price_df,
+                                                signal_cap=[-2, 2],
+                                                curr_date=run_date)
         for asset in single_factors[factor_name]:
             save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=cutoff_date, flavor=flavor)
 
@@ -281,12 +286,18 @@ def update_fun_factor(run_date=datetime.date.today(), flavor='mysql'):
             save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=cutoff_date, flavor=flavor)
 
     for factor_name in factors_by_spread.keys():
-        signal_ts = get_funda_signal_from_store(spot_df, factor_name, price_df=price_df, signal_cap=[-2, 2])
+        signal_ts = get_funda_signal_from_store(spot_df, factor_name,
+                                                price_df=price_df,
+                                                signal_cap=[-2, 2],
+                                                curr_date=run_date)
         for asset, weight in factors_by_spread[factor_name]:
             save_signal_to_db(asset, factor_name, weight*signal_ts[update_start:], run_date=cutoff_date, flavor=flavor)
 
     for factor_name in factors_by_beta_neutral.keys():
-        signal_ts = get_funda_signal_from_store(spot_df, factor_name, price_df=price_df, signal_cap=[-2, 2])
+        signal_ts = get_funda_signal_from_store(spot_df, factor_name,
+                                                price_df=price_df,
+                                                signal_cap=[-2, 2],
+                                                curr_date=run_date)
         signal_df = pd.DataFrame(index=signal_ts.index)
         signal_df['raw_sig'] = signal_ts
         asset_list = []
