@@ -826,10 +826,13 @@ def seasonal_group_score(signal_df, score_cols, **kwargs):
 def calc_funda_signal(spot_df, feature, signal_func, param_rng,
                       proc_func='', chg_func='diff', bullish=True,
                       freq='price', signal_cap=None, bdates=None,
-                      post_func='', vol_win=120):
+                      post_func='', vol_win=120, curr_date=None):
     feature_ts = spot_df[feature].dropna()
     start_date = feature_ts.index[0]
     end_date = feature_ts.index[-1]
+    if curr_date is not None:
+        curr_date = pd.to_datetime(curr_date)
+        end_date = max(curr_date, end_date)
     cdates = pd.date_range(start=start_date, end=end_date, freq='D')
     if bdates is None:
         bdates = pd.bdate_range(start=start_date, end=end_date, freq='C')

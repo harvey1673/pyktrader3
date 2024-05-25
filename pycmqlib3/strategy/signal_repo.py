@@ -109,9 +109,13 @@ signal_store = {
                             ['consteel_dsales_mysteel', 'zscore', [20, 40, 2],
                              'lunar_yoy_day|ema3', 'diff', True, 'price', "ema1", 120]],
 
-    'rbsales_lyoy_mom_lt': [['rb', 'i', 'hc'],
-                             ['consteel_dsales_mysteel', 'zscore', [230, 250, 2],
-                              'lunar_yoy_day', 'diff', True, 'price', "", 120]],
+    'rbsales_lyoy_mom_lt': [['rb'],
+                            ['consteel_dsales_mysteel', 'zscore', [230, 250, 2],
+                             'lunar_yoy_day|ema3', 'diff', True, 'price', "", 120]],
+
+    'rb_sales_inv_ratio_lyoy': [['rb'],
+                                ['rebar_sales_inv_ratio', 'hlratio', [20, 60, 2],
+                                 'ema3|lunar_yoy_day', 'diff', True, 'price', "ema1", 120]],
 
     # 'margin_sea_lvl_mid': ('hrc_margin_sb', 'zscore', [40, 82, 2], '', 'pct_change', True, 'price'),
     'hrc_arb_mom': [['hc', 'rb'],
@@ -483,8 +487,9 @@ def long_break(df, input_args):
 
 
 def get_funda_signal_from_store(spot_df, signal_name, price_df=None,
-                         signal_cap=None, asset=None,
-                         signal_repo=signal_store, feature_key_map=feature_to_feature_key_mapping):
+                                signal_cap=None, asset=None,
+                                curr_date=None, signal_repo=signal_store,
+                                feature_key_map=feature_to_feature_key_mapping):
     feature, signal_func, param_rng, proc_func, chg_func, bullish, freq, post_func, vol_win = \
         signal_repo[signal_name][1]
     if asset and feature in feature_key_map:
@@ -515,7 +520,7 @@ def get_funda_signal_from_store(spot_df, signal_name, price_df=None,
     signal_ts = calc_funda_signal(spot_df, feature, signal_func, param_rng,
                                   proc_func=proc_func, chg_func=chg_func,
                                   bullish=bullish, freq=freq, signal_cap=signal_cap,
-                                  post_func=post_func, vol_win=vol_win)
+                                  post_func=post_func, vol_win=vol_win, curr_date=curr_date)
     return signal_ts
 
 

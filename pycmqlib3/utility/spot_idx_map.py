@@ -394,6 +394,12 @@ def adj_publish_time(spot_df):
     spot_df = data_wkday_adj(spot_df, col_list, shift_map=shift_map)
 
     col_list = [
+        'io_removal_41ports', 'io_inv_31ports', 'io_inv_45ports',
+    ]
+    shift_map = {0: -3, 1: -4, 2: -5, 3: 1, 4: 0, 5: -1, 6: -2}
+    spot_df = data_wkday_adj(spot_df, col_list, shift_map=shift_map)
+
+    col_list = [
         'rebar_inv_mill', 'wirerod_inv_mill', 'hrc_inv_mill', 'crc_inv_mill', 'plate_inv_mill',
         'rebar_inv_social', 'wirerod_inv_social', 'hrc_inv_social', 'crc_inv_social', 'plate_inv_social',
         'steel_inv_social', 'rebar_inv_all', 'rebar_prod_all', 'wirerod_prod_all', 'wirerod_inv_all',
@@ -424,6 +430,7 @@ def process_spot_df(spot_df, adjust_time=False):
     spot_df['crc_app_dmd'] = spot_df['crc_prod_all'] - spot_df['crc_inv_all'].dropna().diff()
     spot_df['rb_hc_dmd_diff'] = spot_df['rebar_app_dmd'] - spot_df['hrc_app_dmd']
     spot_df['rb_hc_sinv_diff'] = spot_df['rebar_inv_social'].dropna().diff() - spot_df['hrc_inv_social'].dropna().diff()
+    spot_df['rebar_sales_inv_ratio'] = spot_df['consteel_dsales_mysteel']/spot_df['rebar_inv_social'].ffill()
 
     spot_df['crc_hrc'] = spot_df['crc_sh'] - spot_df['hrc_sh']
     spot_df['pipe_strip'] = spot_df['pipe_1.5x3.25'] - spot_df['strip_3.0x685']
