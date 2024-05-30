@@ -159,7 +159,8 @@ def get_fun_data(start_date, run_date):
         fef_nb = nearby('FEF', n=nb,
                         start_date=max(start_date, datetime.date(2016, 7, 1)),
                         end_date=run_date,
-                        roll_rule='-3b', freq='d', shift_mode=2)
+                        roll_rule='-3b', roll_col='settle',
+                        freq='d', shift_mode=2)
         fef_nb.loc[fef_nb['settle'] <= 0, 'settle'] = np.nan
         fef_nb.loc[fef_nb['close'] <= 0, 'close'] = np.nan
         fef_list.append(fef_nb['settle'].to_frame(f'FEFc{nb-1}'))

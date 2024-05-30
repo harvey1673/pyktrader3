@@ -3,6 +3,11 @@ from pycmqlib3.analytics.tstool import *
 from pycmqlib3.utility.misc import CHN_Holidays, day_shift
 from pycmqlib3.utility.exch_ctd_func import *
 
+broad_mkts = [
+        'rb', 'hc', 'i', 'j', 'jm', 'FG', 'v', 'SM', 'SF',
+        'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss',  # 'si', #'bc'
+        'ru', 'l', 'pp', 'TA', 'sc', 'eb', 'eg', 'UR', 'lu',
+        'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'CF', 'jd', 'AP', 'lh']
 
 signal_store = {
     'pbf_yoy_qtl': [['fef', 'i'], ["pbf_prem", 'qtl', [20, 30, 2], "cal_yoy", "diff", True, "", "", 120]],
@@ -256,6 +261,22 @@ signal_store = {
     "prop_etf_mom_dbth_qtl2": [['rb', 'i', 'v', 'FG'],
                                ["prop_sw_csi500_ret", "dbl_th", [0.8, 240, 1], "ema3", "pct_score", True, "", "", 120]],
 
+    "ryield_ema_ts": [broad_mkts, ["ryield", "ema", [1, 2, 1], "", "", True, "price", "ema1", 240]],
+    "ryield_ema_xdemean": [broad_mkts, ["ryield", "ema", [1, 2, 1], "", "", True, "price", "ema1", 240]],
+    "ryield_zsa_ts": [broad_mkts, ["ryield", "zscore_adj", [20, 30, 1], "", "", True, "price", "ema1", 240]],
+    "ryield_zsa_xdemean": [broad_mkts, ["ryield", "zscore_adj", [20, 30, 1], "", "", True, "price", "ema1", 240]],
+    "basmom5_ema_ts": [broad_mkts, ["basmom5", "ema", [10, 20, 1], "", "", True, "price", "", 240]],
+    "basmom5_ema_xdemean": [broad_mkts, ["basmom5", "ema", [10, 20, 1], "", "", True, "price", "", 240]],
+    "basmom10_ema_ts": [broad_mkts, ["basmom10", "ema", [10, 20, 1], "", "", True, "price", "", 240]],
+    "basmom10_ema_xdemean": [broad_mkts, ["basmom10", "ema", [10, 20, 1], "", "", True, "price", "", 240]],
+    "basmom10_qtl_ts": [broad_mkts, ["basmom10", "qtl", [230, 250, 2], "ema5", "", True, "price", "", 240]],
+    "basmom10_qtl_xdemean": [broad_mkts, ["basmom10", "qtl", [230, 250, 2], "ema5", "", True, "price", "", 240]],
+    "basmom20_ema_ts": [broad_mkts, ["basmom20", "ema", [1, 2, 1], "", "", True, "price", "ema1", 240]],
+    "basmom20_ema_xdemean": [broad_mkts, ["basmom20", "ema", [1, 2, 1], "", "", True, "price", "ema1", 240]],
+    "basmom60_ema_ts": [broad_mkts, ["basmom60", "ema", [1, 2, 1], "", "", True, "price", "ema1", 240]],
+    "basmom60_ema_xdemean": [broad_mkts, ["basmom60", "ema", [1, 2, 1], "", "", True, "price", "ema1", 240]],
+    "basmom120_ema_ts": [broad_mkts, ["basmom120", "ema", [1, 2, 1], "", "", True, "price", "ema1", 240]],
+    "basmom120_ema_xdemean": [broad_mkts, ["basmom120", "ema", [1, 2, 1], "", "", True, "price", "ema1", 240]],
     # 'r007_qtl': ('r007_cn', 'qtl', [80, 120, 2], 'ema5', 'pct_change', True, 'price'),
     # 'r_dr_spd_zs': ('r_dr_7d_spd', 'zscore', [20, 40, 2], 'ema5', 'pct_change', True, 'price'),
     # 'shibor1m_qtl': ('shibor_1m', 'qtl', [40, 80, 2], 'ema3', 'pct_change', True, 'price'),
