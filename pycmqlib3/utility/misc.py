@@ -974,7 +974,7 @@ def nearby(prodcode, n=1, start_date=None, end_date=None, roll_rule='-20b', freq
     for idx, exp in enumerate(exp_dates):
         if exp < start_date:
             continue
-        elif sdate > end_date:
+        elif sdate > min(exp, end_date):
             break
         nb_cont = contlist[idx + n - 1]
         if freq == 'd':
@@ -991,7 +991,10 @@ def nearby(prodcode, n=1, start_date=None, end_date=None, roll_rule='-20b', freq
             new_df['shift'] = 0.0
         else:
             print("continuous contract stopped at %s for start = %s, expiry= %s" % (nb_cont, sdate, exp))
-            continue
+            if exp > end_date:
+                break
+            else:
+                continue
         if len(df) > 0 and shift_mode > 0:
             if isinstance(df.index[-1], datetime.datetime):
                 last_date = df.index[-1].date()
