@@ -86,6 +86,10 @@ class StraPortTrader(BaseCtaStrategy):
             cur_pos = context.stra_get_position(code)
             target_pos = self.__target_pos[idx]
             if cur_pos != target_pos:
+                if (self.__prod_list[idx] in ['UR', 'SM']) and (cur_pos * target_pos >=0) and \
+                    (abs(cur_pos) < abs(target_pos)) and (abs(cur_pos-target_pos)<4):
+                    context.stra_log_text(f"Ignoring position diff for {code} from {cur_pos} to {target_pos} due to restriction")
+                    continue                    
                 context.stra_set_position(code, target_pos, 'AdjustPosition')
                 context.stra_log_text(f"adjust position for {code} from {cur_pos} to {target_pos}")
             continue
