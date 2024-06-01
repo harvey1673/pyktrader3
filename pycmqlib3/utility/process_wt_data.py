@@ -97,7 +97,7 @@ def roll_list_to_df(roll_list: list, field_name: str='instID') -> pd.DataFrame:
 def convert_wt_data(df, cont, freq='d'):
     df['date'] = df['date'].apply(lambda x: datetime.date(x//10000, (x % 10000)//100, x % 100))
     df = df.rename(columns={'hold': 'openInterest'})
-    df['instID'] = cont
+    df['instID'] = cont    
     if freq in ['d', 'day', 'd1']:
         col_list = ['instID', 'date', 'open', 'high', 'low', 'close', 'volume', 'openInterest', 'diff_oi', 'settle']
     else:
@@ -243,7 +243,7 @@ def load_bars_to_df(code, period='d1', start_time=None, end_time=None,
     df = dtServo.get_bars(code, period, fromTime=start_time, endTime=end_time)
     if df:
         df = df.to_df().rename(columns={'hold': 'openInterest', 'diff': 'diff_oi'})
-        df['bartime'] = df['bartime'] + 199000000000
+        #df['bartime'] = df['bartime']
         if 'd' in period:
             freq = 'd'
         else:
