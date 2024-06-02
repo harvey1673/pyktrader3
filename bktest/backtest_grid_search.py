@@ -10,7 +10,7 @@ from misc_scripts.daily_update_job import scenarios_test, scenarios_elite
 
 ferrous_products_mkts = ['rb', 'hc', 'i', 'j', 'jm']
 ferrous_mixed_mkts = ['ru', 'FG', 'SM', "SF", 'nr', 'SA', 'UR'] # 'ZC',
-base_metal_mkts = ['cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ss']
+base_metal_mkts = ['cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ss', 'ao', 'si', 'bc']
 precious_metal_mkts = ['au', 'ag']
 ind_metal_mkts = ferrous_products_mkts + ferrous_mixed_mkts + base_metal_mkts
 petro_chem_mkts = ['l', 'pp', 'v', 'TA', 'MA', 'bu', 'sc', 'fu', 'eg', 'eb', 'lu', 'pg', 'PF']
@@ -96,7 +96,7 @@ def load_hist_data(start_date, end_date,
                         roll = '-25b'
                     elif prodcode in ['ni', 'jd', 'lh', 'eg',]:
                         roll = '-35b'
-                    elif prodcode in ['v', 'MA']:
+                    elif prodcode in ['v', 'MA', 'rb', 'hc']:
                         roll = '-28b'
                     elif prodcode in ['sc', 'eb'] + bond_fut_mkts:
                         roll = '-20b'
