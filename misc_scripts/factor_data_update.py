@@ -378,6 +378,48 @@ def update_factor_data(product_list, scenarios, start_date, end_date,
                 asset_df[fact_name] = signal_ts
                 update_factor_db(asset_df, fact_name, fact_config, start_date=update_start, end_date=end_date,
                                  flavor=flavor)
+
+    fact_name = 'pair_mr_1y'
+    pair_mr_products = ['cu', 'al', 'zn', 'ss', 'ni', 'rb', 'hc', 'SM', 'SF', 'FG', 'v',
+                        'y', 'OI', 'm', 'RM', 'l', 'MA', 'pp', 'TA', 'eg']
+    pair_list = [
+        ('cu', 'zn'), ('cu', 'al'), ('al', 'zn'), ('ni', 'ss'),
+        ('rb', 'hc'), ('SM', 'SF'), ('FG', 'v'),
+        ('y', 'OI'), ('m', 'RM'),  ('l', 'MA'), ('pp', 'MA'), ('TA', 'eg'),
+    ]
+    param_rng = [200, 250, 5]
+    bullish = False
+    vol_win = 120
+    signal_cap = None
+    signal_func = 'zscore_adj'
+    idx = pd.bdate_range(start=start_date, end=end_date, freq='C', holidays=CHN_Holidays)
+    signal_df = pd.DataFrame(0, index=idx, columns=pair_mr_products)
+    for asset in pair_mr_products:
+        if asset not in data_cache:
+            xdf = dataseries.nearby(asset, 1, start_date=sdate, end_date=end_date, shift_mode=shift_mode,
+                                    freq='d', roll_name='hot',
+                                    config_loc="C:/dev/wtdev/config/").set_index('date')
+            data_cache[asset] = xdf
+
+    for (asset_a, asset_b) in pair_list:
+        pair_assets = [asset_a, asset_b]
+        sig_df = pd.DataFrame(index=idx, columns=pair_assets)
+        feature_ts = np.log(data_cache[asset_a]['close']) - np.log(data_cache[asset_b]['close'])
+        sig_ts = calc_conv_signal(feature_ts, signal_func=signal_func, param_rng=param_rng, signal_cap=signal_cap,
+                                  vol_win=vol_win)
+        sig_ts = sig_ts.apply(lambda x: np.sign(x) * min(abs(x), 1.25) ** 4).ewm(1).mean()
+        if not bullish:
+            sig_ts = -sig_ts
+        sig_df[asset_a] = sig_ts
+        sig_df[asset_b] = -sig_ts
+        signal_df = signal_df + sig_df.reindex_like(signal_df).fillna(0)
+    for asset in signal_df.columns:
+        fact_config['product_code'] = asset
+        fact_config['exch'] = prod2exch(asset)
+        asset_df = data_cache[asset].copy()
+        asset_df[fact_name] = signal_df[asset]
+        update_factor_db(asset_df, fact_name, fact_config, start_date=update_start, end_date=end_date,
+                         flavor=flavor)
     return factor_repo
 
 
