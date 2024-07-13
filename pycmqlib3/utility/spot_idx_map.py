@@ -33,6 +33,11 @@ index_map = {
     'M002816452': 'shibor_3m',
     'M002816455': 'shibor_1y',
     'M002816576': 'r007_cn',
+    'L001618805': 'cn_govbond_yield_1y',
+    'L001619213': 'cn_govbond_yield_2y',
+    'L001618480': 'cn_govbond_yield_5y',
+    'L001619214': 'cn_govbond_yield_10y',
+
     # ferrous
     'S003019324': 'plt62',
     'S002808964': 'plt58',
@@ -204,9 +209,21 @@ index_map = {
     'S003018872': 'zn_lme_3m_27m_spd',
     'S003018874': 'pb_lme_3m_15m_spd',
     'S003018875': 'pb_lme_3m_27m_spd',
-    'S003018876': 'aa_lme_0m_3m_spd',
-    'S003018877': 'aa_lme_3m_15m_spd',
-    'S003018878': 'aa_lme_3m_27m_spd',
+    #'S003018876': 'aa_lme_0m_3m_spd',
+    #'S003018877': 'aa_lme_3m_15m_spd',
+    #'S003018878': 'aa_lme_3m_27m_spd',
+    "S000025728": "cu_inv_lme_total",
+    "S002836856": "cu_inv_lme_cancelled",
+    "S004303370": "al_inv_lme_total",
+    "S004303408": "al_inv_lme_cancelled",
+    "S004303465": "pb_inv_lme_total",
+    "S004303491": "pb_inv_lme_cancelled",
+    "S004303530": "zn_inv_lme_total",
+    "S004303550": "zn_inv_lme_cancelled",
+    "S004303580": "sn_inv_lme_total",
+    "S004303592": "sn_inv_lme_cancelled",
+    "S004303610": "ni_inv_lme_total",
+    "S004303642": "ni_inv_lme_cancelled",
 
     'S004630824': 'cu_mine_tc',
     #'S011211693': 'cu_25conc_tc',
@@ -311,12 +328,18 @@ index_map = {
 
     "S009160074": "cu_scrap_1_spot_jzh",
     "S009160107": "cu_scrap_2_spot_jzh",
+    "S008545965": "cu_scrap_1_sh",
+    "S008545990": "cu_scrap_2_sh",
     "S009626046": "al_scrap_shreded_spot_foshan",
     "S009626791": "ni_scrap_spot_foshan",
-    'S005971281': 'cu_mine_inv_ports',
-
     "S015202398": "cu_scrap1_diff_gd", # short history
     "S015202399": "cu_scrap1_diff_tj",
+    "S009780583": "pb_scrap_autostarter_sh",
+    "S009626378": "pb_scrap_ebike_sh",
+    "S009626602": "sn_scrap_pure_bulk_shandong",
+    "S009626605": "sn_scrap_bulk_shandong",
+    "S009626611": "sn_scrap_slag_shandong",
+    "S002959172": "ss_304_scrap_wuxi",
 
     "S008871802": "cu_rod_8_procfee_nanchu", # short history
     "S008871805": "cu_rod_2.6_procfee_nanchu",
@@ -324,6 +347,7 @@ index_map = {
     "S009621410": "al_rod_6063_procfee_sichuan",
     "S009621539": "al_rod_6063_procfee_gansu",
 
+    'S005971281': 'cu_mine_inv_ports',
     "S006161499": "cu_inv_social_all",
     "S005363047": "al_inv_social_all",
     "S006161627": "zn_inv_social_3p",
@@ -414,6 +438,10 @@ def process_spot_df(spot_df, adjust_time=False):
     if adjust_time:
         spot_df = adj_publish_time(spot_df)
     spot_df['usggbe10'] = spot_df['usgg10yr'] - spot_df['usggt10yr']
+    spot_df['cgb_2_5_spd'] = spot_df['cn_govbond_yield_2y'] - spot_df['cn_govbond_yield_5y']
+    spot_df['cgb_1_2_spd'] = spot_df['cn_govbond_yield_1y'] - spot_df['cn_govbond_yield_2y']
+    spot_df['cgb_1_5_spd'] = spot_df['cn_govbond_yield_1y'] - spot_df['cn_govbond_yield_5y']
+    spot_df['cgb_2_10_spd'] = spot_df['cn_govbond_yield_2y'] - spot_df['cn_govbond_yield_10y']
     spot_df['r_dr_7d_spd'] = spot_df['r007_cn'] - spot_df['dr007_cn']
 
     #spot_df['usgg10yr_2yr_spd'] = spot_df['usgg10yr'] - spot_df['usgg2yr']

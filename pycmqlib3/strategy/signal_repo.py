@@ -111,7 +111,7 @@ signal_store = {
     # 'cc_soinv_lyoy_fast': ('crc_inv_social', 'zscore', [20, 42, 2], 'lunar_yoy_day', 'diff', False, 'W-Fri'),
     # 'billet_inv_chg_slow': ('billet_inv_social_ts', 'zscore', [240, 252, 2], '', 'diff', False, 'price'),
     'rbsales_lyoy_spd_st': [['rb-hc'],
-                            ['consteel_dsales_mysteel', 'zscore', [20, 40, 2],
+                            ['consteel_dsales_mysteel', 'zscore', [20, 30, 2],
                              'lunar_yoy_day|ema3', 'diff', True, 'price', "ema1", 120]],
 
     'rbsales_lyoy_mom_lt': [['rb'],
@@ -426,7 +426,7 @@ leadlag_port_d = {
 
 mr_commod_pairs = [
     ('cu', 'zn'), ('cu', 'al'), ('al', 'zn'), ('ni', 'ss'),
-    ('rb', 'hc'), ('j', 'jm'),  ('i', 'j'), ('SM', 'SF'), ('FG', 'v'),
+    ('rb', 'hc'), ('SM', 'SF'), ('FG', 'v'),
     ('y', 'OI'), ('m', 'RM'),
     ('l', 'MA'), ('pp', 'MA'), ('TA', 'MA'), ('TA', 'eg')
 ]
@@ -478,17 +478,22 @@ def mr_pair(df, input_args):
     product_list = input_args['product_list']
     signal_cap = input_args.get('signal_cap', None)
     conv_func = input_args.get('conv_func', 'zscore_adj')
-    param_rng = input_args.get('params', [240, 250, 2])
+    param_rng = input_args.get('params', [200, 250, 2])
     vol_win = input_args.get('vol_win', 120)
-    signal_df = pd.DataFrame(index=df.index, columns=product_list)
+    signal_df = pd.DataFrame(0, index=df.index, columns=product_list)
+    bullish = False
     for (asset_a, asset_b) in mr_pair_list:
         pair_assets = [asset_a, asset_b]
         sig_df = pd.DataFrame(index=df.index, columns=pair_assets)
         feature_ts = np.log(df[(asset_a, 'c1', 'close')]) - np.log(df[(asset_b, 'c1', 'close')])
         sig_ts = calc_conv_signal(feature_ts, signal_func=conv_func, param_rng=param_rng, signal_cap=signal_cap,
                                   vol_win=vol_win)
-        sig_ts = sig_ts.apply(lambda x: np.sign(x) * min(abs(x), 1.25) ** 4)
-
+        sig_ts = sig_ts.apply(lambda x: np.sign(x) * min(abs(x), 1.25) ** 4).ewm(1).mean()
+        if not bullish:
+            sig_ts = -sig_ts
+        sig_df[asset_a] = sig_ts
+        sig_df[asset_b] = -sig_ts
+        signal_df = signal_df + sig_df.reindex_like(signal_df).fillna(0)
     return signal_df
 
 
