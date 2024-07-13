@@ -8,6 +8,8 @@ from numpy.lib.stride_tricks import sliding_window_view
 import itertools
 import pandas as pd
 import statsmodels.formula.api as smf
+import statsmodels.regression.rolling as RollingOLS
+from statsmodels.tools.tools import add_constant
 import scipy.stats as stats
 from pykalman import KalmanFilter
 import seaborn as sns
@@ -836,15 +838,26 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
     cdates = pd.date_range(start=start_date, end=end_date, freq='D')
     if bdates is None:
         bdates = pd.bdate_range(start=start_date, end=end_date, freq='C')
-    if len(freq) > 0 and freq != 'price':
+    if len(freq) > 0 and 'W-' in freq:
         feature_ts = spot_df[feature].reindex(index=cdates).ffill().reindex(
             index=pd.date_range(start=start_date, end=end_date, freq=freq)).ffill()
+
     if '|' in proc_func:
         proc_func_list = proc_func.split('|')
     else:
         proc_func_list = [proc_func]
 
     for pfunc in proc_func_list:
+        if pfunc == 'beta_resid':
+            if len(param_rng) > 3:
+                beta_win = param_rng[3]
+            else:
+                beta_win = 250
+            if len(chg_func) == 0:
+                chg_func = 'pct_change'
+            feature_ts = beta_residual(feature_ts, spot_df[freq].dropna(),
+                                       beta_win=beta_win,
+                                       chg_func=chg_func)
         if 'yoy' in pfunc:
             if 'lunar' in pfunc:
                 label_func = lunar_label
@@ -926,6 +939,7 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
 
     if not bullish:
         signal_ts = -signal_ts
+
     if len(post_func) > 0:
         signal_ts = signal_ts.reindex(index=cdates).ffill().reindex(index=bdates)
         if '|' in post_func:
@@ -942,6 +956,13 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
             elif pfunc[:3] == 'hmp':
                 hump_lvl = float(pfunc[3:])
                 signal_ts = signal_hump(signal_ts, hump_lvl)
+            elif pfunc[:3] == 'pos':
+                signal_ts = signal_ts.apply(lambda x: x if x > 0 else 0)
+            elif pfunc[:3] == 'neg':
+                signal_ts = signal_ts.apply(lambda x: x if x < 0 else 0)
+            elif pfunc[:3] == 'hys':
+                params = pfunc.split('_')
+                signal_ts = signal_hysteresis(signal_ts, float(params[1]), float(params[2]))
     return signal_ts
 
 
@@ -1002,6 +1023,84 @@ def get_scored_signal(signal, hl_smooth=20, hl_score=252, demean_signal=True, si
     score_capped = cap(sig_scored, -signal_cap, signal_cap)
     score_filled = filldown(score_capped, 2)
     return score_filled
+
+
+def beta_hedge_ratio(target_data, index_data, beta_win=245, beta_rng=[0, 1e+5], corr_step=5):
+    target_data = target_data.copy()
+    if type(target_data).__name__ == 'Series':
+        target_data = target_data.to_frame('port')
+        index_data = index_data.to_frame('port')
+    beta = pd.DataFrame(index=target_data.index)
+    for col in target_data.columns:
+        local_df = pd.concat([target_data[col].to_frame('target'), index_data[col].to_frame('index')],
+                             axis=1).dropna(how='any')
+        local_df = local_df.rolling(corr_step).mean()
+        beta[col] = local_df['index'].rolling(beta_win).cov(local_df['target'])/local_df['index'].rolling(beta_win).var()
+    beta = beta.clip(beta_rng[0], beta_rng[1]).ffill()
+    if type(target_data).__name__ == 'Series':
+        beta = beta['port']
+    return beta
+
+
+def beta_residual(feature_ts, index_ts, beta_win=250, chg_func='pct_change', corr_step=5):
+    data_df = pd.concat([feature_ts.to_frame('feature'), index_ts.to_frame('index')], axis=1).ffill()
+    betas = beta_hedge_ratio(getattr(data_df['feature'], chg_func)(corr_step),
+                             getattr(data_df['index'], chg_func)(corr_step),
+                             beta_win=beta_win,
+                             corr_step=corr_step)
+    ts = (getattr(data_df['feature'], chg_func)(1) - betas['port'] * getattr(data_df['index'], chg_func)(1)).cumsum()
+    return ts
+
+
+def beta_hedged_position(strat_holding, index_holding, df_pxchg,
+                         beta_win=240,
+                         beta_rng=[0, 1e+5],
+                         hedge_mode='port'):
+    strat_holding = strat_holding.reindex_like(df_pxchg).ffill()
+    strat_pnl = strat_holding.shift(1).fillna(0).multiply(df_pxchg)
+    index_holding = index_holding.reindex_like(df_pxchg).ffill()
+    index_pnl = index_holding.shift(1).fillna(0).multiply(df_pxchg)
+    if hedge_mode == 'port':
+        if type(strat_pnl).__name__ == 'DataFrame':
+            strat_pnl = strat_pnl.sum(axis=1)
+            index_pnl = index_pnl.sum(axis=1)
+        beta = beta_hedge_ratio(strat_pnl, index_pnl, beta_win=beta_win, beta_rng=beta_rng)['port']
+        neutral_holding = strat_holding - index_holding.mul(beta, axis=0)
+    else:
+        beta = pd.DataFrame(columns=strat_pnl.columns, index=strat_pnl.index)
+        neutral_holding = pd.DataFrame(columns=strat_pnl.columns, index=strat_pnl.index)
+        for asset in strat_pnl.columns:
+            beta[asset] = beta_hedge_ratio(strat_pnl[asset], index_pnl[asset],
+                                           beta_win=beta_win, beta_rng=beta_rng)
+            neutral_holding[asset] = strat_holding[asset] - index_holding[asset].mul(beta[asset], axis=0)
+    hedge_results = {
+        'beta': beta,
+        'beta_neutral': neutral_holding,
+        'index_pnl': index_pnl,
+        'strat_pnl': strat_pnl,
+        'hedged_pnl': strat_pnl - index_pnl.mul(beta, axis=0)
+    }
+    return hedge_results
+
+
+def rolling_regress(ts_y, ts_x, beta_win=250, corr_step=5, add_const=True, drop_type='all'):
+    var_y = ts_y.name
+    var_x = ts_x.name
+    reg_df = pd.concat([ts_y.to_frame(var_y), ts_x.to_frame(var_x)], axis=1).dropna(how=drop_type).ffill()
+    reg_df = reg_df.rolling(corr_step).mean()
+    exog = reg_df[[var_x]]
+    if add_const:
+        exog['const'] = 1
+    rolling_ols = RollingOLS(reg_df[var_y], exog, window=beta_win, expanding=False)
+    fit = rolling_ols.fit(params_only=False)
+    for col in fit.params.columns:
+        reg_df[f"{col}_coeff"] = fit.params[col]
+    reg_df['rsquared'] = fit.rsquared
+    reg_df[f"{var_y}_hat"] = reg_df[f"{var_x}"] * reg_df[f"{var_x}_coeff"]
+    if add_const:
+        reg_df[f"{var_y}_hat"] += reg_df["const_coeff"]
+    reg_df['residuals'] = reg_df[f"{var_y}"] - reg_df[f"{var_y}_hat"]
+    return reg_df
 
 
 def generate_signal_sensitivity_report(signals, pnls, quantiles=None, nb_bins=6, p=0.7, return_fig=False):
