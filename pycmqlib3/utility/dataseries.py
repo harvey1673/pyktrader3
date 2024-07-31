@@ -55,7 +55,7 @@ def load_processed_fut_by_product(prodcode, start_date=None, end_date=None, freq
     # expiry_inv_map = {str(v): k for k, v in expiry_map.items()}
     xdf['expiry'] = xdf['instID'].map(expiry_map)
     xdf['exp_str'] = xdf['expiry'].astype('str')
-    xdf['month'] = xdf['instID'].apply(lambda x: misc.inst2contmth(x) % 100)
+    xdf['month'] = xdf.apply(lambda x: misc.inst2contmth(x['contract'], x.name), axis=1) % 100
     if contract_filter:
         flag = contract_filter(xdf, prodcode)
         xdf = xdf[flag]

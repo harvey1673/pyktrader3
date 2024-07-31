@@ -18,6 +18,9 @@ from matplotlib import font_manager
 from .stats_test import test_mean_reverting, half_life
 from statsmodels.tsa.stattools import coint, adfuller
 from pycmqlib3.utility.misc import invert_dict, CHN_Holidays
+import plotly.graph_objs as go
+from plotly.subplots import make_subplots
+
 font = font_manager.FontProperties(fname='C:\\windows\\fonts\\simsun.ttc')
 PNL_BDAYS = 244
 
@@ -176,7 +179,7 @@ def response_curve(y, response='linear', param=1):
     return out
 
 
-def calc_conv_signal(feature_ts, signal_func, param_rng, signal_cap=None, vol_win=120):
+def calc_conv_signal(feature_ts, signal_func, param_rng, signal_cap=2.5, vol_win=120):
     sig_list = []
     for win in range(*param_rng):
         if len(feature_ts) <= win:
@@ -216,7 +219,10 @@ def calc_conv_signal(feature_ts, signal_func, param_rng, signal_cap=None, vol_wi
         else:
             continue
         if signal_cap:
-            signal_ts = cap(signal_ts, signal_cap[0], signal_cap[1])
+            if type(signal_cap) == list:
+                signal_ts = cap(signal_ts, signal_cap[0], signal_cap[1])
+            else:
+                signal_ts = cap(signal_ts, -signal_cap, signal_cap)
         sig_list.append(signal_ts)
     if len(sig_list) > 0:
         conv_signal = pd.concat(sig_list, axis=1).mean(axis=1)
@@ -355,33 +361,6 @@ def plot_signal_pnl(cumpnl, signal=None, asset_price=None, is_cum=True, figsize=
     plt.show()
 
 
-def plot_seasonal_df(ts, cutoff=None, title='', convert_seasonal=True):
-    if convert_seasonal:
-        xdf = make_seasonal_df(ts[cutoff:])
-    else:
-        xdf = ts.copy()
-    curr_yr = max(xdf.columns)
-    fig, ax = plt.subplots()
-    for yr in xdf.columns:
-        if yr == curr_yr:
-            marker = 'o'
-            linestyle = '-'
-        else:
-            marker = '.'
-            linestyle = '--'
-        xts = xdf[yr]
-        ts_mask = np.isfinite(xts)
-        plt.plot(xts.index[ts_mask], xts.values[ts_mask], linestyle=linestyle, marker=marker, label=yr)
-
-        if yr == curr_yr:
-            ax.text(xts.index[ts_mask][-1], xts.values[ts_mask][-1],
-                    "%s: %.1fs" % (xts.index[ts_mask][-1].strftime("%b-%d"), xts.values[ts_mask][-1]))
-    plt.title(title, fontproperties=font)
-    ax.grid(True)
-    plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-    plt.show()
-
-
 def plot_lunar_df(ts, cutoff=None, title='', group_col='label_day', convert_seasonal=True):
     if convert_seasonal:
         xdf = make_lunar_df(ts[cutoff:], group_col=group_col)
@@ -407,6 +386,103 @@ def plot_lunar_df(ts, cutoff=None, title='', group_col='label_day', convert_seas
     ax.grid(True)
     plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     plt.show()
+
+
+def iplot(df,
+          xaxis_title="date", yaxis_title="",
+          yaxis2_title="", title="",
+          width=900, height=600, secondary_y=None):
+    """
+    Plots an interactive plot using Plotly with an optional secondary y-axis.
+
+    Parameters:
+    df (pd.DataFrame): Data to plot.
+    secondary_y (list or None): List of column names to plot on the secondary y-axis.
+    """
+    # Define the subplots with a secondary y-axis if needed
+    fig = make_subplots(specs=[[{"secondary_y": bool(secondary_y)}]])
+
+    # Add traces for each column in the DataFrame
+    for col in df.columns:
+        fig.add_trace(
+            go.Scatter(x=df.index, y=df[col], name=col),
+            secondary_y=(col in secondary_y) if secondary_y else False
+        )
+
+    # Update layout
+    fig.update_layout(
+        title=title,
+        xaxis_title=xaxis_title,
+        yaxis_title=yaxis_title,
+        yaxis2=dict(title=yaxis2_title) if secondary_y else None,
+        width=width,
+        height=height
+    )
+
+    # Show the plot
+    fig.show()
+
+
+def iplot_seasonal_df(ts, title='', width=900, height=500, convert_seasonal=True, cutoff=None):
+    if convert_seasonal:
+        xdf = make_seasonal_df(ts[cutoff:])
+    else:
+        xdf = ts.copy()
+    fig = make_subplots()
+    for yr in xdf.columns:
+        xts = xdf[yr]
+        ts_mask = np.isfinite(xts)
+        fig.add_trace(
+            go.Scatter(x=xts.index[ts_mask], y=xts.values[ts_mask],
+                       name=yr, line=dict(shape='linear'),
+                       marker=dict(size=6), yaxis='y')
+        )
+
+    # Update layout
+    fig.update_layout(
+        title=title,
+        xaxis_title='date',
+        yaxis_title='values',
+        margin=dict(l=50, r=50, t=50, b=50),
+        plot_bgcolor='rgba(0,0,0,0)',
+        xaxis=dict(showgrid=True, gridcolor='lightgrey'),
+        yaxis=dict(showgrid=True, gridcolor='lightgrey'),
+        width=width,
+        height=height
+    )
+
+    # Show the plot
+    fig.show()
+
+
+def iplot_lunar_df(ts, cutoff=None, title='', group_col='label_day', width=900, height=500, convert_seasonal=True):
+    if convert_seasonal:
+        xdf = make_lunar_df(ts[cutoff:], group_col=group_col)
+    else:
+        xdf = ts.copy()
+    fig = make_subplots()
+    for yr in xdf.columns:
+        xts = xdf[yr]
+        ts_mask = np.isfinite(xts)
+        fig.add_trace(
+            go.Scatter(x=xts.index[ts_mask], y=xts.values[ts_mask],
+                       name=yr, line=dict(shape='linear'),
+                       marker=dict(size=6), yaxis='y')
+        )
+    # Update layout
+    fig.update_layout(
+        title=title,
+        xaxis_title='date',
+        yaxis_title='values',
+        margin=dict(l=50, r=50, t=50, b=50),
+        plot_bgcolor='rgba(0,0,0,0)',
+        xaxis=dict(showgrid=True, gridcolor='lightgrey'),
+        yaxis=dict(showgrid=True, gridcolor='lightgrey'),
+        width=width,
+        height=height
+    )
+    # Show the plot
+    fig.show()
 
 
 def plot_df_on_2ax(df, left_on=[], right_on=[], left_style='-', right_style=':'):
@@ -827,7 +903,7 @@ def seasonal_group_score(signal_df, score_cols, **kwargs):
 
 def calc_funda_signal(spot_df, feature, signal_func, param_rng,
                       proc_func='', chg_func='diff', bullish=True,
-                      freq='price', signal_cap=None, bdates=None,
+                      freq='price', signal_cap=[-2, 2], bdates=None,
                       post_func='', vol_win=120, curr_date=None):
     feature_ts = spot_df[feature].dropna()
     start_date = feature_ts.index[0]
@@ -1508,3 +1584,4 @@ class KalmanRegression(object):
     def run_all(self):
         self.plot_params()
         self.plot2D()
+

@@ -155,12 +155,12 @@ def update_factor_data(product_list, scenarios, start_date, end_date,
             df2 = dataseries.nearby(asset, 2, start_date=sdate, end_date=end_date, shift_mode=shift_mode, freq='d',
                                     roll_name=roll_rule, config_loc="C:/dev/wtdev/config/").set_index('date')
         df1 = df1[col_list]
-        df1['contmth'] = df1['contract'].apply(lambda x: inst2contmth(x))
+        df1['contmth'] = df1.apply(lambda x: inst2contmth(x['contract'], x.name), axis=1)
         df1['mth'] = df1['contmth'].apply(lambda x: x // 100 * 12 + x % 100)
         df1['atr'] = dh.ATR(df1, vol_win).fillna(method='bfill')
 
         df2 = df2[col_list]
-        df2['contmth'] = df2['contract'].apply(lambda x: inst2contmth(x))
+        df2['contmth'] = df2.apply(lambda x: inst2contmth(x['contract'], x.name), axis=1)
         df2['mth'] = df2['contmth'].apply(lambda x: x // 100 * 12 + x % 100)
 
         df2.columns = [col + '_2' for col in df2.columns]

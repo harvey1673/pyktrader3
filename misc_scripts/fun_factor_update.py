@@ -214,7 +214,7 @@ def load_hist_fut_prices(markets, start_date, end_date,
                                     freq=freq,
                                     roll_name=roll_name)
             xdf['expiry'] = xdf['contract'].map(contract_expiry)
-            xdf['contmth'] = xdf['contract'].map(inst2contmth)
+            xdf['contmth'] = xdf.apply(lambda x: inst2contmth(x['contract'], x['date']), axis=1)
             xdf['mth'] = xdf['contmth'].apply(lambda x: x // 100 * 12 + x % 100)
             xdf['product'] = prodcode
             xdf['code'] = f'c{nb + 1}'
