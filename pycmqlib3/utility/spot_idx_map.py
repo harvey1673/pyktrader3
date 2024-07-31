@@ -334,6 +334,10 @@ index_map = {
     "S009626791": "ni_scrap_spot_foshan",
     "S015202398": "cu_scrap1_diff_gd", # short history
     "S015202399": "cu_scrap1_diff_tj",
+    "S004243370": "zn_scrap_sh_high",
+    "S004243369": "zn_scrap_sh_low",
+    "S004243249": "al_scrap_shredded_sh_low",
+    "S004243250": "al_scrap_shredded_sh_high",
     "S009780583": "pb_scrap_autostarter_sh",
     "S009626378": "pb_scrap_ebike_sh",
     "S009626602": "sn_scrap_pure_bulk_shandong",

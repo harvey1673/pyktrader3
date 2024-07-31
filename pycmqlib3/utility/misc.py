@@ -814,22 +814,31 @@ def inst2product(inst, rtn_contmth=False):
         return key
 
 
-def inst2contmth(instID):
+def inst2contmth(instID, ref_date=datetime.date.today()):
     exch = inst2exch(instID)
     if exch == 'CZCE':
         if len(instID) == 6:
             cont_mth = 200000 + int(instID[-4:])
-        elif int(instID[-3]) >= 5:
-            cont_mth = 201000 + int(instID[-3:])
         else:
-            cont_mth = 202000 + int(instID[-3:])
+            if int(instID[-3]) >= 5:
+                if ref_date.year >= 2020:
+                    cont_mth = 202000 + int(instID[-3:])
+                elif ref_date.year >= 2010:
+                    cont_mth = 201000 + int(instID[-3:])
+            else:
+                if ref_date.year >= 2025:
+                    cont_mth = 203000 + int(instID[-3:])
+                elif ref_date.year >= 2015:
+                    cont_mth = 202000 + int(instID[-3:])
+                elif ref_date.year >= 2005:
+                    cont_mth = 201000 + int(instID[-3:])
     else:
         cont_mth = 200000 + int(instID[-4:])
     return cont_mth
 
 
-def inst2cont(instID):
-    cont_mth = inst2contmth(instID)
+def inst2cont(instID, ref_date=datetime.date.today()):
+    cont_mth = inst2contmth(instID, ref_date)
     year = int(cont_mth /100)
     mth = cont_mth % 100
     return datetime.date(year, mth, 1)
@@ -881,8 +890,8 @@ def get_option_map(products):
     return option_map
 
 
-def get_opt_name(fut_inst, otype, strike):
-    cont_mth = inst2contmth(fut_inst)
+def get_opt_name(fut_inst, otype, strike, ref_date=datetime.date.today()):
+    cont_mth = inst2contmth(fut_inst, ref_date=ref_date)
     key = (str(fut_inst), cont_mth, otype, strike)
     instID = fut_inst
     exch = inst2exch(instID)
