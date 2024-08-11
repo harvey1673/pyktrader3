@@ -8,6 +8,16 @@ from datetime import date, timedelta
 from pycmqlib3.utility.misc import get_first_day_of_month, Holiday_Map, day_shift
 
 
+def simple_cost(asset_list, trd_cost=1e-4):
+    cost_dict = {}
+    for asset in asset_list:
+        if "-" in asset or "_" in asset:
+            cost_dict[asset] = trd_cost*2
+        else:
+            cost_dict[asset] = trd_cost
+    return cost_dict
+
+
 def trend_signal(df_pxchg, ma_fast, ma_slow, sig_win=252, smooth=1, cap=2.0, rolling='ewm'):
     trend_s = pd.DataFrame(index=df_pxchg.index, columns=df_pxchg.columns)
     for col in df_pxchg.columns:
@@ -136,7 +146,7 @@ def calc_perf_by_tenors(ts, tenors, metric='sharpe', business_days_per_year=244)
 class MetricsBase(object):
     def __init__(self, holdings, returns, portfolio_obj=None, limits=None,
                  shift_holdings=0, backtest=True, hols='CHN',
-                 cost_dict={}, trdcost=0,
+                 cost_dict={}, trd_cost=0,
                  business_days_per_year=tstool.PNL_BDAYS):
         holdings.index = pd.to_datetime(holdings.index)
         returns.index = pd.to_datetime(returns.index)
@@ -146,7 +156,7 @@ class MetricsBase(object):
         self.portfolio_obj = portfolio_obj
         self.date_range = self.holdings.index
         self.universe = self.holdings.columns
-        self.cost_dict = dict([(asset, cost_dict.get(asset, trdcost)) for asset in self.universe])
+        self.cost_dict = dict([(asset, cost_dict.get(asset, trd_cost)) for asset in self.universe])
         self.holidays = Holiday_Map.get(hols, [])
         self.business_days_per_year = business_days_per_year
 
@@ -242,15 +252,16 @@ class MetricsBase(object):
         return np.sqrt(self.business_days_per_year) * result
 
     def _lagged_portfolio_pnl(self, **kwargs):
-        return self._lagged_asset_pnl(**kwargs).sum(axis=1, skipna = True)
+        return self._lagged_asset_pnl(**kwargs).sum(axis=1, skipna=True)
 
     def _smoothed_portfolio_pnl(self, **kwargs):
-        return self._smoothed_asset_pnl(**kwargs).sum(axis=1, skipna = True)
+        return self._smoothed_asset_pnl(**kwargs).sum(axis=1, skipna=True)
 
     def _calc_pnl(self, holdings):
         if holdings is None:
             holdings = self.holdings
-        return holdings.multiply(self.returns) - holdings.diff().abs().assign(**self.cost_dict).fillna(0)
+        return holdings.multiply(self.returns) - \
+            holdings.diff().abs().multiply(pd.Series(self.cost_dict))
 
     def _lagged_asset_pnl(self, holdings=None, shift=0):
         if holdings is None:
@@ -391,7 +402,7 @@ class MetricsBase(object):
         new_index, new_col = self._business_day_in_month(portfolio_pnl.index)
         portfolio_pnl.index = new_index
         portfolio_pnl['MonthDay'] = new_col
-        monthday_pnl = portfolio_pnl.pivot(columns = 'MonthDay', values = 'total')
+        monthday_pnl = portfolio_pnl.pivot(columns='MonthDay', values='total')
         monthday_stats = self._calculate_sharpe(monthday_pnl)
 
         group_pnl = {

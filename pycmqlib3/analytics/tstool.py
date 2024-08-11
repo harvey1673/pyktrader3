@@ -272,6 +272,60 @@ def signal_hump(signal_ts, gap=0.2):
     return pd.Series(pos_np, index=signal_ts.index)
 
 
+def signal_buffer(signal_ts, gap=0.2):
+    if type(gap) != pd.Series:
+        gap = pd.Series(gap, index=signal_ts.index)
+    else:
+        gap = gap.reindex(index=signal_ts.index).ffill()
+    if type(signal_ts) == pd.Series:
+        sig_df = signal_ts.to_frame('asset')
+    elif type(signal_ts) == pd.DataFrame:
+        sig_df = signal_ts.copy()
+    else:
+        raise ValueError("First input param has to be either Series or DataFrame!")
+    sig_buffered = pd.DataFrame(index=sig_df.index, columns=sig_df.columns)
+    for col in sig_df.columns:
+        sig_ts = sig_df[col]
+        sig_np = sig_ts.to_numpy()
+        gap_np = gap.to_numpy()
+        pos_np = np.zeros(len(sig_np))
+        if ~np.isnan(sig_np[0]) and (abs(sig_np[0]) >= gap_np[0]):
+            pos_np[0] = sig_np[0]
+        else:
+            pos_np[0] = 0
+        for idx in range(1, len(sig_np)):
+            if ~np.isnan(sig_np[idx]):
+                if (sig_np[idx] - gap_np[idx] - pos_np[idx-1]) >= 0:
+                    pos_np[idx] = sig_np[idx] - gap[idx]
+                elif (sig_np[idx] + gap_np[idx] - pos_np[idx-1]) < 0:
+                    pos_np[idx] = sig_np[idx] + gap[idx]
+                else:
+                    pos_np[idx] = pos_np[idx-1]
+            else:
+                pos_np[idx] = pos_np[idx - 1]
+        sig_buffered[col] = pd.Series(pos_np, index=sig_ts.index)
+    if type(signal_ts) == pd.Series:
+        sig_buffered = sig_buffered['asset']
+    return sig_buffered
+
+
+def signal_cost_optim(signal_df, hump, vol_df, cost_dict, turnover_dict={}, power=3):
+    asset_list = signal_df.columns
+    cost_df = pd.DataFrame.from_dict(dict(**{'date': signal_df.index}, **cost_dict)).set_index('date')
+    cost_df = cost_df.reindex_like(signal_df).fillna(0)
+    turnover_df = pd.DataFrame.from_dict(dict(**{'date': signal_df.index}, **turnover_dict)).set_index('date')
+    turnover_df = cost_df.reindex_like(turnover_df).fillna(1)
+    vol_df = vol_df.reindex_like(signal_df).ffill()
+    if power == 3:
+        gap_df = hump * (3*cost_df.mul(turnover_df).div(vol_df)).pow(1/power)
+    elif power == 1:
+        gap_df = hump * cost_df.mul(turnover_df).div(vol_df)
+    signal_buffered = pd.DataFrame(index=signal_df.index, columns=signal_df.columns)
+    for asset in asset_list:
+        signal_buffered[asset] = signal_buffer(signal_df[asset], gap=gap_df[asset])
+    return signal_buffered
+
+
 def make_seasonal_df(ser, limit=1, fill=False, weekly_dense=False):
     df = ser.to_frame('data')
     if isinstance(df.index, pd.PeriodIndex):
