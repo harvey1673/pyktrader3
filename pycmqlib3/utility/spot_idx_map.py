@@ -212,7 +212,8 @@ index_map = {
     #'S003018876': 'aa_lme_0m_3m_spd',
     #'S003018877': 'aa_lme_3m_15m_spd',
     #'S003018878': 'aa_lme_3m_27m_spd',
-    "S000025728": "cu_inv_lme_total",
+    "S002855118": "cu_inv_cme_total",
+    "S004303280": "cu_inv_lme_total",
     "S002836856": "cu_inv_lme_cancelled",
     "S004303370": "al_inv_lme_total",
     "S004303408": "al_inv_lme_cancelled",
@@ -224,6 +225,43 @@ index_map = {
     "S004303592": "sn_inv_lme_cancelled",
     "S004303610": "ni_inv_lme_total",
     "S004303642": "ni_inv_lme_cancelled",
+    "S003164358": "cu_inv_shfe_d",
+    "S003164360": "zn_inv_shfe_d",
+    "S003164359": "al_inv_shfe_d",
+    "S003164361": "pb_inv_shfe_d",
+    "S004322735": "ni_inv_shfe_d",
+    "S004322736": "sn_inv_shfe_d",
+    "S019848684": "ao_inv_shfe_d",
+    "S019848689": "ao_inv_shfe_mill_d",
+    "S009223764": "ss_inv_shfe_d",
+    "S019735959": "si_inv_gfex_d",
+    "S020098434": "lc_inv_gfex_d",
+    "S022117012": "SH_inv_czce_warrant",
+    "S022319791": "SH_inv_czce_unwarrant",
+    "S003008076": "TA_inv_czce_warrant",
+    "S005451492": "TA_inv_czce_unwarrant",
+    "S004302740": "MA_inv_czce_warrant",
+    "S005451467": "MA_inv_czce_unwarrant",
+    "S005451340": "UR_inv_czce_warrant",
+    "S005451410": "UR_inv_czce_unwarrant",
+    "S005658949": "PF_inv_czce_warrant",
+    "S003787910": "l_inv_dce_warrant",
+    "S003787913": "pp_inv_dce_warrant",
+    "S003787915": "v_inv_dce_warrant",
+    "S005450245": "eg_inv_dce_warrant",
+    "S005450249": "eb_inv_dce_warrant",
+    "S004302762": "bu_inv_shfe_warrant",
+    "S004302780": "bu_inv_shfe_mill",
+    "S005451360": "SA_inv_czce_warrant",
+    "S005451430": "SA_inv_czce_unwarrant",
+    "S005476603": "j_inv_dce_warrant",
+    "S005476308": "rb_inv_shfe_warrant",
+    "S005476309": "hc_inv_shfe_warrant",
+    "S005476310": "i_inv_dce_warrant",
+    "S005476311": "SF_inv_czce_warrant",
+    "S005476313": "SF_inv_czce_unwarrant",
+    "S005476312": "SM_inv_czce_warrant",
+    "S005476314": "SM_inv_czce_unwarrant",
 
     'S004630824': 'cu_mine_tc',
     #'S011211693': 'cu_25conc_tc',
@@ -441,6 +479,10 @@ def adj_publish_time(spot_df):
 def process_spot_df(spot_df, adjust_time=False):
     if adjust_time:
         spot_df = adj_publish_time(spot_df)
+
+    for asset in ['cu', 'al', 'zn', 'pb', 'ni', 'sn']:
+        spot_df[f'{asset}_inv_exch_d'] = spot_df[
+            [f'{asset}_inv_shfe_d', f'{asset}_inv_lme_total']].sum(axis=1, skipna=False)
     spot_df['usggbe10'] = spot_df['usgg10yr'] - spot_df['usggt10yr']
     spot_df['cgb_2_5_spd'] = spot_df['cn_govbond_yield_2y'] - spot_df['cn_govbond_yield_5y']
     spot_df['cgb_1_2_spd'] = spot_df['cn_govbond_yield_1y'] - spot_df['cn_govbond_yield_2y']

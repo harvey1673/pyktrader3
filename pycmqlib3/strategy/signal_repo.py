@@ -1,5 +1,6 @@
 import pandas as pd
 from pycmqlib3.analytics.tstool import *
+from pycmqlib3.analytics.btmetrics import simple_cost
 from pycmqlib3.utility.misc import CHN_Holidays, day_shift
 from pycmqlib3.utility.exch_ctd_func import *
 
@@ -221,6 +222,18 @@ signal_store = {
                      ['base_inv', 'ma_dff_sgn', [180, 240, 2], '', '', False, 'price', "", 120]],
     'base_inv_mds_xdemean': [['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
                              ['base_inv', 'ma_dff_sgn', [180, 240, 2], '', '', False, 'price', "", 120]],
+    'base_inv_shfe_ma': [['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
+                         ['inv_shfe_d', 'ma', [1, 2, 1], 'df1|ema1', 'pct_change', False, '', "buf0.2", 240]],
+    'base_inv_shfe_ma_xdemean': [['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
+                                 ['inv_shfe_d', 'ma', [1, 2, 1], 'df1|ema1', 'pct_change', False, '', "buf0.2", 240]],
+    'base_inv_lme_ma': [['cu', 'zn', 'pb', 'ni', 'sn'],
+                        ['inv_lme_total', 'ma', [1, 2, 1], 'df1|ema1', 'pct_change', False, '', "buf0.2", 240]],
+    'base_inv_lme_ma_xdemean': [['cu', 'zn', 'pb', 'ni', 'sn'],
+                                ['inv_lme_total', 'ma', [1, 2, 1], 'df1|ema1', 'pct_change', False, '', "buf0.2", 240]],
+    'base_inv_exch_ma': [['cu', 'zn', 'pb', 'ni', 'sn'],
+                         ['inv_exch_d', 'ma', [1, 2, 1], 'df1|ema1', 'pct_change', False, '', "buf0.15", 240]],
+    'base_inv_exch_ma_xdemean': [['cu', 'zn', 'pb', 'ni', 'sn'],
+                                 ['inv_exch_d', 'ma', [1, 2, 1], 'df1|ema1', 'pct_change', False, '', "buf0.15", 240]],
     'lme_mr_qtl_xdemean': [['MCU', 'MAL', 'MZN', 'MPB'],
                           ['px', 'qtl', [20, 40, 2], '', '', False, '', "ema5", 240]],
     'lme_mr_zs_xdemean': [['MCU', 'MAL', 'MZN', 'MPB'],
@@ -392,6 +405,9 @@ feature_to_feature_key_mapping = {
         "SA": "sa_heavy_east",
     },
     'metal_px': {},
+    'inv_shfe_d': {},
+    'inv_lme_total': {},
+    'inv_exch_d': {},
     'metal_inv': {
         'cu': 'cu_inv_social_all',
         'al': 'al_inv_social_all',
@@ -546,7 +562,8 @@ def get_funda_signal_from_store(spot_df, signal_name, price_df=None,
     feature, signal_func, param_rng, proc_func, chg_func, bullish, freq, post_func, vol_win = \
         signal_repo[signal_name][1]
     if asset and feature in feature_key_map:
-        asset_feature = feature_key_map[feature].get(asset, feature)
+        asset_feature = feature_key_map[feature].get(asset, f'{asset}_{feature}')
+
         if feature == 'metal_pbc':
             if price_df is None:
                 print("ERROR: no future price is passed for metal_pbc")
@@ -646,6 +663,18 @@ def custom_funda_signal(df, input_args):
                                 freq='D'
                                 )).ffill().reindex(index=df.index)
         signal_df = pd.DataFrame(dict([(asset, signal_ts) for asset in product_list]))
-
-    signal_df = signal_df
+    _, _, _, _, _, _, _, post_func, _ = signal_store[signal_name][1]
+    last_func = post_func.split('|')[-1]
+    if 'buf' in last_func:
+        buffer_size = float(last_func[3:])
+        signal_df = signal_buffer(signal_df, buffer_size)
+    elif 'bf3' in last_func:
+        buffer_size = float(last_func[3:])
+        asset_list = signal_df.columns
+        df_px = df.loc[:, df.columns.get_level_values(0).isin(asset_list)].droplevel([1, 2], axis=1).ffill()
+        vol_df = df_px.pct_change().rolling(20).std()
+        signal_df = signal_cost_optim(signal_df, buffer_size, vol_df,
+                                      cost_dict=simple_cost(asset_list, trd_cost=2e-4),
+                                      turnover_dict={},
+                                      power=3)
     return signal_df
