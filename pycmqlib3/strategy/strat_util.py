@@ -12,7 +12,9 @@ def generate_strat_position(cur_date, prod_list, factor_repo,
                             pos_scaler=1000,
                             fact_db_table='fut_fact_data',
                             hist_fact_lookback=100,
-                            vol_key='atr'):
+                            vol_key='atr',
+                            curr_signal={},
+                            signal_config={}):
     if roll_label == 'CAL_30b':
         freq = 's1'
     res = {}
@@ -69,7 +71,8 @@ def generate_strat_position(cur_date, prod_list, factor_repo,
                     xdf[prod] = np.nan
             fact_data[fact] = xdf[prod_list].ffill()
 
-    pos_sum = pd.DataFrame(index=prod_list)
+    signal_df = pd.DataFrame(index=prod_list)
+    fact_weights = {}
     for fact in factor_repo:
         rebal = factor_repo[fact]['rebal']
         if type(rebal) == str:
@@ -81,7 +84,7 @@ def generate_strat_position(cur_date, prod_list, factor_repo,
         else:
             rebal_func = 'rolling'
             rebal_freq = rebal
-        weight = factor_repo[fact]['weight']
+        fact_weights[fact] = factor_repo[fact]['weight']
         factor_pos[fact] = fact_data[fact].copy().ffill()
         if factor_repo[fact]['type'] != 'pos':
             if 'xs' in factor_repo[fact]['type']:
@@ -114,12 +117,25 @@ def generate_strat_position(cur_date, prod_list, factor_repo,
                     print('unsupported xs signal types')
             factor_pos[fact] = getattr(factor_pos[fact], rebal_func)(rebal_freq).mean().fillna(0.0)
         factor_pos[fact] = factor_pos[fact].ffill()
-        pos_sum[fact] = pd.Series(factor_pos[fact].iloc[-1] * weight, name=fact)
+        signal_df[fact] = factor_pos[fact].iloc[-1]
+        if factor_repo[fact]['name'] in signal_config:
+            buffer_size = signal_config[factor_repo[fact]['name']]
+            if fact in curr_signal:
+                strat_pos = pd.Series(curr_signal[fact]).reindex(index=prod_list).fillna(0)
+                delta_pos = signal_df[fact] - strat_pos
+                delta_p_pos = delta_pos - buffer_size
+                delta_p_pos = delta_p_pos.where(delta_p_pos > 0, 0)
+                delta_p_neg = delta_pos + buffer_size
+                delta_p_neg = delta_p_neg.where(delta_p_neg < 0, 0)
+                signal_df[fact] = strat_pos + delta_p_pos + delta_p_neg
+    signal_df = signal_df.fillna(0)
+    pos_sum = signal_df.mul(pd.DataFrame(fact_weights, index=prod_list))
     pos_sum['sum'] = pos_sum.sum(axis=1)
     pos_sum = pos_sum.round(2)
     for idx, prodcode in enumerate(prod_list):
         target_pos[prodcode] = pos_sum.loc[prodcode, 'sum'] * vol_weight[idx]
     res['target_pos'] = target_pos
-    res['pos_sum'] = pos_sum.T
+    res['pos_sum'] = pos_sum
+    res['curr_signal'] = signal_df
     res['vol_weight'] = vol_weight
     return res

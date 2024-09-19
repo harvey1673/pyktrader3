@@ -9,7 +9,7 @@ from pycmqlib3.utility.misc import inst2product, prod2exch, inst2contmth, day_sh
 import pycmqlib3.analytics.data_handler as dh
 from pycmqlib3.analytics.tstool import *
 from pycmqlib3.strategy.strat_util import generate_strat_position
-from pycmqlib3.strategy.signal_repo import leadlag_port_d
+from pycmqlib3.strategy.signal_repo import leadlag_port_d, signal_buffer_config
 
 ferrous_products_mkts = ['rb', 'hc', 'i', 'j', 'jm']
 ferrous_mixed_mkts = ['ru', 'FG', 'ZC', 'SM', "SF"]
@@ -466,10 +466,22 @@ def update_port_position(run_date=datetime.date.today()):
         'pos_update': {},
         'details': {}
     }
+    pos_date = day_shift(run_date, '1b', CHN_Holidays)
+    pre_date = day_shift(pos_date, '-1b', CHN_Holidays)
+    pos_date_str = pos_date.strftime('%Y%m%d')
+    pre_date_str = pre_date.strftime('%Y%m%d')
     for port_name in port_pos_config.keys():
         target_pos = {}
         pos_by_strat = {}
         pos_loc = port_pos_config[port_name]['pos_loc']
+        curr_signal_file = f'{pos_loc}/curr_signal_{pre_date_str}.json'
+        curr_signal = {}
+        next_signal = {}
+        try:
+            with open(curr_signal_file, 'r') as fp:
+                curr_signal = json.load(fp)
+        except:
+            pass
         roll = port_pos_config[port_name]['roll']
         shift_mode = port_pos_config[port_name]['shift_mode']
         port_file = port_name
@@ -498,9 +510,12 @@ def update_port_position(run_date=datetime.date.today()):
                                           pos_scaler=pos_scaler,
                                           freq=freq,
                                           hist_fact_lookback=20,
-                                          vol_key=vol_key)
+                                          vol_key=vol_key,
+                                          curr_signal=curr_signal,
+                                          signal_config=signal_buffer_config)
             strat_target = res['target_pos']
-            results['details'][f'{port_name}:{strat_file}'] = res['pos_sum']
+            next_signal = {**(res['curr_signal'].to_dict()), **next_signal}
+            results['details'][f'{port_name}:{strat_file}'] = res['pos_sum'].T
             pos_by_strat[strat_file] = strat_target
             for prod in strat_target:
                 if prod not in target_pos:
@@ -513,20 +528,20 @@ def update_port_position(run_date=datetime.date.today()):
             else:
                 target_pos[prodcode] = int(target_pos[prodcode] + (0.5 if target_pos[prodcode] > 0 else -0.5))
 
-        pos_date = day_shift(run_date, '1b', CHN_Holidays)
-        pre_date = day_shift(pos_date, '-1b', CHN_Holidays)
-        pos_date = pos_date.strftime('%Y%m%d')
-        pre_date = pre_date.strftime('%Y%m%d')
-        posfile = '%s/%s_%s.json' % (pos_loc, port_file, pos_date)
+        posfile = '%s/%s_%s.json' % (pos_loc, port_file, pos_date_str)
         with open(posfile, 'w') as ofile:
             json.dump(target_pos, ofile, indent=4)
 
-        stratfile = '%s/pos_by_strat_%s_%s.json' % (pos_loc, port_file, pos_date)
+        next_signal_file = f'{pos_loc}/curr_signal_{pos_date_str}.json'
+        with open(next_signal_file, 'w') as ofile:
+            json.dump(next_signal, ofile, indent=4)
+
+        stratfile = '%s/pos_by_strat_%s_%s.json' % (pos_loc, port_file, pos_date_str)
         with open(stratfile, 'w') as ofile:
             json.dump(pos_by_strat, ofile, indent=4)
 
         if port_file in pos_chg_notification:
-            with open('%s/%s_%s.json' % (pos_loc, port_file, pre_date), 'r') as fp:
+            with open('%s/%s_%s.json' % (pos_loc, port_file, pre_date_str), 'r') as fp:
                 curr_pos = json.load(fp)
             pos_df = pd.DataFrame({'cur': curr_pos, 'tgt': target_pos})
             pos_df['diff'] = pos_df['tgt'] - pos_df['cur']
