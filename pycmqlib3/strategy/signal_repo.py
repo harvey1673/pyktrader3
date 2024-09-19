@@ -195,11 +195,15 @@ signal_store = {
     'lme_base_ts_mds': [['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
                         ['lme_base_ts', 'ma_dff_sgn', [10, 30, 2], '', '', True, 'price', "", 120]],
     'lme_base_ts_mds_xdemean': [['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
-                                ['lme_base_ts', 'ma_dff_sgn', [10, 30, 4], '', '', True, 'price', "", 120]],
+                                ['lme_base_ts', 'ma_dff_sgn', [10, 30, 2], '', '', True, 'price', "", 120]],
     'lme_base_ts_hlr': [['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
                         ['lme_base_ts', 'hlratio', [10, 20, 2], '', '', True, 'price', "", 120]],
     'lme_base_ts_hlr_xdemean': [['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
                                 ['lme_base_ts', 'hlratio', [10, 20, 2], '', '', True, 'price', "", 120]],
+    'lme_futbasis_ma': [['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
+                        ['lme_futbasis', 'ma', [1, 2, 1], 'df1|ema1', 'diff', True, '', "buf0.8", 120]],
+    'lme_futbasis_ma_xdemean': [['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
+                                ['lme_futbasis', 'ma', [1, 2, 1], 'df1|ema1', 'diff', True, '', "buf0.8", 120]],
     'base_phybas_carry_ma': [['cu', 'al', 'zn', 'ni', 'sn'],
                              ['base_phybas', 'ma', [1, 2], 'sma2', '', True, 'price', "", 120]],
     'base_phybas_carry_ma_xdemean': [['cu', 'al', 'zn', 'ni', 'sn'],
@@ -343,6 +347,13 @@ signal_store = {
     # 'vix_zsa': ('vix', 'zscore_adj', [40, 60, 2], 'ema3', 'pct_change', False, 'price'),
 }
 
+signal_buffer_config = {
+    "base_inv_exch_ma": 0.15,
+    "base_inv_lme_ma": 0.2,
+    "base_inv_shfe_ma": 0.2,
+    "lme_futbasis_ma": 0.75,
+
+}
 feature_to_feature_key_mapping = {
     'prem_bonded_warrant': {
         'cu': 'cu_prem_bonded_warrant',
@@ -406,6 +417,7 @@ feature_to_feature_key_mapping = {
     },
     'metal_px': {},
     'inv_shfe_d': {},
+    'lme_futbasis': {},
     'inv_lme_total': {},
     'inv_exch_d': {},
     'metal_inv': {

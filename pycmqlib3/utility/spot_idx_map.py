@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from pycmqlib3.analytics.tstool import vat_adj
 
 index_map = {
@@ -483,6 +484,9 @@ def process_spot_df(spot_df, adjust_time=False):
     for asset in ['cu', 'al', 'zn', 'pb', 'ni', 'sn']:
         spot_df[f'{asset}_inv_exch_d'] = spot_df[
             [f'{asset}_inv_shfe_d', f'{asset}_inv_lme_total']].sum(axis=1, skipna=False)
+        spot_df[f'{asset}_lme_futbasis'] = np.log(1 + spot_df[f'{asset}_lme_0m_3m_spd'] /
+                                                  spot_df[f'{asset}_lme_3m_close'])
+
     spot_df['usggbe10'] = spot_df['usgg10yr'] - spot_df['usggt10yr']
     spot_df['cgb_2_5_spd'] = spot_df['cn_govbond_yield_2y'] - spot_df['cn_govbond_yield_5y']
     spot_df['cgb_1_2_spd'] = spot_df['cn_govbond_yield_1y'] - spot_df['cn_govbond_yield_2y']
