@@ -73,7 +73,7 @@ def send_email_by_smtp(mail_account, to_list, sub, content):
         return False
 
 
-def send_html_by_smtp(mail_account, to_list, sub, html):
+def send_html_by_smtp(mail_account, to_list, sub, html, flag='qq'):
     mail_host = mail_account['host']
     mail_user = mail_account['user']
     mail_pass = mail_account['passwd']
@@ -84,10 +84,12 @@ def send_html_by_smtp(mail_account, to_list, sub, html):
     partHTML = MIMEText(html, 'html')
     msg.attach(partHTML)
     try:
-        smtp = smtplib.SMTP(mail_host, mail_account['port'])
-        # smtp.ehlo()
-        smtp.starttls()
-        # smtp.ehlo()
+        if flag == 'qq':
+            smtp = smtplib.SMTP_SSL(mail_host, mail_account['port'])
+        else:
+            #smtp.ehlo()
+            smtp = smtplib.SMTP(mail_host, mail_account['port'])
+            smtp.starttls()
         smtp.login(mail_user, mail_pass)
         smtp.sendmail(mail_user, to_list, msg.as_string())
         smtp.close()

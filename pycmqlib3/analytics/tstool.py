@@ -1086,9 +1086,6 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
             elif pfunc[:3] == 'hmp':
                 hump_lvl = float(pfunc[3:])
                 signal_ts = signal_hump(signal_ts, hump_lvl)
-            elif pfunc[:3] == 'buf':
-                hump_lvl = float(pfunc[3:])
-                signal_ts = signal_buffer(signal_ts, hump_lvl)
             elif pfunc[:3] == 'pos':
                 signal_ts = signal_ts.apply(lambda x: x if x > 0 else 0)
             elif pfunc[:3] == 'neg':
