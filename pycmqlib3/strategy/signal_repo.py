@@ -197,13 +197,13 @@ signal_store = {
     'lme_base_ts_mds_xdemean': [['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
                                 ['lme_base_ts', 'ma_dff_sgn', [10, 30, 2], '', '', True, 'price', "", 120]],
     'lme_base_ts_hlr': [['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
-                        ['lme_base_ts', 'hlratio', [10, 20, 2], '', '', True, 'price', "", 120]],
+                        ['lme_base_ts', 'hlratio', [10, 20, 1], '', '', True, 'price', "buf0.1", 120]],
     'lme_base_ts_hlr_xdemean': [['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
-                                ['lme_base_ts', 'hlratio', [10, 20, 2], '', '', True, 'price', "", 120]],
+                                ['lme_base_ts', 'hlratio', [10, 20, 1], '', '', True, 'price', "buf0.1", 120]],
     'lme_futbasis_ma': [['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
-                        ['lme_futbasis', 'ma', [1, 2, 1], 'df1|ema1', 'diff', True, '', "buf0.8", 120]],
+                        ['lme_futbasis', 'ma', [1, 2, 1], 'df1|ema1', 'diff', True, '', "buf0.75", 120]],
     'lme_futbasis_ma_xdemean': [['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
-                                ['lme_futbasis', 'ma', [1, 2, 1], 'df1|ema1', 'diff', True, '', "buf0.8", 120]],
+                                ['lme_futbasis', 'ma', [1, 2, 1], 'df1|ema1', 'diff', True, '', "buf0.75", 120]],
     'base_phybas_carry_ma': [['cu', 'al', 'zn', 'ni', 'sn'],
                              ['base_phybas', 'ma', [1, 2], 'sma2', '', True, 'price', "", 120]],
     'base_phybas_carry_ma_xdemean': [['cu', 'al', 'zn', 'ni', 'sn'],
@@ -348,12 +348,13 @@ signal_store = {
 }
 
 signal_buffer_config = {
+    "lme_base_ts_hlr": 0.1,
     "base_inv_exch_ma": 0.15,
     "base_inv_lme_ma": 0.2,
     "base_inv_shfe_ma": 0.2,
     "lme_futbasis_ma": 0.75,
-
 }
+
 feature_to_feature_key_mapping = {
     'prem_bonded_warrant': {
         'cu': 'cu_prem_bonded_warrant',
@@ -680,7 +681,7 @@ def custom_funda_signal(df, input_args):
     if 'buf' in last_func:
         buffer_size = float(last_func[3:])
         signal_df = signal_buffer(signal_df, buffer_size)
-    elif 'bf3' in last_func:
+    elif 'bfc' in last_func:
         buffer_size = float(last_func[3:])
         asset_list = signal_df.columns
         df_px = df.loc[:, df.columns.get_level_values(0).isin(asset_list)].droplevel([1, 2], axis=1).ffill()

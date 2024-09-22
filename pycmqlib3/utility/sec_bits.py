@@ -2,7 +2,7 @@ import platform
 
 LOCAL_PC_NAME = 'LAPTOP-ROG'
 EMAIL_NOTIFY = False
-NOTIFIERS = ['harveywu@gmail.com']
+NOTIFIERS = ['harveywu@hotmail.com']
 PROXY_CREDENTIALS = {'user': 'xxxxxx', 'passwd': 'xxxxxxx'}
 skype_user = {'user': 'wei.x.wu', 'pwd': 'HW@9619252y'}
 LOCAL_NUTSTORE_FOLDER = 'C:/Users/harvey/Nutstore/1/Nutstore'
@@ -35,12 +35,26 @@ bktest_dbconfig = {
     'database': 'bktest_db',
 }
 
-
 EMAIL_HOTMAIL = {
-    'host': 'smtp.office365.com',
+    'host': 'smtp-mail.outlook.com',
     'port': 587,
     'user': 'harveywu@outlook.com',
     'passwd': 'HW@9619252y',
+}
+
+EMAIL_ALIYUN = {
+    'host': 'smtp.aliyun.com',
+    'port': 25,
+    'user': 'harvey_wwu@aliyun.com',
+    'passwd': 'HW@9619252y',
+}
+
+
+EMAIL_QQ = {
+    'host': 'smtp.qq.com',
+    'port': 465,
+    'user': 'harvey_wwu@qq.com',
+    'passwd': 'jmvkusyrenxjbebf',
 }
 
 

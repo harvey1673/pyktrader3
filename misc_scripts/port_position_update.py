@@ -7,7 +7,7 @@ from misc_scripts.fun_factor_update import update_fun_factor
 from misc_scripts.auto_update_data_xl import update_data_from_xl
 from misc_scripts.sgx_daily_update import fetch_daily_eod, fetch_fef_3pm_close
 from pycmqlib3.utility.misc import day_shift, CHN_Holidays, is_workday
-from pycmqlib3.utility.sec_bits import EMAIL_HOTMAIL, NOTIFIERS, LOCAL_PC_NAME, EMAIL_NOTIFY
+from pycmqlib3.utility.sec_bits import EMAIL_QQ, NOTIFIERS, LOCAL_PC_NAME, EMAIL_NOTIFY
 from pycmqlib3.utility.email_tool import send_html_by_smtp
 update_func_list = [
     'fetch_sgx_eod',
@@ -47,7 +47,7 @@ def update_port_pos(tday=datetime.date.today(), email_notify=EMAIL_NOTIFY):
         for key in details:
             html += "Signal details for %s:<br>%s" % (key, details[key].to_html())
         html += "</p></body></html>"
-        send_html_by_smtp(EMAIL_HOTMAIL, NOTIFIERS, sub, html)
+        send_html_by_smtp(EMAIL_QQ, NOTIFIERS, sub, html)
     job_status['time'] = datetime.datetime.now().strftime("%Y%m%d_%H:%M:%S")
     filename = "C:\\dev\\data\\port_position_update.json"
     with open(filename, 'w') as ofile:
