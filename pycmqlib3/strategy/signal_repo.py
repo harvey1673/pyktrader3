@@ -201,9 +201,9 @@ signal_store = {
     'lme_base_ts_hlr_xdemean': [['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
                                 ['lme_base_ts', 'hlratio', [10, 20, 1], '', '', True, 'price', "buf0.1", 120]],
     'lme_futbasis_ma': [['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
-                        ['lme_futbasis', 'ma', [1, 2, 1], 'df1|ema1', 'diff', True, '', "buf0.75", 120]],
+                        ['lme_futbasis', 'ma', [1, 2, 1], 'df1|ema1', 'diff', True, '', "buf0.5", 120]],
     'lme_futbasis_ma_xdemean': [['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
-                                ['lme_futbasis', 'ma', [1, 2, 1], 'df1|ema1', 'diff', True, '', "buf0.75", 120]],
+                                ['lme_futbasis', 'ma', [1, 2, 1], 'df1|ema1', 'diff', True, '', "buf0.5", 120]],
     'base_phybas_carry_ma': [['cu', 'al', 'zn', 'ni', 'sn'],
                              ['base_phybas', 'ma', [1, 2], 'sma2', '', True, 'price', "", 120]],
     'base_phybas_carry_ma_xdemean': [['cu', 'al', 'zn', 'ni', 'sn'],
@@ -353,6 +353,22 @@ signal_buffer_config = {
     "base_inv_lme_ma": 0.2,
     "base_inv_shfe_ma": 0.2,
     "lme_futbasis_ma": 0.75,
+}
+
+signal_execution_win = {
+    'lme_base_ts_mds': "a1505",
+    'lme_base_ts_mds_xdemean': "a1505",
+    'lme_base_ts_hlr': "a1505",
+    'lme_base_ts_hlr_xdemean': "a1505",
+    'lme_futbasis_ma': "a1505",
+    'lme_futbasis_ma_xdemean': "a1505",
+    'rbsales_lyoy_spd_st': "a1505",
+    'rbsales_lyoy_mom_st': "a1505",
+    'rbsales_lyoy_mom_lt': "a1505",
+    'rb_sales_inv_ratio_lyoy': "a1505",
+    'ioarb_px_hlr': "a1505",
+    'ioarb_px_hlrhys': "a1505",
+    'ioarb_spd_qtl_1y': "a1505",
 }
 
 feature_to_feature_key_mapping = {
