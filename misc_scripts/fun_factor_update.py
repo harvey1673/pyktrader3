@@ -223,7 +223,11 @@ def load_hist_fut_prices(markets, start_date, end_date,
             xdf['product'] = prodcode
             xdf['code'] = f'c{nb + 1}'
             data_df = pd.concat([data_df, xdf])
-    df = pd.pivot_table(data_df.reset_index(), index='date', columns=['product', 'code'], values=list(fields),
+    if 'm' in freq:
+        index_col = 'datetime'
+    else:
+        index_col = 'date'
+    df = pd.pivot_table(data_df.reset_index(), index=index_col, columns=['product', 'code'], values=list(fields),
                         aggfunc='last')
     df = df.reorder_levels([1, 2, 0], axis=1).sort_index(axis=1)
     df.columns.rename(['product', 'code', 'field', ], inplace=True)
