@@ -316,6 +316,18 @@ signal_store = {
     "basmom60_ema_xdemean": [broad_mkts, ["basmom60", "ema", [1, 2, 1], "", "", True, "price", "ema1", 240]],
     "basmom120_ema_ts": [broad_mkts, ["basmom120", "ema", [1, 2, 1], "", "", True, "price", "ema1", 240]],
     "basmom120_ema_xdemean": [broad_mkts, ["basmom120", "ema", [1, 2, 1], "", "", True, "price", "ema1", 240]],
+    "exch_wnt_hlr": [
+        ['ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
+        ["exch_warrant", "hlratio", [230, 250, 2], "", "", False, "", "ema3", 240]],
+    "exch_wnt_hlr_xdemean": [
+        ['ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
+        ["exch_warrant", "hlratio", [240, 260, 2], "", "", False, "", "ema3", 240]],
+    "exch_wnt_yoy_hlr": [
+        ['ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
+        ["exch_warrant", "hlratio", [230, 250, 2], 'cal_yoy_day', "diff", False, "", "ema3", 240]],
+    "exch_wnt_yoy_hlr_xdemean": [
+        ['ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
+        ["exch_warrant", "hlratio", [240, 260, 2], 'cal_yoy_day', "diff", False, "", "ema3", 240]],
 
     "cgb_1_2_spd_zs": [['cu', 'al', 'zn', 'rb', 'hc', 'i'],
                        ["cgb_1_2_spd", "zscore", [40, 80, 2], "ema5", "", True, "", "", 120]],
@@ -323,6 +335,10 @@ signal_store = {
                   ['dxy', 'zscore_adj', [20, 30, 2], '', '', False, '', 'hmp0.5', 120]],
     'shibor1m_qtl': [['cu', 'al', 'zn', 'rb', 'hc', 'i'],
                      ['shibor_1m', 'qtl', [40, 80, 2], 'ema3', '', True, 'price', '', 120]],
+    "MCU3_zs": [['cu', 'zn', 'ni', 'al', 'sn', 'ao', 'rb', 'hc', 'i', 'v', 'j', 'jm'],
+                ['cu_lme_3m_close', 'zscore', [40, 80, 2], '', '', True, '', 'buf0.2', 120]],
+    "MAL3_zs": [['cu', 'zn', 'ni', 'al', 'sn', 'ao', 'rb', 'hc', 'i', 'v', 'j', 'jm'],
+                ['al_lme_3m_close', 'zscore', [40, 80, 2], '', '', True, '', 'buf0.2', 120]],
     # 'r007_qtl': ('r007_cn', 'qtl', [80, 120, 2], 'ema5', 'pct_change', True, 'price'),
     # 'r_dr_spd_zs': ('r_dr_7d_spd', 'zscore', [20, 40, 2], 'ema5', 'pct_change', True, 'price'),
     # 'cnh_mds': ('usdcnh_spot', 'ma_dff_sgn', [10, 30, 2], 'ema3', 'pct_change', False, 'price'),
@@ -437,6 +453,7 @@ feature_to_feature_key_mapping = {
     'lme_futbasis': {},
     'inv_lme_total': {},
     'inv_exch_d': {},
+    "exch_warrant": {},
     'metal_inv': {
         'cu': 'cu_inv_social_all',
         'al': 'al_inv_social_all',
@@ -470,10 +487,10 @@ proc_func_by_feature_key = {
 }
 
 leadlag_port_d = {
-    # 'ferrous': {'lead': ['hc', 'rb', ],
-    #             'lag': [],
-    #             'param_rng': [40, 80, 2],
-    #             },
+    'ferrous': {'lead': ['hc', 'rb', ],
+                'lag': [],
+                'param_rng': [40, 80, 2],
+                },
     'constrs': {'lead': ['hc', 'rb', 'v'],
                 'lag': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'v', 'SM', 'SF'],
                 'param_rng': [40, 80, 2],

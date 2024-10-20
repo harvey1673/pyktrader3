@@ -14,8 +14,7 @@ def get_asset_vols(df, product_list, vol_win, vol_type='atr'):
     if vol_type == 'atr':
         df_list = []
         for asset in product_list:
-            asset_df = df.loc[:, (df.columns.get_level_values(0) == asset)
-                                  & (df.columns.get_level_values(1) == 'c1')].droplevel([0, 1], axis=1)
+            asset_df = df.loc[:, (df.columns.get_level_values(0) == asset)].droplevel([0], axis=1)
             vol_ts = dh.ATR(asset_df, vol_win).fillna(method='bfill')
             df_list.append(vol_ts)
         vol_df = pd.concat(df_list, axis=1, join='outer').fillna(method='ffill')
@@ -23,22 +22,20 @@ def get_asset_vols(df, product_list, vol_win, vol_type='atr'):
     elif vol_type == 'pct_chg':
         df_list = []
         for asset in product_list:
-            vol_ts = df[(asset, 'c1', 'close')].pct_change().rolling(vol_win).std()
+            vol_ts = df[(asset, 'close')].pct_change().rolling(vol_win).std()
             df_list.append(vol_ts)
         vol_df = pd.concat(df_list, axis=1, join='outer').fillna(method='ffill')
         vol_df.columns = product_list
     elif vol_type == 'lret':
         df_list = []
         for asset in product_list:
-            vol_ts = (np.log(df[(asset, 'c1', 'close')])
-                      - np.log(df[(asset, 'c1', 'close')].shift(1))).rolling(vol_win).std()
-            #vol_ts = vol_ts * df[(asset, 'c1', 'close')]
+            vol_ts = (np.log(df[(asset, 'close')])
+                      - np.log(df[(asset, 'close')].shift(1))).rolling(vol_win).std()
             df_list.append(vol_ts)
         vol_df = pd.concat(df_list, axis=1, join='outer').fillna(method='ffill')
         vol_df.columns = product_list
     elif vol_type == 'close':
-        vol_df = df.loc[:, df.columns.get_level_values(0).isin(product_list)
-                           & (df.columns.get_level_values(1) == 'c1')].droplevel([0, 1], axis=1)
+        vol_df = df.loc[:, df.columns.get_level_values(0).isin(product_list)].droplevel([1], axis=1)
         vol_df = vol_df[product_list]
     return vol_df
 
@@ -56,117 +53,116 @@ def default_signal_gen(df, input_args):
     xs_params = input_args.get('xs_params', {})
     exp_mean = input_args.get('exp_mean', False)
     pos_func, pos_args, _ = input_args.get('pos_map', (None, {}, ''))
+    asset_list = [product[:-2] for product in product_list]
+    xdf = df.copy(deep=True)
 
-    xdf = df.loc[:, df.columns.get_level_values(0).isin(product_list)].copy(deep=True)
-
-    for asset in product_list:
+    for asset in asset_list:
         if shift_mode == 1:
-            xdf[(asset, 'factor', 'ryield')] = (np.log(xdf[(asset, 'c1', 'close')] - xdf[(asset, 'c1', 'shift')])
-                                                - np.log(xdf[(asset, 'c2', 'close')] - xdf[(asset, 'c2', 'shift')])) \
-                                               / (xdf[(asset, 'c2', 'mth')] - xdf[(asset, 'c1', 'mth')]) * 12.0
+            xdf[(asset, 'ryield')] = (np.log(xdf[(asset+'c1', 'close')] - xdf[(asset+'c1', 'shift')])
+                                               - np.log(xdf[(asset+'c2', 'close')] - xdf[(asset+'c2', 'shift')])) \
+                                               / (xdf[(asset+'c2', 'expiry')] - xdf[(asset+'c1', 'expiry')]).dt.days*365
         elif shift_mode == 2:
-            xdf[(asset, 'factor', 'ryield')] = \
-                (np.log(xdf[(asset, 'c1', 'close')]) - np.log(xdf[(asset, 'c2', 'close')]) \
-                 - xdf[(asset, 'c1', 'shift')] + xdf[(asset, 'c2', 'shift')]) \
-                / (xdf[(asset, 'c2', 'mth')] - xdf[(asset, 'c1', 'mth')]) * 12.0
+            xdf[(asset, 'ryield')] = \
+                (np.log(xdf[(asset+'c1', 'close')]) - np.log(xdf[(asset+'c2', 'close')]) \
+                 - xdf[(asset+'c1', 'shift')] + xdf[(asset+'c2', 'shift')]) \
+                / (xdf[(asset+'c2', 'expiry')] - xdf[(asset+'c1', 'expiry')]).dt.days*365
         else:
-            xdf[(asset, 'factor', 'ryield')] = \
-                (np.log(xdf[(asset, 'c1', 'close')]) - np.log(xdf[(asset, 'c2', 'close')])) \
-                / (xdf[(asset, 'c2', 'mth')] - xdf[(asset, 'c1', 'mth')]) * 12.0
+            xdf[(asset, 'ryield')] = \
+                (np.log(xdf[(asset+'c1', 'close')]) - np.log(xdf[(asset+'c2', 'close')])) \
+                / (xdf[(asset+'c2', 'expiry')] - xdf[(asset+'c1', 'expiry')]).dt.days*365
         for i in [1, 2]:
             if shift_mode == 1:
-                xdf[(asset, f'c{i}', 'lr')] = \
-                    np.log(xdf[(asset, f'c{i}', 'close')] - xdf[(asset, f'c{i}', 'shift')]) \
-                    - np.log(xdf[(asset, f'c{i}', 'close')].shift(1) - xdf[(asset, f'c{i}', 'shift')])
+                xdf[(asset+f'c{i}', 'lr')] = \
+                    np.log(xdf[(asset+f'c{i}', 'close')] - xdf[(asset+f'c{i}', 'shift')]) \
+                    - np.log(xdf[(asset+f'c{i}', 'close')].shift(1) - xdf[(asset+f'c{i}', 'shift')])
             else:
-                xdf[(asset, f'c{i}', 'lr')] = \
-                    np.log(xdf[(asset, f'c{i}', 'close')]) - np.log(xdf[(asset, f'c{i}', 'close')].shift(1))
-        xdf[(asset, 'factor', 'basmom')] = xdf[(asset, 'c1', 'lr')].rolling(win).sum() - xdf[
-            (asset, 'c2', 'lr')].rolling(win).sum()
-        xdf[(asset, 'factor', 'mom')] = xdf[(asset, 'c1', 'lr')].rolling(win).sum()
-        xdf[(asset, 'factor', 'upratio')] = xdf[(asset, 'c1', 'lr')].rolling(win).agg(
+                xdf[(asset+f'c{i}', 'lr')] = \
+                    np.log(xdf[(asset+f'c{i}', 'close')]) - np.log(xdf[(asset+f'c{i}', 'close')].shift(1))
+        xdf[(asset, 'basmom')] = xdf[(asset+'c1', 'lr')].rolling(win).sum() - \
+                                          xdf[(asset+'c2', 'lr')].rolling(win).sum()
+        xdf[(asset, 'mom')] = xdf[(asset+'c1', 'lr')].rolling(win).sum()
+        xdf[(asset, 'upratio')] = xdf[(asset+'c1', 'lr')].rolling(win).agg(
             lambda x: (x > 0).sum() / win) - 0.5
-        xdf[(asset, 'factor', 'skew')] = xdf[(asset, 'c1', 'lr')].rolling(win).skew()
-        xdf[(asset, 'factor', 'kurt')] = xdf[(asset, 'c1', 'lr')].rolling(win).kurt()
+        xdf[(asset, 'skew')] = xdf[(asset+'c1', 'lr')].rolling(win).skew()
+        xdf[(asset, 'kurt')] = xdf[(asset+'c1', 'lr')].rolling(win).kurt()
         if 'rsi' in signal_name:
-            asset_df = xdf.loc[:, (xdf.columns.get_level_values(0) == asset)
-                                  & (xdf.columns.get_level_values(1) == 'c1')].droplevel([0, 1], axis=1)
+            asset_df = xdf.loc[:, (xdf.columns.get_level_values(0) == asset+'c1')].droplevel([0], axis=1)
             rsi_output = dh.RSI_F(asset_df, win)
-            xdf[(asset, 'factor', 'rsi')] = rsi_output['RSI' + str(win)].values
+            xdf[(asset, 'rsi')] = rsi_output['RSI' + str(win)].values
         elif 'hlbrk' in signal_name:
-            chmax = xdf[(asset, 'c1', 'high')].rolling(win).max()
-            chmin = xdf[(asset, 'c1', 'low')].rolling(win).min()
+            chmax = xdf[(asset+'c1', 'high')].rolling(win).max()
+            chmin = xdf[(asset+'c1', 'low')].rolling(win).min()
             chavg = (chmax + chmin) / 2.0
-            xdf[(asset, 'factor', 'hlbrk')] = (xdf[(asset, 'c1', 'close')] - chavg) / (chmax - chmin)
+            xdf[(asset, 'hlbrk')] = (xdf[(asset+'c1', 'close')] - chavg) / (chmax - chmin)
         elif 'macd' in signal_name:
-            ema1 = xdf[(asset, 'c1', 'close')].ewm(span=win).mean()
-            ema2 = xdf[(asset, 'c1', 'close')].ewm(span=int(win * params[0])).mean()
-            mstd = xdf[(asset, 'c1', 'close')].diff().ewm(span=int(win * params[1]), min_periods=10).std()
-            xdf[(asset, 'factor', 'macd')] = (ema1 - ema2) / mstd
+            ema1 = xdf[(asset+'c1', 'close')].ewm(span=win).mean()
+            ema2 = xdf[(asset+'c1', 'close')].ewm(span=int(win * params[0])).mean()
+            mstd = xdf[(asset+'c1', 'close')].diff().ewm(span=int(win * params[1]), min_periods=10).std()
+            xdf[(asset, 'macd')] = (ema1 - ema2) / mstd
         elif signal_name == 'mixmom':
-            xdf[(asset, 'factor', 'mixmom')] = (xdf[(asset, 'factor', 'mom')] * xdf[
-                (asset, 'factor', 'upratio')]).apply(
-                lambda x: x if x > 0 else 0) * xdf[(asset, 'factor', 'mom')].apply(lambda x: misc.sign(x))
+            xdf[(asset, 'mixmom')] = (xdf[(asset, 'mom')] * xdf[
+                (asset, 'upratio')]).apply(
+                lambda x: x if x > 0 else 0) * xdf[(asset, 'mom')].apply(lambda x: misc.sign(x))
 
         data_field = signal_name.replace(rev_char, '')
         if 'dff' == data_field[-3:]:
             ref_field = data_field[:-3]
-            xdf[(asset, 'factor', data_field)] = xdf[(asset, 'factor', ref_field)].diff(periods=ma_win)
+            xdf[(asset, data_field)] = xdf[(asset, ref_field)].diff(periods=ma_win)
         elif 'sma' == signal_name[-3:]:
             ref_field = data_field[:-3]
-            xdf[(asset, 'factor', data_field)] = xdf[(asset, 'factor', ref_field)].rolling(ma_win).mean()
+            xdf[(asset, data_field)] = xdf[(asset, ref_field)].rolling(ma_win).mean()
         elif 'ema' == data_field[-3:]:
             ref_field = data_field[:-3]
-            xdf[(asset, 'factor', data_field)] = xdf[(asset, 'factor', ref_field)].ewm(span=ma_win,
-                                                                                       min_periods=ma_win//2,
-                                                                                       ignore_na=True).mean()
+            xdf[(asset, data_field)] = xdf[(asset, ref_field)].ewm(span=ma_win,
+                                                                   min_periods=ma_win//2,
+                                                                   ignore_na=True).mean()
         elif 'xma' == data_field[-3:]:
             ref_field = data_field[:-3]
-            xdf[(asset, 'factor', data_field)] = xdf[(asset, 'factor', ref_field)] \
-                                                 - xdf[(asset, 'factor', ref_field)].rolling(ma_win).mean()
+            xdf[(asset, data_field)] = xdf[(asset, ref_field)] \
+                                       - xdf[(asset, ref_field)].rolling(ma_win).mean()
         elif 'xea' == data_field[-3:]:
             ref_field = data_field[:-3]
-            xdf[(asset, 'factor', data_field)] = xdf[(asset, 'factor', ref_field)] \
-                                                 - xdf[(asset, 'factor', ref_field)].ewm(span=ma_win,
-                                                                                         min_periods=ma_win//2,
-                                                                                         ignore_na=True).mean()
+            xdf[(asset, data_field)] = xdf[(asset, ref_field)] \
+                                       - xdf[(asset, ref_field)].ewm(span=ma_win,
+                                                                     min_periods=ma_win//2,
+                                                                     ignore_na=True).mean()
         elif 'nma' == data_field[-3:]:
             ref_field = data_field[:-3]
-            xdf[(asset, 'factor', data_field)] = xdf[(asset, 'factor', ref_field)] \
-                                                 / xdf[(asset, 'factor', ref_field)].rolling(ma_win).std()
+            xdf[(asset, data_field)] = xdf[(asset, ref_field)] \
+                                       / xdf[(asset, ref_field)].rolling(ma_win).std()
         elif 'nmb' == data_field[-3:]:
             ref_field = data_field[:-3]
-            xdf[(asset, 'factor', data_field)] = xdf[(asset, 'factor', ref_field)] \
-                                                 / ((xdf[(asset, 'factor', ref_field)]**2).rolling(ma_win).mean()**0.5)
+            xdf[(asset, data_field)] = xdf[(asset, ref_field)] \
+                                       / ((xdf[(asset, ref_field)]**2).rolling(ma_win).mean()**0.5)
         elif 'elv' == data_field[-3:]:
             ref_field = data_field[:-3]
-            xdf[(asset, 'factor', data_field)] = (xdf[(asset, 'factor', ref_field)]
-                                                  - xdf[(asset, 'factor', ref_field)].ewm(span=ma_win,
-                                                                                          min_periods=ma_win//2,
-                                                                                          ignore_na=True).mean()) \
-                                                 / (xdf[(asset, 'factor', ref_field)].ewm(span=ma_win,
-                                                                                          min_periods=ma_win//2,
-                                                                                          ignore_na=True).std())
+            xdf[(asset, data_field)] = (xdf[(asset, ref_field)]
+                                       - xdf[(asset, ref_field)].ewm(span=ma_win,
+                                                                     min_periods=ma_win//2,
+                                                                     ignore_na=True).mean()) \
+                                       / (xdf[(asset, ref_field)].ewm(span=ma_win,
+                                                                      min_periods=ma_win//2,
+                                                                      ignore_na=True).std())
         elif 'zlv' == data_field[-3:]:
             ref_field = data_field[:-3]
-            xdf[(asset, 'factor', data_field)] = (xdf[(asset, 'factor', ref_field)]
-                                                  - xdf[(asset, 'factor', ref_field)].rolling(ma_win).mean()) \
-                                                 / xdf[(asset, 'factor', ref_field)].rolling(ma_win).std()
+            xdf[(asset, data_field)] = (xdf[(asset, ref_field)]
+                                        - xdf[(asset, ref_field)].rolling(ma_win).mean()) \
+                                        / xdf[(asset, ref_field)].rolling(ma_win).std()
         elif 'qtl' == data_field[-3:]:
             ref_field = data_field[:-3]
-            xdf[(asset, 'factor', data_field)] = 2.0 * (
-                    rolling_percentile(xdf[(asset, 'factor', ref_field)], win=ma_win) - 0.5)
+            xdf[(asset, data_field)] = 2.0 * (
+                    rolling_percentile(xdf[(asset, ref_field)], win=ma_win) - 0.5)
 
         if pos_func:
-            xdf[(asset, 'factor', data_field)] = xdf[(asset, 'factor', data_field)].apply(
+            xdf[(asset, data_field)] = xdf[(asset, data_field)].apply(
                 lambda x: pos_func(x, **pos_args))
         if rev_char in signal_name:
-            xdf[(asset, 'factor', 'signal')] = - xdf[(asset, 'factor', data_field)]
+            xdf[(asset, 'signal')] = - xdf[(asset, data_field)]
         else:
-            xdf[(asset, 'factor', 'signal')] = xdf[(asset, 'factor', data_field)]
+            xdf[(asset, 'signal')] = xdf[(asset, data_field)]
 
-    adf = xdf.loc[:, xdf.columns.get_level_values(1) == 'factor'].droplevel([1], axis=1)
-    sig_df = adf.loc[:, adf.columns.get_level_values(1) == 'signal'].droplevel([1], axis=1)
+    sig_df = xdf.loc[:, xdf.columns.get_level_values(1) == 'signal'].droplevel([1], axis=1)
+    sig_df.columns = [asset+'c1' for asset in sig_df.columns]
     # print("before averaging", sig_df)
     prod_count = sig_df.apply(lambda x: x.count() if x.count() > 0 else np.nan, axis=1)
 
@@ -216,13 +212,13 @@ def generate_holding_from_signal(signal_df, vol_df, risk_scaling=1.0, asset_scal
         scaling = risk_scaling / prod_count
     else:
         scaling = pd.Series(risk_scaling/nasset, index=prod_count.index)
-    pos_df = sig_df.mul(scaling, axis='rows').shift(1).fillna(0.0)
+    pos_df = sig_df.mul(scaling, axis='rows').shift(1)
     return pos_df
 
 
-def get_px_chg(df, exec_mode='open', chg_type='px', contract='c1'):
-    xdf = df.loc[:, df.columns.get_level_values(1) == contract].droplevel([1], axis=1)
-    for asset in df.columns.get_level_values(0).unique():
+def get_px_chg(df, exec_mode='open', chg_type='px'):
+    xdf = df.copy()
+    for asset in xdf.columns.get_level_values(0).unique():
         if exec_mode == 'close':
             xdf[(asset, 'traded_price')] = xdf[(asset, exec_mode)]
         else:
@@ -264,13 +260,12 @@ def run_backtest(df, input_args):
     holding = generate_holding_from_signal(signal_df, vol_df,
                                            risk_scaling=total_risk,
                                            asset_scaling=asset_scaling)
-
     if shift_mode == 2:
-        df_pxchg = get_px_chg(df, exec_mode=exec_mode, chg_type='pct', contract='c1')
+        df_pxchg = get_px_chg(df, exec_mode=exec_mode, chg_type='pct')
     else:
-        df_pxchg = get_px_chg(df, exec_mode=exec_mode, chg_type='px', contract='c1')
-    #df_pxchg = df_pxchg.reindex(index=holding.index)
+        df_pxchg = get_px_chg(df, exec_mode=exec_mode, chg_type='px')
 
+    #df_pxchg = df_pxchg.reindex(index=holding.index)
     bt_metrics = MetricsBase(holdings=holding[product_list],
                              returns=df_pxchg[product_list], shift_holdings=1)
     return bt_metrics
@@ -300,7 +295,7 @@ def load_fun_data(tday=datetime.date.today()):
     try:
         spot_df = pd.read_parquet("C:/dev/data/spot_df_%s.parquet" % tday.strftime("%Y%m%d"))
     except:
-        spot_df = get_fun_data(start_date=pd.Timestamp('20060101'), run_date=tday)
+        spot_df = get_fun_data(start_date=datetime.date(2006, 1, 1), run_date=tday)
         try:
             spot_df.to_parquet("C:/dev/data/spot_df_%s.parquet" % tday.strftime("%Y%m%d"))
             print("spot_df data saved")

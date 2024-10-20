@@ -105,6 +105,8 @@ factors_by_asset = {
                       'rb', 'hc', 'i', 'SM', 'SF', 'v', 'FG', 'SA'],
     'metal_inv_lyoy_hlr': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si',
                            'rb', 'hc', 'i', 'SM', 'SF', 'v', 'FG', 'SA'],
+    "exch_wnt_hlr": ['ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
+    "exch_wnt_yoy_hlr": ['ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
 }
 
 factors_by_spread = {
@@ -136,7 +138,8 @@ factors_by_func = {
 
 
 def get_fun_data(start_date, run_date):
-    e_date = day_shift(run_date, '5b', CHN_Holidays)
+    run_date = pd.to_datetime(run_date)
+    e_date = day_shift(run_date.date(), '5b', CHN_Holidays)
     cdate_rng = pd.date_range(start=start_date, end=e_date, freq='D', name='date')
     data_df = load_codes_from_edb(index_map.keys(), source='ifind', column_name='index_code')
     data_df = data_df.rename(columns=index_map)
@@ -162,7 +165,7 @@ def get_fun_data(start_date, run_date):
     for nb in [2, 3, 4]:
         fef_nb = nearby('FEF', n=nb,
                         start_date=max(start_date, datetime.date(2016, 7, 1)),
-                        end_date=run_date,
+                        end_date=run_date.date(),
                         roll_rule='-3b', roll_col='settle',
                         freq='d', shift_mode=2)
         fef_nb.loc[fef_nb['settle'] <= 0, 'settle'] = np.nan
