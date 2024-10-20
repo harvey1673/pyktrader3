@@ -145,11 +145,12 @@ def calc_perf_by_tenors(ts, tenors, metric='sharpe', business_days_per_year=244)
 
 class MetricsBase(object):
     def __init__(self, holdings, returns, portfolio_obj=None, limits=None,
-                 shift_holdings=0, backtest=True, hols='CHN',
+                 shift_holdings=0, backtest=True, hols='CHN', freq='D',
                  cost_dict={}, trd_cost=0,
                  business_days_per_year=tstool.PNL_BDAYS):
         holdings.index = pd.to_datetime(holdings.index)
         returns.index = pd.to_datetime(returns.index)
+        self.freq = freq
         self.raw_holdings, self.raw_returns = holdings, returns
         self.holdings, self.returns = self._align_holding_returns(holdings, returns, limits, backtest)
         self.holdings = self.holdings.shift(shift_holdings)
@@ -229,7 +230,8 @@ class MetricsBase(object):
         df = copy.deepcopy(pnl_df)
         if isinstance(df, pd.Series):
             df = df.to_frame(name='total')
-        
+        if 'm' in self.freq:
+            df = df.resample('D').sum()
         result = {}
         result['sharpe'] = df.mean(skipna=True, axis=0)/df.std(skipna=True, axis=0)
 
@@ -260,8 +262,10 @@ class MetricsBase(object):
     def _calc_pnl(self, holdings):
         if holdings is None:
             holdings = self.holdings
-        return holdings.multiply(self.returns) - \
-            holdings.diff().abs().multiply(pd.Series(self.cost_dict))
+        pnl = holdings.multiply(self.returns) - holdings.diff().abs().multiply(pd.Series(self.cost_dict))
+        if self.freq != 'D':
+            pnl = pnl.resample('D').sum()
+        return pnl
 
     def _lagged_asset_pnl(self, holdings=None, shift=0):
         if holdings is None:
@@ -295,8 +299,16 @@ class MetricsBase(object):
     def _calculate_pnl_stats(self, holdings, shift=0, use_log_returns=False, tenors=True, perf_metrics=['sharpe']):
         asset_pnl = self._lagged_asset_pnl(holdings=holdings, shift=shift)
         portfolio_pnl = self._lagged_portfolio_pnl(holdings=holdings, shift=shift)
-        pnl_per_trade = 100 * 100 * asset_pnl.mean(axis=0) / self.holdings.diff().abs().mean()
-        turnover = 100 * self.holdings.diff().abs().mean() / self.holdings.abs().mean()
+        if 'm' in self.freq:
+            asset_pnl = asset_pnl.resample('D').sum()
+            portfolio_pnl = portfolio_pnl.resample('D').sum()
+            pnl_per_trade = 100 * 100 * asset_pnl.mean(axis=0) / \
+                            self.holdings.diff().abs().resample("D").sum().mean()
+            turnover = 100 * self.holdings.diff().abs().resample("D").sum().mean() / \
+                       self.holdings.abs().resample("D").mean().mean()
+        else:
+            pnl_per_trade = 100 * 100 * asset_pnl.mean(axis=0) / self.holdings.diff().abs().mean()
+            turnover = 100 * self.holdings.diff().abs().mean() / self.holdings.abs().mean()
         asset_sharpe_stats = asset_pnl.apply(lambda x: self._calculate_sharpe(x, tenors=tenors), axis=0)
         pnl_stats = {
             'asset_pnl': asset_pnl,
@@ -377,7 +389,8 @@ class MetricsBase(object):
     def _business_day_in_month(self, date_index):
         new_index = [None] * len(date_index)
         new_col = [None] * len(date_index)
-        for t, t_date in enumerate(date_index):            
+        for t, t_date in enumerate(date_index):
+            t_date = t_date.date()
             bd = workdays.networkdays(get_first_day_of_month(t_date), t_date, self.holidays)
             if bd <= 4:
                 new_col[t] = '1-4'

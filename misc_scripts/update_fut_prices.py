@@ -22,14 +22,17 @@ All_MARKETS = [
 def refresh_saved_fut_prices(
         run_date,
         nb_cont=2,
+        last_update=None,
         data_file="C:/dev/data/cnc_fut_prices_latest.pkl"
 ):
     period_setup = {
         'n305': [303, 307],
         'n310': [307, 311],
+        'n315': [311, 315],
         'n450': [450, 455],
         'a1505': [1503, 1507],
         'a1510': [1507, 1511],
+        'a1515': [1511, 1515],
         'a1635': [1635, 1640],
         'p1935': [1935, 1940],
         'p2055': [2055, 2058],
@@ -55,7 +58,15 @@ def refresh_saved_fut_prices(
             cont = f"{asset}c{nb}"
             if cont in daily_dict:
                 curr_ddf = daily_dict[cont]
-                start_d = curr_ddf.index[-1]
+                curr_ddf = curr_ddf.dropna(subset=['close', 'contract'])
+                if 'a1505' not in curr_ddf.columns:
+                    curr_ddf = pd.DataFrame()
+                    start_d = start_date
+                else:
+                    start_d = curr_ddf.index[-1]
+                    if last_update:
+                        start_d = pd.Timestamp(last_update)
+                        curr_ddf = curr_ddf[curr_ddf.index <= start_d]
             else:
                 curr_ddf = pd.DataFrame()
                 start_d = start_date
@@ -73,7 +84,10 @@ def refresh_saved_fut_prices(
             ddf.index = pd.to_datetime(ddf.index)
             if cont in min_dict:
                 curr_mdf = min_dict[cont]
-                start_d = curr_mdf.index[-1]
+                if last_update:
+                    last_update = pd.Timestamp(last_update)
+                    curr_mdf = curr_mdf[curr_mdf['date'] <= last_update]
+                start_d = curr_mdf['date'][-1]
             else:
                 curr_mdf = pd.DataFrame()
                 start_d = start_date
@@ -88,13 +102,27 @@ def refresh_saved_fut_prices(
             mdf['contmth'] = mdf.apply(lambda x: inst2contmth(x['contract'], x['date']), axis=1)
             mdf = mdf.set_index('datetime')
             mdf.index = pd.to_datetime(mdf.index)
+            if len(curr_mdf) > 0:
+                cutoff = curr_mdf['date'][-1]
+                new_shift = mdf[mdf['date'] == cutoff]['shift'][0]
+                if new_shift != 0:
+                    for col in ['open', 'high', 'low', 'close']:
+                        if col in curr_mdf.columns:
+                            curr_mdf[col] = curr_mdf[col]/np.exp(new_shift)
+                    curr_mdf['shift'] = curr_mdf['shift'] + new_shift
+                mdf = mdf[mdf.index > cutoff]
+            curr_mdf = pd.concat([curr_mdf, mdf])
+            curr_mdf = curr_mdf[~curr_mdf.index.duplicated(keep='last')]
+            min_dict[cont] = curr_mdf
+
             df_list = []
+            mdf = curr_mdf[(curr_mdf['date'] >= ddf.index[0]) & (curr_mdf['date'] <= ddf.index[-1])]
             for px_name in period_setup:
                 twap = mdf[mdf['min_id'].isin(range(*period_setup[px_name]))][['date', 'close']].groupby('date').mean()
                 twap.columns = [px_name]
                 df_list.append(twap)
             twap_df = pd.concat(df_list, axis=1)
-            twap_df.index = pd.to_datetime(twap_df)
+            twap_df.index = pd.to_datetime(twap_df.index)
             ddf = pd.concat([ddf, twap_df], axis=1)
 
             if len(curr_ddf) > 0:
@@ -109,18 +137,7 @@ def refresh_saved_fut_prices(
             curr_ddf = pd.concat([curr_ddf, ddf])
             curr_ddf = curr_ddf[~curr_ddf.index.duplicated(keep='last')]
             daily_dict[cont] = curr_ddf
-            if len(curr_mdf) > 0:
-                cutoff = curr_mdf.index[-1]
-                new_shift = mdf.loc[cutoff, 'shift']
-                if new_shift != 0:
-                    for col in ['open', 'high', 'low', 'close']:
-                        if col in curr_mdf.columns:
-                            curr_mdf[col] = curr_mdf[col]/np.exp(new_shift)
-                    curr_mdf['shift'] = curr_mdf['shift'] + new_shift
-                mdf = mdf[mdf.index > cutoff]
-            curr_mdf = pd.concat([curr_mdf, mdf])
-            curr_mdf = curr_mdf[~curr_mdf.index.duplicated(keep='last')]
-            min_dict[cont] = curr_mdf
+
         with open(data_file, 'wb') as f:
             df_dict['daily_data'] = daily_dict
             df_dict['min_data'] = min_dict
@@ -128,49 +145,15 @@ def refresh_saved_fut_prices(
     return df_dict
 
 
-def update_saved_fut_prices(
-        columns_to_drop=[],
-        period_setup={
-            'n305': [303, 307],
-            'n310': [307, 311],
-            'n450': [450, 455],
-            'a1505': [1503, 1507],
-            'a1510': [1507, 1511],
-            'a1635': [1635, 1640],
-            'p1935': [1935, 1940],
-            'p2055': [2055, 2058],
-        },
-        data_file="C:/dev/data/cnc_fut_prices_latest.pkl"
-):
-    try:
-        with open(data_file, 'rb') as handle:
-            df_dict = pickle.load(handle)
-    except:
-        df_dict = {}
-    if ('min_data' not in df_dict) or ('daily_data' not in df_dict):
-        return
-
-    for cont in df_dict['daily_data']:
-        ddf = df_dict['daily_data'][cont]
-        mdf = df_dict['min_data'][cont]
-        df_list = []
-        for px_name in period_setup:
-            twap = mdf[mdf['min_id'].isin(range(*period_setup[px_name]))][['date', 'close']].groupby('date').mean()
-            twap.columns=[px_name]
-            df_list.append(twap)
-        twap_df = pd.concat(df_list, axis=1)
-        ddf = ddf.drop(columns=columns_to_drop)
-        df_dict['daily_data'][cont] = pd.concat([ddf, twap_df], axis=1)
-    with open(data_file, 'wb') as f:
-        pickle.dump(df_dict, f)
-
-
 def load_saved_fut(tday=datetime.date.today(),
                    freq='d',
-                   data_file="C:/dev/data/cnc_fut_prices_latest.pkl"):
+                   data_file="C:/dev/data/cnc_fut_prices_latest.pkl", cont='c1'):
     tday = pd.to_datetime(tday)
     try:
-        df = pd.read_parquet(f"C:/dev/data/fut_{freq}_%s.parquet" % tday.strftime("%Y%m%d"))
+        if freq == 'd':
+            df = pd.read_parquet(f"C:/dev/data/fut_{freq}_%s.parquet" % tday.strftime("%Y%m%d"))
+        else:
+            df = pd.read_parquet(f"C:/dev/data/fut_{freq}_{cont}_%s.parquet" % tday.strftime("%Y%m%d"))
     except:
         try:
             with open(data_file, 'rb') as handle:
@@ -178,7 +161,6 @@ def load_saved_fut(tday=datetime.date.today(),
         except:
             print("load data error")
             return None
-        df_list = []
         if freq == 'd':
             field = 'daily_data'
             df_dict['min_data'] = None
@@ -191,7 +173,7 @@ def load_saved_fut(tday=datetime.date.today(),
             print("processing %s" % key)
             tdf = df_dict[field][key]
             if field == 'min_data':
-                if key[-2:] == 'c2':
+                if key[-2:] != cont:
                     print("skip %s" % key)
                     df_dict[field][key] = None
                     continue
@@ -206,7 +188,10 @@ def load_saved_fut(tday=datetime.date.today(),
             del tdf
             gc.collect()
         try:
-            df.to_parquet(f"C:/dev/data/fut_{freq}_%s.parquet" % tday.strftime("%Y%m%d"))
+            if freq == 'd':
+                df.to_parquet(f"C:/dev/data/fut_{freq}_%s.parquet" % tday.strftime("%Y%m%d"))
+            else:
+                df.to_parquet(f"C:/dev/data/fut_{freq}_{cont}_%s.parquet" % tday.strftime("%Y%m%d"))
             print(f"fut_{freq} data saved")
         except:
             print(f"fut_{freq} save error")
@@ -222,7 +207,8 @@ if __name__ == "__main__":
         tday = now.date()
         if (~is_workday(tday, 'CHN')) or (now.time() < datetime.time(17, 00, 0)):
             tday = day_shift(tday, '-1b', CHN_Holidays)
-    # refresh_saved_fut_prices(run_date=tday)
-    # _ = load_saved_fut(tday=tday, freq='d')
-    _ = load_saved_fut(tday=tday, freq='m')
+    refresh_saved_fut_prices(run_date=tday)
+    _ = load_saved_fut(tday=tday, freq='d')
+    _ = load_saved_fut(tday=tday, freq='m', cont='c1')
+    _ = load_saved_fut(tday=tday, freq='m', cont='c2')
 

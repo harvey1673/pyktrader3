@@ -1,6 +1,7 @@
 import sys
 import json
 import copy
+import logging
 from sqlalchemy import create_engine
 from pycmqlib3.utility.dbaccess import dbconfig, mysql_replace_into, connect, load_factor_data
 from pycmqlib3.utility import dataseries
@@ -83,6 +84,7 @@ pos_chg_notification = ['PTSIM1_FACTPORT1_hot',]
 
 
 def update_factor_db(xdf, field, config, dbtable='fut_fact_data', flavor='mysql', start_date=None, end_date=None):
+    logging.info('updating factor_name=%s' % field)
     df = xdf.copy()
     for key in config:
         df[key] = config[key]
@@ -119,7 +121,7 @@ def update_factor_data(product_list, scenarios, start_date, end_date,
                        shift_mode=1):
     col_list = ['open', 'high', 'low', 'close', 'volume', 'openInterest', 'contract', 'shift']
     update_start = day_shift(end_date, '-20b', CHN_Holidays)
-
+    logging.info('updating factor data for %s ...' % roll_rule)
     fact_config = {}
     fact_config['roll_label'] = roll_rule
     if roll_rule == 'CAL_30b':
@@ -134,7 +136,7 @@ def update_factor_data(product_list, scenarios, start_date, end_date,
     vol_win = 20
     for idx, asset in enumerate(product_list):
         sdate = max(sim_start_dict.get(asset, start_date), start_date)
-        print("loading mkt = %s, end_date=%s, shift_mode=%s" % (asset, end_date, shift_mode))
+        logging.info("loading mkt = %s, end_date=%s, shift_mode=%s" % (asset, end_date, shift_mode))
         if roll_rule == 'CAL_30b':
             roll = '-30b'
             if asset in eq_fut_mkts:
@@ -309,8 +311,9 @@ def update_factor_data(product_list, scenarios, start_date, end_date,
 
             if fact_name not in updated_factors:
                 update_factor_db(xdf, fact_name, fact_config, start_date=update_start, end_date=end_date, flavor=flavor)
-                updated_factors.append(fact_name)                
+                updated_factors.append(fact_name)
 
+    logging.info("updating factor for hc-rb spread...")
     if ('rb' in product_list) and ('hc' in product_list):
         rb_df = data_cache['rb']
         hc_df = data_cache['hc']
@@ -326,6 +329,7 @@ def update_factor_data(product_list, scenarios, start_date, end_date,
             update_factor_db(hc_df, fact_name, fact_config, start_date=update_start, end_date=end_date, flavor=flavor)
 
     #beta neutral
+    logging.info("updating factor for beta neutral ratio ...")
     beta_win = 122
     asset_pairs = [('rb', 'i'), ('hc', 'i'), ('j', 'i')]
     fact_config['exch'] = 'xasset'
@@ -352,9 +356,9 @@ def update_factor_data(product_list, scenarios, start_date, end_date,
 
     #leader-lagger
     fact_name = 'leadlag_d_mid'
+    logging.info(f"updating factor for {fact_name}...")
     leadlag_products = ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SM', 'SF', 'UR', 'cu', 'al', 'zn', 'sn', 'ss', 'ni',
                         'l', 'pp', 'v', 'TA', 'sc', 'eb', 'eg', 'y', 'p', 'OI']
-
     for sector in leadlag_port_d:
         for asset in leadlag_port_d[sector]['lead']:
             if asset not in data_cache:
@@ -379,7 +383,84 @@ def update_factor_data(product_list, scenarios, start_date, end_date,
                 update_factor_db(asset_df, fact_name, fact_config, start_date=update_start, end_date=end_date,
                                  flavor=flavor)
 
+    idx = pd.bdate_range(start=start_date, end=end_date, freq='C', holidays=CHN_Holidays)
+    fact_name = 'leadlag2_mr_d'
+    logging.info(f"updating factor for {fact_name}...")
+    win = 10
+    signal_cap = [-3, 3]
+    vol_win = 60
+    param_rng = [1, 2, 1]
+    signal_func = 'ma'
+    mr_dict = {
+        'hc': 'rb',
+        'i': 'rb',
+        'j': 'rb',
+        'pp': 'l',
+        'SA': 'FG',
+        'sc': 'lu',
+        # 'lu': 'fu',
+        'm': 'y',
+    }
+    leadlag_dict = {
+        'lu': 'sc',
+        'RM': 'm',
+        'a': 'm',
+        'cs': 'c',
+        'eb': 'sc',
+        # 'fu': 'sc',
+        'bu': 'sc',
+        'bc': 'cu',
+        'MA': 'pp',
+        'ni': 'ss',
+        'al': 'ao',
+    }
+    ll_assets = [
+        'rb', 'hc', 'i', 'j', 'al', 'FG', 'SA',
+        'l', 'pp', 'lu', 'sc', 'm', 'RM', 'y',
+        'c', 'cs', 'MA', 'a', 'eb', 'bu',
+        'cu', 'ss', 'ni', 'bc', 'ao', #'fu',
+    ]
+    for asset in ll_assets:
+        if asset not in data_cache:
+            xdf = dataseries.nearby(asset, 1, start_date=sdate, end_date=end_date, shift_mode=shift_mode,
+                                    freq='d', roll_name='hot',
+                                    config_loc="C:/dev/wtdev/config/").set_index('date')
+            data_cache[asset] = xdf
+    signal_df = pd.DataFrame(index=idx, columns=ll_assets)
+    for asset in mr_dict:
+        tmp_df = pd.concat([
+            data_cache[asset]['close'].to_frame(asset),
+            data_cache[mr_dict[asset]]['close'].to_frame(mr_dict[asset])], axis=1).dropna(how='all').ffill()
+        tmp_df = tmp_df.pct_change()
+        tmp_df = tmp_df.rolling(win).sum()
+        feature_ts = tmp_df[asset] - tmp_df[mr_dict[asset]]
+        signal_ts = calc_conv_signal(feature_ts, signal_func=signal_func, param_rng=param_rng, signal_cap=signal_cap,
+                                     vol_win=vol_win)
+        signal_ts = signal_ts.ewm(3).mean()
+        signal_df[asset] = signal_ts
+    signal_df2 = pd.DataFrame(index=idx, columns=ll_assets)
+    for asset in leadlag_dict:
+        tmp_df = pd.concat([
+            data_cache[asset]['close'].to_frame(asset),
+            data_cache[leadlag_dict[asset]]['close'].to_frame(leadlag_dict[asset])], axis=1).dropna(how='all')
+        tmp_df = tmp_df.pct_change()
+        tmp_df = tmp_df.rolling(win).sum()
+        feature_ts = tmp_df[leadlag_dict[asset]] - tmp_df[asset]
+        signal_ts = calc_conv_signal(feature_ts, signal_func=signal_func, param_rng=param_rng, signal_cap=signal_cap,
+                                     vol_win=vol_win)
+        signal_ts = signal_ts.ewm(3).mean()
+        signal_df2[asset] = signal_ts
+    signal_df = signal_df.fillna(0) + signal_df2.fillna(0)
+    for asset in signal_df.columns:
+        fact_config['product_code'] = asset
+        fact_config['exch'] = prod2exch(asset)
+        asset_df = data_cache[asset].copy()
+        asset_df[fact_name] = signal_df[asset]
+        update_factor_db(asset_df, fact_name, fact_config, start_date=update_start, end_date=end_date,
+                         flavor=flavor)
+
     fact_name = 'pair_mr_1y'
+    logging.info(f"updating factor for {fact_name}...")
     pair_mr_products = ['cu', 'al', 'zn', 'ss', 'ni', 'rb', 'hc', 'SM', 'SF', 'FG', 'v',
                         'y', 'OI', 'm', 'RM', 'l', 'MA', 'pp', 'TA', 'eg']
     pair_list = [
@@ -392,7 +473,6 @@ def update_factor_data(product_list, scenarios, start_date, end_date,
     vol_win = 120
     signal_cap = None
     signal_func = 'zscore_adj'
-    idx = pd.bdate_range(start=start_date, end=end_date, freq='C', holidays=CHN_Holidays)
     signal_df = pd.DataFrame(0, index=idx, columns=pair_mr_products)
     for asset in pair_mr_products:
         if asset not in data_cache:

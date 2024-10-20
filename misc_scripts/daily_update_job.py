@@ -94,9 +94,11 @@ scenarios_test = [
 
 mixed_metal_mkts = ['rb', 'hc', 'i', 'j', 'jm', 'ru', 'FG', 'cu', 'al', 'zn', 'ni']
 commod_mkts = [
-    'rb', 'hc', 'i', 'j', 'jm', 'ru', 'FG', 'SM', 'SF', 'cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ss',
-    'l', 'pp', 'v', 'TA', 'sc', 'lu', 'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'CF', 'jd', 'lh',
-    'AP', 'CJ', 'UR', 'eb', 'eg', 'pg', 'T', 'PK', 'PF', 'MA', 'SR', 'cs', 'TF', 'fu',
+    'rb', 'hc', 'i', 'j', 'jm', 'ru', 'FG', 'SA', 'SM', 'SF', 'UR',
+    'cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ss',
+    'l', 'pp', 'v', 'TA', 'sc', 'lu', 'eb', 'eg', 'pg', 'MA', 'fu', 'PF',
+    'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'cs', 'ao',
+    'CF', 'jd', 'lh', 'AP', 'CJ', 'PK', 'SR', 'TF', 'T',
 ]
 
 scenarios_all = [
@@ -256,7 +258,8 @@ def run_update(tday=datetime.date.today()):
     try:
         with open(filename, 'r') as f:
             job_status = json.load(f)
-    except:
+    except Exception as e:
+        logging.warning(f"an error ocurred: {e}")
         job_status = {}
 
     logging.info('updating historical future data...')
@@ -273,9 +276,9 @@ def run_update(tday=datetime.date.today()):
                 else:
                     job_status[update_field][exch] = False
                     logging.warning(f'{exch} has some issue {missing}')
-        except:
+        except Exception as e:
             job_status[update_field][exch] = False
-            logging.warning("exch = %s EOD price is FAILED to update" % (exch))
+            logging.warning(f"exch = {exch} EOD price is FAILED to update, an error ocurred: {e}")
         save_status(filename, job_status)
     #update_hist_fut_daily(sdate, tday, exchanges = ["DCE", "CFFEX", "CZCE", "SHFE", "INE", ], flavor = 'mysql', fut_table = 'fut_daily')
     logging.info('updating factor data calculation...')
@@ -291,9 +294,9 @@ def run_update(tday=datetime.date.today()):
                                        freq=freq,
                                        shift_mode=shift_mode)
                 job_status[update_field][fact_key] = True
-        except:
+        except Exception as e:
             job_status[update_field][fact_key] = False
-            logging.warning("fact_key = %s is FAILED to update" % (fact_key))
+            logging.warning(f"fact_key = {fact_key} is FAILED to update, an error ocurred: {e}")
         save_status(filename, job_status)
     update_field = 'data_check'
     if update_field not in job_status:
@@ -323,9 +326,9 @@ def run_update(tday=datetime.date.today()):
             if not job_status.get(update_field, False):
                 update_func(sdate, tday, flavor='mysql')
                 job_status[update_field] = True
-        except:
+        except Exception as e:
             job_status[update_field] = False
-            logging.warning("update_field = %s is FAILED to update" % (update_field))
+            logging.warning(f"update_field = {update_field} is FAILED to update, an error ocurred: {e}")
         save_status(filename, job_status)
 
     update_field = 'email_notify'
