@@ -97,7 +97,7 @@ commod_mkts = [
     'rb', 'hc', 'i', 'j', 'jm', 'ru', 'FG', 'SA', 'SM', 'SF', 'UR',
     'cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ss',
     'l', 'pp', 'v', 'TA', 'sc', 'lu', 'eb', 'eg', 'pg', 'MA', 'fu', 'PF',
-    'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'cs', 'ao',
+    'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'cs', 'ao', 'bu',
     'CF', 'jd', 'lh', 'AP', 'CJ', 'PK', 'SR', 'TF', 'T',
 ]
 
@@ -317,10 +317,12 @@ def run_update(tday=datetime.date.today()):
     save_status(filename, job_status)
 
     sdate = day_shift(tday, '-1b', CHN_Holidays)
-    for (update_field, update_func, ref_text) in [('exch_receipt', update_exch_receipt_table, 'exch receipt'),
-                                                  ('exch_inv', update_exch_inv_table, 'exchange warrant'),
-                                                  ('spot_daily', update_spot_daily, 'spot data'),
-                                                  ('rank_table', update_rank_table, 'top future broker ranking table')]:
+    for (update_field, update_func, ref_text) in [
+        #('exch_receipt', update_exch_receipt_table, 'exch receipt'),
+        #('exch_inv', update_exch_inv_table, 'exchange warrant'),
+        ('spot_daily', update_spot_daily, 'spot data'),
+        #('rank_table', update_rank_table, 'top future broker ranking table')
+    ]:
         try:
             logging.info('updating historical %s ...' % ref_text)
             if not job_status.get(update_field, False):

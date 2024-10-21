@@ -127,10 +127,10 @@ factors_by_beta_neutral = {
 
 factors_by_func = {
     "long_hol_2b": {
-        'assets': ['rb', 'hc', 'i', 'j', 'jm', 'FG',
+        'assets': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SA',
                    'cu', 'zn', 'sn', 'ni', 'ss', 'al',
                    'l', 'pp', 'v', 'TA', 'sc', 'eb', 'eg', 'lu',
-                   'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'CF'],
+                   'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'cs', 'CF'],
         'func': cnc_hol_seasonality,
         'args': {'pre_days': 10, 'post_days': 5}
     }
@@ -223,17 +223,16 @@ def load_hist_fut_prices(markets, start_date, end_date,
             xdf['expiry'] = xdf['contract'].map(contract_expiry)
             xdf['contmth'] = xdf.apply(lambda x: inst2contmth(x['contract'], x['date']), axis=1)
             xdf['mth'] = xdf['contmth'].apply(lambda x: x // 100 * 12 + x % 100)
-            xdf['product'] = prodcode
-            xdf['code'] = f'c{nb + 1}'
+            xdf['product'] = f"{prodcode}c{nb + 1}"
             data_df = pd.concat([data_df, xdf])
     if 'm' in freq:
         index_col = 'datetime'
     else:
         index_col = 'date'
-    df = pd.pivot_table(data_df.reset_index(), index=index_col, columns=['product', 'code'], values=list(fields),
+    df = pd.pivot_table(data_df.reset_index(), index=index_col, columns='product', values=list(fields),
                         aggfunc='last')
-    df = df.reorder_levels([1, 2, 0], axis=1).sort_index(axis=1)
-    df.columns.rename(['product', 'code', 'field', ], inplace=True)
+    df = df.reorder_levels([1, 0], axis=1).sort_index(axis=1)
+    df.columns.rename(['product', 'field'], inplace=True)
     df.index = pd.to_datetime(df.index)
     return df
 
@@ -249,10 +248,11 @@ def update_fun_factor(run_date=datetime.date.today(), flavor='mysql'):
 
     fact_config = {'roll_label': 'hot', 'freq': 'd1', 'serial_key': 0, 'serial_no': 0}
     vol_win = 20
-    for asset in price_df.columns.get_level_values(0).unique():
+    for asset_cont in price_df.columns.get_level_values(0).unique():
+        asset = asset_cont[:-2]
         local_df = pd.DataFrame(index=price_df.index)
-        local_df['close'] = price_df[(asset, 'c1', 'close')]
-        local_df['pct_chg'] = price_df[(asset, 'c1', 'close')].pct_change()
+        local_df['close'] = price_df[(asset+'c1', 'close')]
+        local_df['pct_chg'] = price_df[(asset+'c1', 'close')].pct_change()
         local_df['pct_vol'] = local_df['close'] * local_df['pct_chg'].rolling(vol_win).std()
         local_df.index.name = 'date'
         fact_config['product_code'] = asset
