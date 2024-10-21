@@ -525,15 +525,15 @@ def hc_rb_diff(df, input_args):
     shift_mode = input_args['shift_mode']
     product_list = input_args['product_list']
     win = input_args['win']
-    xdf = df.loc[:, df.columns.get_level_values(0).isin(['rb', 'hc'])].copy(deep=True)
+    xdf = df.loc[:, df.columns.get_level_values(0).isin(['rbc1', 'hcc1'])].copy(deep=True)
     xdf = xdf['2014-07-01':]
     if shift_mode == 2:
-        xdf[('rb', 'c1', 'px_chg')] = np.log(xdf[('rb', 'c1', 'close')]).diff()
-        xdf[('hc', 'c1', 'px_chg')] = np.log(xdf[('hc', 'c1', 'close')]).diff()
+        xdf[('rbc1', 'px_chg')] = np.log(xdf[('rbc1', 'close')]).diff()
+        xdf[('hcc1', 'px_chg')] = np.log(xdf[('hcc1', 'close')]).diff()
     else:
-        xdf[('rb', 'c1', 'px_chg')] = xdf[('rb', 'c1', 'close')].diff()
-        xdf[('hc', 'c1', 'px_chg')] = xdf[('hc', 'c1', 'close')].diff()
-    hc_rb_diff = xdf[('hc', 'c1', 'px_chg')] - xdf[('rb', 'c1', 'px_chg')]
+        xdf[('rbc1', 'px_chg')] = xdf[('rbc1', 'close')].diff()
+        xdf[('hcc1', 'px_chg')] = xdf[('hcc1', 'close')].diff()
+    hc_rb_diff = xdf[('hcc1', 'px_chg')] - xdf[('rbc1', 'px_chg')]
     signal_ts = hc_rb_diff.ewm(span=win).mean() / hc_rb_diff.ewm(span=win).std()
     signal_df = pd.concat([signal_ts] * len(product_list), axis=1)
     signal_df.columns = product_list
@@ -546,19 +546,19 @@ def leader_lagger(df, input_args):
     signal_cap = input_args.get('signal_cap', None)
     conv_func = input_args.get('conv_func', 'qtl')
     signal_df = pd.DataFrame(index=df.index, columns=product_list)
-    for asset in product_list:
+    for prod in product_list:
         for sector in leadlag_port:
-            if asset in leadlag_port[sector]['lag']:
+            if prod[:-2] in leadlag_port[sector]['lag']:
                 signal_list = []
                 for lead_prod in leadlag_port[sector]['lead']:
-                    feature_ts = df[(lead_prod, 'c1', 'close')]
+                    feature_ts = df[(lead_prod+'c1', 'close')]
                     signal_ts = calc_conv_signal(feature_ts.dropna(), conv_func,
                                                  leadlag_port[sector]['param_rng'], signal_cap=signal_cap)
                     signal_list.append(signal_ts)
-                signal_df[asset] = pd.concat(signal_list, axis=1).mean(axis=1)
+                signal_df[prod] = pd.concat(signal_list, axis=1).mean(axis=1)
                 break
             else:
-                signal_df[asset] = 0
+                signal_df[prod] = 0
     return signal_df
 
 
@@ -574,14 +574,14 @@ def mr_pair(df, input_args):
     for (asset_a, asset_b) in mr_pair_list:
         pair_assets = [asset_a, asset_b]
         sig_df = pd.DataFrame(index=df.index, columns=pair_assets)
-        feature_ts = np.log(df[(asset_a, 'c1', 'close')]) - np.log(df[(asset_b, 'c1', 'close')])
+        feature_ts = np.log(df[(asset_a+'c1', 'close')]) - np.log(df[(asset_b+'c1', 'close')])
         sig_ts = calc_conv_signal(feature_ts, signal_func=conv_func, param_rng=param_rng, signal_cap=signal_cap,
                                   vol_win=vol_win)
         sig_ts = sig_ts.apply(lambda x: np.sign(x) * min(abs(x), 1.25) ** 4).ewm(1).mean()
         if not bullish:
             sig_ts = -sig_ts
-        sig_df[asset_a] = sig_ts
-        sig_df[asset_b] = -sig_ts
+        sig_df[asset_a+'c1'] = sig_ts
+        sig_df[asset_b+'c1'] = -sig_ts
         signal_df = signal_df + sig_df.reindex_like(signal_df).fillna(0)
     return signal_df
 
@@ -596,8 +596,8 @@ def long_break(df, input_args):
                                   ((x.date() - day_shift(x.date(), f'-{days}b', CHN_Holidays)).days >= gaps)
                              else 0)
     signal_ts = pd.Series(signal_ts, index=df.index)
-    for asset in product_list:
-        signal_df[asset] = signal_ts
+    for prod in product_list:
+        signal_df[prod] = signal_ts
     return signal_df
 
 
@@ -609,16 +609,15 @@ def get_funda_signal_from_store(spot_df, signal_name, price_df=None,
         signal_repo[signal_name][1]
     if asset and feature in feature_key_map:
         asset_feature = feature_key_map[feature].get(asset, f'{asset}_{feature}')
-
         if feature == 'metal_pbc':
             if price_df is None:
                 print("ERROR: no future price is passed for metal_pbc")
                 return pd.Series()
             spot_df['date'] = pd.to_datetime(spot_df.index)
-            spot_df[f'{asset}_c1'] = price_df[(asset, 'c1', 'close')] / np.exp(price_df[(asset, 'c1', 'shift')])
-            spot_df[f'{asset}_expiry'] = pd.to_datetime(price_df[(asset, 'c1', 'expiry')])
+            spot_df[f'{asset}_c1'] = price_df[(asset+'c1', 'close')] / np.exp(price_df[(asset+'c1', 'shift')])
+            spot_df[f'{asset}_expiry'] = pd.to_datetime(price_df[(asset+'c1', 'expiry')])
             if asset == 'i':
-                spot_df['io_ctd_spot'] = io_ctd_basis(spot_df, price_df[('i', 'c1', 'expiry')])
+                spot_df['io_ctd_spot'] = io_ctd_basis(spot_df, price_df[('i'+'c1', 'expiry')])
             spot_df[f'{asset}_phybasis'] = (np.log(spot_df[asset_feature]) - np.log(spot_df[f'{asset}_c1'])) / \
                                            (spot_df[f'{asset}_expiry'] - spot_df['date']).dt.days * 365
             asset_feature = f'{asset}_phybasis'
@@ -626,7 +625,7 @@ def get_funda_signal_from_store(spot_df, signal_name, price_df=None,
             if price_df is None:
                 print("ERROR: no future price is passed for metal_pbc")
                 return pd.Series()
-            spot_df[f'{asset}_px'] = price_df[(asset, 'c1', 'close')]
+            spot_df[f'{asset}_px'] = price_df[(asset+'c1', 'close')]
             asset_feature = f'{asset}_px'
         if feature in param_rng_by_feature_key:
             param_rng = param_rng_by_feature_key[feature].get(asset, param_rng)
@@ -651,9 +650,10 @@ def custom_funda_signal(df, input_args):
     # get signal by asset
     if signal_type == 0:
         signal_df = pd.DataFrame(index=pd.date_range(start=df.index[0], end=df.index[-1], freq='D'))
-        for asset in product_list:
-            signal_df[asset] = get_funda_signal_from_store(funda_df, signal_name,
-                                                           price_df=df, signal_cap=signal_cap, asset=asset)
+        for product in product_list:
+            asset = product[:-2]
+            signal_df[product] = get_funda_signal_from_store(funda_df, signal_name,
+                                                             price_df=df, signal_cap=signal_cap, asset=asset)
         signal_df = signal_df.reindex(index=pd.date_range(start=df.index[0], end=df.index[-1], freq='D'))\
             .ffill().reindex(index=df.index)
         if "xdemean" in signal_name:
@@ -672,33 +672,33 @@ def custom_funda_signal(df, input_args):
                                 end=df.index[-1],
                                 freq='D'
                                 )).ffill().reindex(index=df.index)
-        if set(product_list) == set(['rb', 'hc']):
-            signal_df['rb'] = signal_ts
-            signal_df['hc'] = -signal_ts
+        if set(product_list) == set(['rbc1', 'hcc1']):
+            signal_df['rbc1'] = signal_ts
+            signal_df['hcc1'] = -signal_ts
 
     # beta neutral last asseet is index asset
     elif signal_type == 4:
         signal_ts = get_funda_signal_from_store(funda_df, signal_name, price_df=df, signal_cap=signal_cap)
         signal_df = pd.DataFrame(0, index=df.index, columns=product_list)
-        index_asset = product_list[-1]
+        index_product = product_list[-1]
         beta_win = 122
-        for trade_asset in product_list[:-1]:
-            asset_df = df[[(index_asset, 'c1', 'close'),
-                           (trade_asset, 'c1', 'close')]].copy(deep=True).droplevel([1, 2], axis=1)
-            asset_df = asset_df.dropna(subset=[trade_asset]).ffill()
+        for trade_product in product_list[:-1]:
+            asset_df = df[[(index_product, 'close'),
+                           (trade_product, 'close')]].copy(deep=True).droplevel([1], axis=1)
+            asset_df = asset_df.dropna(subset=[trade_product]).ffill()
             for asset in asset_df:
                 asset_df[f'{asset}_pct'] = asset_df[asset].pct_change().fillna(0)
                 asset_df[f'{asset}_pct_ma'] = asset_df[f'{asset}_pct'].rolling(5).mean()
                 asset_df[f'{asset}_vol'] = asset_df[f'{asset}_pct'].rolling(vol_win).std()
-            asset_df['beta'] = asset_df[f'{index_asset}_pct_ma'].rolling(beta_win).cov(
-                asset_df[f'{trade_asset}_pct_ma']) / asset_df[f'{index_asset}_pct_ma'].rolling(beta_win).var()
+            asset_df['beta'] = asset_df[f'{index_product}_pct_ma'].rolling(beta_win).cov(
+                asset_df[f'{trade_product}_pct_ma']) / asset_df[f'{index_product}_pct_ma'].rolling(beta_win).var()
             asset_df['signal'] = signal_ts
             asset_df = asset_df.ffill()
-            asset_df['pct'] = asset_df[f'{trade_asset}_pct'] - asset_df['beta'] * asset_df[f'{index_asset}_pct']
+            asset_df['pct'] = asset_df[f'{trade_product}_pct'] - asset_df['beta'] * asset_df[f'{index_product}_pct']
             asset_df['vol'] = asset_df['pct'].rolling(vol_win).std()
             asset_df = asset_df.reindex(index=signal_ts.index).ffill()
-            signal_df[trade_asset] += signal_ts * asset_df[f'{trade_asset}_vol']/asset_df['vol']
-            signal_df[index_asset] -= signal_ts * asset_df['beta'] * asset_df[f'{index_asset}_vol'] / asset_df['vol']
+            signal_df[trade_product] += signal_ts * asset_df[f'{trade_product}_vol']/asset_df['vol']
+            signal_df[index_product] -= signal_ts * asset_df['beta'] * asset_df[f'{index_product}_vol'] / asset_df['vol']
 
     # apply same signal to all assets
     else:
@@ -716,11 +716,11 @@ def custom_funda_signal(df, input_args):
         signal_df = signal_buffer(signal_df, buffer_size)
     elif 'bfc' in last_func:
         buffer_size = float(last_func[3:])
-        asset_list = signal_df.columns
-        df_px = df.loc[:, df.columns.get_level_values(0).isin(asset_list)].droplevel([1, 2], axis=1).ffill()
+        prod_list = signal_df.columns
+        df_px = df.loc[:, df.columns.get_level_values(0).isin(prod_list)].droplevel([1], axis=1).ffill()
         vol_df = df_px.pct_change().rolling(20).std()
         signal_df = signal_cost_optim(signal_df, buffer_size, vol_df,
-                                      cost_dict=simple_cost(asset_list, trd_cost=2e-4),
+                                      cost_dict=simple_cost(prod_list, trd_cost=2e-4),
                                       turnover_dict={},
                                       power=3)
     return signal_df
