@@ -328,11 +328,15 @@ class MetricsBase(object):
         holdings, trade_prices = self._align_holding_returns(self.holdings, trade_prices, limits=None, backtest=True)
         holdings, close_prices = self._align_holding_returns(self.holdings, close_prices, limits=None, backtest=True)
         if mode == 'ret':
-            pnl_df = self.holdings.shift(1).multiply(close_prices.pct_change().fillna(0))
+            pnl_df = self.holdings.multiply(close_prices.pct_change().fillna(0))
+            pnl_df -= self.holdings.diff().abs().multiply(pd.Series(self.cost_dict))
             pnl_df += (self.holdings - self.holdings.shift(1).fillna(0)).multiply(close_prices/trade_prices-1)
         else:
-            pnl_df = self.holdings.shift(1).multiply(close_prices.diff().fillna(0))
+            pnl_df = self.holdings.multiply(close_prices.diff().fillna(0))
+            pnl_df -= self.holdings.diff().abs().multiply(pd.Series(self.cost_dict))
             pnl_df += (self.holdings - self.holdings.shift(1).fillna(0)).multiply(close_prices - trade_prices)
+        if self.freq != 'D':
+            pnl_df = pnl_df.resample('D').sum()
         return pnl_df
 
     def asset_returns(self):

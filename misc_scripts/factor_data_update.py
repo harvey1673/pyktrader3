@@ -2,6 +2,8 @@ import sys
 import json
 import copy
 import logging
+
+import numpy as np
 from sqlalchemy import create_engine
 from pycmqlib3.utility.dbaccess import dbconfig, mysql_replace_into, connect, load_factor_data
 from pycmqlib3.utility import dataseries
@@ -10,7 +12,7 @@ from pycmqlib3.utility.misc import inst2product, prod2exch, inst2contmth, day_sh
 import pycmqlib3.analytics.data_handler as dh
 from pycmqlib3.analytics.tstool import *
 from pycmqlib3.strategy.strat_util import generate_strat_position
-from pycmqlib3.strategy.signal_repo import leadlag_port_d, signal_buffer_config
+from pycmqlib3.strategy.signal_repo import signal_buffer_config
 
 ferrous_products_mkts = ['rb', 'hc', 'i', 'j', 'jm']
 ferrous_mixed_mkts = ['ru', 'FG', 'ZC', 'SM', "SF"]
@@ -57,30 +59,24 @@ sim_start_dict = {'c': datetime.date(2011, 1, 1), 'm': datetime.date(2011, 1, 1)
 field_list = ['open', 'high', 'low', 'close', 'volume', 'openInterest', 'contract', 'shift']
 
 port_pos_config = {
-    # 'PT_FACTPORT3_CAL_30b': {
-    #     'pos_loc': 'C:/dev/pyktrader3/process/paper_sim1',
-    #     'roll': 'CAL_30b',
-    #     'shift_mode': 1,
-    #     'strat_list': [
-    #         ('PTSIM1_FACTPORT1.json', 10000, 's1'),
-    #         ('PTSIM1_HRCRB.json', 20000, 's1'),
-    #         ('PTSIM1_LL.json', 6000, 's1'),
-    #     ], },
-    'PTSIM1_FACTPORT1_hot': {
-        'pos_loc': 'C:/dev/pyktrader3/process/paper_sim1',
+    'PTSIM1_hot': {
+        'pos_loc': 'C:/dev/pyktrader3/process/pt_test1',
         'roll': 'hot',
         'shift_mode': 2,
         'strat_list': [
-            ('PTSIM1_FACTPORT1.json', 10000, 'd1'),
-            ('PTSIM1_HRCRB.json', 20000, 'd1'),
-            ('PTSIM1_LL.json', 6000, 'd1'),
-            ('PTSIM1_FUNFER.json', 8000, 'd1'),
-            ('PTSIM1_FUNBASE.json', 8000, 'd1'),
-            ('PTSIM1_FUNMTL.json', 8000, 'd1'),
+            ('PTSIM1_FACTPORT.json', 25000, 'd1'),
+            ('PTSIM1_EXCHWNT.json', 12000, 'd1'),
+            ('PTSIM1_HRCRB.json', 12000, 'd1'),
+            ('PTSIM1_LL.json', 12000, 'd1'),
+            ('PTSIM1_LL2MR.json', 12000, 'd1'),
+            ('PTSIM1_MR1Y.json', 12000, 'd1'),
+            ('PTSIM1_FUNFER.json', 20000, 'd1'),
+            ('PTSIM1_FUNBASE.json', 20000, 'd1'),
+            ('PTSIM1_FUNMTL.json', 5000, 'd1'),
         ], },
 }
 
-pos_chg_notification = ['PTSIM1_FACTPORT1_hot',]
+pos_chg_notification = ['PTSIM1_hot']
 
 
 def update_factor_db(xdf, field, config, dbtable='fut_fact_data', flavor='mysql', start_date=None, end_date=None):
@@ -92,9 +88,9 @@ def update_factor_db(xdf, field, config, dbtable='fut_fact_data', flavor='mysql'
     df['fact_val'] = df[field]
     df = df.dropna().reset_index()
     if start_date:
-        df = df[df['date'] >= start_date]
+        df = df[pd.to_datetime(df['date']) >= pd.to_datetime(start_date)]
     if end_date:
-        df = df[df['date'] <= end_date]
+        df = df[pd.to_datetime(df['date']) <= pd.to_datetime(end_date)]
     df['date'] = pd.to_datetime(df['date'])
     df = df[['product_code', 'roll_label', 'exch', 'fact_name', 'freq', 'date', 'serial_no', 'serial_key', 'fact_val']]
     #insert_df_to_sql(df, dbtable, is_replace=True)
@@ -356,6 +352,32 @@ def update_factor_data(product_list, scenarios, start_date, end_date,
 
     #leader-lagger
     fact_name = 'leadlag_d_mid'
+    leadlag_port_d = {
+        'ferrous': {'lead': ['hc', 'rb', ],
+                    'lag': [],
+                    'param_rng': [40, 80, 2],
+                    },
+        'constrs': {'lead': ['hc', 'rb', 'v'],
+                    'lag': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'v', 'SM', 'SF'],
+                    'param_rng': [40, 80, 2],
+                    },
+        'petchem': {'lead': ['v'],
+                    'lag': ['TA', 'MA', 'pp', 'eg', 'eb', 'PF'],
+                    'param_rng': [40, 80, 2],
+                    },
+        'base': {'lead': ['al'],
+                'lag': ['al', 'ni', 'sn', 'ss'],  # 'zn', 'cu'
+                'param_rng': [40, 80, 2],
+                },
+        'oil': {'lead': ['sc'],
+                'lag': ['sc', 'pg', 'bu', ],
+                'param_rng': [20, 30, 2],
+                },
+        'bean': {'lead': ['b'],
+                'lag': ['p', 'y', 'OI', ],
+                'param_rng': [60, 80, 2],
+                },
+    }    
     logging.info(f"updating factor for {fact_name}...")
     leadlag_products = ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SM', 'SF', 'UR', 'cu', 'al', 'zn', 'sn', 'ss', 'ni',
                         'l', 'pp', 'v', 'TA', 'sc', 'eb', 'eg', 'y', 'p', 'OI']
@@ -600,9 +622,13 @@ def update_port_position(run_date=datetime.date.today()):
             for prod in strat_target:
                 if prod not in target_pos:
                     target_pos[prod] = 0
-                target_pos[prod] += strat_target[prod]
+                if ~np.isnan(strat_target[prod]):
+                    target_pos[prod] += strat_target[prod]
 
         for prodcode in target_pos:
+            if np.isnan(target_pos[prodcode]):
+                target_pos[prodcode] = 0
+                continue
             if prodcode in ['UR', 'SM']:
                 target_pos[prodcode] = int((target_pos[prodcode] / 4 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 4
             else:
@@ -636,6 +662,6 @@ if __name__ == "__main__":
     else:
         now = datetime.datetime.now()
         tday = now.date()
-        if (~is_workday(tday, 'CHN')) or (now.time() < datetime.time(14, 59, 0)):
+        if (not is_workday(tday, 'CHN')) or (now.time() < datetime.time(14, 59, 0)):
             tday = day_shift(tday, '-1b', CHN_Holidays)
     res = update_port_position(run_date=tday)

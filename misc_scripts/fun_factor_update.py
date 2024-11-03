@@ -1,49 +1,22 @@
 import sys
+sys.path.append("C:/dev/pyktrader3")
+sys.path.append("C:/dev/wtpy")
 
 import pandas as pd
-
-from pycmqlib3.strategy.signal_repo import get_funda_signal_from_store
+import logging
+from pycmqlib3.strategy.signal_repo import get_funda_signal_from_store, BROAD_MKTS, IND_MKTS, AGS_MKTS
 from pycmqlib3.utility.spot_idx_map import index_map, process_spot_df
 from pycmqlib3.utility.dbaccess import load_codes_from_edb, load_factor_data
 from pycmqlib3.utility import dataseries
+from pycmqlib3.utility.backtest import sim_start_dict
 from pycmqlib3.utility.misc import day_shift, CHN_Holidays, prod2exch, is_workday, \
     nearby, contract_expiry, inst2contmth
 from pycmqlib3.analytics.tstool import *
 from misc_scripts.factor_data_update import update_factor_db
 
 
-def long_hol_signal(spot_df, days=2, gaps=7):
-    idx = pd.date_range(spot_df.index[0])
-    sig_ts = spot_df.index.map(lambda x:
-                               1 if ((day_shift(x.date(), f'{days}b', CHN_Holidays) - x.date()).days >= gaps) or
-                                    ((x.date() - day_shift(x.date(), f'-{days}b', CHN_Holidays)).days >= gaps)
-                               else 0)
-    sig_ts = pd.Series(sig_ts, index=spot_df.index)
-    return sig_ts
-
-
-def cnc_hol_seasonality(df_pxchg, pre_days=2, post_days=2):
-    sig_ts = pd.Series(0, index=pd.date_range(start=df_pxchg.index[0],
-                                              end=df_pxchg.index[-1] + pd.DateOffset(days=30), freq='B'))
-    for yr in range(sig_ts.index[0].year, sig_ts.index[-1].year+1):
-        cny_date = pd.Timestamp(lunardate.LunarDate(yr, 1, 1).toSolarDate())
-        for (evt_d, befdays, aftdays) in \
-                [(cny_date, pre_days, post_days),
-                 (pd.Timestamp(datetime.date(yr, 5, 1)), 2, 2),
-                 (pd.Timestamp(datetime.date(yr, 10, 1)), 2, 2)]:
-            flag = pd.Series(sig_ts.index < evt_d, index=sig_ts.index) & pd.Series(
-                sig_ts.index.map(lambda d: pd.Timestamp(day_shift(d.date(), f'{befdays}b', CHN_Holidays)) > evt_d),
-                index=sig_ts.index)
-            sig_ts[flag] = 1
-            flag = pd.Series(sig_ts.index >= evt_d, index=sig_ts.index) & pd.Series(
-                sig_ts.index.map(lambda d: pd.Timestamp(day_shift(d.date(), f'-{aftdays}b', CHN_Holidays)) < evt_d),
-                index=sig_ts.index)
-            sig_ts[flag] = 1
-    sig_ts = sig_ts.reindex(index=df_pxchg.index).ffill()
-    return sig_ts
-
-
 single_factors = {
+    'hc_rb_diff_20': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'v', 'au', 'ag', 'cu', 'al', 'zn', 'sn', 'ss', 'ni'],
     'steel_margin_lvl_fast': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
     'strip_hsec_lvl_mid': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
     'io_removal_lvl': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
@@ -82,6 +55,16 @@ single_factors = {
 }
 
 factors_by_asset = {
+    "ryield_ema": BROAD_MKTS,
+    "ryield_st_zsa": BROAD_MKTS,
+    "ryield_lt_zsa": BROAD_MKTS,
+    "basmom20_ema": BROAD_MKTS,
+    "basmom60_ema": BROAD_MKTS,
+    "basmom120_ema": BROAD_MKTS,
+    "mom_hlr_st": BROAD_MKTS,
+    "mom_hlr_lt": BROAD_MKTS,
+    "mom_momma20": BROAD_MKTS,
+    "mom_momma240": BROAD_MKTS,
     'lme_base_ts_mds': ['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
     'lme_base_ts_hlr': ['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
     'lme_futbasis_ma': ['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
@@ -95,14 +78,14 @@ factors_by_asset = {
     'base_cifprem_1y_zs': ['cu', 'al', 'zn', 'ni'],
     'base_phybasmom_1m_zs': ['cu', 'al', 'zn', 'ni', 'pb', 'sn'],
     'base_phybasmom_1y_zs': ['cu', 'al', 'zn', 'ni', 'pb', 'sn'],
-    'metal_pbc_ema': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si',
-                      'rb', 'hc', 'i', 'SM', 'SF', 'v', 'FG', 'SA'],
+    'metal_pbc_ema': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', #'si', 'SM', 'SF', 
+                      'rb', 'hc', 'i', 'v', 'FG', 'SA', "au", "ag"],
     'metal_mom_hlrhys': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si',
                          'rb', 'hc', 'i', 'j', 'jm', 'SM', 'SF', 'v', 'FG', 'SA'],
     # 'metal_pbc_ema_xdemean': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si',
     #                           'rb', 'hc', 'i', 'j', 'jm', 'SM', 'SF', 'v', 'FG', 'SA'],
-    'metal_inv_hlr': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si',
-                      'rb', 'hc', 'i', 'SM', 'SF', 'v', 'FG', 'SA'],
+    'metal_inv_hlr': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', # 'SM', 'SF', 'si', 
+                      'rb', 'hc', 'i', 'v', 'FG', 'SA'],
     'metal_inv_lyoy_hlr': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si',
                            'rb', 'hc', 'i', 'SM', 'SF', 'v', 'FG', 'SA'],
     "exch_wnt_hlr": ['ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
@@ -125,14 +108,267 @@ factors_by_beta_neutral = {
     'fef_basmom5_spd_qtl': [('rb', 'i', 1), ('hc', 'i', 1)],
 }
 
+
+leadlag_port_d = {
+    'ferrous': {'lead': ['hc', 'rb', ],
+                'lag': [],
+                'param_rng': [40, 80, 2],
+                },
+    'constrs': {'lead': ['hc', 'rb', 'v'],
+                'lag': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'v', 'SM', 'SF'],
+                'param_rng': [40, 80, 2],
+                },
+    'petchem': {'lead': ['v'],
+                'lag': ['TA', 'MA', 'pp', 'eg', 'eb', 'PF'],
+                'param_rng': [40, 80, 2],
+                },
+    'base': {'lead': ['al'],
+             'lag': ['al', 'ni', 'sn', 'ss'],  # 'zn', 'cu'
+             'param_rng': [40, 80, 2],
+             },
+    'oil': {'lead': ['sc'],
+            'lag': ['sc', 'pg', 'bu', ],
+            'param_rng': [20, 30, 2],
+            },
+    'bean': {'lead': ['b'],
+             'lag': ['p', 'y', 'OI', ],
+             'param_rng': [60, 80, 2],
+             },
+}
+
+mr_commod_pairs = [
+    ('cu', 'zn'), ('cu', 'al'), ('al', 'zn'), ('ni', 'ss'),
+    ('rb', 'hc'), ('SM', 'SF'), ('FG', 'v'),
+    ('y', 'OI'), ('m', 'RM'),
+    ('l', 'MA'), ('pp', 'MA'), ('TA', 'MA'), ('TA', 'eg')
+]
+
+
+# def long_hol_signal(spot_df, days=2, gaps=7):
+#     idx = pd.date_range(spot_df.index[0])
+#     sig_ts = spot_df.index.map(lambda x:
+#                                1 if ((day_shift(x.date(), f'{days}b', CHN_Holidays) - x.date()).days >= gaps) or
+#                                     ((x.date() - day_shift(x.date(), f'-{days}b', CHN_Holidays)).days >= gaps)
+#                                else 0)
+#     sig_ts = pd.Series(sig_ts, index=spot_df.index)
+#     return sig_ts
+# def long_break(df, input_args):
+#     product_list = input_args['product_list']
+#     gaps = input_args.get('gaps', 7)
+#     days = input_args.get('days', 2)
+#     signal_df = pd.DataFrame(index=df.index, columns=product_list)
+#     signal_ts = df.index.map(lambda x:
+#                              1 if ((day_shift(x.date(), f'{days}b', CHN_Holidays) - x.date()).days >= gaps) or
+#                                   ((x.date() - day_shift(x.date(), f'-{days}b', CHN_Holidays)).days >= gaps)
+#                              else 0)
+#     signal_ts = pd.Series(signal_ts, index=df.index)
+#     for prod in product_list:
+#         signal_df[prod] = signal_ts
+#     return signal_df
+
+
+def cnc_hol_seasonality(price_df, spot_df, product_list, pre_days=2, post_days=2):
+    sig_ts = pd.Series(0, index=pd.date_range(start=price_df.index[0],
+                                              end=price_df.index[-1] + pd.DateOffset(days=30), freq='B'))
+    for yr in range(sig_ts.index[0].year, sig_ts.index[-1].year+1):
+        cny_date = pd.Timestamp(lunardate.LunarDate(yr, 1, 1).toSolarDate())
+        for (evt_d, befdays, aftdays) in \
+                [(cny_date, pre_days, post_days),
+                 (pd.Timestamp(datetime.date(yr, 5, 1)), 2, 2),
+                 (pd.Timestamp(datetime.date(yr, 10, 1)), 2, 2)]:
+            flag = pd.Series(sig_ts.index < evt_d, index=sig_ts.index) & pd.Series(
+                sig_ts.index.map(lambda d: pd.Timestamp(day_shift(d.date(), f'{befdays}b', CHN_Holidays)) > evt_d),
+                index=sig_ts.index)
+            sig_ts[flag] = 1
+            flag = pd.Series(sig_ts.index >= evt_d, index=sig_ts.index) & pd.Series(
+                sig_ts.index.map(lambda d: pd.Timestamp(day_shift(d.date(), f'-{aftdays}b', CHN_Holidays)) < evt_d),
+                index=sig_ts.index)
+            sig_ts[flag] = 1
+    sig_ts = sig_ts.reindex(index=price_df.index).ffill()
+    signal_df = pd.concat([sig_ts] * len(product_list), axis=1)
+    signal_df.columns = product_list    
+    return signal_df
+
+
+def hc_rb_diff(price_df, spot_df, product_list, win=20, shift_mode=2):
+    xdf = price_df.loc[:, price_df.columns.get_level_values(0).isin(['rbc1', 'hcc1'])].copy(deep=True)
+    xdf = xdf['2014-07-01':]
+    if shift_mode == 2:
+        xdf[('rbc1', 'px_chg')] = np.log(xdf[('rbc1', 'close')]).diff()
+        xdf[('hcc1', 'px_chg')] = np.log(xdf[('hcc1', 'close')]).diff()
+    else:
+        xdf[('rbc1', 'px_chg')] = xdf[('rbc1', 'close')].diff()
+        xdf[('hcc1', 'px_chg')] = xdf[('hcc1', 'close')].diff()
+    hc_rb_diff = xdf[('hcc1', 'px_chg')] - xdf[('rbc1', 'px_chg')]
+    signal_ts = hc_rb_diff.ewm(span=win).mean() / hc_rb_diff.ewm(span=win).std()
+    signal_df = pd.concat([signal_ts] * len(product_list), axis=1)
+    signal_df.columns = product_list
+    return signal_df
+
+
+def leader_lagger(price_df, spot_df, product_list, leadlag_port=leadlag_port_d, conv_func='qtl', signal_cap=None):     
+    signal_df = pd.DataFrame(index=price_df.index, columns=product_list)
+    for prod in product_list:
+        for sector in leadlag_port:
+            if prod in leadlag_port[sector]['lag']:
+                signal_list = []
+                for lead_prod in leadlag_port[sector]['lead']:
+                    feature_ts = price_df[(lead_prod+'c1', 'close')]
+                    signal_ts = calc_conv_signal(feature_ts.dropna(), conv_func,
+                                                 leadlag_port[sector]['param_rng'], signal_cap=signal_cap)
+                    signal_list.append(signal_ts)
+                signal_df[prod] = pd.concat(signal_list, axis=1).mean(axis=1)
+                break
+            else:
+                signal_df[prod] = 0
+    return signal_df
+
+
+def leadlag2_mr(price_df, spot_df, product_list, mr_dict, leadlag_dict, 
+                win=10, signal_func='ma', signal_cap= [-3, 3], 
+                vol_win=60, param_rng=[1, 2, 1]): 
+    signal_df = pd.DataFrame(index=price_df.index, columns=product_list)
+    for asset in mr_dict:
+        tmp_df = pd.concat([
+            price_df[(asset+'c1', 'close')].to_frame(asset),
+            price_df[(mr_dict[asset]+'c1', 'close')].to_frame(mr_dict[asset])], axis=1).dropna(how='all').ffill()
+        tmp_df = tmp_df.pct_change()
+        tmp_df = tmp_df.rolling(win).sum()
+        feature_ts = tmp_df[asset] - tmp_df[mr_dict[asset]]
+        signal_ts = calc_conv_signal(feature_ts, signal_func=signal_func, param_rng=param_rng, signal_cap=signal_cap,
+                                     vol_win=vol_win)
+        signal_ts = signal_ts.ewm(3).mean()
+        signal_df[asset] = signal_ts
+    signal_df2 = pd.DataFrame(index=price_df.index, columns=product_list)
+    for asset in leadlag_dict:
+        tmp_df = pd.concat([
+            price_df[(asset+'c1', 'close')].to_frame(asset),
+            price_df[(leadlag_dict[asset]+'c1', 'close')].to_frame(leadlag_dict[asset])], axis=1).dropna(how='all').ffill() 
+        tmp_df = tmp_df.pct_change()
+        tmp_df = tmp_df.rolling(win).sum()
+        feature_ts = tmp_df[leadlag_dict[asset]] - tmp_df[asset]
+        signal_ts = calc_conv_signal(feature_ts, signal_func=signal_func, param_rng=param_rng, signal_cap=signal_cap,
+                                     vol_win=vol_win)
+        signal_ts = signal_ts.ewm(3).mean()
+        signal_df2[asset] = signal_ts
+    signal_df = signal_df.fillna(0) + signal_df2.fillna(0)
+    return signal_df
+
+
+def mr_pair(price_df, spot_df, product_list, mr_pair_list=mr_commod_pairs,
+            signal_func='zscore_adj', param_rng=[200, 250, 2], 
+            vol_win=120, signal_cap=None, bullish=False):    
+    signal_df = pd.DataFrame(0, index=price_df.index, columns=product_list)
+    for (asset_a, asset_b) in mr_pair_list:
+        pair_assets = [asset_a, asset_b]
+        sig_df = pd.DataFrame(index=price_df.index, columns=pair_assets)
+        feature_ts = np.log(price_df[(asset_a+'c1', 'close')]) - np.log(price_df[(asset_b+'c1', 'close')])
+        sig_ts = calc_conv_signal(feature_ts, signal_func=signal_func, param_rng=param_rng, signal_cap=signal_cap,
+                                  vol_win=vol_win)
+        sig_ts = sig_ts.apply(lambda x: np.sign(x) * min(abs(x), 1.25) ** 4).ewm(1).mean()
+        if not bullish:
+            sig_ts = -sig_ts
+        sig_df[asset_a] = sig_ts
+        sig_df[asset_b] = -sig_ts
+        signal_df = signal_df + sig_df.reindex_like(signal_df).fillna(0)
+    return signal_df
+
+
 factors_by_func = {
+    "leadlag_d_mid": {
+        'func': leader_lagger,
+        'args': {
+            'leadlag_port': leadlag_port_d, 
+            'conv_func': 'qtl', 
+            'signal_cap': [-2, 2],
+            'product_list': [
+                'rb', 'hc', 'i', 'j', 'jm', 'FG', 'SM', 'SF', 'UR', 
+                'cu', 'al', 'zn', 'sn', 'ss', 'ni',
+                'l', 'pp', 'v', 'TA', 'sc', 'eb', 'eg', 'y', 'p', 'OI'
+            ],
+        },
+    },
+    'leadlag2_mr_d': {
+        'func': leadlag2_mr,        
+        'args': {
+            'win': 10, 
+            'signal_cap': [-3, 3], 
+            'vol_win': 60,
+            'param_rng': [1, 2, 1],
+            'signal_func': 'ma',
+            'mr_dict': {
+                'hc': 'rb',
+                'i': 'rb',
+                'j': 'rb',
+                'pp': 'l',
+                'SA': 'FG',
+                'sc': 'lu',                
+                'm': 'y'
+                },
+            'leadlag_dict': {
+                'lu': 'sc',
+                'RM': 'm',
+                'a': 'm',
+                'cs': 'c',
+                'eb': 'sc',
+                # 'fu': 'sc',
+                'bu': 'sc',
+                'bc': 'cu',
+                'MA': 'pp',
+                'ni': 'ss',
+                'al': 'ao',
+                },
+            'product_list': [
+                'rb', 'hc', 'i', 'j', 'al', 'FG', 'SA',
+                'l', 'pp', 'lu', 'sc', 'm', 'RM', 'y',
+                'c', 'cs', 'MA', 'a', 'eb', 'bu',
+                'cu', 'ss', 'ni', 'bc', 'ao', 
+                ],
+        },
+    },
+    'pair_mr_1y': {
+        'func': mr_pair,
+        'args': {
+            'product_list': [
+                'cu', 'al', 'zn', 'ss', 'ni', 
+                'rb', 'hc', 'SM', 'SF', 'FG', 'v',
+                'l', 'MA', 'pp', 'TA', 'eg',
+                'y', 'OI', 'm', 'RM',
+                ],
+            'mr_pair_list': [
+                ('cu', 'zn'), ('cu', 'al'), ('al', 'zn'), ('ni', 'ss'),
+                ('rb', 'hc'), ('SM', 'SF'), ('FG', 'v'),
+                ('y', 'OI'), ('m', 'RM'),  ('l', 'MA'), ('pp', 'MA'), ('TA', 'eg'),
+            ],
+            'param_rng': [200, 250, 5],
+            'bullish': False,
+            'vol_win': 120, 
+            'signal_cap': None,
+            'signal_func': 'zscore_adj',
+        }
+    },
+    # "hc_rb_diff_20": {
+    #     'func': hc_rb_diff,
+    #     'args': {
+    #         "win": 20, 
+    #         "shift_mode": 2,
+    #         "product_list": [
+    #                 'rb', 'hc', 'i', 'j', 'jm', 'FG', 'v',
+    #                 'cu', 'al', 'zn', 'sn', 'ss', 'ni'
+    #             ],
+    #     },
+    # },
     "long_hol_2b": {
-        'assets': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SA',
-                   'cu', 'zn', 'sn', 'ni', 'ss', 'al',
-                   'l', 'pp', 'v', 'TA', 'sc', 'eb', 'eg', 'lu',
-                   'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'cs', 'CF'],
         'func': cnc_hol_seasonality,
-        'args': {'pre_days': 10, 'post_days': 5}
+        'args': {
+            'pre_days': 10, 
+            'post_days': 5,
+            'product_list': [
+                'rb', 'hc', 'i', 'j', 'jm', 
+                'l', 'pp', 'v', 'TA', 'sc', 'eb', 'eg', 'lu',
+                'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'cs', 'CF'
+            ],
+        },
     }
 }
 
@@ -145,21 +381,6 @@ def get_fun_data(start_date, run_date):
     data_df = data_df.rename(columns=index_map)
     spot_df = data_df.dropna(how='all').copy(deep=True)
     spot_df = spot_df.reindex(index=cdate_rng)
-    # for col in [
-    #     'io_inv_imp_mill(64)',
-    #     'io_inv_dom_mill(64)',
-    #     'io_invdays_imp_mill(64)'
-    # ]:
-    #     spot_df[col] = spot_df[col].shift(-3).ffill().reindex(
-    #         index=pd.date_range(start=spot_df.index[0], end=spot_df.index[-1], freq='W-Fri'))
-    #
-    # for col in [
-    #     'rebar_inv_mill', 'wirerod_inv_mill', 'hrc_inv_mill', 'crc_inv_mill', 'plate_inv_mill',
-    #     'rebar_inv_social', 'wirerod_inv_social', 'hrc_inv_social', 'crc_inv_social', 'plate_inv_social',
-    #     'steel_inv_social', 'rebar_inv_all', 'rebar_prod_all', 'wirerod_prod_all', 'wirerod_inv_all',
-    #     'hrc_prod_all', 'hrc_inv_all', 'crc_prod_all', 'crc_inv_all',
-    # ]:
-    #     spot_df[col] = spot_df[col].shift(-1)
     spot_df = process_spot_df(spot_df, adjust_time=True)
     fef_list = []
     for nb in [2, 3, 4]:
@@ -213,13 +434,36 @@ def load_hist_fut_prices(markets, start_date, end_date,
     data_df = pd.DataFrame()
     for prodcode in markets:
         for nb in range(nb_cont):
-            xdf = dataseries.nearby(prodcode,
-                                    nb + 1,
-                                    start_date=start_date,
+            freq = freq[0]
+            if roll_name == 'CAL_30b':
+                roll = '-30b'
+                if prodcode in ["IF", "IC", "IH", "IM"]:
+                    roll = '0b'
+                elif prodcode in ['cu', 'al', 'zn', 'pb', 'sn', 'ss', 'lu']:
+                    roll = '-25b'
+                elif prodcode in ['ni', 'jd', 'lh', 'eg',]:
+                    roll = '-35b'
+                elif prodcode in ['v', 'MA', 'rb', 'hc']:
+                    roll = '-28b'
+                elif prodcode in ['sc', 'eb', 'T', 'TF', 'TS', 'TL']:
+                    roll = '-20b'
+                elif prodcode in ['au', 'ag']:
+                    roll = '-15b'
+                sdate = max(start_date, sim_start_dict.get(prodcode, start_date))
+                xdf = nearby(prodcode, nb+1,
+                                    start_date=sdate,
                                     end_date=end_date,
                                     shift_mode=shift_mode,
                                     freq=freq,
-                                    roll_name=roll_name)
+                                    roll_rule=roll).reset_index()
+            else:            
+                xdf = dataseries.nearby(prodcode,
+                                        nb + 1,
+                                        start_date=start_date,
+                                        end_date=end_date,
+                                        shift_mode=shift_mode,
+                                        freq=freq,
+                                        roll_name=roll_name)
             xdf['expiry'] = xdf['contract'].map(contract_expiry)
             xdf['contmth'] = xdf.apply(lambda x: inst2contmth(x['contract'], x['date']), axis=1)
             xdf['mth'] = xdf['contmth'].apply(lambda x: x // 100 * 12 + x % 100)
@@ -276,7 +520,6 @@ def update_fun_factor(run_date=datetime.date.today(), flavor='mysql'):
         for asset in factors_by_asset[factor_name]:
             signal_ts = get_funda_signal_from_store(spot_df, factor_name,
                                                     price_df=price_df,
-                                                    signal_cap=[-2, 2],
                                                     asset=asset,
                                                     curr_date=run_date)
             save_signal_to_db(asset, db_fact_name, signal_ts[update_start:], run_date=cutoff_date, flavor=flavor)
@@ -285,7 +528,6 @@ def update_fun_factor(run_date=datetime.date.today(), flavor='mysql'):
     for factor_name in single_factors:
         signal_ts = get_funda_signal_from_store(spot_df, factor_name,
                                                 price_df=price_df,
-                                                signal_cap=[-2, 2],
                                                 curr_date=run_date)
         for asset in single_factors[factor_name]:
             save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=cutoff_date, flavor=flavor)
@@ -300,7 +542,6 @@ def update_fun_factor(run_date=datetime.date.today(), flavor='mysql'):
     for factor_name in factors_by_spread.keys():
         signal_ts = get_funda_signal_from_store(spot_df, factor_name,
                                                 price_df=price_df,
-                                                signal_cap=[-2, 2],
                                                 curr_date=run_date)
         for asset, weight in factors_by_spread[factor_name]:
             save_signal_to_db(asset, factor_name, weight*signal_ts[update_start:], run_date=cutoff_date, flavor=flavor)
@@ -308,7 +549,6 @@ def update_fun_factor(run_date=datetime.date.today(), flavor='mysql'):
     for factor_name in factors_by_beta_neutral.keys():
         signal_ts = get_funda_signal_from_store(spot_df, factor_name,
                                                 price_df=price_df,
-                                                signal_cap=[-2, 2],
                                                 curr_date=run_date)
         signal_df = pd.DataFrame(index=signal_ts.index)
         signal_df['raw_sig'] = signal_ts
@@ -335,6 +575,159 @@ def update_fun_factor(run_date=datetime.date.today(), flavor='mysql'):
             save_signal_to_db(asset, factor_name, signal_df[asset][update_start:], run_date=cutoff_date, flavor=flavor)
 
 
+def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
+    roll_name='hot'
+    freq='d1'
+    funda_start = day_shift(run_date, '-4y')
+    update_start = day_shift(run_date, '-120b', CHN_Holidays)
+    markets = [
+        'rb', 'hc', 'i', 'j', 'jm', 'FG', 'v', 'SM', 'SF', 'SA', 'ru', 'nr',
+        'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'si', 'ao', 'au', 'ag', 'bc',
+        'l', 'pp', 'TA', 'MA', 'sc', 'eb', 'eg', 'UR', 'lu', 'bu', 'fu', 'PF', 
+        'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'CF', 'jd', 'AP', 'lh', 'cs', 'CJ', 'PK', 'b',
+    ]
+    price_start = day_shift(run_date, '-30m')
+    # load tmp saved file
+    logging.info("loading eod price data ... ")
+    try:
+        price_df = pd.read_parquet(f"D:/data/fut_eod_%s.parquet" % run_date.strftime("%Y%m%d"))
+    except:
+        price_df = load_hist_fut_prices(markets, start_date=price_start, end_date=run_date, 
+                                        roll_name=roll_name, nb_cont=2, freq=freq)
+        price_df.to_parquet(f"D:/data/fut_eod_%s.parquet" % run_date.strftime("%Y%m%d"))
+
+    logging.info("loading fundamental data ... ")
+    cutoff_date = day_shift(day_shift(run_date, '1b', CHN_Holidays), '-1d')
+    spot_df = get_fun_data(funda_start, run_date)
+
+    fact_config = {'roll_label': roll_name, 'freq': freq, 'serial_key': 0, 'serial_no': 0}
+    vol_win = 20
+    logging.info("updating price vol data ... ")
+    for asset_cont in price_df.columns.get_level_values(0).unique():
+        asset = asset_cont[:-2]
+        local_df = pd.DataFrame(index=price_df.index)
+        local_df['close'] = price_df[(asset+'c1', 'close')]
+        local_df['pct_chg'] = price_df[(asset+'c1', 'close')].pct_change()
+        local_df['pct_vol'] = local_df['close'] * local_df['pct_chg'].rolling(vol_win).std()
+        local_df.index.name = 'date'
+        fact_config['product_code'] = asset
+        fact_config['exch'] = prod2exch(asset)
+        update_factor_db(local_df, 'pct_vol', fact_config,
+                         start_date=pd.to_datetime(update_start),
+                         end_date=pd.to_datetime(run_date), flavor=flavor)
+
+    logging.info("update ryield/basmom ... ")
+    data_dict = {}
+    for asset in markets:
+        spot_df[f'{asset}_px'] = price_df[(asset+'c1', 'close')]
+        if (asset+'c2', 'close') in price_df.columns:
+            data_dict[f'{asset}_ryield'] = \
+                (np.log(price_df[(asset+'c1', 'close')]) - np.log(price_df[(asset+'c2', 'close')]) - \
+                 price_df[(asset+'c1', 'shift')] + price_df[(asset+'c2', 'shift')])/\
+                    (pd.to_datetime(price_df[(asset+'c2', 'expiry')]) - pd.to_datetime(price_df[(asset+'c1', 'expiry')])).dt.days * 365.0 + \
+                        spot_df['r007_cn'].ffill()/100
+        
+            data_dict[f'{asset}_basmom'] = np.log(price_df[(asset+'c1', 'close')]).dropna().diff() - \
+                np.log(price_df[(asset+'c2', 'close')]).dropna().diff()                
+            data_dict[f'{asset}_basmom20'] = data_dict[f'{asset}_basmom'].dropna().rolling(20).sum() 
+            data_dict[f'{asset}_basmom60'] = data_dict[f'{asset}_basmom'].dropna().rolling(60).sum()
+            data_dict[f'{asset}_basmom120'] = data_dict[f'{asset}_basmom'].dropna().rolling(120).sum()
+    data_dict['hc_rb_diff'] = np.log(price_df[('hcc1', 'close')]) - np.log(price_df[('rbc1', 'close')])
+    spot_df = pd.concat([spot_df, pd.DataFrame(data_dict)], axis=1)
+
+    logging.info("update factor by asset ... ")
+    asset_factors = [] # only update ts factors, not xs
+    for factor_name in factors_by_asset.keys():
+        if factor_name[-8:] == '_xdemean':
+            db_fact_name = factor_name[:-8]
+        elif factor_name[-7:] == '_xscore':
+            db_fact_name = factor_name[:-7]
+        elif factor_name[-6:] == '_xrank':
+            db_fact_name = factor_name[:-6]
+        else:
+            db_fact_name = factor_name
+        if db_fact_name in asset_factors:
+            continue
+        for asset in factors_by_asset[factor_name]:
+            signal_ts = get_funda_signal_from_store(spot_df, factor_name,
+                                                    price_df=price_df,
+                                                    asset=asset,
+                                                    curr_date=run_date)
+            save_signal_to_db(asset, db_fact_name, signal_ts[update_start:], run_date=cutoff_date, flavor=flavor)
+        asset_factors.append(db_fact_name)
+
+    for factor_name in single_factors:
+        signal_ts = get_funda_signal_from_store(spot_df, factor_name,
+                                                price_df=price_df,
+                                                curr_date=run_date)
+        for asset in single_factors[factor_name]:
+            save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=cutoff_date, flavor=flavor)
+
+    for factor_name in factors_by_func:
+        func = factors_by_func[factor_name]['func']
+        func_args = factors_by_func[factor_name]['args']        
+        signal_df = func(price_df, spot_df, **func_args)
+        for asset in signal_df.columns:
+            signal_ts = signal_df[asset].dropna()
+            if len(signal_ts) > 0:
+                save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=cutoff_date, flavor=flavor)
+
+    for factor_name in factors_by_spread.keys():
+        signal_ts = get_funda_signal_from_store(spot_df, factor_name,
+                                                price_df=price_df,
+                                                curr_date=run_date)
+        for asset, weight in factors_by_spread[factor_name]:
+            save_signal_to_db(asset, factor_name, weight*signal_ts[update_start:], run_date=cutoff_date, flavor=flavor)
+
+    logging.info("updating factor for beta neutral ratio ...")
+    beta_win = 122
+    asset_pairs = [('rb', 'i'), ('hc', 'i'), ('j', 'i')]
+    beta_dict = {}
+    for trade_asset, index_asset in asset_pairs:
+        key = '_'.join([trade_asset, index_asset, 'beta'])
+        fact_config['product_code'] = key        
+        fact_config = {'roll_label': roll_name, 'freq': freq,
+                'serial_key': '0', 'serial_no': 0,
+                'product_code': key, 'exch': 'xasset'}
+        asset_df = price_df[[(trade_asset+'c1', 'close'), (index_asset+'c1', 'close')]].droplevel([1], axis=1)
+        asset_df = asset_df.pct_change().dropna()
+        asset_df.columns = [col[:-2] for col in asset_df.columns]
+        for asset in asset_df:
+            asset_df[f'{asset}_pct'] = asset_df[asset].rolling(5).mean()
+            asset_df[f'{asset}_vol'] = asset_df[asset].rolling(vol_win).std()
+        asset_df['beta'] = asset_df[f'{index_asset}_pct'].rolling(beta_win).cov(
+            asset_df[f'{trade_asset}_pct']) / asset_df[f'{index_asset}_pct'].rolling(beta_win).var()
+        asset_df['pct_chg'] = asset_df[trade_asset] - asset_df['beta'] * asset_df[index_asset].fillna(0)
+        asset_df['pct_vol'] = asset_df['pct_chg'].rolling(vol_win).std()
+        asset_df['trade_leg'] = asset_df[f'{trade_asset}_vol']/asset_df['pct_vol']
+        asset_df['index_leg'] = - asset_df[f'{index_asset}_vol'] / asset_df['pct_vol'] * asset_df['beta']
+        beta_dict[key] = asset_df[['trade_leg', 'index_leg']]
+        for field in ['pct_vol', 'beta', 'trade_leg', 'index_leg']:
+            update_factor_db(asset_df, field, fact_config, start_date=update_start, end_date=cutoff_date, flavor=flavor)
+
+    for factor_name in factors_by_beta_neutral.keys():
+        signal_ts = get_funda_signal_from_store(spot_df, factor_name,
+                                                price_df=price_df,
+                                                curr_date=run_date)
+        signal_df = pd.DataFrame(index=signal_ts.index)
+        signal_df['raw_sig'] = signal_ts
+        asset_list = []
+        for trade_asset, index_asset, weight in factors_by_beta_neutral[factor_name]:
+            asset_list = list(set(asset_list + [trade_asset, index_asset]))
+            if trade_asset not in signal_df.columns:
+                signal_df[trade_asset] = 0
+            if index_asset not in signal_df.columns:
+                signal_df[index_asset] = 0
+            key = '_'.join([trade_asset, index_asset, 'beta'])
+            signal_df['trade_ratio'] = beta_dict[key]['trade_leg']
+            signal_df['index_ratio'] = beta_dict[key]['index_leg']
+            signal_df = signal_df.ffill()
+            signal_df[trade_asset] += signal_df['trade_ratio'] * signal_df['raw_sig'] * weight
+            signal_df[index_asset] += signal_df['index_ratio'] * signal_df['raw_sig'] * weight
+        for asset in asset_list:
+            save_signal_to_db(asset, factor_name, signal_df[asset][update_start:], run_date=cutoff_date, flavor=flavor)
+
+
 if __name__ == "__main__":
     args = sys.argv[1:]
     if len(args) >= 1:
@@ -342,7 +735,7 @@ if __name__ == "__main__":
     else:
         now = datetime.datetime.now()
         tday = now.date()
-        if (~is_workday(tday, 'CHN')) or (now.time() < datetime.time(14, 59, 0)):
+        if (not is_workday(tday, 'CHN')) or (now.time() < datetime.time(14, 59, 0)):
             tday = day_shift(tday, '-1b', CHN_Holidays)
     print("running for %s" % str(tday))
-    update_fun_factor(run_date=tday)
+    update_db_factor(run_date=tday)

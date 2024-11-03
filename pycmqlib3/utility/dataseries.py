@@ -185,7 +185,7 @@ def nearby(code, n=1, start_date=None, end_date=None,
         if s_date <= e_date:
             code = '.'.join([exch, row['to']])
             new_df = load_bars_by_code(code, freq=freq, start_date=s_date, end_date=e_date)
-            if len(new_df) > 0:
+            if (new_df is not None) and (len(new_df) > 0):
                 new_df['shift'] = 0.0
             else:
                 continue

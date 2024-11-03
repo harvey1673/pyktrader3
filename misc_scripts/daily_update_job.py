@@ -9,7 +9,7 @@ from pycmqlib3.utility.misc import day_shift, CHN_Holidays, is_workday, product_
 from pycmqlib3.analytics.tstool import response_curve
 from misc_scripts.aks_data_update import update_hist_fut_daily, update_spot_daily, \
     update_exch_receipt_table, update_exch_inv_table, update_rank_table
-from misc_scripts.factor_data_update import update_factor_data
+from misc_scripts.fun_factor_update import update_db_factor
 from misc_scripts.auto_update_data_xl import update_data_from_xl
 from misc_scripts.port_position_update import update_port_pos
 from pycmqlib3.utility.email_tool import send_html_by_smtp
@@ -279,38 +279,21 @@ def run_update(tday=datetime.date.today()):
         except Exception as e:
             job_status[update_field][exch] = False
             logging.warning(f"exch = {exch} EOD price is FAILED to update, an error ocurred: {e}")
-        save_status(filename, job_status)
-    #update_hist_fut_daily(sdate, tday, exchanges = ["DCE", "CFFEX", "CZCE", "SHFE", "INE", ], flavor = 'mysql', fut_table = 'fut_daily')
-    logging.info('updating factor data calculation...')
-    start_date = day_shift(edate, '-30m')
-    update_field = 'fact_repo'
-    if update_field not in job_status:
-        job_status[update_field] = {}
-    for (fact_key, fact_mkts, scenarios, roll_label, freq, shift_mode) in run_settings:
-        try:
-            if not job_status[update_field].get(fact_key, False):
-                _ = update_factor_data(fact_mkts, scenarios, start_date, edate,
-                                       roll_rule=roll_label,
-                                       freq=freq,
-                                       shift_mode=shift_mode)
-                job_status[update_field][fact_key] = True
-        except Exception as e:
-            job_status[update_field][fact_key] = False
-            logging.warning(f"fact_key = {fact_key} is FAILED to update, an error ocurred: {e}")
-        save_status(filename, job_status)
-    update_field = 'data_check'
-    if update_field not in job_status:
-        job_status[update_field] = {}
-        missing_daily, missing_factors = check_eod_data(tday)
-        job_status[update_field]['eod_price'] = list(missing_daily.keys())
-        job_status[update_field]['factor_data'] = list(missing_factors.index)
-        if len(missing_daily) > 0:
-            logging.warning('missing EOD data: %s' % missing_daily)
-        if len(missing_factors) > 0:
-            logging.warning('missing factor data: %s' % missing_factors)
-    else:
-        missing_daily = job_status[update_field].get('eod_price', [])
-        missing_factors = job_status[update_field].get('factor_data', [])
+        save_status(filename, job_status)    
+    logging.info('updating factor data calculation...')    
+    update_db_factor(run_date=tday)        
+    # if update_field not in job_status:
+    #     job_status[update_field] = {}
+    #     missing_daily, missing_factors = check_eod_data(tday)
+    #     job_status[update_field]['eod_price'] = list(missing_daily.keys())
+    #     job_status[update_field]['factor_data'] = list(missing_factors.index)
+    #     if len(missing_daily) > 0:
+    #         logging.warning('missing EOD data: %s' % missing_daily)
+    #     if len(missing_factors) > 0:
+    #         logging.warning('missing factor data: %s' % missing_factors)
+    # else:
+    #     missing_daily = job_status[update_field].get('eod_price', [])
+    #     missing_factors = job_status[update_field].get('factor_data', [])
 
     status, pos_update = update_port_pos(tday, email_notify=False)
     job_status.update(status)
