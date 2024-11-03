@@ -23,19 +23,20 @@ def refresh_saved_fut_prices(
         run_date,
         nb_cont=2,
         last_update=None,
-        data_file="C:/dev/data/cnc_fut_prices_latest.pkl"
+        data_file="D:/data/cnc_fut_m5_latest.pkl"
 ):
     period_setup = {
+        'd_twap': [1500, 2100],
+        'n_twap': [300, 500],
         'n305': [303, 307],
-        'n310': [307, 311],
-        'n315': [311, 315],
-        'n450': [450, 455],
+        'n310': [307, 312],
+        'n315': [312, 317],
+        'n450': [448, 458],
         'a1505': [1503, 1507],
-        'a1510': [1507, 1511],
-        'a1515': [1511, 1515],
-        'a1635': [1635, 1640],
-        'p1935': [1935, 1940],
-        'p2055': [2055, 2058],
+        'a1510': [1507, 1512],
+        'a1515': [1512, 1517],        
+        'p1935': [1930, 1940],
+        'p2055': [2048, 2058],
     }
     try:
         with open(data_file, 'rb') as handle:
@@ -51,7 +52,7 @@ def refresh_saved_fut_prices(
         min_dict = df_dict['min_data']
     else:
         min_dict = {}
-    start_date = datetime.date(2010, 1, 1)
+    start_date = datetime.date(2005, 1, 1)
     for asset in All_MARKETS:
         for nb in range(1, nb_cont+1):
             print(f"loading product={asset}, nb={nb}")
@@ -62,11 +63,11 @@ def refresh_saved_fut_prices(
                 if 'a1505' not in curr_ddf.columns:
                     curr_ddf = pd.DataFrame()
                     start_d = start_date
-                else:
-                    start_d = curr_ddf.index[-1]
+                else:                    
                     if last_update:
                         start_d = pd.Timestamp(last_update)
                         curr_ddf = curr_ddf[curr_ddf.index <= start_d]
+                    start_d = curr_ddf.index[-1]
             else:
                 curr_ddf = pd.DataFrame()
                 start_d = start_date
@@ -94,7 +95,7 @@ def refresh_saved_fut_prices(
             mdf = dataseries.nearby(asset,
                                     nb,
                                     start_date=start_d, end_date=run_date,
-                                    shift_mode=2, roll_name='hot', freq='m1')
+                                    shift_mode=2, roll_name='hot', freq='m5')
             if len(mdf) == 0:
                 continue
             mdf['expiry'] = pd.to_datetime(mdf['contract'].map(contract_expiry))
@@ -129,7 +130,7 @@ def refresh_saved_fut_prices(
                 cutoff = curr_ddf.index[-1]
                 new_shift = ddf.loc[cutoff, 'shift']
                 if new_shift != 0:
-                    for col in ['open', 'high', 'low', 'close', 'settle'] + twap_df.columns:
+                    for col in list(['open', 'high', 'low', 'close', 'settle']) + list(twap_df.columns):
                         if col in curr_ddf.columns:
                             curr_ddf[col] = curr_ddf[col]/np.exp(new_shift)
                     curr_ddf['shift'] = curr_ddf['shift'] + new_shift
@@ -147,13 +148,13 @@ def refresh_saved_fut_prices(
 
 def load_saved_fut(tday=datetime.date.today(),
                    freq='d',
-                   data_file="C:/dev/data/cnc_fut_prices_latest.pkl", cont='c1'):
+                   data_file="D:/data/cnc_fut_m5_latest.pkl", cont='c1'):
     tday = pd.to_datetime(tday)
     try:
         if freq == 'd':
-            df = pd.read_parquet(f"C:/dev/data/fut_{freq}_%s.parquet" % tday.strftime("%Y%m%d"))
+            df = pd.read_parquet(f"D:/data/fut_{freq}_%s.parquet" % tday.strftime("%Y%m%d"))
         else:
-            df = pd.read_parquet(f"C:/dev/data/fut_{freq}_{cont}_%s.parquet" % tday.strftime("%Y%m%d"))
+            df = pd.read_parquet(f"D:/data/fut_{freq}_{cont}_%s.parquet" % tday.strftime("%Y%m%d"))
     except:
         try:
             with open(data_file, 'rb') as handle:
@@ -189,9 +190,9 @@ def load_saved_fut(tday=datetime.date.today(),
             gc.collect()
         try:
             if freq == 'd':
-                df.to_parquet(f"C:/dev/data/fut_{freq}_%s.parquet" % tday.strftime("%Y%m%d"))
+                df.to_parquet(f"D:/data/fut_{freq}_%s.parquet" % tday.strftime("%Y%m%d"))
             else:
-                df.to_parquet(f"C:/dev/data/fut_{freq}_{cont}_%s.parquet" % tday.strftime("%Y%m%d"))
+                df.to_parquet(f"D:/data/fut_{freq}_{cont}_%s.parquet" % tday.strftime("%Y%m%d"))
             print(f"fut_{freq} data saved")
         except:
             print(f"fut_{freq} save error")
@@ -205,10 +206,9 @@ if __name__ == "__main__":
     else:
         now = datetime.datetime.now()
         tday = now.date()
-        if (~is_workday(tday, 'CHN')) or (now.time() < datetime.time(17, 00, 0)):
+        if (not is_workday(tday, 'CHN')) or (now.time() < datetime.time(17, 00, 0)):
             tday = day_shift(tday, '-1b', CHN_Holidays)
     refresh_saved_fut_prices(run_date=tday)
     _ = load_saved_fut(tday=tday, freq='d')
     _ = load_saved_fut(tday=tday, freq='m', cont='c1')
     _ = load_saved_fut(tday=tday, freq='m', cont='c2')
-

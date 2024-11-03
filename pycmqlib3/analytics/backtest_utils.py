@@ -7,7 +7,6 @@ from pycmqlib3.analytics.tstool import *
 from pycmqlib3.utility import dataseries
 from misc_scripts.fun_factor_update import get_fun_data, load_hist_fut_prices
 from pycmqlib3.strategy.signal_repo import *
-from bktest.backtest_grid_search import load_hist_data
 
 
 def get_asset_vols(df, product_list, vol_win, vol_type='atr'):
@@ -209,9 +208,9 @@ def generate_holding_from_signal(signal_df, vol_df, risk_scaling=1.0, asset_scal
     nperiod, nasset = sig_df.shape
     prod_count = sig_df.apply(lambda x: x.count() if x.count() > 0 else np.nan, axis=1)
     if asset_scaling:
-        scaling = risk_scaling / prod_count
+        scaling = risk_scaling*nasset / prod_count
     else:
-        scaling = pd.Series(risk_scaling/nasset, index=prod_count.index)
+        scaling = pd.Series(risk_scaling, index=prod_count.index)
     pos_df = sig_df.mul(scaling, axis='rows').shift(1)
     return pos_df
 
@@ -230,6 +229,17 @@ def get_px_chg(df, exec_mode='open', chg_type='px'):
             xdf[(asset, 'px_chg')] = xdf[(asset, 'traded_price')].pct_change()
     xdf = xdf.loc[:, xdf.columns.get_level_values(1) == 'px_chg'].droplevel([1], axis=1)
     return xdf
+
+
+def transform_output(pnl_stats, metrics=['sharpe', 'std', 'sortino']):
+    df_list = []
+    for key in metrics:
+        adf = pnl_stats[key].reset_index()
+        adf['index'] = adf['index'].apply(lambda x: x.split('_')[1] if '_' in x else 'all')
+        adf = adf.rename(columns={'index': 'tenor', 'total': key}).set_index('tenor')
+        df_list.append(adf)
+    perf_df = pd.concat(df_list, axis=1, join='outer')
+    return perf_df
 
 
 def run_backtest(df, input_args):
@@ -293,11 +303,11 @@ def get_beta_neutral_returns(df, asset_pairs):
 def load_fun_data(tday=datetime.date.today()):
     tday = pd.to_datetime(tday)
     try:
-        spot_df = pd.read_parquet("C:/dev/data/spot_df_%s.parquet" % tday.strftime("%Y%m%d"))
+        spot_df = pd.read_parquet("D:/data/spot_df_%s.parquet" % tday.strftime("%Y%m%d"))
     except:
         spot_df = get_fun_data(start_date=datetime.date(2006, 1, 1), run_date=tday)
         try:
-            spot_df.to_parquet("C:/dev/data/spot_df_%s.parquet" % tday.strftime("%Y%m%d"))
+            spot_df.to_parquet("D:/data/spot_df_%s.parquet" % tday.strftime("%Y%m%d"))
             print("spot_df data saved")
         except:
             print("spot_df save error")
@@ -307,7 +317,7 @@ def load_fun_data(tday=datetime.date.today()):
 def load_cnc_fut(tday=datetime.date.today(), type='cnc'):
     tday = pd.to_datetime(tday)
     try:
-        df = pd.read_parquet(f"C:/dev/data/{type}_fut_df_%s.parquet" % tday.strftime("%Y%m%d"))
+        df = pd.read_parquet(f"D:/data/{type}_fut_df_%s.parquet" % tday.strftime("%Y%m%d"))
     except:
         commod_mkts = [
             'rb', 'hc', 'i', 'j', 'jm', 'FG', 'SM', 'SF', 'SA', 'ru', 'nr',
@@ -315,21 +325,18 @@ def load_cnc_fut(tday=datetime.date.today(), type='cnc'):
             'l', 'pp', 'v', 'TA', 'sc', 'lu', 'eb', 'eg', 'pg', 'PF', 'MA', 'fu', 'bu',
             'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'CF', 'jd', 'lh', 'b', 'CY', 'cs',
             'AP', 'CJ', 'UR', 'PK', 'SR', 'T', 'TF'
-        ]
-        if type == 'cal':
-            df, error_list = load_hist_data(
-                start_date=datetime.date(2011, 1, 1),
-                end_date=tday,
-                roll_name='CAL_30b',
-                sim_markets=commod_mkts,
-                freq='d',
-                shift_mode=2
+        ]        
+        df, error_list = load_hist_fut_prices(
+            start_date=datetime.date(2011, 1, 1),
+            end_date=tday,
+            roll_name=type,
+            markets=commod_mkts,
+            freq='d',
+            shift_mode=2
             )
-            print(error_list)
-        else:
-            df = load_hist_fut_prices(commod_mkts, start_date=datetime.date(2008, 1, 1), end_date=tday, nb_cont=2)
+        print(error_list)
         try:
-            df.to_parquet(f"C:/dev/data/{type}_fut_df_%s.parquet" % tday.strftime("%Y%m%d"))
+            df.to_parquet(f"D:/data/{type}_fut_df_%s.parquet" % tday.strftime("%Y%m%d"))
             print(f"{type}_fut_df data saved")
         except:
             print(f"{type}_fut_df save error")

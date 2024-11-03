@@ -195,6 +195,8 @@ def load_bars_by_code(code, start_date=None, end_date=None,
         mdf = mdf.to_df().rename(columns={'hold': 'openInterest', 'diff': 'diff_oi'})
         mdf = mdf[(mdf['openInterest'] > 0) & (mdf['date'] < 20990000)]
         mdf = convert_wt_data(mdf, instID, freq=freq)
+        if 'm' in freq:
+            mdf = mdf.drop_duplicates(subset=['date', 'min_id'])
         if start_date:
             mdf = mdf[mdf['date'] >= start_date]
         if end_date:

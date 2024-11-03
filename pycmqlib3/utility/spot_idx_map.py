@@ -509,7 +509,7 @@ index_map = {
     "S006161095": "ss_inv_social_400",
 
     "S000025546": "au_td_sge",
-    "S003057206": "ag_td_sgx",
+    "S003057206": "ag_td_sge",
     "S002808967": "container_exp_scfi",
     "S008527041": "alumina_spot_shanxi",
     "S008527032": "alumina_spot_guangxi",

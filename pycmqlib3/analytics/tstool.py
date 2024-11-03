@@ -187,10 +187,15 @@ def calc_conv_signal(feature_ts, signal_func, param_rng, signal_cap=2.5, vol_win
         if signal_func == 'ma':
             signal_ts = feature_ts.rolling(win, min_periods=win//2).mean() \
                         / feature_ts.abs().rolling(vol_win, min_periods=vol_win//2).mean()
+        elif signal_func == 'mad':
+            signal_ts = feature_ts.rolling(win, min_periods=win//2).mean() \
+                        / feature_ts.rolling(vol_win, min_periods=vol_win//2).std()
         elif signal_func == 'ma_sgn':
             signal_ts = np.sign(feature_ts.rolling(win).mean())
         elif signal_func == 'ema':
             signal_ts = feature_ts.ewm(win).mean()/feature_ts.abs().ewm(vol_win).mean()
+        elif signal_func == 'emad':
+            signal_ts = feature_ts.ewm(win).mean()/feature_ts.ewm(vol_win).std()
         elif signal_func == 'ema_sgn':
             signal_ts = np.sign(feature_ts.ewm(win).mean())
         elif signal_func == 'ema_dff':
@@ -314,7 +319,7 @@ def signal_cost_optim(signal_df, hump, vol_df, cost_dict, turnover_dict={}, powe
     cost_df = pd.DataFrame.from_dict(dict(**{'date': signal_df.index}, **cost_dict)).set_index('date')
     cost_df = cost_df.reindex_like(signal_df).fillna(0)
     turnover_df = pd.DataFrame.from_dict(dict(**{'date': signal_df.index}, **turnover_dict)).set_index('date')
-    turnover_df = cost_df.reindex_like(turnover_df).fillna(1)
+    turnover_df = turnover_df.reindex_like(signal_df).fillna(1)
     vol_df = vol_df.reindex_like(signal_df).ffill()
     if power == 3:
         gap_df = hump * (3*cost_df.mul(turnover_df).div(vol_df)).pow(1/power)
@@ -1061,7 +1066,7 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
         else:
             use_sgn = True
         signal_ts = signal_hysteresis(signal_ts, param_rng[0], param_rng[2], use_sgn=use_sgn)
-    elif len(signal_func) > 0:
+    elif len(signal_func) > 0:        
         signal_ts = calc_conv_signal(feature_ts, signal_func=signal_func, param_rng=param_rng,
                                      signal_cap=signal_cap, vol_win=vol_win)
     else:
