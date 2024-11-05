@@ -2,6 +2,7 @@ import sys
 import numpy as np
 import datetime
 import pandas as pd
+import logging
 import pickle
 import gc
 from pycmqlib3.utility import dataseries
@@ -55,7 +56,7 @@ def refresh_saved_fut_prices(
     start_date = datetime.date(2005, 1, 1)
     for asset in All_MARKETS:
         for nb in range(1, nb_cont+1):
-            print(f"loading product={asset}, nb={nb}")
+            logging.info(f"loading product={asset}, nb={nb}")
             cont = f"{asset}c{nb}"
             if cont in daily_dict:
                 curr_ddf = daily_dict[cont]
@@ -77,7 +78,7 @@ def refresh_saved_fut_prices(
                                     start_date=start_d, end_date=run_date,
                                     shift_mode=2, roll_name='hot', freq='d1')
             if len(ddf) == 0:
-                print("no new data")
+                logging.warning("no new data")
                 continue
             ddf['expiry'] = pd.to_datetime(ddf['contract'].map(contract_expiry))
             ddf['contmth'] = ddf.apply(lambda x: inst2contmth(x['contract'], x['date']), axis=1)
