@@ -184,8 +184,11 @@ signal_store = {
                       ['hrc_cn_eu_cfr', 'qtl', [20, 30, 2], '', '', True, '', "ema1", 120, [-2,2]]],
     'hrc_arb_ma': [['hc', 'rb'],
                    ['hrc_exp_sea_arb', 'ma', [1, 4, 1], '', '', True, '', "ema1", 120, [-2,2]]],
-    'steel_margin_lvl_fast': [['rb', 'hc', 'i', 'j'],
-                              ['margin_hrc_macf', 'qtl', [20, 40, 2], '', '', True, 'price', "", 120, [-2,2]]],
+    'steel_margin_lvl_fast': [['rb', 'hc', 'i', 'j', 'SM', 'SF'],
+                              ['margin_hrc_macf', 'hlratio', [20, 40, 2], '', '', True, 'price', "buf0.2", 120, [-2,2]]],
+    'steel_margin_lvl_slow': [['SM', 'SF'],
+                              ['margin_hrc_macf', 'hlratio', [240, 260, 2], '', '', True, 'price', "", 120, [-2,2]]],
+
     'strip_hsec_lvl_mid': [['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM', 'cu'],
                            ['strip_hsec', 'qtl', [60, 80, 2], '', '', True, 'price', "sma1", 120, [-2,2]]],
     'macf_cfd_lvl_mid': [['i'],

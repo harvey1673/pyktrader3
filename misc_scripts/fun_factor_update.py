@@ -17,7 +17,8 @@ from misc_scripts.factor_data_update import update_factor_db
 
 single_factors = {
     'hc_rb_diff_20': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'v', 'au', 'ag', 'cu', 'al', 'zn', 'sn', 'ss', 'ni'],
-    'steel_margin_lvl_fast': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
+    'steel_margin_lvl_fast': ['i', 'j', 'jm', 'SF', 'SM'],
+    'steel_margin_lvl_slow': ['SF', 'SM'],
     'strip_hsec_lvl_mid': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
     'io_removal_lvl': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
     'io_removal_lyoy': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
@@ -274,7 +275,51 @@ def mr_pair(price_df, spot_df, product_list, mr_pair_list=mr_commod_pairs,
     return signal_df
 
 
+def seasonal_custom_1(price_df, spot_df, product_list, now=datetime.datetime.now()):
+    signal_df = pd.DataFrame(0, index=price_df.index, columns=product_list)
+    if 'au' in product_list:
+        signal_ts = calc_conv_signal(price_df[("auc1", "close")], 
+                                     signal_func='hlratio', 
+                                     param_rng=[120, 160, 2], 
+                                     signal_cap=[-2, 2], 
+                                     vol_win=120)
+        last_signal = signal_ts[-1]
+        signal_ts.loc[signal_ts.index.weekday.isin([2, 3])] = 1
+        if (signal_df.index[-1].weekday() == 2) and (now.weekday() == 2):
+            signal_ts[-1] = last_signal
+        elif (signal_df.index[-1].weekday() == 4) and (now.weekday() == 4):
+            signal_ts[-1] = 1                    
+        signal_df['au'] = signal_ts
+
+    if 'pb' in product_list:
+        signal_df.loc[signal_df.index.day.isin(range(17, 31)), 'pb'] = 1
+    ferrous_products = ['rb', 'hc', 'i']
+    if set(ferrous_products) <= set(product_list):
+        start_mth = 11
+        start_day = 24
+        end_mth = 1
+        end_day = 4
+        date_list = [d for d in signal_df.index 
+                    if ((d.date()>=datetime.date(d.year, start_mth, start_day)) & 
+                        (d.date()<=datetime.date(d.year+1, end_mth, end_day))) | 
+                        ((d.date()>=datetime.date(d.year-1, start_mth, start_day)) & 
+                         (d.date()<=datetime.date(d.year, end_mth, end_day)))]
+        signal_df.loc[signal_ts.index.isin(date_list), 'rb'] = 0.4
+        signal_df.loc[signal_ts.index.isin(date_list), 'hc'] = 0.4
+        signal_df.loc[signal_ts.index.isin(date_list), 'i'] = 0.7
+    return signal_df
+
+
 factors_by_func = {
+    "seasonal_custom_1": {
+        'func': seasonal_custom_1,
+        'args': {            
+            'now': datetime.datetime.now(),
+            'product_list': [
+                'au', 'pb', 'rb', 'hc', 'i',
+            ],
+        },        
+    },
     "leadlag_d_mid": {
         'func': leader_lagger,
         'args': {
@@ -737,5 +782,5 @@ if __name__ == "__main__":
         tday = now.date()
         if (not is_workday(tday, 'CHN')) or (now.time() < datetime.time(14, 59, 0)):
             tday = day_shift(tday, '-1b', CHN_Holidays)
-    print("running for %s" % str(tday))
+    logging.info("running for %s" % str(tday))
     update_db_factor(run_date=tday)
