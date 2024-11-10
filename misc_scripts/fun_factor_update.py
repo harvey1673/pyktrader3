@@ -635,11 +635,11 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
     # load tmp saved file
     logging.info("loading eod price data ... ")
     try:
-        price_df = pd.read_parquet(f"D:/data/fut_eod_%s.parquet" % run_date.strftime("%Y%m%d"))
+        price_df = pd.read_parquet(f"C:/dev/data/fut_eod_%s.parquet" % run_date.strftime("%Y%m%d"))
     except:
         price_df = load_hist_fut_prices(markets, start_date=price_start, end_date=run_date, 
                                         roll_name=roll_name, nb_cont=2, freq=freq)
-        price_df.to_parquet(f"D:/data/fut_eod_%s.parquet" % run_date.strftime("%Y%m%d"))
+        price_df.to_parquet(f"C:/dev/data/fut_eod_%s.parquet" % run_date.strftime("%Y%m%d"))
 
     logging.info("loading fundamental data ... ")
     cutoff_date = day_shift(day_shift(run_date, '1b', CHN_Holidays), '-1d')
