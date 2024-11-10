@@ -4,7 +4,7 @@ from shutil import copyfile
 import json
 import datetime
 import logging
-from pycmqlib3.utility.sec_bits import EMAIL_HOTMAIL, EMAIL_NOTIFY, NOTIFIERS
+from pycmqlib3.utility.sec_bits import EMAIL_QQ, EMAIL_NOTIFY, NOTIFIERS
 from pycmqlib3.utility import update_contract_roll
 
 logging.basicConfig(filename='hotsel.log', level=logging.INFO, filemode="w",
@@ -63,10 +63,10 @@ def daily_hot_rules(end_date=None,
     picker = WtHotPicker(files)
     picker.set_cacher(cacher)
     if notify:
-        notifier = WtMailNotifier(user=EMAIL_HOTMAIL['user'],
-                                  pwd=EMAIL_HOTMAIL['passwd'],
-                                  host=EMAIL_HOTMAIL['host'],
-                                  port=EMAIL_HOTMAIL['port'],
+        notifier = WtMailNotifier(user=EMAIL_QQ['user'],
+                                  pwd=EMAIL_QQ['passwd'],
+                                  host=EMAIL_QQ['host'],
+                                  port=EMAIL_QQ['port'],
                                   isSSL=False)
         for rec in NOTIFIERS:
             notifier.add_receiver(addr=rec)
@@ -94,5 +94,5 @@ if __name__ == "__main__":
     for file in ['hots', 'seconds']:
         copyfile('%s%s.json' % (files['loc'], file), '%s%s.json' % (config_loc, name_map[file]))
 
-    update_contract_roll.run()
+    #update_contract_roll.run()
     input("press enter key to exit\n")
