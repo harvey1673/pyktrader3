@@ -11,6 +11,7 @@ import json
 from . import dbaccess
 from typing import Union, List
 import exchange_calendars as ec
+from sqlalchemy import create_engine
 
 BDAYS_PER_YEAR = 245.0
 AMERICAN_OPTION_STEPS = 40
@@ -41,7 +42,7 @@ product_code = {'SHFE': ['cu', 'cu_Opt', 'al', 'al_Opt', 'ao', 'ao_Opt', 'zn', '
                 'DCE': ['c', 'c_Opt', 'cs', 'cs_Opt', 'j', 'jd', 'jd_Opt', 'a', 'a_Opt', 'b', 'b_Opt',
                         'm', 'm_Opt', 'y', 'y_Opt', 'p', 'p_Opt', 'l', 'l_Opt', 'v', 'v_Opt',
                         'pp', 'pp_Opt', 'jm', 'i', 'i_Opt', 'fb', 'bb', 'eg', 'eg_Opt', 'rr',
-                        'eb', 'eb_Opt', 'pg', 'pg_Opt', 'lh', 'lh_Opt'],
+                        'eb', 'eb_Opt', 'pg', 'pg_Opt', 'lh', 'lh_Opt', 'lg', 'lg_Opt'],
                 # 'ER', 'WS', 'WT',
                 'CZCE': ['WH', 'PM', 'CF', 'CF_Opt', 'CY', 'SR', 'SR_Opt',
                          'TA', 'TA_Opt', 'OI', 'OI_Opt', 'RI', 'ME', 'FG', 'RS', 'RM', 'RM_Opt', 'TC',
@@ -62,7 +63,7 @@ CHN_Stock_Exch = {
 option_market_products = [
     'm_Opt', 'c_Opt', 'cs_Opt', 'a_Opt', 'b_Opt', 'y_Opt', 'p_Opt',
     'i_Opt', 'pg_Opt', 'l_Opt', 'pp_Opt', 'v_Opt', 'eb_Opt', 'eg_Opt',
-    'jd_Opt', 'lh_Opt',
+    'jd_Opt', 'lh_Opt', 'lg_Opt',
     'OI_Opt', 'PK_Opt', 'SR_Opt', 'CF_Opt', 'TA_Opt', 'MA_Opt', 'RM_Opt',
     'ZC_Opt', 'FG_Opt', 'PK_Opt', 'PF_Opt', 'SH_Opt', 'SA_Opt', 'PX_Opt',
     'UR_Opt', 'SM_Opt', 'SF_Opt', 'AP_Opt', 'CJ_Opt',
@@ -427,6 +428,8 @@ product_lotsize = {
     'i_Opt': 100,
     'lh': 16,
     'lh_Opt': 16,
+    'lg': 90,
+    'lg_Opt': 90,    
     'fb': 500,
     'bb': 500,
     'IF': 300,
@@ -561,6 +564,8 @@ product_ticksize = {
     'pg_Opt': 0.2,
     'lh': 5.0,
     'lh_Opt': 2.5,
+    'lg': 0.5,
+    'lg_Opt': 0.25,    
     'fb': 0.05,
     'bb': 0.05,
     'IF': 0.2,
@@ -1062,7 +1067,8 @@ def nearby(prodcode, n=1, start_date=None, end_date=None, roll_rule='-20b', freq
     dbconf = copy.deepcopy(dbaccess.dbconfig)
     if database:
         dbconf['database'] = database
-    cnx = dbaccess.connect(**dbconf)
+    
+    cnx = create_engine(f"mysql+mysqlconnector://{dbconf['user']}:{dbconf['password']}@{dbconf['host']}/{dbconf['database']}")
     df = pd.DataFrame()
     for idx, exp in enumerate(exp_dates):
         if exp < start_date:

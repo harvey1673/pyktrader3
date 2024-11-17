@@ -114,8 +114,8 @@ def refresh_saved_fut_prices(
                 if new_shift != 0:
                     for col in ['open', 'high', 'low', 'close']:
                         if col in curr_mdf.columns:
-                            curr_mdf[col] = curr_mdf[col]/np.exp(new_shift)
-                    curr_mdf['shift'] = curr_mdf['shift'] + new_shift
+                            curr_mdf.loc[:, col] = curr_mdf.loc[:, col]/np.exp(new_shift)
+                    curr_mdf.loc[:, 'shift'] = curr_mdf.loc[:, 'shift'] + new_shift
                 mdf = mdf[mdf.index > cutoff]
             curr_mdf = pd.concat([curr_mdf, mdf])
             curr_mdf = curr_mdf[~curr_mdf.index.duplicated(keep='last')]
@@ -146,7 +146,7 @@ def refresh_saved_fut_prices(
 
         with open(data_file, 'wb') as f:
             df_dict['daily_data'] = daily_dict
-            df_dict['min_data'] = min_dict            
+            df_dict['min_data'] = min_dict
             pickle.dump(df_dict, f)
     with open(data_file, 'wb') as f:
         df_dict['job_marker'] = run_date         
