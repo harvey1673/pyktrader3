@@ -363,7 +363,12 @@ signal_store = {
         ["exch_warrant", "hlratio", [240, 260, 2], 'cal_yoy_day', "diff", False, "", "ema3", 240, [-2,2]]],
 
     "cgb_1_2_spd_zs": [['cu', 'al', 'zn', 'rb', 'hc', 'i'],
-                       ["cgb_1_2_spd", "zscore", [40, 80, 2], "ema5", "", True, "", "", 120, [-2,2]]],
+                       ["cgb_1_2_spd", "zscore", [40, 80, 2], "", "", True, "", "ema3", 120, [-2,2]]],
+    "cgb_2_5_spd_zs": [['cu', 'al', 'zn', 'rb', 'hc', 'i'],
+                       ["cgb_2_5_spd", "zscore", [40, 80, 2], "", "", True, "", "ema3", 120, [-2,2]]],
+    "cgb_1_5_spd_zs": [['cu', 'al', 'zn', 'rb', 'hc', 'i'],
+                       ["cgb_1_5_spd", "zscore", [40, 80, 2], "", "", True, "", "ema3", 120, [-2,2]]],
+
     'dxy_zsa_s': [['cu', 'al', 'zn', 'rb', 'hc', 'i'],
                   ['dxy', 'zscore_adj', [20, 30, 2], '', '', False, '', 'hmp0.5', 120, [-2,2]]],
     'shibor1m_qtl': [['cu', 'al', 'zn', 'rb', 'hc', 'i'],
@@ -402,6 +407,7 @@ signal_buffer_config = {
     "base_inv_lme_ma": 0.2,
     "base_inv_shfe_ma": 0.2,
     "lme_futbasis_ma": 0.75,
+    "MCU3_zs": 0.2,
 }
 
 signal_execution_config = {

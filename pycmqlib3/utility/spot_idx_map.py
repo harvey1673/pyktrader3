@@ -38,6 +38,42 @@ index_map = {
     'L001619213': 'cn_govbond_yield_2y',
     'L001618480': 'cn_govbond_yield_5y',
     'L001619214': 'cn_govbond_yield_10y',
+    "M004369935": 'pmi_cn_cons_all',
+    "M005933607": 'pmi_cn_cons_new_order',
+    "M005933608": 'pmi_cn_cons_rm_px',
+    "M005933609": 'pmi_cn_cons_px',
+    "M005933610": 'pmi_cn_cons_hr',
+    "M005933611": 'pmi_cn_cons_bus_exp',
+    "M011799928": 'pmi_cn_cons_exports',
+    "M003559320": 'pmi_cn_steel_all',
+    "M003559341": 'pmi_cn_steel_prod',
+    "M003559342": 'pmi_cn_steel_rm_vol',
+    "M003559343": 'pmi_cn_steel_rm_inv',
+    "M003559344": 'pmi_cn_steel_new_order',
+    "M003559345": 'pmi_cn_steel_exports',
+    "M003559346": 'pmi_cn_steel_inv',
+    "M003559347": 'pmi_cn_steel_rm_px',
+    "S004038574": 'pmi_lgsc_steel_all',
+    "S009224315": 'pmi_lgsc_steel_inv',
+    "S009224314": 'pmi_lgsc_steel_sales',
+    "S004038576": 'pmi_lgsc_steel_tot_order',
+    "S009224316": 'pmi_lgsc_steel_mkt_exp',
+    "S004038575": 'pmi_lgsc_steel_purchase_exp',
+    "M002043802": 'pmi_cn_manu_all',
+    "M002043804": 'pmi_cn_manu_new_order',
+    "M002043811": 'pmi_cn_manu_rm_inv',
+    "M002043805": 'pmi_cn_manu_exports',
+    "M002043809": 'pmi_cn_manu_imports',
+    "M002043808": 'pmi_cn_manu_purchase',
+    "M002043806": 'pmi_cn_manu_curr_order',
+    "M003721097": 'pmi_cn_manu_bus_exp',    
+    "M002811186": 'pmi_caixin_manu_all',
+    "M004088026": "epmi_cn_all",
+    "M004088027": "epmi_cn_prod",
+    "M004088028": "epmi_cn_order",
+    "M004302214": "epmi_cn_exports",
+    "M004302216": "epmi_cn_inv",
+    "M004302217": "epmi_cn_purchase",
 
     # ferrous
     'S003019324': 'plt62',
@@ -588,59 +624,59 @@ def adj_publish_time(spot_df):
 def process_spot_df(spot_df, adjust_time=False):
     if adjust_time:
         spot_df = adj_publish_time(spot_df)
-
+    spot_dict = {}
     for asset in ['cu', 'al', 'zn', 'pb', 'ni', 'sn']:
-        spot_df[f'{asset}_inv_exch_d'] = spot_df[
+        spot_dict[f'{asset}_inv_exch_d'] = spot_df[
             [f'{asset}_inv_shfe_d', f'{asset}_inv_lme_total']].sum(axis=1, skipna=False)
-        spot_df[f'{asset}_lme_futbasis'] = np.log(1 + spot_df[f'{asset}_lme_0m_3m_spd'] /
+        spot_dict[f'{asset}_lme_futbasis'] = np.log(1 + spot_df[f'{asset}_lme_0m_3m_spd'] /
                                                   spot_df[f'{asset}_lme_3m_close'])
 
-    spot_df['usggbe10'] = spot_df['usgg10yr'] - spot_df['usggt10yr']
-    spot_df['cgb_2_5_spd'] = spot_df['cn_govbond_yield_2y'] - spot_df['cn_govbond_yield_5y']
-    spot_df['cgb_1_2_spd'] = spot_df['cn_govbond_yield_1y'] - spot_df['cn_govbond_yield_2y']
-    spot_df['cgb_1_5_spd'] = spot_df['cn_govbond_yield_1y'] - spot_df['cn_govbond_yield_5y']
-    spot_df['cgb_2_10_spd'] = spot_df['cn_govbond_yield_2y'] - spot_df['cn_govbond_yield_10y']
-    spot_df['r_dr_7d_spd'] = spot_df['r007_cn'] - spot_df['dr007_cn']
+    spot_dict['usggbe10'] = spot_df['usgg10yr'] - spot_df['usggt10yr']
+    spot_dict['cgb_2_5_spd'] = spot_df['cn_govbond_yield_2y'] - spot_df['cn_govbond_yield_5y']
+    spot_dict['cgb_1_2_spd'] = spot_df['cn_govbond_yield_1y'] - spot_df['cn_govbond_yield_2y']
+    spot_dict['cgb_1_5_spd'] = spot_df['cn_govbond_yield_1y'] - spot_df['cn_govbond_yield_5y']
+    spot_dict['cgb_2_10_spd'] = spot_df['cn_govbond_yield_2y'] - spot_df['cn_govbond_yield_10y']
+    spot_dict['r_dr_7d_spd'] = spot_df['r007_cn'] - spot_df['dr007_cn']
 
-    #spot_df['usgg10yr_2yr_spd'] = spot_df['usgg10yr'] - spot_df['usgg2yr']
-    spot_df['steel_inv_mill'] = spot_df['rebar_inv_mill'] + spot_df['wirerod_inv_mill'] + \
+    #spot_dict['usgg10yr_2yr_spd'] = spot_df['usgg10yr'] - spot_df['usgg2yr']
+    spot_dict['steel_inv_mill'] = spot_df['rebar_inv_mill'] + spot_df['wirerod_inv_mill'] + \
                                 spot_df['hrc_inv_mill'] + spot_df['crc_inv_mill'] #+ spot_df['plate_inv_mill']
-    spot_df['steel_inv_all'] = spot_df['steel_inv_social'] + spot_df['steel_inv_mill']
-    spot_df['steel_social_inv'] = spot_df['rebar_inv_social'] + spot_df['wirerod_inv_social'] + \
+    spot_dict['steel_inv_all'] = spot_df['steel_inv_social'] + spot_dict['steel_inv_mill']
+    spot_dict['steel_social_inv'] = spot_df['rebar_inv_social'] + spot_df['wirerod_inv_social'] + \
                                   spot_df['hrc_inv_social'] + spot_df['crc_inv_social'] #+ spot_df['plate_inv_social']
-    spot_df['long_social_inv'] = spot_df['rebar_inv_social'] + spot_df['wirerod_inv_social']
-    spot_df['flat_social_inv'] = spot_df['hrc_inv_social'] + spot_df['crc_inv_social'] #+ spot_df['plate_inv_social']
-    spot_df['rebar_app_dmd'] = spot_df['rebar_prod_all'] - spot_df['rebar_inv_all'].dropna().diff()
-    spot_df['wirerod_app_dmd'] = spot_df['wirerod_prod_all'] - spot_df['wirerod_inv_all'].dropna().diff()
-    spot_df['hrc_app_dmd'] = spot_df['hrc_prod_all'] - spot_df['hrc_inv_all'].dropna().diff()
-    spot_df['crc_app_dmd'] = spot_df['crc_prod_all'] - spot_df['crc_inv_all'].dropna().diff()
-    spot_df['rb_hc_dmd_diff'] = spot_df['rebar_app_dmd'] - spot_df['hrc_app_dmd']
-    spot_df['rb_hc_sinv_diff'] = spot_df['rebar_inv_social'].dropna().diff() - spot_df['hrc_inv_social'].dropna().diff()
-    spot_df['rebar_sales_inv_ratio'] = spot_df['consteel_dsales_mysteel']/spot_df['rebar_inv_social'].ffill()
+    spot_dict['long_social_inv'] = spot_df['rebar_inv_social'] + spot_df['wirerod_inv_social']
+    spot_dict['flat_social_inv'] = spot_df['hrc_inv_social'] + spot_df['crc_inv_social'] #+ spot_df['plate_inv_social']
+    spot_dict['rebar_app_dmd'] = spot_df['rebar_prod_all'] - spot_df['rebar_inv_all'].dropna().diff()
+    spot_dict['wirerod_app_dmd'] = spot_df['wirerod_prod_all'] - spot_df['wirerod_inv_all'].dropna().diff()
+    spot_dict['hrc_app_dmd'] = spot_df['hrc_prod_all'] - spot_df['hrc_inv_all'].dropna().diff()
+    spot_dict['crc_app_dmd'] = spot_df['crc_prod_all'] - spot_df['crc_inv_all'].dropna().diff()
+    spot_dict['rb_hc_dmd_diff'] = spot_dict['rebar_app_dmd'] - spot_dict['hrc_app_dmd']
+    spot_dict['rb_hc_sinv_diff'] = spot_df['rebar_inv_social'].dropna().diff() - spot_df['hrc_inv_social'].dropna().diff()
+    spot_dict['rebar_sales_inv_ratio'] = spot_df['consteel_dsales_mysteel']/spot_df['rebar_inv_social'].ffill()
 
-    spot_df['crc_hrc'] = spot_df['crc_sh'] - spot_df['hrc_sh']
-    spot_df['pipe_strip'] = spot_df['pipe_1.5x3.25'] - spot_df['strip_3.0x685']
-    spot_df['hrc_billet'] = spot_df['hrc_sh'] - spot_df['billet_ts']
-    spot_df['rebar_billet'] = spot_df['rebar_sh'] - spot_df['billet_ts']
-    spot_df['plate_billet'] = spot_df['plate_8mm'] - spot_df['billet_ts']
-    spot_df['crc_billet'] = spot_df['crc_sh'] - spot_df['billet_ts']
-    spot_df['gi_billet'] = spot_df['gi_0.5_sh'] - spot_df['billet_ts']
-    spot_df['strip_billet'] = spot_df['strip_3.0x685'] - spot_df['billet_ts']
-    spot_df['pipe_billet'] = spot_df['pipe_1.5x3.25'] - spot_df['billet_ts']
-    spot_df['hsec_billet'] = spot_df['hsec_400x200'] - spot_df['billet_ts']
-    spot_df['channel_billet'] = spot_df['channel_16'] - spot_df['billet_ts']
-    spot_df['ibeam_billet'] = spot_df['ibeam_25'] - spot_df['billet_ts']
-    spot_df['angle_billet'] = spot_df['angle_50x5'] - spot_df['billet_ts']
-    spot_df['highwire_billet'] = spot_df['highwire_6.5'] - spot_df['billet_ts']
+    spot_dict['crc_hrc'] = spot_df['crc_sh'] - spot_df['hrc_sh']
+    spot_dict['pipe_strip'] = spot_df['pipe_1.5x3.25'] - spot_df['strip_3.0x685']
+    spot_dict['hrc_billet'] = spot_df['hrc_sh'] - spot_df['billet_ts']
+    spot_dict['rebar_billet'] = spot_df['rebar_sh'] - spot_df['billet_ts']
+    spot_dict['plate_billet'] = spot_df['plate_8mm'] - spot_df['billet_ts']
+    spot_dict['crc_billet'] = spot_df['crc_sh'] - spot_df['billet_ts']
+    spot_dict['gi_billet'] = spot_df['gi_0.5_sh'] - spot_df['billet_ts']
+    spot_dict['strip_billet'] = spot_df['strip_3.0x685'] - spot_df['billet_ts']
+    spot_dict['pipe_billet'] = spot_df['pipe_1.5x3.25'] - spot_df['billet_ts']
+    spot_dict['hsec_billet'] = spot_df['hsec_400x200'] - spot_df['billet_ts']
+    spot_dict['channel_billet'] = spot_df['channel_16'] - spot_df['billet_ts']
+    spot_dict['ibeam_billet'] = spot_df['ibeam_25'] - spot_df['billet_ts']
+    spot_dict['angle_billet'] = spot_df['angle_50x5'] - spot_df['billet_ts']
+    spot_dict['highwire_billet'] = spot_df['highwire_6.5'] - spot_df['billet_ts']
 
-    spot_df['io_inv_removal_ratio_41p'] = spot_df['io_inv_41ports'] / spot_df['io_removal_41ports']
-    spot_df['io_inv_rmv_pctchg_41p'] = spot_df['io_inv_removal_ratio_41p'].dropna().pct_change()
-    spot_df['io_inv_mill(64)'] = spot_df['io_inv_imp_mill(64)'] + spot_df['io_inv_dom_mill(64)']
-    spot_df['io_on_off_arb'] = vat_adj(spot_df['pbf_cfd'] - 25) / spot_df['usdcnh_spot'] / 0.915 / 61.5 * 62 \
+    spot_dict['io_inv_removal_ratio_41p'] = spot_df['io_inv_41ports'] / spot_df['io_removal_41ports']
+    spot_dict['io_inv_rmv_pctchg_41p'] = spot_dict['io_inv_removal_ratio_41p'].dropna().pct_change()
+    spot_dict['io_inv_mill(64)'] = spot_df['io_inv_imp_mill(64)'] + spot_df['io_inv_dom_mill(64)']
+    spot_dict['io_on_off_arb'] = vat_adj(spot_df['pbf_cfd'] - 25) / spot_df['usdcnh_spot'] / 0.915 / 61.5 * 62 \
                                - spot_df['plt62']
-    spot_df['margin_hrc_pbf'] = spot_df['hrc_sh'] - 1.7 * spot_df['pbf_cfd'] - 0.45 * spot_df['coke_xuzhou_xb']
-    spot_df['margin_hrc_macf'] = spot_df['hrc_sh'] - 1.7 * spot_df['macf_cfd'] - 0.45 * spot_df['coke_xuzhou_xb']
-    spot_df['strip_hsec'] = spot_df['strip_3.0x685'] - spot_df['hsec_400x200']
+    spot_dict['margin_hrc_pbf'] = spot_df['hrc_sh'] - 1.7 * spot_df['pbf_cfd'] - 0.45 * spot_df['coke_xuzhou_xb']
+    spot_dict['margin_hrc_macf'] = spot_df['hrc_sh'] - 1.7 * spot_df['macf_cfd'] - 0.45 * spot_df['coke_xuzhou_xb']
+    spot_dict['strip_hsec'] = spot_df['strip_3.0x685'] - spot_df['hsec_400x200']
     if ('coal_5500_sx_qhd' in spot_df.columns) and ('coal_5500_qhd' in spot_df.columns):
         spot_df.loc[:'2022-02-11', 'coal_5500_sx_qhd'] = spot_df.loc[:'2022-02-11', 'coal_5500_qhd']
     warrant_dict = {
@@ -702,7 +738,7 @@ def process_spot_df(spot_df, adjust_time=False):
         "sc": ["sc_inv_ine_warrant"],
     }
     for asset in warrant_dict:
-        spot_df[f"{asset}_exch_warrant"] = spot_df[warrant_dict[asset]].dropna().sum(axis=1).dropna()
+        spot_dict[f"{asset}_exch_warrant"] = spot_df[warrant_dict[asset]].dropna().sum(axis=1).dropna()
 
     asset_pairs = [
         ("sw_sector_idx_prop", 'csi500_idx', 'prop_sw_csi500'),
@@ -730,7 +766,8 @@ def process_spot_df(spot_df, adjust_time=False):
             asset_df[f"{trade_asset}_pct"]) / asset_df[f"{index_asset}_pct"].rolling(beta_win).var()
         asset_df['ret'] = asset_df[trade_asset].pct_change() - asset_df['beta'] * asset_df[
             index_asset].pct_change().fillna(0)
-        spot_df[key + "_ret"] = asset_df['ret'].dropna()
-        spot_df[key + '_beta'] = asset_df['beta']
-        spot_df[key + '_val'] = asset_df['ret'].dropna().cumsum()
+        spot_dict[key + "_ret"] = asset_df['ret'].dropna()
+        spot_dict[key + '_beta'] = asset_df['beta']
+        spot_dict[key + '_val'] = asset_df['ret'].dropna().cumsum()
+    spot_df = pd.concat([spot_df, pd.DataFrame(spot_dict)], axis=1)
     return spot_df

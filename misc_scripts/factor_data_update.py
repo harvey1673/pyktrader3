@@ -83,6 +83,7 @@ port_pos_config = {
             ('PTSIM1_LL.json', 12000, 'd1'),
             ('PTSIM1_LL2MR.json', 12000, 'd1'),
             ('PTSIM1_MR1Y.json', 12000, 'd1'),
+            ('PTSIM1_CNMAC1.json', 4000, 'd1'),
             ('PTSIM1_FUNFER.json', 20000, 'd1'),
             ('PTSIM1_FUNBASE.json', 20000, 'd1'),
             ('PTSIM1_FUNMTL.json', 8000, 'd1'),
@@ -339,7 +340,7 @@ def update_factor_data(product_list, scenarios, start_date, end_date,
 
     #beta neutral
     logging.info("updating factor for beta neutral ratio ...")
-    beta_win = 122
+    beta_win = 245
     asset_pairs = [('rb', 'i'), ('hc', 'i'), ('j', 'i')]
     fact_config['exch'] = 'xasset'
     for trade_asset, index_asset in asset_pairs:

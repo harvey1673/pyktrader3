@@ -144,7 +144,11 @@ def load_codes_from_edb(code_list, source=['ifind'], start_date=None, end_date=N
         code_list = [code_list]
     if isinstance(source, str):
         source = [source]
-    cnx = connect(**dbconfig)
+    cnx = create_engine('mysql+mysqlconnector://{user}:{passwd}@{host}/{dbase}'.format(
+        user=dbconfig['user'],
+        passwd=dbconfig['password'],
+        host=dbconfig['host'],
+        dbase=dbconfig['database']), echo=False)
     fields = ['date', 'index_name', 'index_code', 'value', 'ref_name']
     stmt = "select {sel_fields} from edb where source in ({src})".format(
         sel_fields=','.join(fields), src=','.join(f'"{w}"' for w in source))
@@ -676,7 +680,7 @@ def load_daily_data_to_df(cnx, dbtable, inst, d_start, d_end, index_col='date', 
     stmt = stmt + "and date >= '%s' " % d_start.strftime('%Y-%m-%d')
     stmt = stmt + "and date <= '%s' " % d_end.strftime('%Y-%m-%d')
     stmt = stmt + "order by date"
-    df = pd.io.sql.read_sql(stmt, cnx)
+    df = pd.read_sql(stmt, cnx)
     col_name = 'date'
     if (len(df) > 0) and (isinstance(df[col_name][0], str)) and (date_as_str == False):
         df[col_name] = df[col_name].apply(lambda x: datetime.datetime.strptime(x, "%Y-%m-%d").date())
