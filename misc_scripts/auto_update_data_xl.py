@@ -7,7 +7,7 @@ from pycmqlib3.utility.sec_bits import LOCAL_NUTSTORE_FOLDER, IFIND_XL_HOTKEYS
 from pycmqlib3.utility.dbaccess import write_edb_by_xl_sheet
 
 
-def update_ifind_xlsheet(filename='C:/Users/harvey/Nutstore/1/Nutstore/ifind_data.xlsx', wait_time=60):
+def update_ifind_xlsheet(filename='C:/Users/harvey/Nutstore/1/Nutstore/ifind_data.xlsx', wait_time=40):
     xl = win32com.client.DispatchEx("Excel.Application")
     wb = xl.Workbooks.open(filename)
     xl.Visible = True
@@ -19,10 +19,9 @@ def update_ifind_xlsheet(filename='C:/Users/harvey/Nutstore/1/Nutstore/ifind_dat
                 continue
             wtime = wait_time
             is_daily = False
-            if 'daily' in wb.Sheets[s].name:
+            if '_d' in wb.Sheets[s].name:
                 is_daily=True
-            else:
-                wtime = wait_time // 2 
+                wtime = wait_time + 10
             win32gui.ShowWindow(xl.Hwnd, win32con.SW_RESTORE)
             win32gui.EnableWindow(xl.Hwnd, True)
             win32gui.SetForegroundWindow(xl.Hwnd)
