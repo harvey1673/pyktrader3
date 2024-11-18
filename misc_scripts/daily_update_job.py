@@ -4,7 +4,7 @@ import datetime
 import pandas as pd
 import json
 import logging
-from pycmqlib3.utility.sec_bits import EMAIL_HOTMAIL, EMAIL_NOTIFY, NOTIFIERS, LOCAL_PC_NAME
+from pycmqlib3.utility.sec_bits import EMAIL_QQ, EMAIL_NOTIFY, NOTIFIERS, LOCAL_PC_NAME
 from pycmqlib3.utility.misc import day_shift, CHN_Holidays, is_workday, product_lotsize
 from pycmqlib3.analytics.tstool import response_curve
 from misc_scripts.aks_data_update import update_hist_fut_daily, update_spot_daily, \
@@ -281,23 +281,22 @@ def run_update(tday=datetime.date.today()):
             logging.warning(f"exch = {exch} EOD price is FAILED to update, an error ocurred: {e}")
         save_status(filename, job_status)    
     logging.info('updating factor data calculation...')    
-    update_db_factor(run_date=tday)        
-    # if update_field not in job_status:
-    #     job_status[update_field] = {}
-    #     missing_daily, missing_factors = check_eod_data(tday)
-    #     job_status[update_field]['eod_price'] = list(missing_daily.keys())
-    #     job_status[update_field]['factor_data'] = list(missing_factors.index)
-    #     if len(missing_daily) > 0:
-    #         logging.warning('missing EOD data: %s' % missing_daily)
-    #     if len(missing_factors) > 0:
-    #         logging.warning('missing factor data: %s' % missing_factors)
-    # else:
-    #     missing_daily = job_status[update_field].get('eod_price', [])
-    #     missing_factors = job_status[update_field].get('factor_data', [])
-
+    #update_db_factor(run_date=tday) 
     status, pos_update = update_port_pos(tday, email_notify=False)
     job_status.update(status)
     save_status(filename, job_status)
+    if update_field not in job_status:
+        job_status[update_field] = {}
+        missing_daily, missing_factors = check_eod_data(tday)
+        job_status[update_field]['eod_price'] = list(missing_daily.keys())
+        job_status[update_field]['factor_data'] = list(missing_factors.index)
+        if len(missing_daily) > 0:
+            logging.warning('missing EOD data: %s' % missing_daily)
+        if len(missing_factors) > 0:
+            logging.warning('missing factor data: %s' % missing_factors)
+    else:
+        missing_daily = job_status[update_field].get('eod_price', [])
+        missing_factors = job_status[update_field].get('factor_data', [])    
 
     sdate = day_shift(tday, '-1b', CHN_Holidays)
     for (update_field, update_func, ref_text) in [
@@ -328,7 +327,7 @@ def run_update(tday=datetime.date.today()):
             html += "Position change for %s:<br>%s" % (key, pos_update[key].to_html())
         html += "Job status: %s <br>" % (json.dumps(job_status))
         html += "</p></body></html>"
-        send_html_by_smtp(EMAIL_HOTMAIL, NOTIFIERS, sub, html)
+        send_html_by_smtp(EMAIL_QQ, NOTIFIERS, sub, html)
         job_status[update_field] = True
     save_status(filename, job_status)
 
@@ -357,7 +356,7 @@ def check_eod_data(tday):
                                     freq='d1')
     stats_df = pd.pivot_table(adf, index='product_code', columns='fact_name', values=['fact_val'], aggfunc='count')
     stats_df = stats_df.sum(axis=1)
-    missing_products = stats_df[(stats_df < 54)]
+    missing_products = stats_df[(stats_df < 12)]
     return missing_daily, missing_products
 
 
