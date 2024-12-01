@@ -13,6 +13,7 @@ from pycmqlib3.utility.misc import day_shift, CHN_Holidays, prod2exch, is_workda
     nearby, contract_expiry, inst2contmth
 from pycmqlib3.analytics.tstool import *
 from misc_scripts.factor_data_update import update_factor_db
+from misc_scripts.seasonality_update import seasonal_cal_update
 
 
 single_factors = {
@@ -323,6 +324,38 @@ factors_by_func = {
             'now': datetime.datetime.now(),
             'product_list': [
                 'au', 'pb', 'rb', 'hc', 'i',
+            ],
+        },        
+    },
+    "seazn_cal_mth_sr": {
+        'func': seasonal_cal_update,
+        'args': {            
+            'cal_key':'cal_mth',
+            'cal_func': calendar_label,
+            'label_field': 'label_mth',
+            'shift': 0,
+            'season_rng': [1, 12],
+            'product_list': [
+                'rb', 'hc', 'i', 'j', 'FG', 
+                'l', 'pp', 'v', 'TA', 'MA', 'eg', 
+                'm', 'RM', 'p', 'OI', 
+                'a', 'c', 'CF', 'jd',
+            ],
+        },        
+    },
+    "seazn_lunar_wk2_sr": {
+        'func': seasonal_cal_update,
+        'args': {            
+            'cal_key':'lunar_wk2',
+            'cal_func': lunar_label,
+            'label_field': 'label_wk',
+            'shift': 2,
+            'season_rng': [-26, 26],
+            'product_list': [
+                'rb', 'hc', 'i', 'j', 'FG', 
+                'l', 'pp', 'v', 'TA', 'MA', 'eg',
+                'm', 'RM', 'p', 'OI', 
+                'a', 'c', 'CF', 'jd',
             ],
         },        
     },
@@ -733,8 +766,7 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
     asset_pairs = [('rb', 'i'), ('hc', 'i'), ('j', 'i')]
     beta_dict = {}
     for trade_asset, index_asset in asset_pairs:
-        key = '_'.join([trade_asset, index_asset, 'beta'])
-        fact_config['product_code'] = key        
+        key = '_'.join([trade_asset, index_asset, 'beta'])        
         fact_config = {'roll_label': roll_name, 'freq': freq,
                 'serial_key': '0', 'serial_no': 0,
                 'product_code': key, 'exch': 'xasset'}

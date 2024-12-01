@@ -424,6 +424,7 @@ signal_execution_config = {
     'ioarb_px_hlr': {"win": "a1505", "lag": 1},
     'ioarb_px_hlrhys': {"win": "a1505", "lag": 1},
     'ioarb_spd_qtl_1y': {"win": "a1505", "lag": 1},
+    'MCU3_zs': {"win": "a1505", "lag": 1},
 }
 
 feature_to_feature_key_mapping = {

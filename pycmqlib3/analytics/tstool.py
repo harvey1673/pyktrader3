@@ -865,7 +865,7 @@ def xs_score(df_in, demean=True, hl=None):
 
 
 def xs_rank(df_in, cutoff=0.5):
-    prod_count = df_in.apply(lambda x: x.count if x.count() > 0 else np.nan, axis=1)
+    prod_count = df_in.apply(lambda x: x.count() if x.count() > 0 else np.nan, axis=1)
     rank_df = df_in.rank(axis=1)
     median_ts = rank_df.quantile(0.5, axis=1)
     df_out = rank_df.sub(median_ts, axis=0).div(prod_count - 1, axis=0) * 2.0
