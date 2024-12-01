@@ -102,37 +102,13 @@ def seasonal_cal_update(price_df, spot_df,
         hist_seasonal_df = pd.concat([hist_seasonal_df, curr_seasonal_df])
     signal_df = pd.DataFrame(index=price_df.index, columns=product_list)
     for product in product_list:
-        # ts = hist_seasonal_df[(product, f'seazn_{cal_key}_days')]
-        # ts = ts[ts<20]
-        # if len(ts) == 0:
-        #     continue
-        # sdate = ts.index[-1]
+        ts = hist_seasonal_df[(product, f'seazn_{cal_key}_days')]
         signal_ts = hist_seasonal_df[(product, f'seazn_{cal_key}_mean')]/hist_seasonal_df[(product, f'seazn_{cal_key}_std')] * 16
-        #signal_ts = signal_ts[signal_ts.index>sdate]
-        signal_df[product] = signal_ts
+        ts = ts[ts<20]
+        if len(ts) > 0:
+            signal_ts = signal_ts[signal_ts.index>ts.index[-1]]
+        signal_df[product] = signal_ts    
     signal_df  = signal_df * (1-xs_weight) + xs_demean(signal_df) * xs_weight
     return signal_df
-
-
-
-
-
-            
-
-            
-
-
-
-
-                
-                
-            
-                 
-                 
-                 
-
-
-
-
 
 
