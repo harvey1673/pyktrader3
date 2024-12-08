@@ -24,7 +24,8 @@ def refresh_saved_fut_prices(
         run_date,
         nb_cont=2,
         last_update=None,
-        data_file="C:/dev/data/cnc_fut_m5_latest.pkl"
+        data_file="D:/data/cnc_fut_m5_latest.pkl",
+        use_marker=True
 ):
     period_setup = {
         'd_twap': [1500, 2100],
@@ -53,7 +54,7 @@ def refresh_saved_fut_prices(
         min_dict = df_dict['min_data']
     else:
         min_dict = {}
-    if 'job_marker' in df_dict:
+    if use_marker and 'job_marker' in df_dict:
         last_run = df_dict['job_marker']
         if last_run >= run_date:
             return df_dict
@@ -156,13 +157,13 @@ def refresh_saved_fut_prices(
 
 def load_saved_fut(tday=datetime.date.today(),
                    freq='d',
-                   data_file="C:/dev/data/cnc_fut_m5_latest.pkl", cont='c1'):
+                   data_file="D:/data/cnc_fut_m5_latest.pkl", cont='c1'):
     tday = pd.to_datetime(tday)
     try:
         if freq == 'd':
-            df = pd.read_parquet(f"C:/dev/data/fut_{freq}_%s.parquet" % tday.strftime("%Y%m%d"))
+            df = pd.read_parquet(f"D:/data/fut_{freq}_%s.parquet" % tday.strftime("%Y%m%d"))
         else:
-            df = pd.read_parquet(f"C:/dev/data/fut_{freq}_{cont}_%s.parquet" % tday.strftime("%Y%m%d"))
+            df = pd.read_parquet(f"D:/data/fut_{freq}_{cont}_%s.parquet" % tday.strftime("%Y%m%d"))
     except:
         try:
             with open(data_file, 'rb') as handle:
@@ -198,9 +199,9 @@ def load_saved_fut(tday=datetime.date.today(),
             gc.collect()
         try:
             if freq == 'd':
-                df.to_parquet(f"C:/dev/data/fut_{freq}_%s.parquet" % tday.strftime("%Y%m%d"))
+                df.to_parquet(f"D:/data/fut_{freq}_%s.parquet" % tday.strftime("%Y%m%d"))
             else:
-                df.to_parquet(f"C:/dev/data/fut_{freq}_{cont}_%s.parquet" % tday.strftime("%Y%m%d"))
+                df.to_parquet(f"D:/data/fut_{freq}_{cont}_%s.parquet" % tday.strftime("%Y%m%d"))
             print(f"fut_{freq} data saved")
         except:
             print(f"fut_{freq} save error")
@@ -218,5 +219,5 @@ if __name__ == "__main__":
             tday = day_shift(tday, '-1b', CHN_Holidays)
     refresh_saved_fut_prices(run_date=tday)
     _ = load_saved_fut(tday=tday, freq='d')
-    #_ = load_saved_fut(tday=tday, freq='m', cont='c1')
-    #_ = load_saved_fut(tday=tday, freq='m', cont='c2')
+    _ = load_saved_fut(tday=tday, freq='m', cont='c1')
+    _ = load_saved_fut(tday=tday, freq='m', cont='c2')

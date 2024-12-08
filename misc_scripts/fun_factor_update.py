@@ -3,6 +3,7 @@ sys.path.append("C:/dev/pyktrader3")
 sys.path.append("C:/dev/wtpy")
 
 import pandas as pd
+from pandas.tseries.offsets import CustomBusinessDay
 import logging
 from pycmqlib3.strategy.signal_repo import get_funda_signal_from_store, BROAD_MKTS, IND_MKTS, AGS_MKTS
 from pycmqlib3.utility.spot_idx_map import index_map, process_spot_df
@@ -59,6 +60,7 @@ single_factors = {
     "MCU3_zs": ['cu', 'al', 'zn', 'sn', 'rb', 'hc', 'i', 'FG', 'l', 'v', 'TA', 'eg'],
     "cgb_1_2_spd_zs": ['cu', 'al', 'zn', 'sn', 'rb', 'hc', 'i', 'FG', 'l', 'v', 'TA', 'eg'],
     "cgb_2_5_spd_zs": ['cu', 'al', 'zn', 'sn', 'rb', 'hc', 'i', 'FG', 'l', 'v', 'TA', 'eg'],
+    "fxbasket_zs": ['cu', 'al', 'zn', 'sn', 'rb', 'hc', 'i', 'FG', 'l', 'v', 'TA', 'eg'],
 
 }
 
@@ -151,66 +153,46 @@ mr_commod_pairs = [
     ('l', 'MA'), ('pp', 'MA'), ('TA', 'MA'), ('TA', 'eg')
 ]
 
-
-# def long_hol_signal(spot_df, days=2, gaps=7):
-#     idx = pd.date_range(spot_df.index[0])
-#     sig_ts = spot_df.index.map(lambda x:
-#                                1 if ((day_shift(x.date(), f'{days}b', CHN_Holidays) - x.date()).days >= gaps) or
-#                                     ((x.date() - day_shift(x.date(), f'-{days}b', CHN_Holidays)).days >= gaps)
-#                                else 0)
-#     sig_ts = pd.Series(sig_ts, index=spot_df.index)
-#     return sig_ts
-# def long_break(df, input_args):
-#     product_list = input_args['product_list']
-#     gaps = input_args.get('gaps', 7)
-#     days = input_args.get('days', 2)
-#     signal_df = pd.DataFrame(index=df.index, columns=product_list)
-#     signal_ts = df.index.map(lambda x:
-#                              1 if ((day_shift(x.date(), f'{days}b', CHN_Holidays) - x.date()).days >= gaps) or
-#                                   ((x.date() - day_shift(x.date(), f'-{days}b', CHN_Holidays)).days >= gaps)
-#                              else 0)
-#     signal_ts = pd.Series(signal_ts, index=df.index)
-#     for prod in product_list:
-#         signal_df[prod] = signal_ts
-#     return signal_df
+def create_holiday_window_series(index, holidays, pre_days, post_days):
+    chn_bday = CustomBusinessDay(holidays=pd.to_datetime(CHN_Holidays))
+    series = pd.Series(0, index=index)        
+    for holiday in holidays:        
+        start = holiday + pre_days * chn_bday
+        end = holiday + post_days * chn_bday               
+        series.loc[(series.index >= start) & (series.index <= end)] = 1
+    return series
 
 
-def cnc_hol_seasonality(price_df, spot_df, product_list, pre_days=2, post_days=2):
-    sig_ts = pd.Series(0, index=pd.date_range(start=price_df.index[0],
-                                              end=price_df.index[-1] + pd.DateOffset(days=30), freq='B'))
-    for yr in range(sig_ts.index[0].year, sig_ts.index[-1].year+1):
-        cny_date = pd.Timestamp(lunardate.LunarDate(yr, 1, 1).toSolarDate())
-        for (evt_d, befdays, aftdays) in \
-                [(cny_date, pre_days, post_days),
-                 (pd.Timestamp(datetime.date(yr, 5, 1)), 2, 2),
-                 (pd.Timestamp(datetime.date(yr, 10, 1)), 2, 2)]:
-            flag = pd.Series(sig_ts.index < evt_d, index=sig_ts.index) & pd.Series(
-                sig_ts.index.map(lambda d: pd.Timestamp(day_shift(d.date(), f'{befdays}b', CHN_Holidays)) > evt_d),
-                index=sig_ts.index)
-            sig_ts[flag] = 1
-            flag = pd.Series(sig_ts.index >= evt_d, index=sig_ts.index) & pd.Series(
-                sig_ts.index.map(lambda d: pd.Timestamp(day_shift(d.date(), f'-{aftdays}b', CHN_Holidays)) < evt_d),
-                index=sig_ts.index)
-            sig_ts[flag] = 1
-    sig_ts = sig_ts.reindex(index=price_df.index).ffill()
-    signal_df = pd.concat([sig_ts] * len(product_list), axis=1)
-    signal_df.columns = product_list    
+def cnc_hol_seasonality(price_df, spot_df, product_list):
+    signal_ts1 = create_holiday_window_series(price_df.index, 
+                                            [pd.Timestamp(datetime.date(yr, 5, 1)) for yr in range(price_df.index[0].year-1, price_df.index[-1].year+2)], -3, 1) 
+    signal_ts2 = create_holiday_window_series(price_df.index, 
+                                            [pd.Timestamp(datetime.date(yr, 10, 1)) for yr in range(price_df.index[0].year-1, price_df.index[-1].year+2)], -3, 1)
+    signal_ts3 = create_holiday_window_series(price_df.index, 
+                                            [pd.Timestamp(datetime.date(yr, 1, 1)) for yr in range(price_df.index[0].year-1, price_df.index[-1].year+2)], -5, 1)
+    signal_ts4 = create_holiday_window_series(price_df.index, 
+                                            [pd.Timestamp(lunardate.LunarDate(yr,1,1).toSolarDate()) for yr in range(price_df.index[0].year-1, price_df.index[-1].year+2)], -5, 1)
+    signal_ts = signal_ts1 + signal_ts2 + signal_ts3 + signal_ts4
+    signal_df = pd.DataFrame(dict([(asset, signal_ts) for asset in product_list]))
     return signal_df
 
 
-def hc_rb_diff(price_df, spot_df, product_list, win=20, shift_mode=2):
-    xdf = price_df.loc[:, price_df.columns.get_level_values(0).isin(['rbc1', 'hcc1'])].copy(deep=True)
-    xdf = xdf['2014-07-01':]
-    if shift_mode == 2:
-        xdf[('rbc1', 'px_chg')] = np.log(xdf[('rbc1', 'close')]).diff()
-        xdf[('hcc1', 'px_chg')] = np.log(xdf[('hcc1', 'close')]).diff()
-    else:
-        xdf[('rbc1', 'px_chg')] = xdf[('rbc1', 'close')].diff()
-        xdf[('hcc1', 'px_chg')] = xdf[('hcc1', 'close')].diff()
-    hc_rb_diff = xdf[('hcc1', 'px_chg')] - xdf[('rbc1', 'px_chg')]
-    signal_ts = hc_rb_diff.ewm(span=win).mean() / hc_rb_diff.ewm(span=win).std()
-    signal_df = pd.concat([signal_ts] * len(product_list), axis=1)
-    signal_df.columns = product_list
+def steel_io_seasonality(price_df, spot_df, product_list):
+    rb_pxchg = price_df[('rbc1', 'close')].pct_change()
+    rb_vol = rb_pxchg.rolling(20).std()
+    io_pxchg = price_df[('ic1', 'close')].pct_change()
+    io_vol = io_pxchg.rolling(20).std()
+    beta = beta_hedge_ratio(rb_pxchg, io_pxchg, beta_win=245, beta_rng=[0, 2], corr_step=5).dropna()
+    spd_pxchg = (rb_pxchg - beta['port'] * io_pxchg)
+    spd_vol = spd_pxchg.dropna().rolling(20).std()    
+    feature_ts = spd_pxchg.dropna().cumsum()
+    signal_ts = calc_conv_signal(feature_ts, signal_func='zscore', 
+                                 param_rng=[80, 120, 2], signal_cap=[-2, 2], vol_win=120)
+    signal_ts.loc[signal_ts.index.month.isin([1, 2, 11, 12])] = -signal_ts.loc[signal_ts.index.month.isin([1, 2, 11, 12])]
+    signal_df = pd.DataFrame({
+        'rb': signal_ts*rb_vol/spd_vol,
+        'i': - signal_ts*beta['port']*io_vol/spd_vol,
+    })
     return signal_df
 
 
@@ -327,6 +309,24 @@ factors_by_func = {
             ],
         },        
     },
+    "long_hol_2b": {
+        'func': cnc_hol_seasonality,
+        'args': {
+            'product_list': [
+                'rb', 'hc', 'i', 'j', 'jm', 'zn', 'ni', 'ss', 'sn',
+                'l', 'pp', 'v', 'TA', 'sc', 'eb', 'eg', 'lu',
+                'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'CF'
+            ],
+        },
+    },    
+    "steel_io_seazn": {
+        'func': steel_io_seasonality,
+        'args': {
+            'product_list': [
+                'rb', 'i'
+            ],
+        },        
+    },
     "seazn_cal_mth_sr": {
         'func': seasonal_cal_update,
         'args': {            
@@ -431,29 +431,6 @@ factors_by_func = {
             'signal_func': 'zscore_adj',
         }
     },
-    # "hc_rb_diff_20": {
-    #     'func': hc_rb_diff,
-    #     'args': {
-    #         "win": 20, 
-    #         "shift_mode": 2,
-    #         "product_list": [
-    #                 'rb', 'hc', 'i', 'j', 'jm', 'FG', 'v',
-    #                 'cu', 'al', 'zn', 'sn', 'ss', 'ni'
-    #             ],
-    #     },
-    # },
-    "long_hol_2b": {
-        'func': cnc_hol_seasonality,
-        'args': {
-            'pre_days': 10, 
-            'post_days': 5,
-            'product_list': [
-                'rb', 'hc', 'i', 'j', 'jm', 
-                'l', 'pp', 'v', 'TA', 'sc', 'eb', 'eg', 'lu',
-                'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'cs', 'CF'
-            ],
-        },
-    }
 }
 
 

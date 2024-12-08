@@ -23,6 +23,18 @@ index_map = {
     'G003082215': 'vxd', # Vol for DJ
     'G003082227': 'vxn', # Vol for Nasdaq
     'G002945506': 'ted_spd',
+    'G003146263': 'usdzar_xe',
+    'G003146267': 'usdbrl_xe',
+    'G003146268': 'usdnok_xe',
+    'G003146276': 'usdkrw_xe',
+    'G003146252': 'usdcny_xe',
+    'G003146248': 'usdaud_xe',
+    'G003146249': 'usdcad_xe',
+    'G003146245': 'usdeur_xe',
+    'G003146246': 'usdgbp_xe',
+    'G003146256': 'usdjpy_xe',
+    'G004849308': 'usdclp_xe',
+    'G019711418': 'usdcnh_xe',
 
     'L001619493': 'dr007_cn',
     'L004317616': 'fr007_cn',
@@ -567,9 +579,9 @@ index_map = {
     "M009042872": "sw_sector_idx_coal",
     "M003802454": "sw_sector2_idx_glass",
     "M003802458": "sw_sector2_idx_infra",
-    "M003802411": "sw_sector2_idx_weaving",
+    #"M003802411": "sw_sector2_idx_weaving",
     "M003802386": "sw_sector2_idx_rubber",
-    "M003802385": "sw_sector2_idx_plastics",
+    #"M003802385": "sw_sector2_idx_plastics",
 
     "M003588167": "zx_sector_idx_const",
     "M003588182": "zx_sector_idx_prop",
@@ -636,6 +648,8 @@ def process_spot_df(spot_df, adjust_time=False):
     spot_dict['cgb_1_2_spd'] = spot_df['cn_govbond_yield_1y'] - spot_df['cn_govbond_yield_2y']
     spot_dict['cgb_1_5_spd'] = spot_df['cn_govbond_yield_1y'] - spot_df['cn_govbond_yield_5y']
     spot_dict['cgb_2_10_spd'] = spot_df['cn_govbond_yield_2y'] - spot_df['cn_govbond_yield_10y']
+    spot_dict['fxbasket_cumret'] = spot_df[['usdzar_xe', 'usdaud_xe', 'usdclp_xe', 'usdbrl_xe']].dropna().pct_change().mean(axis=1).cumsum()
+
     spot_dict['r_dr_7d_spd'] = spot_df['r007_cn'] - spot_df['dr007_cn']
 
     #spot_dict['usgg10yr_2yr_spd'] = spot_df['usgg10yr'] - spot_df['usgg2yr']
@@ -752,10 +766,8 @@ def process_spot_df(spot_df, adjust_time=False):
         ("sw_sector_idx_petchem", 'csi500_idx', 'petchem_sw_csi500'),
         ("sw_sector_idx_coal", 'csi500_idx', 'coal_sw_csi500'),
         ("sw_sector2_idx_glass", 'csi500_idx', 'glass_sw_csi500'),
-        ("sw_sector2_idx_infra", 'csi500_idx', 'infra_sw_csi500'),
-        ("sw_sector2_idx_weaving", 'csi500_idx', 'weaving_sw_csi500'),
-        ("sw_sector2_idx_rubber", 'csi500_idx', 'rubber_sw_csi500'),
-        ("sw_sector2_idx_plastics", 'csi500_idx', 'plastics_sw_csi500'),
+        ("sw_sector2_idx_infra", 'csi500_idx', 'infra_sw_csi500'),        
+        ("sw_sector2_idx_rubber", 'csi500_idx', 'rubber_sw_csi500'),        
     ]
     beta_win = 245
     for trade_asset, index_asset, key in asset_pairs:

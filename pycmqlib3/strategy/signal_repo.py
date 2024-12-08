@@ -348,6 +348,10 @@ signal_store = {
                               ["prop_sw_csi500_ret", "dbl_th", [0.75, 120, 0], "ema3", "pct_score", True, "", "", 120, [-2,2]]],
     "prop_etf_mom_dbth_qtl2": [['rb', 'i', 'v', 'FG'],
                                ["prop_sw_csi500_ret", "dbl_th", [0.8, 240, 1], "ema3", "pct_score", True, "", "", 120, [-2,2]]],
+    "glass_etf_mom_dbth_zs": [['FG'],
+                             ["glass_sw_csi500_ret", "hysteresis", [1, 120, 0.5], "ema3", "zscore_roll", True, "", "", 120, [-2,2]]],                             
+    "rubber_etf_mom_dbth_zs": [['ru', 'nr'],
+                             ["rubber_sw_csi500_ret", "hysteresis", [1.5, 60, 1], "ema3", "zscore_roll", True, "", "", 120, [-2,2]]],                             
 
     "exch_wnt_hlr": [
         ['ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
@@ -368,7 +372,9 @@ signal_store = {
                        ["cgb_2_5_spd", "zscore", [40, 80, 2], "", "", True, "", "ema3", 120, [-2,2]]],
     "cgb_1_5_spd_zs": [['cu', 'al', 'zn', 'rb', 'hc', 'i'],
                        ["cgb_1_5_spd", "zscore", [40, 80, 2], "", "", True, "", "ema3", 120, [-2,2]]],
-
+    "fxbasket_zs": [['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SA', 
+                     'cu', 'al', 'zn', 'l', 'pp', 'v', 'TA', 'eg'],
+                    ['fxbasket_cumret', 'zscore', [20, 40, 2], '', '', False, '', 'buf0.2', 120, [-2,2]]],
     'dxy_zsa_s': [['cu', 'al', 'zn', 'rb', 'hc', 'i'],
                   ['dxy', 'zscore_adj', [20, 30, 2], '', '', False, '', 'hmp0.5', 120, [-2,2]]],
     'shibor1m_qtl': [['cu', 'al', 'zn', 'rb', 'hc', 'i'],
@@ -399,6 +405,19 @@ signal_store = {
     #
     # 'vix_mds': ('vix', 'ma_dff_sgn', [20, 40, 2], '', 'pct_change', False, 'price'),
     # 'vix_zsa': ('vix', 'zscore_adj', [40, 60, 2], 'ema3', 'pct_change', False, 'price'),
+    "pmi_stl_all_yoy": [['rb', 'hc', 'j', 'jm', 'i'],
+                        ['pmi_cn_steel_all', 'ma', [1, 2, 1], 'df12', 'diff', True, '', '', 24, [-2,2]]],
+    "pmi_stl_prod_yoy": [['rb', 'hc', 'j', 'jm', 'i'],
+                        ['pmi_cn_steel_prod', 'ma', [1, 2, 1], 'df12', 'diff', True, '', '', 24, [-2,2]]],
+    "pmi_cons_exp_yoy": [['rb', 'hc', 'j', 'jm', 'i'],
+                        ['pmi_cn_cons_exp', 'ma', [1, 2, 1], 'df12', 'diff', True, '', '', 24, [-2,2]]],
+    "pmi_lgsc_stl_tot_order_yoy": [['rb', 'hc'],
+                        ['pmi_lgsc_stl_tot_order', 'ma', [1, 2, 1], 'df12', 'diff', True, '', '', 24, [-2,2]]],
+    "pmi_lgsc_stl_fund_yoy": [['rb', 'hc', "i"],
+                        ['pmi_lgsc_stl_fund', 'ma', [1, 2, 1], 'df12', 'diff', True, '', '', 24, [-2,2]]],
+    "pmi_cn_purchase_yoy": [['rb', 'hc', 'j', 'jm', 'i', 'FG', 'v', 'al', 'cu'],
+                        ['pmi_cn_purchase', 'ma', [1, 2, 1], 'df12', 'diff', True, '', '', 24, [-2,2]]],
+
 }
 
 signal_buffer_config = {
@@ -407,7 +426,8 @@ signal_buffer_config = {
     "base_inv_lme_ma": 0.2,
     "base_inv_shfe_ma": 0.2,
     "lme_futbasis_ma": 0.75,
-    "MCU3_zs": 0.2,
+    "MCU3_zs": 0.2, 
+    "fxbasket_zs": 0.2,
 }
 
 signal_execution_config = {
@@ -425,6 +445,7 @@ signal_execution_config = {
     'ioarb_px_hlrhys': {"win": "a1505", "lag": 1},
     'ioarb_spd_qtl_1y': {"win": "a1505", "lag": 1},
     'MCU3_zs': {"win": "a1505", "lag": 1},
+    'fxbasket_zs': {"win": "a1505", "lag": 1},
 }
 
 feature_to_feature_key_mapping = {
@@ -656,3 +677,4 @@ def custom_funda_signal(df, input_args):
                                       turnover_dict={},
                                       power=3)
     return signal_df
+
