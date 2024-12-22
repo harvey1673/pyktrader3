@@ -30,13 +30,14 @@ def refresh_saved_fut_prices(
     period_setup = {
         'd_twap': [1500, 2100],
         'n_twap': [300, 500],
-        'n305': [303, 307],
+        'n305': [302, 307],
         'n310': [307, 312],
         'n315': [312, 317],
         'n450': [448, 458],
-        'a1505': [1503, 1507],
+        'a1505': [1502, 1507],
         'a1510': [1507, 1512],
-        'a1515': [1512, 1517],        
+        'a1515': [1515, 1520],
+        'a1535': [1530, 1540],
         'p1935': [1930, 1940],
         'p2055': [2048, 2058],
     }
@@ -73,6 +74,12 @@ def refresh_saved_fut_prices(
                     if last_update:
                         start_d = pd.Timestamp(last_update)
                         curr_ddf = curr_ddf[curr_ddf.index <= start_d]
+                        shift = curr_ddf['shift'].iloc[-1]
+                        if shift != 0:
+                            for col in ['open', 'high', 'low', 'close', 'settle'] + list(period_setup.keys()):
+                                if col in curr_ddf.columns:
+                                    curr_ddf.loc[:, col] = curr_ddf.loc[:, col] * np.exp(shift)
+                        curr_ddf['shift'] = curr_ddf['shift'] - shift
                     start_d = curr_ddf.index[-1]
             else:
                 curr_ddf = pd.DataFrame()
@@ -94,6 +101,12 @@ def refresh_saved_fut_prices(
                 if last_update:
                     last_update = pd.Timestamp(last_update)
                     curr_mdf = curr_mdf[curr_mdf['date'] <= last_update]
+                    shift = curr_mdf['shift'].iloc[-1]
+                    if shift != 0:
+                        for col in ['open', 'high', 'low', 'close']:
+                            if col in curr_mdf.columns:
+                                curr_mdf.loc[:, col] = curr_mdf.loc[:, col] * np.exp(shift)
+                    curr_mdf['shift'] = curr_mdf['shift'] - shift
                 start_d = curr_mdf['date'][-1]
             else:
                 curr_mdf = pd.DataFrame()

@@ -56,6 +56,14 @@ signal_store = {
     "basmom120_ema": [BROAD_MKTS, ["basmom120", "ema", [1, 2, 1], "", "", True, "price", "ema1", 240, [-2,2]]],
     "basmom120_ema_xdemean": [BROAD_MKTS, ["basmom120", "ema", [1, 2, 1], "", "", True, "price", "ema1", 240, [-2,2]]],
 
+    # bond future
+    'bond_mr_st_qtl': [['T', 'TF'],
+                       ['px', 'qtl', [2, 5, 1], 'df1', 'pct_change', False, '', "ema10|buf0.1", 120, [-2,2]]],
+    'bond_tf_lt_qtl': [['T', 'TF'],
+                       ['px', 'qtl', [230, 250, 2], '', '', True, '', "buf0.1", 120, [-2,2]]],
+    'bond_carry_ma': [['T', 'TF'],
+                      ['ryield', 'ma', [1, 2, 1], '', '', True, '', "", 120, [-2,2]]],
+
     'pbf_yoy_qtl': [['fef', 'i'], ["pbf_prem", 'qtl', [20, 30, 2], "cal_yoy", "diff", True, "", "", 120, [-2,2]]],
     'pbf_yoy_eds': [['fef', 'i'], ["pbf_prem", 'ema_dff_sgn', [5, 15, 1], "cal_yoy", "diff", True, "", "", 120, [-2,2]]],
     'pbf_spd': [['rb_i', "hc_i"], ["pbf_prem", 'zscore_adj', [40, 80, 2], "", "", False, "", "", 120, [-2,2]]],
@@ -410,14 +418,13 @@ signal_store = {
     "pmi_stl_prod_yoy": [['rb', 'hc', 'j', 'jm', 'i'],
                         ['pmi_cn_steel_prod', 'ma', [1, 2, 1], 'df12', 'diff', True, '', '', 24, [-2,2]]],
     "pmi_cons_exp_yoy": [['rb', 'hc', 'j', 'jm', 'i'],
-                        ['pmi_cn_cons_exp', 'ma', [1, 2, 1], 'df12', 'diff', True, '', '', 24, [-2,2]]],
+                        ['pmi_cn_cons_bus_exp', 'ma', [1, 2, 1], 'df12', 'diff', True, '', '', 24, [-2,2]]],
     "pmi_lgsc_stl_tot_order_yoy": [['rb', 'hc'],
-                        ['pmi_lgsc_stl_tot_order', 'ma', [1, 2, 1], 'df12', 'diff', True, '', '', 24, [-2,2]]],
+                        ['pmi_lgsc_steel_tot_order', 'ma', [1, 2, 1], 'df12', 'diff', True, '', '', 24, [-2,2]]],
     "pmi_lgsc_stl_fund_yoy": [['rb', 'hc', "i"],
-                        ['pmi_lgsc_stl_fund', 'ma', [1, 2, 1], 'df12', 'diff', True, '', '', 24, [-2,2]]],
+                        ['pmi_lgsc_steel_purchase_exp', 'ma', [1, 2, 1], 'df12', 'diff', True, '', '', 24, [-2,2]]],
     "pmi_cn_purchase_yoy": [['rb', 'hc', 'j', 'jm', 'i', 'FG', 'v', 'al', 'cu'],
-                        ['pmi_cn_purchase', 'ma', [1, 2, 1], 'df12', 'diff', True, '', '', 24, [-2,2]]],
-
+                        ['pmi_cn_manu_purchase', 'ma', [1, 2, 1], 'df12', 'diff', True, '', '', 24, [-2,2]]],
 }
 
 signal_buffer_config = {

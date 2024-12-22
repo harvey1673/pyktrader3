@@ -1083,7 +1083,7 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
             post_func_list = [post_func]
         for pfunc in post_func_list:
             if pfunc[:3] == 'ema':
-                n_win = int(pfunc[3])
+                n_win = int(pfunc[3:])
                 signal_ts = signal_ts.ewm(n_win, ignore_na=True).mean()
             elif pfunc[:3] == 'sma':
                 n_win = int(pfunc[3:])

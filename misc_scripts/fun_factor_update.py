@@ -75,6 +75,9 @@ factors_by_asset = {
     "mom_hlr_lt": BROAD_MKTS,
     "mom_momma20": BROAD_MKTS,
     "mom_momma240": BROAD_MKTS,
+    'bond_mr_st_qtl': ['T'],
+    'bond_tf_lt_qtl': ['T'],
+    'bond_carry_ma': ['T'],
     'lme_base_ts_mds': ['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
     'lme_base_ts_hlr': ['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
     'lme_futbasis_ma': ['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
@@ -280,7 +283,17 @@ def seasonal_custom_1(price_df, spot_df, product_list, now=datetime.datetime.now
             signal_ts[-1] = 1                    
         signal_df['au'] = signal_ts
 
-    if 'pb' in product_list:
+    for asset in ['l', 'pp', 'v', 'MA']:
+        if asset in product_list:
+            signal_df.loc[signal_df.index.day.isin(range(4, 10)), asset] += -0.25
+            signal_df.loc[~signal_df.index.day.isin(range(4, 10)), asset] += 0.25
+            signal_df.loc[signal_df.index.day.isin(range(5, 23)), asset] += -0.25
+            signal_df.loc[~signal_df.index.day.isin(range(5, 23)), asset] += 0.25
+
+    if 'SF' in product_list:
+        signal_df.loc[signal_df.index.weekday.isin([2, 3]), asset] = 1
+
+    if 'pb' in product_list:        
         signal_df.loc[signal_df.index.day.isin(range(17, 31)), 'pb'] = 1
     ferrous_products = ['rb', 'hc', 'i']
     if set(ferrous_products) <= set(product_list):
@@ -305,7 +318,7 @@ factors_by_func = {
         'args': {            
             'now': datetime.datetime.now(),
             'product_list': [
-                'au', 'pb', 'rb', 'hc', 'i',
+                'au', 'l', 'pp', 'v', 'MA', 'pb', 'rb', 'hc', 'i',
             ],
         },        
     },
@@ -644,6 +657,7 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
         'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'si', 'ao', 'au', 'ag', 'bc',
         'l', 'pp', 'TA', 'MA', 'sc', 'eb', 'eg', 'UR', 'lu', 'bu', 'fu', 'PF', 
         'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'CF', 'jd', 'AP', 'lh', 'cs', 'CJ', 'PK', 'b',
+        'T', 'TF',
     ]
     price_start = day_shift(run_date, '-30m')
     # load tmp saved file
