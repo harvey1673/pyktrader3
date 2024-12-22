@@ -86,6 +86,9 @@ index_map = {
     "M004302214": "epmi_cn_exports",
     "M004302216": "epmi_cn_inv",
     "M004302217": "epmi_cn_purchase",
+    "S009065264": "cement_idx_cn",
+    "S009065254": "cement_idx_cj",
+    "S012691163": "concrete_idx_cn",
 
     # ferrous
     'S003019324': 'plt62',
