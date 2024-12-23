@@ -291,7 +291,7 @@ def seasonal_custom_1(price_df, spot_df, product_list, now=datetime.datetime.now
             signal_df.loc[~signal_df.index.day.isin(range(5, 23)), asset] += 0.25
 
     if 'SF' in product_list:
-        signal_df.loc[signal_df.index.weekday.isin([2, 3]), asset] = 1
+        signal_df.loc[signal_df.index.weekday.isin([2, 3]), 'SF'] = 1
 
     if 'pb' in product_list:        
         signal_df.loc[signal_df.index.day.isin(range(17, 31)), 'pb'] = 1
@@ -318,7 +318,7 @@ factors_by_func = {
         'args': {            
             'now': datetime.datetime.now(),
             'product_list': [
-                'au', 'l', 'pp', 'v', 'MA', 'pb', 'rb', 'hc', 'i',
+                'au', 'l', 'pp', 'v', 'MA', 'pb', 'rb', 'hc', 'i', 'SF',
             ],
         },        
     },
