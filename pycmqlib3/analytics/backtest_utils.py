@@ -303,11 +303,11 @@ def get_beta_neutral_returns(df, asset_pairs):
 def load_fun_data(tday=datetime.date.today()):
     tday = pd.to_datetime(tday)
     try:
-        spot_df = pd.read_parquet("D:/data/spot_df_%s.parquet" % tday.strftime("%Y%m%d"))
+        spot_df = pd.read_parquet("C:/dev/data/spot_df_%s.parquet" % tday.strftime("%Y%m%d"))
     except:
         spot_df = get_fun_data(start_date=datetime.date(2006, 1, 1), run_date=tday)
         try:
-            spot_df.to_parquet("D:/data/spot_df_%s.parquet" % tday.strftime("%Y%m%d"))
+            spot_df.to_parquet("C:/dev/data/spot_df_%s.parquet" % tday.strftime("%Y%m%d"))
             print("spot_df data saved")
         except:
             print("spot_df save error")
@@ -317,7 +317,7 @@ def load_fun_data(tday=datetime.date.today()):
 def load_cnc_fut(tday=datetime.date.today(), type='cnc'):
     tday = pd.to_datetime(tday)
     try:
-        df = pd.read_parquet(f"D:/data/{type}_fut_df_%s.parquet" % tday.strftime("%Y%m%d"))
+        df = pd.read_parquet(f"C:/dev/data/{type}_fut_df_%s.parquet" % tday.strftime("%Y%m%d"))
     except:
         commod_mkts = [
             'rb', 'hc', 'i', 'j', 'jm', 'FG', 'SM', 'SF', 'SA', 'ru', 'nr',
@@ -336,7 +336,7 @@ def load_cnc_fut(tday=datetime.date.today(), type='cnc'):
             )
         print(error_list)
         try:
-            df.to_parquet(f"D:/data/{type}_fut_df_%s.parquet" % tday.strftime("%Y%m%d"))
+            df.to_parquet(f"C:/dev/data/{type}_fut_df_%s.parquet" % tday.strftime("%Y%m%d"))
             print(f"{type}_fut_df data saved")
         except:
             print(f"{type}_fut_df save error")
