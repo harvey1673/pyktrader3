@@ -574,19 +574,27 @@ def get_funda_signal_from_store(spot_df, signal_name, price_df=None,
             if price_df is None:
                 print("ERROR: no future price is passed for metal_pbc")
                 return pd.Series()
-            spot_df['date'] = pd.to_datetime(spot_df.index)
-            spot_df[f'{asset}_c1'] = price_df[(asset+'c1', 'close')] / np.exp(price_df[(asset+'c1', 'shift')])
-            spot_df[f'{asset}_expiry'] = pd.to_datetime(price_df[(asset+'c1', 'expiry')])
-            if asset == 'i':
-                spot_df['io_ctd_spot'] = io_ctd_basis(spot_df, price_df[('i'+'c1', 'expiry')])
-            spot_df[f'{asset}_phybasis'] = (np.log(spot_df[asset_feature]) - np.log(spot_df[f'{asset}_c1'])) / \
-                                           (spot_df[f'{asset}_expiry'] - spot_df['date']).dt.days * 365 + spot_df['r007_cn'].ffill()/100
+            if f'{asset}_phybasis' not in spot_df.columns:
+                data_dict = {}            
+                data_dict[f'{asset}_c1'] = price_df[(asset+'c1', 'close')] / np.exp(price_df[(asset+'c1', 'shift')])
+                data_dict[f'{asset}_expiry'] = pd.to_datetime(price_df[(asset+'c1', 'expiry')])
+                if asset == 'i':
+                    data_dict['io_ctd_spot'] = io_ctd_basis(spot_df, price_df[('i'+'c1', 'expiry')])
+                else:
+                    data_dict[asset_feature] = spot_df[asset_feature].dropna()
+                data_dict['r007_cn'] = spot_df['r007_cn']            
+                data_df = pd.DataFrame(data_dict).dropna(how='all')
+                data_df['date'] = pd.to_datetime(data_df.index)                
+                data_df[f'{asset}_phybasis'] = (np.log(data_df[asset_feature]) - np.log(data_df[f'{asset}_c1'])) / \
+                                            (data_df[f'{asset}_expiry'] - data_df['date']).dt.days * 365 + data_df['r007_cn'].ffill()/100
+                spot_df = pd.concat([spot_df, data_df[[f'{asset}_phybasis']]], axis=1)
             asset_feature = f'{asset}_phybasis'
         if feature == 'metal_px':
             if price_df is None:
                 print("ERROR: no future price is passed for metal_pbc")
                 return pd.Series()
-            spot_df[f'{asset}_px'] = price_df[(asset+'c1', 'close')]
+            if f'{asset}_px' not in spot_df.columns:
+                spot_df = pd.cocnat([spot_df, price_df[(asset+'c1', 'close')].to_frame(f'{asset}_px')], axis=1)            
             asset_feature = f'{asset}_px'
         if feature in param_rng_by_feature_key:
             param_rng = param_rng_by_feature_key[feature].get(asset, param_rng)

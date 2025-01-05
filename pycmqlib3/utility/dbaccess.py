@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import warnings
 import datetime
 import numpy as np
 import mysql.connector as sqlconn
@@ -17,6 +18,7 @@ hist_dbconfig = sec_bits.hist_dbconfig
 bktest_dbconfig = sec_bits.bktest_dbconfig
 misc_dbconfig = sec_bits.misc_dbconfig
 
+warnings.filterwarnings("ignore", category=UserWarning)
 #dbconfig = {'database': "C:\\dev\\pycmqlib\\data\\market_data.db"}
 #hist_dbconfig = {'database': "C:\\dev\\pycmqlib\\data\\market_data.db"}
 #bktest_dbconfig = {'database': "C:\\dev\\pycmqlib\\data\\bktest_data.db"}
