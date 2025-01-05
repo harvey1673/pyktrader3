@@ -168,14 +168,17 @@ def create_holiday_window_series(index, holidays, pre_days, post_days):
 
 def cnc_hol_seasonality(price_df, spot_df, product_list):
     signal_ts1 = create_holiday_window_series(price_df.index, 
-                                            [pd.Timestamp(datetime.date(yr, 5, 1)) for yr in range(price_df.index[0].year-1, price_df.index[-1].year+2)], -3, 1) 
+                                            [pd.Timestamp(datetime.date(yr, 5, 1)) for yr in range(price_df.index[0].year-1, price_df.index[-1].year+2)], -2, 1) 
     signal_ts2 = create_holiday_window_series(price_df.index, 
-                                            [pd.Timestamp(datetime.date(yr, 10, 1)) for yr in range(price_df.index[0].year-1, price_df.index[-1].year+2)], -3, 1)
+                                            [pd.Timestamp(datetime.date(yr, 10, 1)) for yr in range(price_df.index[0].year-1, price_df.index[-1].year+2)], -2, 1)
     signal_ts3 = create_holiday_window_series(price_df.index, 
-                                            [pd.Timestamp(datetime.date(yr, 1, 1)) for yr in range(price_df.index[0].year-1, price_df.index[-1].year+2)], -5, 1)
+                                            [pd.Timestamp(datetime.date(yr, 1, 1)) for yr in range(price_df.index[0].year-1, price_df.index[-1].year+2)], -6, 1)
     signal_ts4 = create_holiday_window_series(price_df.index, 
-                                            [pd.Timestamp(lunardate.LunarDate(yr,1,1).toSolarDate()) for yr in range(price_df.index[0].year-1, price_df.index[-1].year+2)], -5, 1)
-    signal_ts = signal_ts1 + signal_ts2 + signal_ts3 + signal_ts4
+                                            [pd.Timestamp(lunardate.LunarDate(yr,1,1).toSolarDate()) for yr in range(price_df.index[0].year-1, price_df.index[-1].year+2)], -5, 2)
+    signal_ts5 = create_holiday_window_series(price_df.index, 
+                                            [pd.Timestamp(lunardate.LunarDate(yr,1,1).toSolarDate()) for yr in range(price_df.index[0].year-1, price_df.index[-1].year+2)], -17, 5)
+    
+    signal_ts = signal_ts1*0.5 + signal_ts2 + signal_ts3 + signal_ts4*0.5 + signal_ts5*0.5
     signal_df = pd.DataFrame(dict([(asset, signal_ts) for asset in product_list]))
     return signal_df
 
