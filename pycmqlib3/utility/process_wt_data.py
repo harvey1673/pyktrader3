@@ -137,7 +137,6 @@ def load_fut_by_product(code, start_date, end_date, freq='d', folder_loc='C:/dev
     for file in file_list:
         cont = file.split('.')[0]
         prod = cont[:2] if exch in ['CZCE', ] else cont[:-4]
-        expiry = misc.contract_expiry(cont, hols=misc.CHN_Holidays)
         if prod not in prod_keys:
             continue
         dst_df = dtHelper.read_dsb_bars(f'{src_path}/{file}')
@@ -149,6 +148,8 @@ def load_fut_by_product(code, start_date, end_date, freq='d', folder_loc='C:/dev
         dst_df = convert_wt_data(dst_df, cont, freq=freq)
         out_df = pd.concat([out_df, dst_df])
     out_df = out_df[(out_df['date']>=start_date)&(out_df['date']<=end_date)].reset_index(drop=True)
+    out_df['expiry'] = out_df.apply(lambda x: misc.contract_expiry(x["instID"], curr_dt=x["date"], hols=misc.CHN_Holidays), axis=1)
+    out_df = out_df.sort_values(["date", "expiry"])
     return out_df
 
 

@@ -787,8 +787,8 @@ class ContBktestManager(BacktestManager):
         cnx = connect(**dbconfig)
         for i, prod in enumerate(assets):
             cont_mth, exch = prod_main_cont_exch(prod)
-            self.contlist[prod], _ = contract_range(prod, exch, cont_mth, self.start_date, self.end_date)
-            self.exp_dates[prod] = [contract_expiry(cont) for cont in contlist[prod]]
+            self.contlist[prod], ten_list = contract_range(prod, exch, cont_mth, self.start_date, self.end_date)
+            self.exp_dates[prod] = [contract_expiry(cont, curr_dt=ten) for cont, ten in zip(contlist[prod], ten_list)]
             edates = [ day_shift(d, self.config['rollrule']) for d in exp_dates[prod] ]
             sdates = [ day_shift(d, self.sim_period) for d in exp_dates[prod] ]
             self.data_store[prod] = {}

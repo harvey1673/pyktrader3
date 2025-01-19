@@ -7,6 +7,7 @@ from misc_scripts.fun_factor_update import update_db_factor
 from misc_scripts.auto_update_data_xl import update_data_from_xl
 from misc_scripts.sgx_daily_update import fetch_daily_eod, fetch_fef_3pm_close
 from pycmqlib3.utility.misc import day_shift, CHN_Holidays, is_workday
+from pycmqlib3.utility import base
 from pycmqlib3.utility.sec_bits import EMAIL_QQ, NOTIFIERS, LOCAL_PC_NAME, EMAIL_NOTIFY
 from pycmqlib3.utility.email_tool import send_html_by_smtp
 update_func_list = [
@@ -64,6 +65,12 @@ if __name__ == "__main__":
         tday = now.date()
         if (not is_workday(tday, 'CHN')) or (now.time() < datetime.time(14, 59, 0)):
             tday = day_shift(tday, '-1b', CHN_Holidays)
-    print("running for %s" % str(tday))
+    folder = "C:/dev/data/"
+    name = "pf_position_update"
+    base.config_logging(folder + name + ".log", level=logging.INFO,
+                        format='%(name)s:%(funcName)s:%(lineno)d:%(asctime)s %(levelname)s %(message)s',
+                        to_console=True,
+                        console_level=logging.INFO)            
+    logging.info("running for %s" % str(tday))
     job_status, pos_update = update_port_pos(tday=tday, email_notify=EMAIL_NOTIFY)
     print(job_status, pos_update)
