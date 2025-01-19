@@ -50,7 +50,7 @@ product_code = {'SHFE': ['cu', 'cu_Opt', 'al', 'al_Opt', 'ao', 'ao_Opt', 'zn', '
                          'AP', 'AP_Opt', 'CJ', 'CJ_Opt', 'UR', 'UR_Opt', 'SA', 'SA_Opt',
                          'PF', 'PF_Opt', 'PK', 'PK_Opt', 'PX', 'PX_Opt', 'SH', 'SH_Opt', 'PR',],
                 'INE': ['sc', 'sc_Opt', 'nr', 'lu', 'bc', 'ec'],
-                'GFEX': ['si', 'si_Opt', 'lc', 'lc_Opt'],
+                'GFEX': ['si', 'si_Opt', 'lc', 'lc_Opt', 'ps', 'ps_Opt'],
                 'SGX': ['FEF', 'M65F'],
                 'LME': ['lsc', 'lsr', 'lhc'],
                 'NYMEX': ['nhr', ]}
@@ -69,7 +69,7 @@ option_market_products = [
     'UR_Opt', 'SM_Opt', 'SF_Opt', 'AP_Opt', 'CJ_Opt',
     'cu_Opt', 'al_Opt', 'zn_Opt', 'ao_Opt', 'ru_Opt', 'au_Opt', 'ag_Opt',
     'si_Opt', 'lc_Opt', 'br_Opt',
-    'ETF_Opt', 'IO_Opt', 'MO_Opt', 'HO_Opt',
+    'ETF_Opt', 'IO_Opt', 'MO_Opt', 'HO_Opt', 'ps_Opt',
 ]
 
 night_session_markets = {
@@ -314,6 +314,8 @@ product_class_map = {
     'lu': ('Ind', "Petro"),
     'si': ('Ind', "NonFerrous"),
     'si_Opt': ('Ind', "NonFerrous"),
+    'ps': ('Ind', "NonFerrous"),
+    'ps_Opt': ('Ind', "NonFerrous"),
 }
 
 product_lotsize = {
@@ -448,6 +450,8 @@ product_lotsize = {
     'ec': 50,
     'si': 5,
     'si_Opt': 5,
+    'ps': 3,
+    'ps_Opt': 3,    
     'lc': 1,
     'lc_Opt': 1,
 }
@@ -585,6 +589,8 @@ product_ticksize = {
     'ec': 0.1,
     'si': 5.0,
     'si_Opt': 5.0,
+    'ps': 5.0,
+    'ps_Opt': 1.0,    
     'lc': 50,
 }
 
@@ -1042,7 +1048,7 @@ def cont_expiry_list(prodcode, start_date, end_date, roll_rule='-0d'):
     cont_mth, exch = dbaccess.prod_main_cont_exch(prodcode)
     hols = get_hols_by_exch(exch)
     contlist, tenor_list = contract_range(prodcode, exch, cont_mth, start_date, day_shift(end_date, '12m', hols))
-    exp_dates = [day_shift(contract_expiry(cont), roll_rule, hols) for cont in contlist]
+    exp_dates = [day_shift(contract_expiry(cont, curr_dt=ten), roll_rule, hols) for cont, ten in zip(contlist, tenor_list)]
     return contlist, exp_dates, tenor_list
 
 
@@ -1169,7 +1175,7 @@ def tenor_to_expiry(tenor_label, prod_code = 'fef'):
         return cont_date_expiry(cont_date, prod_code, exch)
 
 
-def contract_expiry(cont, hols=CHN_Holidays):
+def contract_expiry(cont, curr_dt=None, hols=CHN_Holidays):
     if cont == 'sn2005':
         return datetime.date(2020, 2, 12)
     if type(hols) == list:
@@ -1177,10 +1183,15 @@ def contract_expiry(cont, hols=CHN_Holidays):
         exch = prod2exch(prod_code)
         mth = int(cont[-2:])
         if exch == 'CZCE' and len(cont) == 5:
-            if int(cont[-3:-2])>=5:
-                yr = 2010 + int(cont[-3:-2])
+            if curr_dt is None:
+                curr_yr = datetime.date.today().year
             else:
-                yr = 2020 + int(cont[-3:-2])
+                curr_yr = pd.Timestamp(curr_dt).year
+            if curr_yr < 2020:
+                base_yr = 2010
+            else:
+                base_yr = 2020
+            yr = base_yr + int(cont[-3:-2])            
         else:
             yr = 2000 + int(cont[-4:-2])
         cont_date = datetime.date(yr, mth, 1)
@@ -1196,7 +1207,7 @@ def contract_expiry(cont, hols=CHN_Holidays):
             if isinstance(expiry, str):
                 expiry = datetime.datetime.strptime(expiry, "%Y-%m-%d").date()
         else:
-            expiry = contract_expiry(cont, CHN_Holidays)
+            expiry = contract_expiry(cont, curr_dt=curr_dt, hols=hols)
         cnx.close()
     return expiry
 

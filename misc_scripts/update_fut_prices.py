@@ -92,7 +92,7 @@ def refresh_saved_fut_prices(
             if len(ddf) == 0:
                 logging.warning("no new data")
                 continue
-            ddf['expiry'] = pd.to_datetime(ddf['contract'].map(contract_expiry))
+            ddf['expiry'] = pd.to_datetime(ddf.apply(lambda x: contract_expiry(x['contract'], curr_dt=x['date']), axis=1))
             ddf['contmth'] = ddf.apply(lambda x: inst2contmth(x['contract'], x['date']), axis=1)
             ddf = ddf.set_index('date')
             ddf.index = pd.to_datetime(ddf.index)
@@ -117,7 +117,7 @@ def refresh_saved_fut_prices(
                                     shift_mode=2, roll_name='hot', freq='m5')
             if len(mdf) == 0:
                 continue
-            mdf['expiry'] = pd.to_datetime(mdf['contract'].map(contract_expiry))
+            mdf['expiry'] = pd.to_datetime(mdf.apply(lambda x: contract_expiry(x['contract'], curr_dt=x['date']), axis=1))
             mdf['date'] = pd.to_datetime(mdf['date'])
             mdf['contmth'] = mdf.apply(lambda x: inst2contmth(x['contract'], x['date']), axis=1)
             mdf = mdf.set_index('datetime')

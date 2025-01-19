@@ -5,6 +5,7 @@ sys.path.append("C:/dev/wtpy")
 import pandas as pd
 from pandas.tseries.offsets import CustomBusinessDay
 import logging
+from pycmqlib3.utility import base
 from pycmqlib3.strategy.signal_repo import get_funda_signal_from_store, BROAD_MKTS, IND_MKTS, AGS_MKTS
 from pycmqlib3.utility.spot_idx_map import index_map, process_spot_df
 from pycmqlib3.utility.dbaccess import load_codes_from_edb, load_factor_data
@@ -91,8 +92,8 @@ factors_by_asset = {
     'base_cifprem_1y_zs': ['cu', 'al', 'zn', 'ni'],
     'base_phybasmom_1m_zs': ['cu', 'al', 'zn', 'ni', 'pb', 'sn'],
     'base_phybasmom_1y_zs': ['cu', 'al', 'zn', 'ni', 'pb', 'sn'],
-    'metal_pbc_ema': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', #'si', 'SM', 'SF', 
-                      'rb', 'hc', 'i', 'v', 'FG', 'SA', "au", "ag"],
+    'metal_pbc_ema': ['cu', 'al', 'zn', 'ni', 'ss', 'sn', 'ao', #'si', 'SM', 'SF', 'pb', 
+                      'rb', 'hc', 'i', 'j', 'jm', 'v', 'FG', 'SA', "au", "ag"],
     'metal_mom_hlrhys': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si',
                          'rb', 'hc', 'i', 'j', 'jm', 'SM', 'SF', 'v', 'FG', 'SA'],
     # 'metal_pbc_ema_xdemean': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si',
@@ -538,8 +539,8 @@ def load_hist_fut_prices(markets, start_date, end_date,
                                         end_date=end_date,
                                         shift_mode=shift_mode,
                                         freq=freq,
-                                        roll_name=roll_name)
-            xdf['expiry'] = xdf['contract'].map(contract_expiry)
+                                        roll_name=roll_name)            
+            xdf['expiry'] = pd.to_datetime(xdf.apply(lambda x: contract_expiry(x['contract'], curr_dt=x['date']), axis=1))
             xdf['contmth'] = xdf.apply(lambda x: inst2contmth(x['contract'], x['date']), axis=1)
             xdf['mth'] = xdf['contmth'].apply(lambda x: x // 100 * 12 + x % 100)
             xdf['product'] = f"{prodcode}c{nb + 1}"
@@ -554,100 +555,6 @@ def load_hist_fut_prices(markets, start_date, end_date,
     df.columns.rename(['product', 'field'], inplace=True)
     df.index = pd.to_datetime(df.index)
     return df
-
-
-def update_fun_factor(run_date=datetime.date.today(), flavor='mysql'):
-    start_date = day_shift(run_date, '-4y')
-    update_start = day_shift(run_date, '-120b', CHN_Holidays)
-    markets = ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si',
-               'rb', 'hc', 'i', 'j', 'jm', 'SM', 'SF', 'v', 'FG', 'SA']
-    price_df = load_hist_fut_prices(markets, start_date=start_date, end_date=run_date)
-    cutoff_date = day_shift(day_shift(run_date, '1b', CHN_Holidays), '-1d')
-    spot_df = get_fun_data(start_date, run_date)
-
-    fact_config = {'roll_label': 'hot', 'freq': 'd1', 'serial_key': 0, 'serial_no': 0}
-    vol_win = 20
-    for asset_cont in price_df.columns.get_level_values(0).unique():
-        asset = asset_cont[:-2]
-        local_df = pd.DataFrame(index=price_df.index)
-        local_df['close'] = price_df[(asset+'c1', 'close')]
-        local_df['pct_chg'] = price_df[(asset+'c1', 'close')].pct_change()
-        local_df['pct_vol'] = local_df['close'] * local_df['pct_chg'].rolling(vol_win).std()
-        local_df.index.name = 'date'
-        fact_config['product_code'] = asset
-        fact_config['exch'] = prod2exch(asset)
-        update_factor_db(local_df, 'pct_vol', fact_config,
-                         start_date=pd.to_datetime(update_start),
-                         end_date=pd.to_datetime(run_date), flavor=flavor)
-
-    asset_factors = []
-    for factor_name in factors_by_asset.keys():
-        if factor_name[-8:] == '_xdemean':
-            db_fact_name = factor_name[:-8]
-        elif factor_name[-7:] == '_xscore':
-            db_fact_name = factor_name[:-7]
-        elif factor_name[-6:] == '_xrank':
-            db_fact_name = factor_name[:-6]
-        else:
-            db_fact_name = factor_name
-        if db_fact_name in asset_factors:
-            continue
-        for asset in factors_by_asset[factor_name]:
-            signal_ts = get_funda_signal_from_store(spot_df, factor_name,
-                                                    price_df=price_df,
-                                                    asset=asset,
-                                                    curr_date=run_date)
-            save_signal_to_db(asset, db_fact_name, signal_ts[update_start:], run_date=cutoff_date, flavor=flavor)
-        asset_factors.append(db_fact_name)
-
-    for factor_name in single_factors:
-        signal_ts = get_funda_signal_from_store(spot_df, factor_name,
-                                                price_df=price_df,
-                                                curr_date=run_date)
-        for asset in single_factors[factor_name]:
-            save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=cutoff_date, flavor=flavor)
-
-    for factor_name in factors_by_func:
-        func = factors_by_func[factor_name]['func']
-        func_args = factors_by_func[factor_name]['args']
-        signal_ts = func(spot_df, **func_args)
-        for asset in factors_by_func[factor_name]['assets']:
-            save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=cutoff_date, flavor=flavor)
-
-    for factor_name in factors_by_spread.keys():
-        signal_ts = get_funda_signal_from_store(spot_df, factor_name,
-                                                price_df=price_df,
-                                                curr_date=run_date)
-        for asset, weight in factors_by_spread[factor_name]:
-            save_signal_to_db(asset, factor_name, weight*signal_ts[update_start:], run_date=cutoff_date, flavor=flavor)
-
-    for factor_name in factors_by_beta_neutral.keys():
-        signal_ts = get_funda_signal_from_store(spot_df, factor_name,
-                                                price_df=price_df,
-                                                curr_date=run_date)
-        signal_df = pd.DataFrame(index=signal_ts.index)
-        signal_df['raw_sig'] = signal_ts
-        asset_list = []
-        for trade_asset, index_asset, weight in factors_by_beta_neutral[factor_name]:
-            asset_list = list(set(asset_list + [trade_asset, index_asset]))
-            if trade_asset not in signal_df.columns:
-                signal_df[trade_asset] = 0
-            if index_asset not in signal_df.columns:
-                signal_df[index_asset] = 0
-            key = '_'.join([trade_asset, index_asset, 'beta'])
-            beta_df = load_factor_data([key], factor_list=['trade_leg', 'index_leg'],
-                                       roll_label='hot',
-                                       start=start_date,
-                                       end=run_date,
-                                       freq='d1')
-            beta_df = pd.pivot_table(beta_df, index='date', columns=['fact_name'], values='fact_val', aggfunc='last')
-            signal_df['trade_ratio'] = beta_df['trade_leg']
-            signal_df['index_ratio'] = beta_df['index_leg']
-            signal_df = signal_df.ffill()
-            signal_df[trade_asset] += signal_df['trade_ratio'] * signal_df['raw_sig'] * weight
-            signal_df[index_asset] += signal_df['index_ratio'] * signal_df['raw_sig'] * weight
-        for asset in asset_list:
-            save_signal_to_db(asset, factor_name, signal_df[asset][update_start:], run_date=cutoff_date, flavor=flavor)
 
 
 def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
@@ -713,7 +620,7 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
 
     logging.info("update factor by asset ... ")
     asset_factors = [] # only update ts factors, not xs
-    for factor_name in factors_by_asset.keys():
+    for factor_name in factors_by_asset.keys():        
         if factor_name[-8:] == '_xdemean':
             db_fact_name = factor_name[:-8]
         elif factor_name[-7:] == '_xscore':
@@ -725,6 +632,7 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
         if db_fact_name in asset_factors:
             continue
         for asset in factors_by_asset[factor_name]:
+            logging.info(f"calculating factor={factor_name} for asset={asset}")
             signal_ts = get_funda_signal_from_store(spot_df, factor_name,
                                                     price_df=price_df,
                                                     asset=asset,
@@ -733,6 +641,7 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
         asset_factors.append(db_fact_name)
 
     for factor_name in single_factors:
+        logging.info(f"calculating factor={factor_name}")
         signal_ts = get_funda_signal_from_store(spot_df, factor_name,
                                                 price_df=price_df,
                                                 curr_date=run_date)
@@ -740,6 +649,7 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
             save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=cutoff_date, flavor=flavor)
 
     for factor_name in factors_by_func:
+        logging.info(f"calculating factor={factor_name}")
         func = factors_by_func[factor_name]['func']
         func_args = factors_by_func[factor_name]['args']        
         signal_df = func(price_df, spot_df, **func_args)
@@ -749,6 +659,7 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
                 save_signal_to_db(asset, factor_name, signal_ts[update_start:], run_date=cutoff_date, flavor=flavor)
 
     for factor_name in factors_by_spread.keys():
+        logging.info(f"calculating factor={factor_name}")
         signal_ts = get_funda_signal_from_store(spot_df, factor_name,
                                                 price_df=price_df,
                                                 curr_date=run_date)
@@ -781,6 +692,7 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
             update_factor_db(asset_df, field, fact_config, start_date=update_start, end_date=cutoff_date, flavor=flavor)
 
     for factor_name in factors_by_beta_neutral.keys():
+        logging.info(f"calculating factor={factor_name}")
         signal_ts = get_funda_signal_from_store(spot_df, factor_name,
                                                 price_df=price_df,
                                                 curr_date=run_date)
@@ -812,5 +724,11 @@ if __name__ == "__main__":
         tday = now.date()
         if (not is_workday(tday, 'CHN')) or (now.time() < datetime.time(14, 59, 0)):
             tday = day_shift(tday, '-1b', CHN_Holidays)
+    folder = "C:/dev/data/"
+    name = "fun_factor_update"
+    base.config_logging(folder + name + ".log", level=logging.INFO,
+                        format='%(name)s:%(funcName)s:%(lineno)d:%(asctime)s %(levelname)s %(message)s',
+                        to_console=True,
+                        console_level=logging.INFO)    
     logging.info("running for %s" % str(tday))
     update_db_factor(run_date=tday)
