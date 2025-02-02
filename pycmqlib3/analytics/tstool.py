@@ -84,16 +84,59 @@ def rolling_percentile(ts, win=100, direction='max'):
     return scores_np_ts
 
 
-def zscore_roll(ts, win):
-    return (ts - ts.rolling(win).mean())/ts.rolling(win).std()
+def robust_vol_calc(
+    daily_returns: pd.Series,
+    days: int = 35,
+    min_periods: int = 10,
+    vol_abs_min: float = 0.00000001,
+    vol_floor: bool = True,
+    floor_min_quant: float = 0.05,
+    floor_min_periods: int = 100,
+    floor_days: int = 500,
+    backfill: bool = False
+) -> pd.Series:
+
+    def apply_vol_floor(
+        vol: pd.Series,
+        floor_min_quant: float = 0.05,
+        floor_min_periods: int = 100,
+        floor_days: int = 500,
+    ) -> pd.Series:
+        vol_min = vol.rolling(min_periods=floor_min_periods, window=floor_days).quantile(
+            quantile=floor_min_quant
+        )
+        vol_min.iloc[0] = 0.0
+        vol_min.ffill(inplace=True)
+        vol_floored = np.maximum(vol, vol_min)
+        return vol_floored
+    
+    vol = daily_returns.ewm(adjust=True, span=days, min_periods=min_periods).std()
+    vol[vol < vol_abs_min] = vol_abs_min 
+    if vol_floor:
+        vol = apply_vol_floor(
+            vol,
+            floor_min_quant=floor_min_quant,
+            floor_min_periods=floor_min_periods,
+            floor_days=floor_days,
+        )
+    if backfill:        
+        vol = vol.ffill().bfill()
+    return vol
 
 
-def zscore_adj_roll(ts, win):
-    return (ts - ts.rolling(win).mean())/ts.diff().rolling(win).std()/np.sqrt(win)
+def zscore_roll(ts, win, alpha=1):
+    return (ts.rolling(alpha).mean() - ts.rolling(win).mean())/ts.rolling(win).std()
 
 
-def zscore_ewm(ts, win):
-    return (ts - ts.ewm(halflife=win, min_periods=win).mean())/ts.ewm(halflife=win, min_periods=win).std()
+def zscore_adj_roll(ts, win, alpha=1):
+    return (ts.rolling(alpha).mean() - ts.rolling(win).mean())/ts.diff().rolling(win).std()/np.sqrt(win)
+
+
+def zscore_ewm(ts, win, min_periods=0, alpha=1):
+    if min_periods < 1:
+        min_periods = max(1, int(win/2))
+    return (ts.ewm(span=alpha, min_periods=1).mean() - 
+            ts.ewm(span=win, min_periods=min_periods).mean())/ts.ewm(span=win, min_periods=min_periods).std()
 
 
 def pct_score(ts: pd.Series, win: int):
@@ -104,37 +147,46 @@ def pct_score(ts: pd.Series, win: int):
     return res
 
 
-def ewmac(ts, win_s, win_l=None, ls_ratio=4, vol_win=0):
-    if win_l is None:
-        win_l = ls_ratio * win_s
-    s1 = ts.ewm(halflife=win_s, min_periods=win_s).mean()
-    s2 = ts.ewm(halflife=win_l, min_periods=win_s).mean()
+def ewmac(ts, win_s, win_l, vol_win=0):
+    s1 = ts.ewm(span=win_s, min_periods=1).mean()
+    s2 = ts.ewm(span=win_l, min_periods=1).mean()
     if vol_win == 0:
-        sig = s1 - s2
+        sig = (s1 - s2)/robust_vol_calc(ts.diff(), 35)
     else:
         sig = risk_normalized(s1-s2, vol_win)
     return sig
 
 
-def conv_ewm(ts, h1s: list, h2s: list):
+def conv_ewm(ts, h1s: list, h2s: list, vol_win=0):
     h1_rg = list(range(*h1s))
     h2_rg = list(range(*h2s))
     combinations = itertools.product(h1_rg, h2_rg)
     collection = []
     for h1, h2 in combinations:
-        collection.append(ewmac(ts, win_s=h1, win_l=h2).dropna())
+        if h1 >= h2:
+            continue
+        collection.append(ewmac(ts, win_s=h1, win_l=h2, vol_win=vol_win).dropna())
     conv = pd.concat(collection, axis=1).mean(axis=1)
     return conv
 
 
 def risk_normalized(ts, win=252):
-    return ts/ts.ewm(halflife=win, min_periods=win, ignore_na=True).std()
+    return ts/ts.ewm(span=win, min_periods=10, ignore_na=True).std()
 
 
 def norm_ewm(ts, win=80):
-    xs = ts.ewm(halflife=win, min_periods=win, ignore_na=True).mean()
-    vs = ts.ewm(halflife=win, min_periods=win, ignore_na=True).std()
+    xs = ts.ewm(span=win, min_periods=10, ignore_na=True).mean()
+    vs = ts.ewm(span=win, min_periods=10, ignore_na=True).std()
     return xs/vs
+
+
+def kdj(ts, win_k=20, win_d=3, win_j=3):
+    ll = ts.rolling(win_k).min()
+    hh = ts.rolling(win_k).max()
+    kts = (ts - ll) / (hh - ll)-0.5
+    dts = kts.rolling(win_d).mean()
+    jts = kts*win_j - dts*(win_j-1)
+    return jts
 
 
 def hlratio(ts, win=80):
@@ -209,8 +261,9 @@ def calc_conv_signal(feature_ts, signal_func, param_rng, signal_cap=2.5, vol_win
         elif signal_func == 'ma_dff_sgn':
             signal_ts = np.sign(feature_ts - feature_ts.rolling(win).mean())
         elif signal_func == 'ewmac':
-            signal_ts = ewmac(feature_ts, win_s=win, ls_ratio=4, vol_win=vol_win)
-            signal_ts = risk_normalized(signal_ts, win=vol_win)
+            signal_ts = ewmac(feature_ts, win_s=win, win_l=4*win)
+        elif signal_func == 'kdj':
+            signal_ts = kdj(feature_ts, win_k=win, win_d=3, win_j=3)
         elif signal_func == 'zscore_biased':
             signal_ts = feature_ts/feature_ts.rolling(win).std()
         elif signal_func == 'zscore':

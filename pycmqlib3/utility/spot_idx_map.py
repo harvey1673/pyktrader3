@@ -8,12 +8,17 @@ index_map = {
     'G002600774': 'usgg10yr',
     'G002600783': 'usggt10yr',
     'G013233151': 'usggbe5',
-    'G005172253': 'usgg10yr_2yr_spd',
+    'G013233152': 'usggbe10',
+    'G013233153': 'inflation_exp_5y_us',
+    #'G005172253': 'usgg10yr_2yr_spd',
 
+    'M002842089': 'usdcny_mid',
     'M004147024': 'usdcnh_spot',
     'M011202650': 'usdcnh_close',
     'M004147023': 'usdcny_spot', # 4:00pm
     'M004370159': 'usdcny_spot2', # 4:30pm
+    'M004377555': 'usdcny_spot_volume',
+
     'G002600791': 'libor3m',
     'G002600885': 'dxy',
     #'G002601505': 'vix',
@@ -22,7 +27,6 @@ index_map = {
     'G003082211': 'vxeem',
     'G003082215': 'vxd', # Vol for DJ
     'G003082227': 'vxn', # Vol for Nasdaq
-    'G002945506': 'ted_spd',
     'G003146263': 'usdzar_xe',
     'G003146267': 'usdbrl_xe',
     'G003146268': 'usdnok_xe',
@@ -36,6 +40,13 @@ index_map = {
     'G004849308': 'usdclp_xe',
     'G019711418': 'usdcnh_xe',
 
+    'L004387127': 'usdcny_rr25_3m',
+    'M020092912': 'fin_cond_idx_cn',
+    'L003297115': 'corpbond_yield_aa_1y',
+    'L002856618': 'schbill_yield_aa_1y',
+    'L019834710': 'stbill_yield_aa_1y',
+    'L004476676': 'banknotes_yield_aa_1y',
+
     'L001619493': 'dr007_cn',
     'L004317616': 'fr007_cn',
     'L004317619': 'fdr007_cn',
@@ -46,10 +57,29 @@ index_map = {
     'M002816452': 'shibor_3m',
     'M002816455': 'shibor_1y',
     'M002816576': 'r007_cn',
+    'L004349332': 'cn_govbond_yield_3m_sch',
+    'L004349335': 'cn_govbond_yield_1y_sch',
     'L001618805': 'cn_govbond_yield_1y',
     'L001619213': 'cn_govbond_yield_2y',
     'L001618480': 'cn_govbond_yield_5y',
     'L001619214': 'cn_govbond_yield_10y',
+    'G009067321': "eco_policy_uncertainty_idx_us",
+    'G005432431': 'citi_eco_surprise_idx_cn',
+    'G005326174': 'citi_eco_surprise_idx_us',
+    'G005432432': 'citi_eco_surprise_idx_eu',
+    'G005432436': 'citi_eco_surprise_idx_global',
+    'G005432438': 'citi_eco_surprise_idx_em',
+    'G005432439': 'citi_eco_surprise_idx_asia',
+    'S003587817': "margin_outstanding_total_cn",
+    'S016720335': "margin_mktcap_ratio_cn",
+    'S016720336': "margin_mktvol_ratio_cn",
+
+    # 'M016266040': 'icpi_all',
+    # 'M016266041': 'icpi_food',
+    # 'M016266042': 'icpi_clothes',
+    # 'M016266043': 'icpi_housing',
+    # 'M016266044': 'icpi_service',
+
     "M004369935": 'pmi_cn_cons_all',
     "M005933607": 'pmi_cn_cons_new_order',
     "M005933608": 'pmi_cn_cons_rm_px',
@@ -261,8 +291,8 @@ index_map = {
     "S017658905": "sm_margin_north",
     "S017658906": "sm_margin_south",
     "S006158942": "mn_44_gabon_tj",
-    "S006158933": "mn_44_gabon_qingzhou",
-    "S021992679": "mn_45_gabon_southports",
+    #"S006158933": "mn_44_gabon_qingzhou",
+    #"S021992679": "mn_45_gabon_southports",
     "S021992693": "mn_45_gabon_northports",
 
     "S004789784": "sf_72_ningxia",
@@ -668,16 +698,28 @@ def process_spot_df(spot_df, adjust_time=False):
         spot_dict[f'{asset}_lme_futbasis'] = np.log(1 + spot_df[f'{asset}_lme_0m_3m_spd'] /
                                                   spot_df[f'{asset}_lme_3m_close'])
 
-    spot_dict['usggbe10'] = spot_df['usgg10yr'] - spot_df['usggt10yr']
+    spot_dict['usgg10_be'] = spot_df['usgg10yr'] - spot_df['usggt10yr']
+    spot_dict['usgg10_2_spd'] = spot_df['usgg10yr'] - spot_df['usgg2yr']
+    spot_dict['cgb_3m_1y_spd'] = spot_df['cn_govbond_yield_3m_sch'] - spot_df['cn_govbond_yield_1y_sch']
     spot_dict['cgb_2_5_spd'] = spot_df['cn_govbond_yield_2y'] - spot_df['cn_govbond_yield_5y']
     spot_dict['cgb_1_2_spd'] = spot_df['cn_govbond_yield_1y'] - spot_df['cn_govbond_yield_2y']
     spot_dict['cgb_1_5_spd'] = spot_df['cn_govbond_yield_1y'] - spot_df['cn_govbond_yield_5y']
     spot_dict['cgb_2_10_spd'] = spot_df['cn_govbond_yield_2y'] - spot_df['cn_govbond_yield_10y']
     spot_dict['fxbasket_cumret'] = spot_df[['usdzar_xe', 'usdaud_xe', 'usdclp_xe', 'usdbrl_xe']].dropna().pct_change().mean(axis=1).cumsum()
 
+    spot_dict['cnh_cny_spd1'] = spot_df['usdcnh_xe'] - spot_df['usdcny_xe']
+    spot_dict['cnh_cny_spd2'] = spot_df['usdcnh_close'] - spot_df['usdcny_spot2']
+    spot_dict['cny_mid_dev1'] = spot_df['usdcny_spot'] - spot_df['usdcny_mid']
+    spot_dict['cny_mid_dev2'] = spot_df['usdcny_spot2'] - spot_df['usdcny_mid']
     spot_dict['r_dr_7d_spd'] = spot_df['r007_cn'] - spot_df['dr007_cn']
+    spot_dict['shibor_3m_1y_spd'] = spot_df['shibor_3m'] - spot_df['shibor_1y']
 
-    #spot_dict['usgg10yr_2yr_spd'] = spot_df['usgg10yr'] - spot_df['usgg2yr']
+    # spot_dict['cs_corp_aa_1y'] = spot_df['corpbond_yield_aa_1y'] -spot_df['cn_govbond_yield_1y_sch']
+    # spot_dict['cs_aa_1y'] = spot_df['corpbond_yield_aa_1y'] -spot_df['cn_govbond_yield_1y_sch']
+    # spot_dict['cs_schbill_aa_1y'] = spot_df['schbill_yield_aa_1y'] -spot_df['cn_govbond_yield_1y_sch']
+    # spot_dict['cs_stbill_aa_1y'] = spot_df['stbill_yield_aa_1y'] -spot_df['cn_govbond_yield_1y_sch']
+    # spot_dict['cs_bknote_aa_1y'] = spot_df['banknotes_yield_aa_1y'] -spot_df['cn_govbond_yield_1y_sch']
+
     spot_dict['steel_inv_mill'] = spot_df['rebar_inv_mill'] + spot_df['wirerod_inv_mill'] + \
                                 spot_df['hrc_inv_mill'] + spot_df['crc_inv_mill'] #+ spot_df['plate_inv_mill']
     spot_dict['steel_inv_all'] = spot_df['steel_inv_social'] + spot_dict['steel_inv_mill']
