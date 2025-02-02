@@ -57,12 +57,16 @@ single_factors = {
     "prop_etf_mom_dbth_qtl": ["rb", "i", "FG", "v"],
     "prop_etf_mom_dbth_qtl2": ["rb", "i", "FG", "v"],
 
-    'shibor1m_qtl': ['cu', 'al', 'zn', 'sn', 'rb', 'hc', 'i', 'FG', 'l', 'v', 'TA', 'eg'],
-    "MCU3_zs": ['cu', 'al', 'zn', 'sn', 'rb', 'hc', 'i', 'FG', 'l', 'v', 'TA', 'eg'],
-    "cgb_1_2_spd_zs": ['cu', 'al', 'zn', 'sn', 'rb', 'hc', 'i', 'FG', 'l', 'v', 'TA', 'eg'],
-    "cgb_2_5_spd_zs": ['cu', 'al', 'zn', 'sn', 'rb', 'hc', 'i', 'FG', 'l', 'v', 'TA', 'eg'],
-    "fxbasket_zs": ['cu', 'al', 'zn', 'sn', 'rb', 'hc', 'i', 'FG', 'l', 'v', 'TA', 'eg'],
-
+    'shibor1m_qtl': ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'au', 'ag', 'l', 'pp', 'v', 'TA', 'eg', 'MA'],
+    'r007_lt_zs': ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'au', 'ag', 'l', 'pp', 'v', 'TA', 'eg', 'MA'],
+    "MCU3_zs": ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA'],
+    "cgb_1_2_spd_zs": ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA'],
+    "cgb_2_5_spd_zs": ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA'],
+    "fxbasket_zs": ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA'],
+    'cnh_cny_zs': ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA'],
+    'cny_dev_zs': ['rb', 'hc', 'i', 'FG', 'SA', 'cu', 'al', 'au', 'ag', 'l', 'pp', 'v', 'TA', 'eb', 'eg', 'MA', 'sc', 'lu', 'bu'],
+    'vix_zs_st': ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA'], 
+    'vix_mds_st': ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA'],
 }
 
 factors_by_asset = {
@@ -175,31 +179,41 @@ def cnc_hol_seasonality(price_df, spot_df, product_list):
     signal_ts3 = create_holiday_window_series(price_df.index, 
                                             [pd.Timestamp(datetime.date(yr, 1, 1)) for yr in range(price_df.index[0].year-1, price_df.index[-1].year+2)], -6, 1)
     signal_ts4 = create_holiday_window_series(price_df.index, 
-                                            [pd.Timestamp(lunardate.LunarDate(yr,1,1).toSolarDate()) for yr in range(price_df.index[0].year-1, price_df.index[-1].year+2)], -5, 2)
-    signal_ts5 = create_holiday_window_series(price_df.index, 
                                             [pd.Timestamp(lunardate.LunarDate(yr,1,1).toSolarDate()) for yr in range(price_df.index[0].year-1, price_df.index[-1].year+2)], -17, 5)
     
-    signal_ts = signal_ts1*0.5 + signal_ts2 + signal_ts3 + signal_ts4*0.5 + signal_ts5*0.5
+    signal_ts = signal_ts1*0.8 + signal_ts2 + signal_ts3*1.2 + signal_ts4
     signal_df = pd.DataFrame(dict([(asset, signal_ts) for asset in product_list]))
     return signal_df
 
 
-def steel_io_seasonality(price_df, spot_df, product_list):
-    rb_pxchg = price_df[('rbc1', 'close')].pct_change()
-    rb_vol = rb_pxchg.rolling(20).std()
-    io_pxchg = price_df[('ic1', 'close')].pct_change()
-    io_vol = io_pxchg.rolling(20).std()
-    beta = beta_hedge_ratio(rb_pxchg, io_pxchg, beta_win=245, beta_rng=[0, 2], corr_step=5).dropna()
-    spd_pxchg = (rb_pxchg - beta['port'] * io_pxchg)
-    spd_vol = spd_pxchg.dropna().rolling(20).std()    
-    feature_ts = spd_pxchg.dropna().cumsum()
-    signal_ts = calc_conv_signal(feature_ts, signal_func='zscore', 
-                                 param_rng=[80, 120, 2], signal_cap=[-2, 2], vol_win=120)
-    signal_ts.loc[signal_ts.index.month.isin([1, 2, 11, 12])] = -signal_ts.loc[signal_ts.index.month.isin([1, 2, 11, 12])]
-    signal_df = pd.DataFrame({
-        'rb': signal_ts*rb_vol/spd_vol,
-        'i': - signal_ts*beta['port']*io_vol/spd_vol,
-    })
+def beta_spd_seasonality(price_df, spot_df, product_list):
+    signal_df = pd.DataFrame(index=price_df.index, columns=product_list)
+    if ('rb' in product_list) and ('i' in product_list):
+        rb_pxchg = price_df[('rbc1', 'close')].pct_change()
+        rb_vol = rb_pxchg.rolling(20).std()
+        io_pxchg = price_df[('ic1', 'close')].pct_change()
+        io_vol = io_pxchg.rolling(20).std()
+        beta = beta_hedge_ratio(rb_pxchg, io_pxchg, beta_win=245, beta_rng=[0, 2], corr_step=5).dropna()
+        spd_pxchg = (rb_pxchg - beta['port'] * io_pxchg)
+        spd_vol = spd_pxchg.dropna().rolling(20).std()    
+        feature_ts = spd_pxchg.dropna().cumsum()
+        signal_ts = calc_conv_signal(feature_ts, signal_func='zscore', 
+                                    param_rng=[80, 120, 2], signal_cap=[-2, 2], vol_win=120)
+        signal_ts.loc[signal_ts.index.month.isin([1, 2, 11, 12])] = -signal_ts.loc[signal_ts.index.month.isin([1, 2, 11, 12])]
+        signal_df['rb'] = signal_ts*rb_vol/spd_vol
+        signal_df['i'] = - signal_ts*beta['port']*io_vol/spd_vol
+    if ('au' in product_list) and ('ag' in product_list):
+        au_pxchg = price_df[('auc1', 'close')].pct_change()
+        au_vol = au_pxchg.rolling(20).std()
+        ag_pxchg = price_df[('agc1', 'close')].pct_change()
+        ag_vol = ag_pxchg.rolling(20).std()
+        beta = beta_hedge_ratio(au_pxchg, ag_pxchg, beta_win=245, beta_rng=[0, 2], corr_step=5).dropna()
+        spd_pxchg = (au_pxchg - beta['port'] * ag_pxchg)
+        spd_vol = spd_pxchg.dropna().rolling(20).std()    
+        signal_ts = pd.Series(0, index=price_df.index)        
+        signal_ts.loc[signal_ts.index.month.isin([1, 2, 3, 12])] = 1
+        signal_df['au'] = signal_ts*au_vol/spd_vol
+        signal_df['ag'] = - signal_ts*beta['port']*ag_vol/spd_vol
     return signal_df
 
 
@@ -285,7 +299,7 @@ def seasonal_custom_1(price_df, spot_df, product_list, now=datetime.datetime.now
             signal_ts[-1] = last_signal
         elif (signal_df.index[-1].weekday() == 4) and (now.weekday() == 4):
             signal_ts[-1] = 1                    
-        signal_df['au'] = signal_ts
+        signal_df['au'] = signal_ts*1.5
 
     for asset in ['l', 'pp', 'v', 'MA']:
         if asset in product_list:
@@ -296,6 +310,27 @@ def seasonal_custom_1(price_df, spot_df, product_list, now=datetime.datetime.now
 
     if 'SF' in product_list:
         signal_df.loc[signal_df.index.weekday.isin([2, 3]), 'SF'] = 1
+
+    for asset in ['T', 'TF']:
+        if asset in product_list:
+            signal_df.loc[signal_df.index.month.isin([1, 2, 3, 4, 5, 6, 7, 12]), asset] += 0.5
+            signal_df.loc[signal_df.index.day.isin(range(16, 32)), asset] += 0.5
+            signal_df.loc[signal_df.index.weekday.isin([1]), asset] += 0.25
+
+    if 'bu' in product_list:
+        signal_df.loc[signal_df.index.month.isin([1, 12]), 'bu'] = 1
+        signal_df.loc[signal_df.index.month.isin([8, 9, 10]), 'bu'] = -0.5        
+
+    if 'ru' in product_list:        
+        flag = signal_df.index.month.isin([3, 4, 5, 6]) | signal_df.index.day.isin(range(18, 26))
+        signal_df.loc[flag, 'ru'] = -1
+
+    flag1 = signal_df.index.month.isin([1, 2])
+    flag2 = signal_df.index.month.isin([10, 11])
+    for asset in ['lu', 'fu']:
+        if asset in product_list:
+            signal_df.loc[flag1, asset] = 0.5
+            signal_df.loc[flag2, asset] = -0.5
 
     if 'pb' in product_list:        
         signal_df.loc[signal_df.index.day.isin(range(17, 31)), 'pb'] = 1
@@ -322,7 +357,7 @@ factors_by_func = {
         'args': {            
             'now': datetime.datetime.now(),
             'product_list': [
-                'au', 'l', 'pp', 'v', 'MA', 'pb', 'rb', 'hc', 'i', 'SF',
+                'au', 'l', 'pp', 'v', 'MA', 'pb', 'rb', 'hc', 'i', 'SF', 'ru', 'lu', 'fu', 'bu',
             ],
         },        
     },
@@ -336,11 +371,11 @@ factors_by_func = {
             ],
         },
     },    
-    "steel_io_seazn": {
-        'func': steel_io_seasonality,
+    "beta_spd_seazn": {
+        'func': beta_spd_seasonality,
         'args': {
             'product_list': [
-                'rb', 'i'
+                'rb', 'i', 'au', 'ag',
             ],
         },        
     },
@@ -608,7 +643,7 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
                 (np.log(price_df[(asset+'c1', 'close')]) - np.log(price_df[(asset+'c2', 'close')]) - \
                  price_df[(asset+'c1', 'shift')] + price_df[(asset+'c2', 'shift')])/\
                     (pd.to_datetime(price_df[(asset+'c2', 'expiry')]) - pd.to_datetime(price_df[(asset+'c1', 'expiry')])).dt.days * 365.0 + \
-                        spot_df['r007_cn'].ffill()/100
+                        spot_df['r007_cn'].reindex(index=price_df.index).ffill().ewm(5).mean()/100
         
             data_dict[f'{asset}_basmom'] = np.log(price_df[(asset+'c1', 'close')]).dropna().diff() - \
                 np.log(price_df[(asset+'c2', 'close')]).dropna().diff()                

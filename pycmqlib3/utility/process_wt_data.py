@@ -503,36 +503,28 @@ def save_ticks_to_wt_store(
 def combine_bars_wt_store(src_folder, dst_folder, target_folder, cutoff=None):
     dtHelper = WtDataHelper()
     period_map = {'day': 'd', 'min1': 'm1', 'min5': 'm5'}
-    if src_folder.lower() == target_folder.lower():
-        update_flag = True
-    else:
-        update_flag = False
     for period in ['day', 'min1', 'min5', ]:
         for exch in ['CFFEX', 'DCE', 'CZCE', 'SHFE', 'INE', 'GFEX']:
             print(f'{period}-{exch}')
             src_path = '%s/%s/%s' % (src_folder, period, exch)
-            file_list = [f for f in listdir(src_path) if isfile(join(src_path, f))]
+            dst_path = '%s/%s/%s' % (dst_folder, period, exch)
+            file_list = [f for f in listdir(dst_path) if isfile(join(dst_path, f))]
             for file in file_list:
                 cont = file.split('.')[0]
+                dst_df = dtHelper.read_dsb_bars(f'{dst_path}/{file}')                
+                dst_df = dst_df.to_df().rename(columns={'bartime': 'time', 'volume': 'vol'})
+                dst_df['time'] = dst_df['time'] - 199000000000
+                dst_df = dst_df[dst_df['vol'] > 0]
                 src_df = dtHelper.read_dsb_bars(f'{src_path}/{file}')
-                src_df = src_df.to_df().rename(columns={'bartime': 'time', 'volume': 'vol'})
-                src_df['time'] = src_df['time'] - 199000000000
-                src_df = src_df[src_df['vol']>0]
-                dst_path = '%s/%s/%s' % (dst_folder, period, exch)
-                dst_df = dtHelper.read_dsb_bars(f'{dst_path}/{file}')
-                if dst_df:
-                    dst_df = dst_df.to_df().rename(columns={'bartime': 'time', 'volume': 'vol'})
-                    dst_df['time'] = dst_df['time'] - 199000000000
-                    dst_df = dst_df[dst_df['vol'] > 0]
-                    if cutoff:
-                        src_df = src_df[src_df['date'] < cutoff]
-                        dst_df = dst_df[dst_df['date'] >= cutoff]
-                        dst_df = pd.concat([src_df, dst_df])
-                else:
-                    if update_flag:
-                        continue
-                    else:
-                        dst_df = src_df
+                if src_df:
+                    src_df = src_df.to_df().rename(columns={'bartime': 'time', 'volume': 'vol'})
+                    src_df['time'] = src_df['time'] - 199000000000
+                    src_df = src_df[src_df['vol']>0]                
+                    if cutoff is None:
+                        cutoff = src_df['date'].iloc[-1]
+                    src_df = src_df[src_df['date'] <= cutoff]
+                    dst_df = dst_df[dst_df['date'] > cutoff]
+                    dst_df = pd.concat([src_df, dst_df])
                 dst_df['time'] = dst_df['time'].astype('int64')
                 save_bars_to_dsb(dst_df, contract=cont, folder_loc=f'{target_folder}/{period}/{exch}',
                                  period=period_map[period])

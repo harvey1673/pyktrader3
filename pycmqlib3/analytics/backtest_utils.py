@@ -305,7 +305,7 @@ def load_fun_data(tday=datetime.date.today()):
     try:
         spot_df = pd.read_parquet("C:/dev/data/spot_df_%s.parquet" % tday.strftime("%Y%m%d"))
     except:
-        spot_df = get_fun_data(start_date=datetime.date(2006, 1, 1), run_date=tday)
+        spot_df = get_fun_data(start_date=datetime.date(2000, 1, 1), run_date=tday)
         try:
             spot_df.to_parquet("C:/dev/data/spot_df_%s.parquet" % tday.strftime("%Y%m%d"))
             print("spot_df data saved")

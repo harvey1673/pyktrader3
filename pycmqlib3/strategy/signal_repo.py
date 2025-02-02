@@ -21,8 +21,8 @@ AGS_MKTS = [
 ]
 
 signal_store = {
-    "mom_ewmac": [BROAD_MKTS, ["px", "ewmac", [1, 4, 1], "", "", True, "price", "ema1", 40, [-2, 2]]],
-    "mom_ewmac_xdemean": [BROAD_MKTS, ["px", "ewmac", [1, 4, 1], "", "", True, "price", "ema1", 40, [-2, 2]]],    
+    "mom_ewmac": [BROAD_MKTS, ["px", "ewmac", [3, 10, 1], "", "", True, "price", "ema1", 40, [-2, 2]]],
+    "mom_ewmac_xdemean": [BROAD_MKTS, ["px", "ewmac", [3, 10, 1], "", "", True, "price", "ema1", 40, [-2, 2]]],    
     "mom_momma240": [BROAD_MKTS, ["px", "ema", [1, 2, 1], "df240", "pct_change", True, "price", "ema1", 60, [-2, 2]]],
     "mom_momma240_xdemean": [BROAD_MKTS, ["px", "ema", [1, 2, 1], "df240", "pct_change", True, "price", "ema1", 60, [-2, 2]]],
     "mom_momma20": [BROAD_MKTS, ["px", "ema", [1, 2, 1], "df20", "pct_change", True, "price", "ema1", 60, [-2, 2]]],
@@ -35,6 +35,7 @@ signal_store = {
     "mom_hlr_lt_xdemean": [BROAD_MKTS, ["px", "hlratio", [80, 120, 2], "", "", True, "", "buf0.1", 120, [-2, 2]]],  
     "mom_hlr_yr": [BROAD_MKTS, ["px", "hlratio", [240, 250, 2], "", "", True, "", "", 120, [-2, 2]]],
     "mom_hlr_yr_xdemean": [BROAD_MKTS, ["px", "hlratio", [240, 250, 2], "", "", True, "", "", 120, [-2, 2]]],  
+    "mom_kdj_st": [BROAD_MKTS, ["px", "kdj", [20, 40, 2], "", "", True, "", "buf0.3", 120, [-2, 2]]],  
 
     "ryield_ema": [BROAD_MKTS, ["ryield", "ema", [1, 2, 1], "ema1", "", True, "", "", 60, [-2.5, 2.5]]],
     "ryield_ema_xdemean": [BROAD_MKTS, ["ryield", "ema", [1, 2, 1], "ema1", "", True, "", "", 60, [-2.5,2.5]]], 
@@ -196,6 +197,12 @@ signal_store = {
                               ['margin_hrc_macf', 'hlratio', [20, 40, 2], '', '', True, 'price', "buf0.2", 120, [-2,2]]],
     'steel_margin_lvl_slow': [['SM', 'SF'],
                               ['margin_hrc_macf', 'hlratio', [240, 260, 2], '', '', True, 'price', "", 120, [-2,2]]],
+    'mn_mine_mom': [['SM'],
+                    ['"mn_44_gabon_tj', 'zscore', [40, 60, 2], '', '', True, 'price', "", 120, [-2,2]]],
+    'sm_cost_mom': [['SM'],
+                    ['"sm_neimeng_cost', 'zscore', [20, 40, 2], '', '', True, 'price', "", 120, [-2,2]]],
+    'sf_cost_mom': [['SF'],
+                    ['"sf_neimeng_cost', 'zscore', [20, 40, 2], '', '', True, 'price', "", 120, [-2,2]]],                    
 
     'strip_hsec_lvl_mid': [['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM', 'cu'],
                            ['strip_hsec', 'qtl', [60, 80, 2], '', '', True, 'price', "sma1", 120, [-2,2]]],
@@ -347,11 +354,11 @@ signal_store = {
     "base_etf_mom_zsa": [['cu', 'al', 'zn', 'ni', 'pb', 'sn'],
                          ["base_sw_csi500_ret", "zscore_adj", [20, 40, 1], "csum", "", True, "", "", 120, [-2,2]]],
     "base_etf_mom_ewm": [['cu', 'al', 'zn', 'ni', 'pb', 'sn'],
-                         ["base_sw_csi500_ret", "ewmac", [2, 4, 1], "csum", "", True, "", "", 120, [-2,2]]],
+                         ["base_sw_csi500_ret", "ewmac", [2, 5, 1], "csum", "", True, "", "", 0, [-3,3]]],
     "const_etf_mom_zsa": [['rb', 'i', 'v', 'FG'],
                           ["const_sw_csi500_ret", "zscore_adj", [40, 80, 2], "csum", "", True, "", "", 120, [-2,2]]],
     "const_etf_mom_ewm": [['rb', 'i', 'v', 'FG'],
-                          ["const_sw_csi500_ret", "ewmac", [2, 5, 1], "csum", "", True, "", "", 120, [-2,2]]],
+                          ["const_sw_csi500_ret", "ewmac", [2, 5, 1], "csum", "", True, "", "", 0, [-3,3]]],
 
     "prop_etf_mom_dbth_zs": [['rb', 'i', 'v', 'FG'],
                              ["prop_sw_csi500_ret", "hysteresis", [1, 120, 0.5], "ema3", "zscore_roll", True, "", "", 120, [-2,2]]],
@@ -360,9 +367,9 @@ signal_store = {
     "prop_etf_mom_dbth_qtl2": [['rb', 'i', 'v', 'FG'],
                                ["prop_sw_csi500_ret", "dbl_th", [0.8, 240, 1], "ema3", "pct_score", True, "", "", 120, [-2,2]]],
     "glass_etf_mom_dbth_zs": [['FG'],
-                             ["glass_sw_csi500_ret", "hysteresis", [1, 120, 0.5], "ema3", "zscore_roll", True, "", "", 120, [-2,2]]],                             
-    "rubber_etf_mom_dbth_zs": [['ru', 'nr'],
-                             ["rubber_sw_csi500_ret", "hysteresis", [1.5, 60, 1], "ema3", "zscore_roll", True, "", "", 120, [-2,2]]],                             
+                             ["glass_sw_csi500_ret", "hysteresis", [1.2, 120, 0.6], "ema3", "zscore_roll", True, "", "", 120, [-2,2]]],                             
+    # "rubber_etf_mom_dbth_zs": [['ru', 'nr'],
+    #                          ["rubber_sw_csi500_ret", "hysteresis", [1.5, 60, 1], "ema3", "zscore_roll", True, "", "", 120, [-2,2]]],                             
 
     "exch_wnt_hlr": [
         ['ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
@@ -383,21 +390,31 @@ signal_store = {
                        ["cgb_2_5_spd", "zscore", [40, 80, 2], "", "", True, "", "ema3", 120, [-2,2]]],
     "cgb_1_5_spd_zs": [['cu', 'al', 'zn', 'rb', 'hc', 'i'],
                        ["cgb_1_5_spd", "zscore", [40, 80, 2], "", "", True, "", "ema3", 120, [-2,2]]],
-    "fxbasket_zs": [['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SA', 
-                     'cu', 'al', 'zn', 'l', 'pp', 'v', 'TA', 'eg'],
+
+    "fxbasket_zs": [['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA',],
                     ['fxbasket_cumret', 'zscore', [20, 40, 2], '', '', False, '', 'buf0.2', 120, [-2,2]]],
     'dxy_zsa_s': [['cu', 'al', 'zn', 'rb', 'hc', 'i'],
-                  ['dxy', 'zscore_adj', [20, 30, 2], '', '', False, '', 'hmp0.5', 120, [-2,2]]],
-    'shibor1m_qtl': [['cu', 'al', 'zn', 'rb', 'hc', 'i'],
+                  ['dxy', 'zscore_adj', [20, 30, 2], '', '', False, '', 'buf0.5', 120, [-2,2]]],
+    'shibor1m_qtl': [['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'au', 'ag', 'l', 'pp', 'v', 'TA', 'eg', 'MA',],
                      ['shibor_1m', 'qtl', [40, 80, 2], 'ema3', '', True, 'price', '', 120, [-2,2]]],
-    "MCU3_zs": [['cu', 'zn', 'ni', 'al', 'sn', 'ao', 'rb', 'hc', 'i', 'v', 'j', 'jm'],
+    'r007_lt_zs': [['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'au', 'ag',  'l', 'pp', 'v', 'TA', 'eg', 'MA',],
+                     ['r007_cn', 'zscore', [80, 120, 2], 'ema5', '', True, 'price', '', 120, [-2,2]]],   
+
+    "MCU3_zs": [['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA',],
                 ['cu_lme_3m_close', 'zscore', [40, 80, 2], '', '', True, '', 'buf0.2', 120, [-2,2]]],
-    "MAL3_zs": [['cu', 'zn', 'ni', 'al', 'sn', 'ao', 'rb', 'hc', 'i', 'v', 'j', 'jm'],
-                ['al_lme_3m_close', 'zscore', [40, 80, 2], '', '', True, '', 'buf0.2', 120, [-2,2]]],
-    # 'r007_qtl': ('r007_cn', 'qtl', [80, 120, 2], 'ema5', 'pct_change', True, 'price'),
-    # 'r_dr_spd_zs': ('r_dr_7d_spd', 'zscore', [20, 40, 2], 'ema5', 'pct_change', True, 'price'),
-    # 'cnh_mds': ('usdcnh_spot', 'ma_dff_sgn', [10, 30, 2], 'ema3', 'pct_change', False, 'price'),
-    # 'cnh_cny_zsa': ('cnh_cny_spd', 'zscore_adj', [10, 20, 2], 'ema10', 'pct_change', False, 'price'),
+    # "MAL3_zs": [['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA',],
+    #             ['al_lme_3m_close', 'zscore', [40, 80, 2], '', '', True, '', 'buf0.2', 120, [-2,2]]],  
+
+    'cnh_cny_zs': [['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA',],
+                   ['cnh_cny_spd2', 'zscore', [10, 20, 1], 'ema1', '', False, '', 'buf0.4', 120, [-3, 3]]],
+    'cny_dev_zs': [['rb', 'hc', 'i', 'FG', 'SA', 'cu', 'al', 'au', 'ag',
+                    'l', 'pp', 'v', 'TA', 'eb', 'eg', 'MA', 'sc', 'lu', 'bu'],
+                   ['cny_mid_dev1', 'zscore', [60, 80, 2], 'ema10', '', True, '', '', 120, [-2,2]]],
+                
+    'vix_zs_st': [['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA',], 
+                   ['vix', 'zscore', [20, 60, 2], '', '', False, '', 'buf0.5', 120, [-2,2]]],
+    'vix_mds_st': [['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA',], 
+                   ['vix', 'ma_dff_sgn', [40, 80, 2], '', '', False, '', '', 120, [-2,2]]], 
     # 'cnyrr25_zsa': ('usdcny_rr25', 'zscore_adj', [10, 20, 2], 'ema10', 'pct_change', False, 'price'),
     #
     # 'vhsi_mds': ('vhsi', 'ma_dff_sgn', [10, 20, 2], '', 'pct_change', False, 'price'),
@@ -415,7 +432,7 @@ signal_store = {
     # 'dxy_qtl_l': ('dxy', 'qtl', [480, 520, 2], '', 'pct_change', False, 'price'),
     #
     # 'vix_mds': ('vix', 'ma_dff_sgn', [20, 40, 2], '', 'pct_change', False, 'price'),
-    # 'vix_zsa': ('vix', 'zscore_adj', [40, 60, 2], 'ema3', 'pct_change', False, 'price'),
+
     "pmi_stl_all_yoy": [['rb', 'hc', 'j', 'jm', 'i'],
                         ['pmi_cn_steel_all', 'ma', [1, 2, 1], 'df12', 'diff', True, '', '', 24, [-2,2]]],
     "pmi_stl_prod_yoy": [['rb', 'hc', 'j', 'jm', 'i'],
@@ -431,13 +448,24 @@ signal_store = {
 }
 
 signal_buffer_config = {
+    "mom_hlr_st": 0.3,
+    "mom_hlr_mt": 0.1,
+    "mom_hlr_lt": 0.1,
+    "mom_kdj_st": 0.3,
+    'bond_mr_st_qtl': 0.1,
+    'bond_tf_lt_qtl': 0.1,    
+    'steel_margin_lvl_fast': 0.2,
+    'hc_rb_diff_20': 0.4,
     "lme_base_ts_hlr": 0.1,
+    "lme_futbasis_ma": 0.5,
     "base_inv_exch_ma": 0.15,
     "base_inv_lme_ma": 0.2,
-    "base_inv_shfe_ma": 0.2,
-    "lme_futbasis_ma": 0.75,
-    "MCU3_zs": 0.2, 
+    "base_inv_shfe_ma": 0.2,    
     "fxbasket_zs": 0.2,
+    'dxy_zsa_s': 0.5,
+    "MCU3_zs": 0.2, 
+    'cnh_cny_zs': 0.4,
+    'vix_zs_st': 0.5,
 }
 
 signal_execution_config = {
@@ -600,7 +628,7 @@ def get_funda_signal_from_store(spot_df, signal_name, price_df=None,
                 data_df = pd.DataFrame(data_dict).dropna(how='all')
                 data_df['date'] = pd.to_datetime(data_df.index)                
                 data_df[f'{asset}_phybasis'] = (np.log(data_df[asset_feature]) - np.log(data_df[f'{asset}_c1'])) / \
-                                            (data_df[f'{asset}_expiry'] - data_df['date']).dt.days * 365 + data_df['r007_cn'].ffill()/100
+                                            (data_df[f'{asset}_expiry'] - data_df['date']).dt.days * 365 + data_df['r007_cn'].ffill().ewm(5).mean()/100
                 spot_df = pd.concat([spot_df, data_df[[f'{asset}_phybasis']]], axis=1)
             asset_feature = f'{asset}_phybasis'
         if feature == 'metal_px':
