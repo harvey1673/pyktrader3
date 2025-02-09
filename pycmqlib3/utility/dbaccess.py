@@ -166,6 +166,28 @@ def load_codes_from_edb(code_list, source=['ifind'], start_date=None, end_date=N
     return pivot
 
 
+def load_int_stock_daily(code_list, dbtable='int_stock_daily', start_date=None, end_date=None):
+    if isinstance(code_list, str):
+        code_list = [code_list]
+    cnx = create_engine('mysql+mysqlconnector://{user}:{passwd}@{host}/{dbase}'.format(
+        user=dbconfig['user'],
+        passwd=dbconfig['password'],
+        host=dbconfig['host'],
+        dbase=dbconfig['database']), echo=False)
+    fields = ['date', 'instID', 'inst_name', 'open', 'high', 'low', 'close', 'volume']
+    stmt = "select {sel_fields} from {dbtable} where instID in ({seq})".format(
+        sel_fields=','.join(fields), dbtable = dbtable, seq=','.join(f'"{w}"' for w in code_list))
+    if start_date:
+        stmt = stmt + " and date >= '%s'" % start_date.strftime('%Y-%m-%d')
+    if end_date:
+        stmt = stmt + " and date <= '%s'" % end_date.strftime('%Y-%m-%d')
+    df = pd.io.sql.read_sql(stmt, cnx)
+    df['date'] = pd.to_datetime(df['date'])
+    pivot = df.pivot(index='date', columns='instID', values=['open', 'high', 'low', 'close', 'volume'])
+    pivot = pivot.swaplevel(1, 0, axis=1).sort_index(axis=1)
+    return pivot
+
+
 def save_data_to_edb(xdf, source):
     conn = create_engine('mysql+mysqlconnector://{user}:{passwd}@{host}/{dbase}'.format(
         user=dbconfig['user'],
