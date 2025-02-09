@@ -214,6 +214,49 @@ def write_edb_by_xl_sheet(file_setup, data_folder=sec_bits.LOCAL_NUTSTORE_FOLDER
     return error_list
 
 
+def write_stock_data_by_xl(data_file, data_folder=sec_bits.LOCAL_NUTSTORE_FOLDER, lookback=20000):
+    sdate = pd.to_datetime("today") - pd.Timedelta(lookback, unit='D')
+    conn = create_engine('mysql+mysqlconnector://{user}:{passwd}@{host}/{dbase}'.format(
+        user=dbconfig['user'],
+        passwd=dbconfig['password'],
+        host=dbconfig['host'],
+        dbase=dbconfig['database']), echo=False)
+    error_list = [] 
+    func = mysql_replace_into    
+    rows = pd.read_excel(f'{data_folder}/{data_file}', sheet_name="setup", header=None, skiprows=2, nrows=2).T.dropna() 
+    rows.columns = rows.iloc[0]
+    setup_df = rows[1:].reset_index(drop=True).set_index("sheet_name")
+    ref_date_dict = setup_df['ref_date'].to_dict()    
+    for sheet_name in ref_date_dict:        
+        xdf = pd.read_excel(f'{data_folder}/{data_file}', sheet_name=sheet_name, header=[0, 1, 2])
+        xdf.columns = [col if idx > 0 else 'date' for idx, col in enumerate(xdf.columns)]
+        xdf = xdf.set_index('date')
+        xdf.columns = pd.MultiIndex.from_tuples(xdf.columns)
+        xdf.columns.names = ["instID", "inst_name", "field"]
+        xdf = xdf.stack(["instID", "inst_name"])
+        xdf = xdf.rename(columns={
+            '前收盘价':'prev_close',
+            '开盘价': 'open',
+            '最高价': 'high',
+            '最低价': 'low',
+            '收盘价': 'close',
+            '成交量': 'volume',
+            '均价': 'avg_price',
+            '涨跌幅': 'pct_chg',
+        })
+        xdf['ref_date'] = ref_date_dict[sheet_name]
+        xdf = xdf.reset_index()
+        xdf = xdf[xdf['date']>=sdate]
+        xdf = xdf[['instID', 'inst_name', "ref_date", "date", "open", "high", "low", "close", "volume"]]
+        try:
+            xdf.to_sql('int_stock_daily', con=conn, if_exists='append', index=False, method=func)
+        except Exception as e:
+            print("error: %s" % e)
+            error_list.append(sheet_name)        
+    conn.dispose()
+    return error_list    
+
+
 def tick2dict(tick):
     tick_dict = {}
     for idx, field in enumerate(agent_conf.tick_data_list):
