@@ -198,9 +198,9 @@ signal_store = {
     'steel_margin_lvl_slow': [['SM', 'SF'],
                               ['margin_hrc_macf', 'hlratio', [240, 260, 2], '', '', True, 'price', "", 120, [-2,2]]],
     'mn_mine_mom': [['SM'],
-                    ['"mn_44_gabon_tj', 'zscore', [40, 60, 2], '', '', True, 'price', "", 120, [-2,2]]],
+                    ['mn_44_gabon_tj', 'zscore', [40, 60, 2], '', '', True, 'price', "", 120, [-2,2]]],
     'sm_cost_mom': [['SM'],
-                    ['"sm_neimeng_cost', 'zscore', [20, 40, 2], '', '', True, 'price', "", 120, [-2,2]]],
+                    ['sm_neimeng_cost', 'zscore', [20, 40, 2], '', '', True, 'price', "", 120, [-2,2]]],
     'sf_cost_mom': [['SF'],
                     ['"sf_neimeng_cost', 'zscore', [20, 40, 2], '', '', True, 'price', "", 120, [-2,2]]],                    
 
@@ -370,19 +370,24 @@ signal_store = {
                              ["glass_sw_csi500_ret", "hysteresis", [1.2, 120, 0.6], "ema3", "zscore_roll", True, "", "", 120, [-2,2]]],                             
     # "rubber_etf_mom_dbth_zs": [['ru', 'nr'],
     #                          ["rubber_sw_csi500_ret", "hysteresis", [1.5, 60, 1], "ema3", "zscore_roll", True, "", "", 120, [-2,2]]],                             
+    "us_oil_prod_etf_mom": [['sc', 'bu', 'TA',],
+                            ["us_oil_prod_etf_perf", "qtl", [40, 60, 2], '', '', False, 'price', "", 120, [-2,2]]],
 
     "exch_wnt_hlr": [
-        ['ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
+        ['rb', 'hc', 'ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
         ["exch_warrant", "hlratio", [230, 250, 2], "", "", False, "", "ema3", 240, [-2,2]]],
     "exch_wnt_hlr_xdemean": [
-        ['ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
+        ['rb', 'hc', 'ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
         ["exch_warrant", "hlratio", [240, 260, 2], "", "", False, "", "ema3", 240, [-2,2]]],
     "exch_wnt_yoy_hlr": [
-        ['ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
+        ['rb', 'hc', 'ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
         ["exch_warrant", "hlratio", [230, 250, 2], 'cal_yoy_day', "diff", False, "", "ema3", 240, [-2,2]]],
     "exch_wnt_yoy_hlr_xdemean": [
-        ['ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
+        ['rb', 'hc', 'ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
         ["exch_warrant", "hlratio", [240, 260, 2], 'cal_yoy_day', "diff", False, "", "ema3", 240, [-2,2]]],
+    "exch_wnt_kdj": [
+        ['rb', 'hc', 'ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
+        ["exch_warrant", "kdj", [230, 250, 2], "", "", False, "", "ema1", 240, [-2,2]]],
 
     "cgb_1_2_spd_zs": [['cu', 'al', 'zn', 'rb', 'hc', 'i'],
                        ["cgb_1_2_spd", "zscore", [40, 80, 2], "", "", True, "", "ema3", 120, [-2,2]]],
@@ -484,6 +489,7 @@ signal_execution_config = {
     'ioarb_spd_qtl_1y': {"win": "a1505", "lag": 1},
     'MCU3_zs': {"win": "a1505", "lag": 1},
     'fxbasket_zs': {"win": "a1505", "lag": 1},
+    "us_oil_prod_etf_mom":  {"win": "a1505", "lag": 1},
 }
 
 feature_to_feature_key_mapping = {

@@ -8,7 +8,7 @@ import logging
 from pycmqlib3.utility import base
 from pycmqlib3.strategy.signal_repo import get_funda_signal_from_store, BROAD_MKTS, IND_MKTS, AGS_MKTS
 from pycmqlib3.utility.spot_idx_map import index_map, process_spot_df
-from pycmqlib3.utility.dbaccess import load_codes_from_edb, load_factor_data
+from pycmqlib3.utility.dbaccess import load_codes_from_edb, load_factor_data, load_int_stock_daily
 from pycmqlib3.utility import dataseries
 from pycmqlib3.utility.backtest import sim_start_dict
 from pycmqlib3.utility.misc import day_shift, CHN_Holidays, prod2exch, is_workday, \
@@ -214,6 +214,32 @@ def beta_spd_seasonality(price_df, spot_df, product_list):
         signal_ts.loc[signal_ts.index.month.isin([1, 2, 3, 12])] = 1
         signal_df['au'] = signal_ts*au_vol/spd_vol
         signal_df['ag'] = - signal_ts*beta['port']*ag_vol/spd_vol
+    return signal_df
+
+
+def beta_spd_trend(price_df, spot_df, product_list, pair_list,
+                   signal_func='qtl', param_rng=[40, 80, 2], 
+                   vol_win=20, signal_cap=[-2, 2], bullish=True,
+                   beta_win=245, signal_buf=0):
+    signal_df = pd.DataFrame(0, index=price_df.index, columns=product_list)
+    for trade_asset, index_asset in pair_list:
+        if (trade_asset not in product_list) or (index_asset not in product_list):
+            continue
+        trade_pxchg = price_df[(f'{trade_asset}c1', 'close')].pct_change()
+        trade_vol = trade_pxchg.rolling(20).std()
+        index_pxchg = price_df[(f'{index_asset}c1', 'close')].pct_change()
+        index_vol = index_pxchg.rolling(20).std()
+        beta = beta_hedge_ratio(trade_pxchg, index_pxchg, beta_win=beta_win, beta_rng=[0, 100], corr_step=5).dropna()
+        spd_pxchg = (trade_pxchg - beta['port'] * index_pxchg)
+        spd_vol = spd_pxchg.dropna().rolling(vol_win).std()    
+        feature_ts = spd_pxchg.dropna().cumsum()
+        signal_ts = calc_conv_signal(feature_ts, signal_func=signal_func, 
+                                     param_rng=param_rng, signal_cap=signal_cap, vol_win=120)        
+        signal_ts = signal_buffer(signal_ts, signal_buf)
+        if not bullish:
+            signal_ts = -signal_ts
+        signal_df[trade_asset] += signal_ts*trade_vol/spd_vol
+        signal_df[index_asset] -= signal_ts*beta['port']*index_vol/spd_vol
     return signal_df
 
 
@@ -462,6 +488,28 @@ factors_by_func = {
                 ],
         },
     },
+    'beta_spd_trend_3m': {
+        'func': beta_spd_trend,
+        'args': {
+            'product_list': [
+                'rb', 'hc', 'i', 'j', 'FG', 'SA', 
+                'zn', 'l', 'pp', 'ao', 'al',
+                'm', 'y', 'p', 'OI', 'a',                 
+                ],
+            'pair_list': [
+                ('rb', 'i'), ('i', 'rb'), ('j', 'i'), ('hc', 'zn'), 
+                ('FG', 'SA'), ('SA', 'FG'), ('ao', 'al'),  ('pp', 'l'), 
+                ('m', 'y'), ('y', 'm'), ('m', 'a'), ('y', 'p'), ('p', 'y'), ('OI', 'p'), ('p', 'OI'),
+            ],
+            'param_rng': [40, 80, 2],
+            'bullish': True,
+            'vol_win': 20, 
+            'beta_win': 244,
+            'signal_cap': [-2, 2],
+            'signal_func': 'qtl',
+            'signal_buf': 0.1
+        }
+    },    
     'pair_mr_1y': {
         'func': mr_pair,
         'args': {
@@ -495,7 +543,13 @@ def get_fun_data(start_date, run_date):
     spot_df = data_df.dropna(how='all').copy(deep=True)
     spot_df = spot_df.reindex(index=cdate_rng)
     spot_df = process_spot_df(spot_df, adjust_time=True)
+
+    stock_df = load_int_stock_daily(["XOM.N", "BP.N", 'CVX.N', 'SU.N', 'EOG.N', 'APA.N', 
+                                     'COP.N', 'VLO.N', 'PSX.N', 'MPC.N', 'PBF.N', 
+                                     "SPY.P", "GDX.P", "USO.P", "GLD.P"])
+    stock_pct_chg = stock_df.loc[:, stock_df.columns.get_level_values(1)=='close'].droplevel(level=[1], axis=1).pct_change()
     spot_dict = {}
+    spot_dict["us_oil_prod_etf_perf"] = (1 + stock_pct_chg[['VLO.N', 'PSX.N', 'MPC.N', 'PBF.N']].mean(axis=1)).cumprod()
     for nb in [2, 3, 4]:
         fef_nb = nearby('FEF', n=nb,
                         start_date=max(start_date, datetime.date(2016, 7, 1)),

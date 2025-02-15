@@ -166,7 +166,7 @@ def load_codes_from_edb(code_list, source=['ifind'], start_date=None, end_date=N
     return pivot
 
 
-def load_int_stock_daily(code_list, dbtable='int_stock_daily', start_date=None, end_date=None):
+def load_int_stock_daily(code_list, start_date=None, end_date=None, dbtable='int_stock_daily'):
     if isinstance(code_list, str):
         code_list = [code_list]
     cnx = create_engine('mysql+mysqlconnector://{user}:{passwd}@{host}/{dbase}'.format(
