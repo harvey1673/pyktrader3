@@ -714,11 +714,11 @@ def process_spot_df(spot_df, adjust_time=False):
     spot_dict['r_dr_7d_spd'] = spot_df['r007_cn'] - spot_df['dr007_cn']
     spot_dict['shibor_3m_1y_spd'] = spot_df['shibor_3m'] - spot_df['shibor_1y']
 
-    # spot_dict['cs_corp_aa_1y'] = spot_df['corpbond_yield_aa_1y'] -spot_df['cn_govbond_yield_1y_sch']
-    # spot_dict['cs_aa_1y'] = spot_df['corpbond_yield_aa_1y'] -spot_df['cn_govbond_yield_1y_sch']
-    # spot_dict['cs_schbill_aa_1y'] = spot_df['schbill_yield_aa_1y'] -spot_df['cn_govbond_yield_1y_sch']
-    # spot_dict['cs_stbill_aa_1y'] = spot_df['stbill_yield_aa_1y'] -spot_df['cn_govbond_yield_1y_sch']
-    # spot_dict['cs_bknote_aa_1y'] = spot_df['banknotes_yield_aa_1y'] -spot_df['cn_govbond_yield_1y_sch']
+    spot_dict['cs_corp_aa_1y'] = spot_df['corpbond_yield_aa_1y'] -spot_df['cn_govbond_yield_1y_sch']
+    spot_dict['cs_aa_1y'] = spot_df['corpbond_yield_aa_1y'] -spot_df['cn_govbond_yield_1y_sch']
+    spot_dict['cs_schbill_aa_1y'] = spot_df['schbill_yield_aa_1y'] -spot_df['cn_govbond_yield_1y_sch']
+    spot_dict['cs_stbill_aa_1y'] = spot_df['stbill_yield_aa_1y'] -spot_df['cn_govbond_yield_1y_sch']
+    spot_dict['cs_bknote_aa_1y'] = spot_df['banknotes_yield_aa_1y'] -spot_df['cn_govbond_yield_1y_sch']
 
     spot_dict['steel_inv_mill'] = spot_df['rebar_inv_mill'] + spot_df['wirerod_inv_mill'] + \
                                 spot_df['hrc_inv_mill'] + spot_df['crc_inv_mill'] #+ spot_df['plate_inv_mill']
@@ -750,6 +750,10 @@ def process_spot_df(spot_df, adjust_time=False):
     spot_dict['angle_billet'] = spot_df['angle_50x5'] - spot_df['billet_ts']
     spot_dict['highwire_billet'] = spot_df['highwire_6.5'] - spot_df['billet_ts']
 
+    spot_dict["zn_scrap_sh_mid"] = (spot_df["zn_scrap_sh_low"] + spot_df["zn_scrap_sh_high"])/2
+    spot_dict["al_scrap_shredded_sh_mid"] = (spot_df["al_scrap_shredded_sh_low"] + spot_df["al_scrap_shredded_sh_high"])/2
+    spot_dict['rebar_total_stockdays'] = (spot_df['rebar_inv_social']).dropna()/spot_dict['rebar_app_dmd'].dropna().rolling(52).mean()*7
+    spot_dict['hrc_total_stockdays'] = (spot_df['hrc_inv_social']).dropna()/spot_dict['hrc_app_dmd'].dropna().rolling(52).mean()*7
     spot_dict['io_inv_removal_ratio_41p'] = spot_df['io_inv_41ports'] / spot_df['io_removal_41ports']
     spot_dict['io_inv_rmv_pctchg_41p'] = spot_dict['io_inv_removal_ratio_41p'].dropna().pct_change()
     spot_dict['io_inv_mill(64)'] = spot_df['io_inv_imp_mill(64)'] + spot_df['io_inv_dom_mill(64)']
