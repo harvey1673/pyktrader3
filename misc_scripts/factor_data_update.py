@@ -59,38 +59,28 @@ sim_start_dict = {'c': datetime.date(2011, 1, 1), 'm': datetime.date(2011, 1, 1)
 field_list = ['open', 'high', 'low', 'close', 'volume', 'openInterest', 'contract', 'shift']
 
 port_pos_config = {
-    # 'PTSIM1_FACTPORT_hot': {
-    #     'pos_loc': 'C:/dev/pyktrader3/process/pt_test1',
-    #     'roll': 'hot',
-    #     'shift_mode': 2,
-    #     'strat_list': [
-    #         ('PTSIM1_FACTPORT1.json', 9000, 'd1'),
-    #         ('PTSIM1_HRCRB.json', 18000, 'd1'),
-    #         ('PTSIM1_LL.json', 5400, 'd1'),
-    #         ('PTSIM1_FUNMTL.json', 4500, 'd1'),
-    #         ('PTSIM1_FUNFER.json', 4500, 'd1'),
-    #         ('PTSIM1_FUNBASE.json', 4500, 'd1'),
-    #     ], },
-    'PTSIM1_FACTPORT1_hot': {
-        'pos_loc': 'C:/dev/pyktrader3/process/paper_sim1',
+    'PTSIM1_hot': {
+        'pos_loc': 'C:/dev/pyktrader3/process/pt_test1',
         'roll': 'hot',
         'shift_mode': 2,
         'strat_list': [
-            ('PTSIM1_FACTPORT1.json', 25000, 'd1'),
+            ('PTSIM1_FACTPORT.json', 25000, 'd1'),
             ('PTSIM1_EXCHWNT.json', 12000, 'd1'),
             ('PTSIM1_SEAZN.json', 6000, 'd1'),
             ('PTSIM1_HRCRB.json', 12000, 'd1'),
             ('PTSIM1_LL.json', 12000, 'd1'),
             ('PTSIM1_LL2MR.json', 12000, 'd1'),
+            ('PTSIM1_SPDTF.json', 12000, 'd1'),
             ('PTSIM1_MR1Y.json', 12000, 'd1'),
-            ('PTSIM1_CNMAC1.json', 4000, 'd1'),
+            ('PTSIM1_CNMAC1.json', 7000, 'd1'),
             ('PTSIM1_FUNFER.json', 20000, 'd1'),
             ('PTSIM1_FUNBASE.json', 20000, 'd1'),
             ('PTSIM1_FUNMTL.json', 8000, 'd1'),
+            ('PTSIM1_BND1.json', 10000, 'd1'),
         ], },
 }
 
-pos_chg_notification = ['PTSIM1_FACTPORT1_hot',]
+pos_chg_notification = ['PTSIM1_hot']
 
 
 def update_factor_db(xdf, field, config, dbtable='fut_fact_data', flavor='mysql', start_date=None, end_date=None):

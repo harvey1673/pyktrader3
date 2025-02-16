@@ -1046,7 +1046,7 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
             feature_ts = beta_residual(feature_ts, spot_df[freq].dropna(),
                                        beta_win=beta_win,
                                        chg_func=chg_func)
-        if 'yoy' in pfunc:
+        elif 'yoy' in pfunc:
             if 'lunar' in pfunc:
                 label_func = lunar_label
                 label_args = {}
