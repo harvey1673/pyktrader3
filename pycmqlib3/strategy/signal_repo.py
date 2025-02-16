@@ -202,7 +202,7 @@ signal_store = {
     'sm_cost_mom': [['SM'],
                     ['sm_neimeng_cost', 'zscore', [20, 40, 2], '', '', True, 'price', "", 120, [-2,2]]],
     'sf_cost_mom': [['SF'],
-                    ['"sf_neimeng_cost', 'zscore', [20, 40, 2], '', '', True, 'price', "", 120, [-2,2]]],                    
+                    ['sf_neimeng_cost', 'zscore', [20, 40, 2], '', '', True, 'price', "", 120, [-2,2]]],                    
 
     'strip_hsec_lvl_mid': [['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM', 'cu'],
                            ['strip_hsec', 'qtl', [60, 80, 2], '', '', True, 'price', "sma1", 120, [-2,2]]],
@@ -371,7 +371,7 @@ signal_store = {
     # "rubber_etf_mom_dbth_zs": [['ru', 'nr'],
     #                          ["rubber_sw_csi500_ret", "hysteresis", [1.5, 60, 1], "ema3", "zscore_roll", True, "", "", 120, [-2,2]]],                             
     "us_oil_prod_etf_mom": [['sc', 'bu', 'TA',],
-                            ["us_oil_prod_etf_perf", "qtl", [40, 60, 2], '', '', False, 'price', "", 120, [-2,2]]],
+                            ["us_oil_prod_etf_perf", "qtl", [40, 60, 2], '', '', True, 'price', "", 120, [-2,2]]],
 
     "exch_wnt_hlr": [
         ['rb', 'hc', 'ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],

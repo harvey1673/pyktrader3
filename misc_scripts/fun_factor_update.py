@@ -39,6 +39,8 @@ single_factors = {
     'fef_fly_ratio_or_qtl': ['rb', 'hc', 'j'],
     'fef_basmom_or_qtl': ['rb', 'hc'],
     'fef_basmom5_or_qtl': ['rb', 'hc'],
+    'sm_cost_mom': ['SM'],
+    'sf_cost_mom': ['SF'],
     "al_alumina_qtl": ['al'],
     "al_alumina_yoy_qtl": ['al'],
     "al_coal_qtl": ['al'],
@@ -56,6 +58,8 @@ single_factors = {
     "prop_etf_mom_dbth_zs": ["rb", "i", "FG", "v"],
     "prop_etf_mom_dbth_qtl": ["rb", "i", "FG", "v"],
     "prop_etf_mom_dbth_qtl2": ["rb", "i", "FG", "v"],
+    "glass_etf_mom_dbth_zs": ["FG"],
+    "us_oil_prod_etf_mom": ['sc', 'bu', 'TA'],
 
     'shibor1m_qtl': ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'au', 'ag', 'l', 'pp', 'v', 'TA', 'eg', 'MA'],
     'r007_lt_zs': ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'au', 'ag', 'l', 'pp', 'v', 'TA', 'eg', 'MA'],
@@ -492,13 +496,12 @@ factors_by_func = {
         'func': beta_spd_trend,
         'args': {
             'product_list': [
-                'rb', 'hc', 'i', 'j', 'FG', 'SA', 
+                'hc', 'FG', 'SA', 
                 'zn', 'l', 'pp', 'ao', 'al',
                 'm', 'y', 'p', 'OI', 'a',                 
                 ],
             'pair_list': [
-                ('rb', 'i'), ('i', 'rb'), ('j', 'i'), ('hc', 'zn'), 
-                ('FG', 'SA'), ('SA', 'FG'), ('ao', 'al'),  ('pp', 'l'), 
+                ('hc', 'zn'), ('FG', 'SA'), ('SA', 'FG'), ('ao', 'al'),  ('pp', 'l'), 
                 ('m', 'y'), ('y', 'm'), ('m', 'a'), ('y', 'p'), ('p', 'y'), ('OI', 'p'), ('p', 'OI'),
             ],
             'param_rng': [40, 80, 2],
@@ -509,7 +512,25 @@ factors_by_func = {
             'signal_func': 'qtl',
             'signal_buf': 0.1
         }
-    },    
+    }, 
+    'beta_spd_trend_1y': {
+        'func': beta_spd_trend,
+        'args': {
+            'product_list': [
+                'rb', 'i', 'j', 
+                ],
+            'pair_list': [
+                ('rb', 'i'), ('i', 'rb'), ('j', 'i'),
+            ],
+            'param_rng': [240, 260, 2],
+            'bullish': True,
+            'vol_win': 20, 
+            'beta_win': 244,
+            'signal_cap': [-2, 2],
+            'signal_func': 'qtl',
+            'signal_buf': 0.0
+        }
+    },        
     'pair_mr_1y': {
         'func': mr_pair,
         'args': {
