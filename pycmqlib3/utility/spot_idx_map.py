@@ -706,7 +706,8 @@ def process_spot_df(spot_df, adjust_time=False):
     spot_dict['cgb_1_5_spd'] = spot_df['cn_govbond_yield_1y'] - spot_df['cn_govbond_yield_5y']
     spot_dict['cgb_2_10_spd'] = spot_df['cn_govbond_yield_2y'] - spot_df['cn_govbond_yield_10y']
     spot_dict['fxbasket_cumret'] = spot_df[['usdzar_xe', 'usdaud_xe', 'usdclp_xe', 'usdbrl_xe']].dropna().pct_change().mean(axis=1).cumsum()
-
+    spot_dict['pmi_steel_order2inv'] = (spot_df['pmi_cn_steel_new_order']/spot_df['pmi_cn_steel_inv']).dropna()
+    spot_dict['pmi_steel_order2rminv'] = (spot_df['pmi_cn_steel_new_order']/spot_df['pmi_cn_steel_rm_inv']).dropna()
     spot_dict['cnh_cny_spd1'] = spot_df['usdcnh_xe'] - spot_df['usdcny_xe']
     spot_dict['cnh_cny_spd2'] = spot_df['usdcnh_close'] - spot_df['usdcny_spot2']
     spot_dict['cny_mid_dev1'] = spot_df['usdcny_spot'] - spot_df['usdcny_mid']
