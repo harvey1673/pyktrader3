@@ -1081,13 +1081,16 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
                 feature_ts = feature_ts.rolling(n_days).mean()
             elif 'ema' in pfunc:
                 n_days = int(pfunc[3:])
-                feature_ts = feature_ts.ewm(n_days).mean()
-            elif '_lr' in pfunc:
+                feature_ts = feature_ts.ewm(n_days).mean()            
+            elif 'lr' in pfunc:
                 feature_ts = np.log(1+feature_ts)
-            elif 'csum' in pfunc:
+            elif 'csum' == pfunc:
                 feature_ts = feature_ts.cumsum()
-            elif 'floor' == pfunc:
+            elif 'flr' == pfunc:
                 feature_ts = feature_ts.apply(lambda x: max(x - param_rng[0], 0) / param_rng[1])
+            elif 'sum' in pfunc:
+                n_days = int(pfunc[3:])
+                feature_ts = feature_ts.rolling(n_days).sum()
 
     if signal_func == 'seasonal_score_w':
         signal_ts = seasonal_score(feature_ts.to_frame(),
@@ -1148,6 +1151,14 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
                 signal_ts = signal_ts.apply(lambda x: x if x > 0 else 0)
             elif pfunc[:3] == 'neg':
                 signal_ts = signal_ts.apply(lambda x: x if x < 0 else 0)
+            elif pfunc[:3] == 'sgn':
+                signal_ts = np.sign(signal_ts)
+            elif pfunc[:3] =='arr':
+                n_win = float(pfunc[3:])
+                signal_ts = (n_win + 1) * signal_ts - n_win * signal_ts
+            elif pfunc[:3] =='acl':
+                n_win = int(pfunc[3:])
+                signal_ts = signal_ts - signal_ts.shift(n_win)            
             elif pfunc[:3] == 'hys':
                 params = pfunc.split('_')
                 signal_ts = signal_hysteresis(signal_ts, float(params[1]), float(params[2]))
