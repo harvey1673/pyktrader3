@@ -60,10 +60,14 @@ signal_store = {
     # bond future
     'bond_mr_st_qtl': [['T', 'TF'],
                        ['px', 'qtl', [2, 5, 1], 'df1', 'pct_change', False, '', "ema10|buf0.1", 120, [-2,2]]],
-    'bond_tf_lt_qtl': [['T', 'TF'],
+    'bond_tf_lt_qtl': [['T', 'TF', 'TL'],
                        ['px', 'qtl', [230, 250, 2], '', '', True, '', "buf0.1", 120, [-2,2]]],
-    'bond_carry_ma': [['T', 'TF'],
+    'bond_tf_st_eds': [['T', 'TF', 'TL', "TS"],
+                       ['px', 'ema_dff_sgn', [20, 40, 2], '', '', True, '', "ema5", 120, [-2,2]]],
+    'bond_carry_ma': [['T', 'TL'],
                       ['ryield', 'ma', [1, 2, 1], '', '', True, '', "", 120, [-2,2]]],
+    "bond_fxbasket_zs": [['T', 'TF', 'TL', "TS"],
+                    ['fxbasket_cumret', 'zscore', [480, 520, 2], '', '', True, '', '', 120, [-2,2]]],
 
     'pbf_yoy_qtl': [['fef', 'i'], ["pbf_prem", 'qtl', [20, 30, 2], "cal_yoy", "diff", True, "", "", 120, [-2,2]]],
     'pbf_yoy_eds': [['fef', 'i'], ["pbf_prem", 'ema_dff_sgn', [5, 15, 1], "cal_yoy", "diff", True, "", "", 120, [-2,2]]],
@@ -450,6 +454,16 @@ signal_store = {
                         ['pmi_lgsc_steel_purchase_exp', 'ma', [1, 2, 1], 'df12', 'diff', True, '', '', 24, [-2,2]]],
     "pmi_cn_purchase_yoy": [['rb', 'hc', 'j', 'jm', 'i', 'FG', 'v', 'al', 'cu'],
                         ['pmi_cn_manu_purchase', 'ma', [1, 2, 1], 'df12', 'diff', True, '', '', 24, [-2,2]]],
+    "pmi_stl_o2inv_zs": [['rb', 'hc', 'j', 'jm', 'i'],
+                        ['pmi_steel_order_inv_ratio', 'zscore', [60, 72, 1], '', '', True, '', '', 24, [-2,2]]], 
+    "pmi_stl_o2inv_qtl_sgn": [['rb', 'hc', 'j', 'jm', 'i'],
+                        ['pmi_steel_order_inv_ratio', 'qtl', [48, 60, 1], '', '', True, '', 'sgn', 24, [-2,2]]], 
+    "pmi_order_rminv_ratio_zs": [['rb', 'hc', 'v', 'FG', 'cu', 'al', 'zn'],
+                        ['pmi_order_rminv_ratio', 'zscore', [60, 72, 1], '', '', True, '', 'sgn', 24, [-2,2]]], 
+    "ppi_cpi_spd_zs": [['rb', 'hc', 'j', 'jm', 'v', 'SM', 'SF', 
+                        'cu', 'al', 'zn', 'ni', 'sn', 'ss', 'pp', 'sc', 'lu'],
+                        ['ppi_cpi_mom_spd', 'zscore', [48, 60, 1], 'sum12', '', True, '', 'arr2|sgn', 24, [-2,2]]],
+    
 }
 
 signal_buffer_config = {

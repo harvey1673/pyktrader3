@@ -1,5 +1,7 @@
 import pandas as pd
 import numpy as np
+from pandas.tseries.offsets import CustomBusinessDay
+from pycmqlib3.utility.misc import CHN_Holidays
 from pycmqlib3.analytics.tstool import vat_adj
 
 index_map = {
@@ -79,7 +81,10 @@ index_map = {
     # 'M016266042': 'icpi_clothes',
     # 'M016266043': 'icpi_housing',
     # 'M016266044': 'icpi_service',
-
+    'M002826785': 'cpi_cn_mom',
+    'M002842661': 'ppi_cn_mom',
+    'M001625222': 'm2_cn_yoy',
+    'M001625224': 'm1_cn_yoy',
     "M004369935": 'pmi_cn_cons_all',
     "M005933607": 'pmi_cn_cons_new_order',
     "M005933608": 'pmi_cn_cons_rm_px',
@@ -92,14 +97,14 @@ index_map = {
     "M003559342": 'pmi_cn_steel_rm_vol',
     "M003559343": 'pmi_cn_steel_rm_inv',
     "M003559344": 'pmi_cn_steel_new_order',
-    "M003559345": 'pmi_cn_steel_exports',
+    #"M003559345": 'pmi_cn_steel_exports',
     "M003559346": 'pmi_cn_steel_inv',
     "M003559347": 'pmi_cn_steel_rm_px',
     "S004038574": 'pmi_lgsc_steel_all',
     "S009224315": 'pmi_lgsc_steel_inv',
     "S009224314": 'pmi_lgsc_steel_sales',
     "S004038576": 'pmi_lgsc_steel_tot_order',
-    "S009224316": 'pmi_lgsc_steel_mkt_exp',
+    #"S009224316": 'pmi_lgsc_steel_mkt_exp',
     "S004038575": 'pmi_lgsc_steel_purchase_exp',
     "M002043802": 'pmi_cn_manu_all',
     "M002043804": 'pmi_cn_manu_new_order',
@@ -665,6 +670,7 @@ def data_wkday_adj(data_df, col_list, shift_map={0: -4, 1: -5, 2: 1, 3: 0, 4: -1
 
 
 def adj_publish_time(spot_df):
+    chn_bday = CustomBusinessDay(holidays=pd.to_datetime(CHN_Holidays))
     col_list = [
         'io_inv_imp_mill(64)', 'io_inv_dom_mill(64)', 'io_invdays_imp_mill(64)',
     ]
@@ -685,6 +691,12 @@ def adj_publish_time(spot_df):
     ]
     shift_map = {0: -4, 1: -5, 2: -6, 3: 0, 4: -1, 5: -2, 6: -3}
     spot_df = data_wkday_adj(spot_df, col_list, shift_map=shift_map)
+
+    for col in ['ppi_cn_mom', 'cpi_cn_mom']:
+        if col in spot_df.columns:
+            ts = spot_df[col].dropna()
+            ts.index = ts.index + pd.DateOffset(days=9) + chn_bday * 1
+            spot_df[col] = ts
     return spot_df
 
 
@@ -698,6 +710,8 @@ def process_spot_df(spot_df, adjust_time=False):
         spot_dict[f'{asset}_lme_futbasis'] = np.log(1 + spot_df[f'{asset}_lme_0m_3m_spd'] /
                                                   spot_df[f'{asset}_lme_3m_close'])
 
+    spot_dict['ppi_cpi_mom_spd'] = (spot_df['ppi_cn_mom'] - spot_df['cpi_cn_mom']).dropna()
+    spot_dict['pmi_steel_order_inv_ratio'] = (spot_df['pmi_cn_steel_new_order']/spot_df['pmi_cn_steel_inv']).dropna()
     spot_dict['usgg10_be'] = spot_df['usgg10yr'] - spot_df['usggt10yr']
     spot_dict['usgg10_2_spd'] = spot_df['usgg10yr'] - spot_df['usgg2yr']
     spot_dict['cgb_3m_1y_spd'] = spot_df['cn_govbond_yield_3m_sch'] - spot_df['cn_govbond_yield_1y_sch']
