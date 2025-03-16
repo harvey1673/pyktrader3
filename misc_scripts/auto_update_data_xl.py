@@ -1,3 +1,4 @@
+import os
 import time
 import datetime
 import pyautogui
@@ -10,7 +11,14 @@ from pycmqlib3.utility.dbaccess import write_edb_by_xl_sheet, write_stock_data_b
 
 def update_ifind_xlsheet(filename='C:/Users/harvey/Nutstore/1/Nutstore/ifind_data.xlsx', 
                          wait_time=40, excluded=['hist']):
+    file_name = os.path.basename(filename)
     xl = win32com.client.DispatchEx("Excel.Application")
+    for wb in xl.Workbooks:
+        print(wb.Name)
+        if wb.Name == file_name:
+            print(f"Closing open file: {file_name}")
+            wb.Close(SaveChanges=True)  # Close without saving
+
     wb = xl.Workbooks.open(filename)
     xl.Visible = True
     wb.Activate()

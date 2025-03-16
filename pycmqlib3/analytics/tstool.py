@@ -1151,17 +1151,17 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
                 signal_ts = signal_ts.apply(lambda x: x if x > 0 else 0)
             elif pfunc[:3] == 'neg':
                 signal_ts = signal_ts.apply(lambda x: x if x < 0 else 0)
-            elif pfunc[:3] == 'sgn':
-                signal_ts = np.sign(signal_ts)
+            elif pfunc[:3] == 'hys':
+                params = pfunc.split('_')
+                signal_ts = signal_hysteresis(signal_ts, float(params[1]), float(params[2]))
             elif pfunc[:3] =='arr':
                 n_win = float(pfunc[3:])
                 signal_ts = (n_win + 1) * signal_ts - n_win * signal_ts
             elif pfunc[:3] =='acl':
                 n_win = int(pfunc[3:])
-                signal_ts = signal_ts - signal_ts.shift(n_win)            
-            elif pfunc[:3] == 'hys':
-                params = pfunc.split('_')
-                signal_ts = signal_hysteresis(signal_ts, float(params[1]), float(params[2]))
+                signal_ts = signal_ts - signal_ts.shift(n_win)          
+            elif pfunc[:3] == 'sgn':
+                signal_ts = np.sign(signal_ts)  
     return signal_ts
 
 
