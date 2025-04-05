@@ -91,4 +91,5 @@ if __name__ == "__main__":
     if now.time() > datetime.time(18, 0, 0):
         update_ifind_xlsheet(filename=f'{data_folder}/ifind_data.xlsx', wait_time=40, excluded=['hist'])
     update_ifind_xlsheet(filename=f'{data_folder}/ifind_daily.xlsx', wait_time=40, excluded=[])
-    update_ifind_xlsheet(filename=f'{data_folder}/ifind_stock.xlsx', wait_time=10, excluded=['setup'])
+    if now.time() < datetime.time(12, 0, 0):
+        update_ifind_xlsheet(filename=f'{data_folder}/ifind_stock.xlsx', wait_time=10, excluded=['setup'])

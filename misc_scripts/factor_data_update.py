@@ -25,7 +25,7 @@ ags_oil_mkts = ['m', 'RM', 'y', 'p', 'OI', 'a', 'c', 'cs']  # , 'b']
 ags_soft_mkts = ['CF', 'CY', 'SR', 'jd', 'AP', 'UR', 'CJ']  # , 'sp', 'CJ', 'UR']
 ags_all_mkts = ags_oil_mkts + ags_soft_mkts
 eq_fut_mkts = ['IF', 'IH', 'IC', "IM"]
-bond_fut_mkts = ['T', 'TF', 'TS']
+bond_fut_mkts = ['T', 'TF', 'TS', 'TL']
 fin_all_mkts = eq_fut_mkts + bond_fut_mkts
 commod_all_mkts = ind_all_mkts + ags_all_mkts + precious_metal_mkts
 all_markets = commod_all_mkts + fin_all_mkts
@@ -61,22 +61,22 @@ field_list = ['open', 'high', 'low', 'close', 'volume', 'openInterest', 'contrac
 port_pos_config = {
     'PTSIM1_hot': {
         'pos_loc': 'C:/dev/pyktrader3/process/pt_test1',
-        'roll': 'hot',
-        'shift_mode': 2,
         'strat_list': [
-            ('PTSIM1_FACTPORT.json', 25000, 'd1'),
-            ('PTSIM1_EXCHWNT.json', 12000, 'd1'),
-            ('PTSIM1_SEAZN.json', 6000, 'd1'),
-            ('PTSIM1_HRCRB.json', 12000, 'd1'),
-            ('PTSIM1_LL.json', 12000, 'd1'),
-            ('PTSIM1_LL2MR.json', 12000, 'd1'),
-            ('PTSIM1_SPDTF.json', 12000, 'd1'),
-            ('PTSIM1_MR1Y.json', 12000, 'd1'),
-            ('PTSIM1_CNMAC1.json', 8000, 'd1'),
-            ('PTSIM1_FUNFER.json', 20000, 'd1'),
-            ('PTSIM1_FUNBASE.json', 20000, 'd1'),
-            ('PTSIM1_FUNMTL.json', 8000, 'd1'),
-            ('PTSIM1_BND1.json', 15000, 'd1'),
+            ('PTSIM1_FACTPORT.json', 25000),
+            ('PTSIM1_EXCHWNT.json', 13000),
+            ('PTSIM1_SEAZN.json', 9000),
+            ('PTSIM1_HRCRB.json', 13000),
+            ('PTSIM1_LL.json', 13000),
+            ('PTSIM1_LL2MR.json', 13000),
+            ('PTSIM1_SPDTF.json', 13000),
+            ('PTSIM1_MR1Y.json', 13000),
+            ('PTSIM1_CNMAC1.json', 10000),
+            ('PTSIM1_FUNFER.json', 21000),
+            ('PTSIM1_FERSPD.json', 50000),
+            ('PTSIM1_FUNBASE.json', 22000),
+            ('PTSIM1_FUNENE.json', 2000),
+            ('PTSIM1_FUNMTL.json', 10000),
+            ('PTSIM1_BND1.json', 25000),
         ], },
 }
 
@@ -588,22 +588,20 @@ def update_port_position(run_date=datetime.date.today()):
                 curr_signal = json.load(fp)
         except:
             pass
-        roll = port_pos_config[port_name]['roll']
-        shift_mode = port_pos_config[port_name]['shift_mode']
+
         port_file = port_name
-        if shift_mode == 1:
-            vol_key = 'atr'
-        else:
-            vol_key = 'pct_vol'
-        for strat_file, pos_scaler, freq in port_pos_config[port_name]['strat_list']:
+        for strat_file, pos_scaler in port_pos_config[port_name]['strat_list']:
             config_file = f'{pos_loc}/settings/{strat_file}'
             with open(config_file, 'r') as fp:
                 strat_conf = json.load(fp)
             strat_args = strat_conf['config']
             assets = strat_args['assets']
-            repo_type = strat_args.get('repo_type', 'asset')
+            vol_key = strat_conf.get("vol_key", "pct_vol")
+            roll = strat_conf.get("roll_label", "hot")
+            repo_type = strat_args.get('repo_type', 'asset')            
+            freq = strat_conf.get("freq", "d1")
+            hist_fact_lookback = strat_conf.get("hist_fact_lookback", 20)
             factor_repo = strat_args['factor_repo']
-
             product_list = []
             for asset_dict in assets:
                 under = asset_dict["underliers"][0]
@@ -615,7 +613,7 @@ def update_port_position(run_date=datetime.date.today()):
                                           roll_label=roll,
                                           pos_scaler=pos_scaler,
                                           freq=freq,
-                                          hist_fact_lookback=20,
+                                          hist_fact_lookback=hist_fact_lookback,
                                           vol_key=vol_key,
                                           curr_signal=curr_signal,
                                           signal_config=signal_buffer_config)
