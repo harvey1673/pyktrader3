@@ -659,7 +659,7 @@ def data_wkday_adj(data_df, col_list, shift_map={0: -4, 1: -5, 2: 1, 3: 0, 4: -1
             start=data_df.index[0],
             end=data_df.index[-1] + pd.DateOffset(days=max(shift_map.values())),
             freq='D'))
-    ddf = data_df[col_list].dropna(how='all').copy(deep=True)
+    ddf = data_df[col_list].dropna(how='all').interpolate(method='linear', limit=1, limit_area='inside').copy(deep=True)
     ddf['date'] = ddf.index
     ddf['date'] = ddf['date'].map(lambda d: d + pd.DateOffset(days=shift_map.get(d.weekday(), 0)))
     ddf = ddf.drop_duplicates(subset=['date'], keep='first')
@@ -695,7 +695,8 @@ def adj_publish_time(spot_df):
     for col in ['ppi_cn_mom', 'cpi_cn_mom']:
         if col in spot_df.columns:
             ts = spot_df[col].dropna()
-            ts.index = ts.index + pd.DateOffset(days=9) + chn_bday * 1
+            ts.index = ts.index + pd.Timedelta(days=9)
+            ts.index = ts.index.map(lambda x: x + chn_bday)
             spot_df[col] = ts
     return spot_df
 
@@ -747,23 +748,29 @@ def process_spot_df(spot_df, adjust_time=False):
     spot_dict['hrc_app_dmd'] = spot_df['hrc_prod_all'] - spot_df['hrc_inv_all'].dropna().diff()
     spot_dict['crc_app_dmd'] = spot_df['crc_prod_all'] - spot_df['crc_inv_all'].dropna().diff()
     spot_dict['rb_hc_dmd_diff'] = spot_dict['rebar_app_dmd'] - spot_dict['hrc_app_dmd']
-    spot_dict['rb_hc_sinv_diff'] = spot_df['rebar_inv_social'].dropna().diff() - spot_df['hrc_inv_social'].dropna().diff()
+    spot_dict['rb_hc_dmd_ratio'] = spot_dict['rebar_app_dmd']/spot_dict['hrc_app_dmd']
+    spot_dict['rb_hc_sinv_chg_diff'] = spot_df['rebar_inv_social'].dropna().diff() - spot_df['hrc_inv_social'].dropna().diff()
+    spot_dict['rb_hc_sinv_lratio'] = np.log(spot_df['rebar_inv_social']/spot_df['hrc_inv_social'])
+    spot_dict['long_flat_sinv_chg_diff'] = spot_dict['long_social_inv'].dropna().diff() - spot_dict['flat_social_inv'].dropna().diff()
+    spot_dict['long_flat_sinv_lratio'] = np.log(spot_dict['long_social_inv']/spot_dict['flat_social_inv'])
     spot_dict['rebar_sales_inv_ratio'] = spot_df['consteel_dsales_mysteel']/spot_df['rebar_inv_social'].ffill()
 
-    spot_dict['crc_hrc'] = spot_df['crc_sh'] - spot_df['hrc_sh']
+    # spot_dict['strip_billet'] = spot_df['strip_3.0x685'] - spot_df['billet_ts']
+    # spot_dict['pipe_billet'] = spot_df['pipe_1.5x3.25'] - spot_df['billet_ts']
+    # spot_dict['hsec_billet'] = spot_df['hsec_400x200'] - spot_df['billet_ts']
+    # spot_dict['channel_billet'] = spot_df['channel_16'] - spot_df['billet_ts']
+    # spot_dict['ibeam_billet'] = spot_df['ibeam_25'] - spot_df['billet_ts']
+    # spot_dict['angle_billet'] = spot_df['angle_50x5'] - spot_df['billet_ts']
+    # spot_dict['highwire_billet'] = spot_df['highwire_6.5'] - spot_df['billet_ts']
+    # spot_dict['hrc_billet'] = spot_df['hrc_sh'] - spot_df['billet_ts']
+    #spot_dict['plate_billet'] = spot_df['plate_8mm'] - spot_df['billet_ts']
+    #spot_dict['crc_billet'] = spot_df['crc_sh'] - spot_df['billet_ts']
+    spot_dict['crc_hrc'] = spot_df['crc_sh'] - spot_df['hrc_sh']    
     spot_dict['pipe_strip'] = spot_df['pipe_1.5x3.25'] - spot_df['strip_3.0x685']
-    spot_dict['hrc_billet'] = spot_df['hrc_sh'] - spot_df['billet_ts']
     spot_dict['rebar_billet'] = spot_df['rebar_sh'] - spot_df['billet_ts']
-    spot_dict['plate_billet'] = spot_df['plate_8mm'] - spot_df['billet_ts']
-    spot_dict['crc_billet'] = spot_df['crc_sh'] - spot_df['billet_ts']
     spot_dict['gi_billet'] = spot_df['gi_0.5_sh'] - spot_df['billet_ts']
-    spot_dict['strip_billet'] = spot_df['strip_3.0x685'] - spot_df['billet_ts']
-    spot_dict['pipe_billet'] = spot_df['pipe_1.5x3.25'] - spot_df['billet_ts']
-    spot_dict['hsec_billet'] = spot_df['hsec_400x200'] - spot_df['billet_ts']
-    spot_dict['channel_billet'] = spot_df['channel_16'] - spot_df['billet_ts']
-    spot_dict['ibeam_billet'] = spot_df['ibeam_25'] - spot_df['billet_ts']
-    spot_dict['angle_billet'] = spot_df['angle_50x5'] - spot_df['billet_ts']
-    spot_dict['highwire_billet'] = spot_df['highwire_6.5'] - spot_df['billet_ts']
+    spot_dict['rb_hc_diff'] = spot_df['rebar_sh'] - spot_df['hrc_sh']
+    spot_dict['rb_hc_steel_spd'] = spot_dict['rebar_billet'] - spot_dict['crc_hrc']
 
     spot_dict["zn_scrap_sh_mid"] = (spot_df["zn_scrap_sh_low"] + spot_df["zn_scrap_sh_high"])/2
     spot_dict["al_scrap_shredded_sh_mid"] = (spot_df["al_scrap_shredded_sh_low"] + spot_df["al_scrap_shredded_sh_high"])/2
