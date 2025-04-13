@@ -71,6 +71,7 @@ port_pos_config = {
             ('PTSIM1_SPDTF.json', 13000),
             ('PTSIM1_MR1Y.json', 13000),
             ('PTSIM1_CNMAC1.json', 10000),
+            ('PTSIM1_CNMAC1.json', 1000),
             ('PTSIM1_FUNFER.json', 21000),
             ('PTSIM1_FERSPD.json', 50000),
             ('PTSIM1_FUNBASE.json', 22000),

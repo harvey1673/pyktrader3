@@ -17,7 +17,7 @@ def update_roll_cont():
     strat_list = []
     for key in port_pos_config:
         pos_loc = port_pos_config[key]['pos_loc']
-        strat_by_pos = [f'{pos_loc}/settings/{strname}' for (strname, w, roll) in port_pos_config[key]['strat_list']]
+        strat_by_pos = [f'{pos_loc}/settings/{strname}' for (strname, w) in port_pos_config[key]['strat_list']]
         strat_list += strat_by_pos
     strat_list = list(set(strat_list))
     for strat_file in strat_list:

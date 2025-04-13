@@ -480,7 +480,7 @@ signal_store = {
     "pmi_lgsc_stl_tot_order_yoy": [['rb', 'hc'],
                         ['pmi_lgsc_steel_tot_order', 'ma', [1, 2, 1], 'df12', 'diff', True, '', '', 24, [-2,2]]],
     "pmi_lgsc_stl_fund_yoy": [['rb', 'hc', "i"],
-                        ['pmi_lgsc_steel_purchase_exp', 'ma', [1, 2, 1], 'df12', 'diff', True, '', '', 24, [-2,2]]],
+                        ['', 'ma', [1, 2, 1], 'df12', 'diff', True, '', '', 24, [-2,2]]],
     "pmi_cn_purchase_yoy": [['rb', 'hc', 'j', 'jm', 'i', 'FG', 'v', 'al', 'cu'],
                         ['pmi_cn_manu_purchase', 'ma', [1, 2, 1], 'df12', 'diff', True, '', '', 24, [-2,2]]],
     "pmi_stl_o2inv_zs": [['rb', 'hc', 'j', 'jm', 'i'],
@@ -489,10 +489,10 @@ signal_store = {
                         ['pmi_steel_order_inv_ratio', 'qtl', [48, 60, 1], '', '', True, '', 'sgn', 24, [-2,2]]], 
     "pmi_order_rminv_ratio_zs": [['rb', 'hc', 'v', 'FG', 'cu', 'al', 'zn'],
                         ['pmi_order_rminv_ratio', 'zscore', [60, 72, 1], '', '', True, '', 'sgn', 24, [-2,2]]], 
-    "ppi_cpi_spd_zs": [['rb', 'hc', 'j', 'jm', 'v', 'SM', 'SF', 
-                        'cu', 'al', 'zn', 'ni', 'sn', 'ss', 'pp', 'sc', 'lu'],
-                        ['ppi_cpi_mom_spd', 'zscore', [48, 60, 1], 'sum12', '', True, '', 'arr2|sgn', 24, [-2,2]]],
-    
+    # "ppi_cpi_spd_zs": [['rb', 'hc', 'j', 'jm', 'v', 'SM', 'SF', 'cu', 'al', 'zn', 'ni', 'sn', 'ss', 'pp', 'sc', 'lu'],
+    #                     ['ppi_cpi_mom_spd', 'zscore', [48, 60, 1], 'sum12', '', True, '', 'arr2|sgn', 24, [-2,2]]],
+    "m1_m2_spd_zs_sgn": [['rb', 'hc', 'v', 'FG', 'cu', 'zn', 'al'], 
+                         ["m1_m2_spd", 'zscore', [24, 36, 1], '', '', True, '', 'sgn', 24, [-2,2]]],
 }
 
 signal_buffer_config = {

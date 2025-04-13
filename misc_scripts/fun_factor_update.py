@@ -72,6 +72,11 @@ single_factors = {
     'cny_dev_zs': ['rb', 'hc', 'i', 'FG', 'SA', 'cu', 'al', 'au', 'ag', 'l', 'pp', 'v', 'TA', 'eb', 'eg', 'MA', 'sc', 'lu', 'bu'],
     'vix_zs_st': ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA'], 
     'vix_mds_st': ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA'],
+
+     "pmi_stl_o2inv_zs": ['rb', 'hc', 'j', 'jm', 'i'],
+     "pmi_stl_o2inv_qtl_sgn": ['rb', 'hc', 'j', 'jm', 'i'],
+     "pmi_order_rminv_ratio_zs": ['rb', 'hc', 'v', 'FG', 'cu', 'al', 'zn'],
+     "m1_m2_spd_zs_sgn": ['rb', 'hc', 'v', 'FG', 'cu', 'zn', 'al'],
 }
 
 factors_by_asset = {
@@ -118,11 +123,11 @@ factors_by_asset = {
 }
 
 factors_by_spread = {
-    'rbhc_dmd_mds': [('rb', 1), ('hc', -1)],
-    'rbhc_dmd_lyoy_mds': [('rb', 1), ('hc', -1)],
-    'rbhc_sinv_mds': [('rb', 1), ('hc', -1)],
-    'rbhc_sinv_lyoy_mds': [('rb', 1), ('hc', -1)],
-    'rbsales_lyoy_spd_st': [('rb', 1), ('hc', -1)],
+    # 'rbhc_dmd_mds': [('rb', 1), ('hc', -1)],
+    # 'rbhc_dmd_lyoy_mds': [('rb', 1), ('hc', -1)],
+    # 'rbhc_sinv_mds': [('rb', 1), ('hc', -1)],
+    # 'rbhc_sinv_lyoy_mds': [('rb', 1), ('hc', -1)],
+    # 'rbsales_lyoy_spd_st': [('rb', 1), ('hc', -1)],
 }
 
 factors_by_spread2 = {

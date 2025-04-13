@@ -698,6 +698,14 @@ def adj_publish_time(spot_df):
             ts.index = ts.index + pd.Timedelta(days=9)
             ts.index = ts.index.map(lambda x: x + chn_bday)
             spot_df[col] = ts
+
+    for col in ['m1_cn_yoy', 'm2_cn_yoy']:
+        if col in spot_df.columns:
+            ts = spot_df[col].dropna()
+            ts.index = ts.index + pd.Timedelta(days=13)
+            ts.index = ts.index.map(lambda x: x + chn_bday)
+            spot_df[col] = ts
+
     return spot_df
 
 
@@ -712,7 +720,10 @@ def process_spot_df(spot_df, adjust_time=False):
                                                   spot_df[f'{asset}_lme_3m_close'])
 
     spot_dict['ppi_cpi_mom_spd'] = (spot_df['ppi_cn_mom'] - spot_df['cpi_cn_mom']).dropna()
+    spot_dict['m1_m2_spd'] = (spot_df['m1_cn_yoy'] - spot_df['m2_cn_yoy']).dropna()
     spot_dict['pmi_steel_order_inv_ratio'] = (spot_df['pmi_cn_steel_new_order']/spot_df['pmi_cn_steel_inv']).dropna()
+    spot_dict['pmi_order_rminv_ratio'] = (spot_df['pmi_cn_manu_new_order']/spot_df['pmi_cn_manu_rm_inv']).dropna()
+
     spot_dict['usgg10_be'] = spot_df['usgg10yr'] - spot_df['usggt10yr']
     spot_dict['usgg10_2_spd'] = spot_df['usgg10yr'] - spot_df['usgg2yr']
     spot_dict['cgb_3m_1y_spd'] = spot_df['cn_govbond_yield_3m_sch'] - spot_df['cn_govbond_yield_1y_sch']
