@@ -823,12 +823,12 @@ def np_diff(nd_in, window=1):
         nd_in = nd_in.copy()
         nd_in.shape = (nd_in.shape[0], 1)
     
-    nd_out = np.empty(nd_in.shape) * np.NaN
+    nd_out = np.empty(nd_in.shape) * np.nan
     for j in range(nd_in.shape[1]):
         j_non_nan_index = ~np.isnan(nd_in[:,j].astype(float))
         j_non_nan_values = nd_in[j_non_nan_index, j]
 
-        j_differenced_values = np.empty(j_non_nan_values.shape) * np.NaN
+        j_differenced_values = np.empty(j_non_nan_values.shape) * np.nan
         for t in range(window, len(j_non_nan_values)):
             j_differenced_values[t] = j_non_nan_values[t] - j_non_nan_values[t-window]
         
@@ -890,7 +890,7 @@ def xs_mean(df_in):
 def xs_mean_repeat(df_in):
     means = np_nanmean_nowarning(df_in.values, axis=1)
     mean_repeat = np.repeat(means, len(df_in.columns), axis=1)
-    mean_repeat[np.isnan(df_in.values)] = np.NaN
+    mean_repeat[np.isnan(df_in.values)] = np.nan
     df_out = pd.DataFrame(mean_repeat, index=df_in.index, columns=df_in.columns)
     return df_out
 
