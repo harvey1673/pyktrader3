@@ -856,8 +856,8 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
 
 
     logging.info("updating factor for beta neutral ratio ...")
-    beta_win = 122
-    asset_pairs = [('rb', 'i'), ('hc', 'i'), ('j', 'i')]
+    beta_win = 244
+    asset_pairs = [('rb', 'i'), ('hc', 'i'), ('j', 'i'), ('au', 'ag'), ('au', 'cu'), , ('au', 'rb')]
     beta_dict = {}
     for trade_asset, index_asset in asset_pairs:
         key = '_'.join([trade_asset, index_asset, 'beta'])        
