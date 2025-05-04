@@ -68,6 +68,12 @@ signal_store = {
                       ['ryield', 'ma', [1, 2, 1], '', '', True, '', "", 120, [-2,2]]],
     "bond_fxbasket_zs": [['T', 'TF', 'TL', "TS"],
                     ['fxbasket_cumret', 'zscore', [480, 520, 2], '', '', True, '', '', 120, [-2,2]]],
+    'bond_shibor1m_qtl': [['T', 'TF', 'TL'],
+                     ['shibor_1m', 'qtl', [40, 80, 2], 'ema3', '', False, 'price', 'buf0.3', 120, [-2,2]]],
+    'bond_r007_lt_zs': [['T', 'TF', 'TL'],
+                     ['r007_cn', 'zscore', [40, 80, 2], 'ema5', '', False, 'price', 'buf0.4', 120, [-2,2]]],
+    'bond_au_st_qtl': [['T', ],
+                     ['au_td_sge', 'qtl', [20, 60, 2], 'ema1', '', True, 'price', 'buf0.1', 120, [-2,2]]],
 
     'pbf_yoy_qtl': [['fef', 'i'], ["pbf_prem", 'qtl', [20, 30, 2], "cal_yoy", "diff", True, "", "", 120, [-2,2]]],
     'pbf_yoy_eds': [['fef', 'i'], ["pbf_prem", 'ema_dff_sgn', [5, 15, 1], "cal_yoy", "diff", True, "", "", 120, [-2,2]]],
@@ -433,9 +439,9 @@ signal_store = {
                     ['fxbasket_cumret', 'zscore', [20, 40, 2], '', '', False, '', 'buf0.2', 120, [-2,2]]],
     'dxy_zsa_s': [['cu', 'al', 'zn', 'rb', 'hc', 'i'],
                   ['dxy', 'zscore_adj', [20, 30, 2], '', '', False, '', 'buf0.5', 120, [-2,2]]],
-    'shibor1m_qtl': [['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'au', 'ag', 'l', 'pp', 'v', 'TA', 'eg', 'MA',],
+    'shibor1m_qtl': [['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'ag', 'l', 'pp', 'v', 'TA', 'eg', 'MA',],
                      ['shibor_1m', 'qtl', [40, 80, 2], 'ema3', '', True, 'price', '', 120, [-2,2]]],
-    'r007_lt_zs': [['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'au', 'ag',  'l', 'pp', 'v', 'TA', 'eg', 'MA',],
+    'r007_lt_zs': [['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'ag',  'l', 'pp', 'v', 'TA', 'eg', 'MA',],
                      ['r007_cn', 'zscore', [80, 120, 2], 'ema5', '', True, 'price', '', 120, [-2,2]]],   
 
     "MCU3_zs": [['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA',],
@@ -443,16 +449,27 @@ signal_store = {
     # "MAL3_zs": [['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA',],
     #             ['al_lme_3m_close', 'zscore', [40, 80, 2], '', '', True, '', 'buf0.2', 120, [-2,2]]],  
 
-    'cnh_cny_zs': [['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA',],
+    'cnh_cny_zs': [['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA', 'au', 'ag'],
                    ['cnh_cny_spd2', 'zscore', [10, 20, 1], 'ema1', '', False, '', 'buf0.4', 120, [-3, 3]]],
     'cny_dev_zs': [['rb', 'hc', 'i', 'FG', 'SA', 'cu', 'al', 'au', 'ag',
                     'l', 'pp', 'v', 'TA', 'eb', 'eg', 'MA', 'sc', 'lu', 'bu'],
                    ['cny_mid_dev1', 'zscore', [60, 80, 2], 'ema10', '', True, '', '', 120, [-2,2]]],
                 
-    'vix_zs_st': [['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA',], 
-                   ['vix', 'zscore', [20, 60, 2], '', '', False, '', 'buf0.5', 120, [-2,2]]],
-    'vix_mds_st': [['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA',], 
+    'vix_zs_st': [['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA', 'ag'], 
+                  ['vix', 'zscore', [20, 60, 2], '', '', False, '', 'buf0.5', 120, [-2,2]]],
+    'vix_mds_st': [['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA', 'ag'], 
                    ['vix', 'ma_dff_sgn', [40, 80, 2], '', '', False, '', '', 120, [-2,2]]], 
+    
+    "usggbe10_zs": [['rb', 'hc', 'cu', 'al', 'zn', 'ag', 'pb'], # shift_holding=2
+                    ['usggbe10', 'zscore', [40, 80, 2], '', '', True, '', 'buf0.4', 120, [-2,2]]],                  
+    # au-ag                       
+    #'ag_etf_st_mom': [['au'], ['ag_etf_sivr_holding', 'qtl', [5, 10, 1], 'df252', 'diff', True, '', 'buf0.2', 120, [-2,2]]], 
+    "auag_cme_wratio_zs": [['au-ag'], ["auag_cme_warrant_ratio", 'zscore', [20, 40, 2], '', '', False, '', 'ema1', 120, [-2,2]]], 
+    'auag_vix_zsa_mt': [['au-ag'], ['vix', 'zscore_adj', [40, 80, 2], '', '', True, '', 'buf0.3', 120, [-2,2]]], 
+    'auag_fxbasket_zs_yr': [['au-cu', 'au-rb'], ['fxbasket_cumret', 'zscore', [240, 520, 5], '', '', True, '', '', 120, [-2,2]]], 
+    
+    'auag_csi500_zs_st': [['au_ag'], ['csi500_idx', 'zscore', [20, 40, 2], '', '', False, '', 'ema5', 120, [-2,2]]],
+    'au_etf_st_mom': [['au'], ['au_etf_spdr_holding', 'qtl', [5, 10, 1], 'df252', 'diff', True, '', 'buf0.2', 120, [-2,2]]], 
     # 'cnyrr25_zsa': ('usdcny_rr25', 'zscore_adj', [10, 20, 2], 'ema10', 'pct_change', False, 'price'),
     #
     # 'vhsi_mds': ('vhsi', 'ma_dff_sgn', [10, 20, 2], '', 'pct_change', False, 'price'),
@@ -480,7 +497,7 @@ signal_store = {
     "pmi_lgsc_stl_tot_order_yoy": [['rb', 'hc'],
                         ['pmi_lgsc_steel_tot_order', 'ma', [1, 2, 1], 'df12', 'diff', True, '', '', 24, [-2,2]]],
     "pmi_lgsc_stl_fund_yoy": [['rb', 'hc', "i"],
-                        ['', 'ma', [1, 2, 1], 'df12', 'diff', True, '', '', 24, [-2,2]]],
+                        ['pmi_lgsc_steel_purchase_exp', 'ma', [1, 2, 1], 'df12', 'diff', True, '', '', 24, [-2,2]]],
     "pmi_cn_purchase_yoy": [['rb', 'hc', 'j', 'jm', 'i', 'FG', 'v', 'al', 'cu'],
                         ['pmi_cn_manu_purchase', 'ma', [1, 2, 1], 'df12', 'diff', True, '', '', 24, [-2,2]]],
     "pmi_stl_o2inv_zs": [['rb', 'hc', 'j', 'jm', 'i'],
@@ -502,6 +519,9 @@ signal_buffer_config = {
     "mom_kdj_st": 0.3,
     'bond_mr_st_qtl': 0.1,
     'bond_tf_lt_qtl': 0.1,    
+    'bond_au_st_qtl': 0.1,
+    'bond_r007_lt_zs': 0.4,
+    'bond_shibor1m_qtl': 0.3,
     'steel_margin_lvl_fast': 0.2,
     'hc_rb_diff_20': 0.15,
     "lme_base_ts_hlr": 0.05,
@@ -519,6 +539,8 @@ signal_buffer_config = {
     'rbhc_steel_spd_mds': 0.25,
     'rbhc_steel_spd_lyoy_mds': 0.25,
     'rbhc_rbsales_lyoy_zs': 0.25,
+    'auag_vix_zsa_mt': 0.3,
+    'au_etf_st_mom': 0.2,
 }
 
 signal_execution_config = {
@@ -551,6 +573,9 @@ signal_execution_config = {
     'rbhc_sinv_lratio_mds': {"win": "close", "lag": 1},
     'rbhc_sinv_lratio_lyoy_mds': {"win": "close", "lag": 1},
     'rbhc_rbsales_lyoy_zs': {"win": "close", "lag": 1},
+    "auag_cme_wratio_zs": {"win": "a1505", "lag": 1},
+    'auag_fxbasket_zs_yr': {"win": "a1505", "lag": 1},
+    'au_etf_st_mom': {"win": "a1505", "lag": 1},
 }
 
 feature_to_feature_key_mapping = {
