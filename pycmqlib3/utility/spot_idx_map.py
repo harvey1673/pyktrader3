@@ -29,6 +29,7 @@ index_map = {
     'G003082211': 'vxeem',
     'G003082215': 'vxd', # Vol for DJ
     'G003082227': 'vxn', # Vol for Nasdaq
+
     'G003146263': 'usdzar_xe',
     'G003146267': 'usdbrl_xe',
     'G003146268': 'usdnok_xe',
@@ -124,6 +125,7 @@ index_map = {
     "S009065264": "cement_idx_cn",
     "S009065254": "cement_idx_cj",
     "S012691163": "concrete_idx_cn",
+    "S004543083": "prop_2ndhand_px_idx",
 
     # ferrous
     'S003019324': 'plt62',
@@ -526,10 +528,10 @@ index_map = {
 
     "S002981535": "cu_smm1_spot",
     "S002981536": "cu_smm1_prem_spot",
-    "S002981537": "cu_smm1_shifa_spot",
-    "S002981538": "cu_smm1_guixi_spot",
+    #"S002981537": "cu_smm1_shifa_spot",
+    #"S002981538": "cu_smm1_guixi_spot",
     'S004077505': 'cu_spot_sh',
-    'S004077504': 'cu_spot_bj',
+    #'S004077504': 'cu_spot_bj',
     "S002865592": "al_smm0_spot",
     "S002865578": "zn_smm0_spot",
     "S002865583": "pb_smm1_spot",
@@ -544,8 +546,8 @@ index_map = {
     'S003048722': 'cu_smm_phybasis',
     'S003048723': 'cu_flat_phybasis',
     'S003048724': 'cu_prem_phybasis',
-    'S003048725': 'cu_shifa_phybasis',
-    'S003048726': 'cu_guixi_phybasis',
+    #'S003048725': 'cu_shifa_phybasis',
+    #'S003048726': 'cu_guixi_phybasis',
     "S009137283": "cu_cj_phybasis",
     "S009137286": "cu_cjb_phybasis",
     "S009621955": "cu_sh_phybasis",
@@ -616,8 +618,6 @@ index_map = {
     "S006161094": "ss_inv_social_300",
     "S006161095": "ss_inv_social_400",
 
-    "S000025546": "au_td_sge",
-    "S003057206": "ag_td_sge",
     "S002808967": "container_exp_scfi",
     "S008527041": "alumina_spot_shanxi",
     "S008527032": "alumina_spot_guangxi",
@@ -631,6 +631,13 @@ index_map = {
     "M002845714": "csi300_idx",
     "M002845725": "csi500_idx",
     "M012963695": "csi1000_idx",
+    "G002837002": "shcmp_idx",
+    "G002856504": "hk_cncorp_idx",
+    "G002856503": "hk_hsi_idx",
+    "G002856511": "jp_nk225_idx",
+    "G002856507": "sp500_idx",
+    "G002856508": "nasdaq_idx",
+    "G002856506": "dji_idx",    
     "M009042848": "sw_sector_idx_basemetal",
     "M009042858": "sw_sector_idx_prop",
     "M009042864": "sw_sector_idx_const",
@@ -649,6 +656,32 @@ index_map = {
     "M003588164": "zx_sector_idx_steel",
     "M003588160": "zx_sector_idx_oil_petchem",
     "M003588161": "zx_sector_idx_coal",
+
+    "S000025546": "au_td_sge",
+    "S003057206": "ag_td_sge",
+    "S005068066": "ag_td_phbasis",
+    "S002855119": "au_cme_warrant_all",
+    "S003852895": "au_cme_warrant_reg",
+    "S003852896": "au_cme_warrant_unreg",
+    "S002855120": "ag_cme_warrant_all",
+    "S003852912": "ag_cme_warrant_reg",
+    "S003852913": "ag_cme_warrant_unreg",
+    'G003082236': 'cl_vol_idx',
+    'G003082240': 'gc_vol_idx',
+
+    "S003583313": "au_etf_spdr_holding",
+    "S004320033": "au_etf_ishares_holding",
+    "S006955749": "au_etf_gbs_holding",
+    "S006955753": "au_etf_sgbs_holding",
+    "S006955757": "au_etf_phau_holding",
+    "S006955761": "au_etf_gold_holding",
+    "S006955770": "au_etf_cef_holding",
+    "S003715212": "ag_etf_slv_holding",
+    "S006955790": "ag_etf_cef_holding",    
+    "S006955786": "ag_etf_pslv_holding",     
+    "S006955782": "ag_etf_etpmag_holding",
+    "S006955778": "ag_etf_phag_holding",
+    "S006955772": "ag_etf_sivr_holding",
 }
 
 
@@ -724,6 +757,7 @@ def process_spot_df(spot_df, adjust_time=False):
     spot_dict['pmi_steel_order_inv_ratio'] = (spot_df['pmi_cn_steel_new_order']/spot_df['pmi_cn_steel_inv']).dropna()
     spot_dict['pmi_order_rminv_ratio'] = (spot_df['pmi_cn_manu_new_order']/spot_df['pmi_cn_manu_rm_inv']).dropna()
 
+    spot_dict["auag_cme_warrant_ratio"] = (spot_df["au_cme_warrant_all"]/spot_df["ag_cme_warrant_all"]).dropna()
     spot_dict['usgg10_be'] = spot_df['usgg10yr'] - spot_df['usggt10yr']
     spot_dict['usgg10_2_spd'] = spot_df['usgg10yr'] - spot_df['usgg2yr']
     spot_dict['cgb_3m_1y_spd'] = spot_df['cn_govbond_yield_3m_sch'] - spot_df['cn_govbond_yield_1y_sch']

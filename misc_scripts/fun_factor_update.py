@@ -62,16 +62,21 @@ single_factors = {
     "glass_etf_mom_dbth_zs": ["FG"],
     "us_oil_prod_etf_mom": ['sc', 'bu', 'TA'],
 
-    'shibor1m_qtl': ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'au', 'ag', 'l', 'pp', 'v', 'TA', 'eg', 'MA'],
-    'r007_lt_zs': ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'au', 'ag', 'l', 'pp', 'v', 'TA', 'eg', 'MA'],
+    'shibor1m_qtl': ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'ag', 'l', 'pp', 'v', 'TA', 'eg', 'MA'],
+    'r007_lt_zs': ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'ag', 'l', 'pp', 'v', 'TA', 'eg', 'MA'],
     "MCU3_zs": ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA'],
     "cgb_1_2_spd_zs": ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA'],
     "cgb_2_5_spd_zs": ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA'],
     "fxbasket_zs": ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA'],
-    'cnh_cny_zs': ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA'],
+    'cnh_cny_zs': ['rb', 'hc', 'FG', 'SA', 'cu', 'al', 'zn', 'au', 'ag', 'l', 'pp', 'v', 'TA', 'eg', 'MA'],
     'cny_dev_zs': ['rb', 'hc', 'i', 'FG', 'SA', 'cu', 'al', 'au', 'ag', 'l', 'pp', 'v', 'TA', 'eb', 'eg', 'MA', 'sc', 'lu', 'bu'],
-    'vix_zs_st': ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA'], 
-    'vix_mds_st': ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA'],
+    'vix_zs_st': ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA', 'ag'], 
+    'vix_mds_st': ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA', 'ag'],
+    'au_etf_st_mom': ['au'],
+    "bond_fxbasket_zs":  ['T', 'TF', 'TL'],
+    'bond_shibor1m_qtl': ['T', 'TF', 'TL'],
+    'bond_r007_lt_zs': ['T', 'TF', 'TL'],
+    'bond_au_st_qtl': ['T'],
 
      "pmi_stl_o2inv_zs": ['rb', 'hc', 'j', 'jm', 'i'],
      "pmi_stl_o2inv_qtl_sgn": ['rb', 'hc', 'j', 'jm', 'i'],
@@ -94,7 +99,6 @@ factors_by_asset = {
     'bond_tf_lt_qtl': ['T', 'TF', 'TL'],
     'bond_carry_ma': ['T', 'TL'],
     'bond_tf_st_eds':  ['T', 'TF', 'TL'],    
-    "bond_fxbasket_zs":  ['T', 'TF', 'TL'],
     'lme_base_ts_mds': ['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
     'lme_base_ts_hlr': ['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
     'lme_futbasis_ma': ['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
@@ -123,11 +127,9 @@ factors_by_asset = {
 }
 
 factors_by_spread = {
-    # 'rbhc_dmd_mds': [('rb', 1), ('hc', -1)],
-    # 'rbhc_dmd_lyoy_mds': [('rb', 1), ('hc', -1)],
-    # 'rbhc_sinv_mds': [('rb', 1), ('hc', -1)],
-    # 'rbhc_sinv_lyoy_mds': [('rb', 1), ('hc', -1)],
-    # 'rbsales_lyoy_spd_st': [('rb', 1), ('hc', -1)],
+    "auag_cme_wratio_zs": [('au', 1), ('ag', -1)],
+    'auag_vix_zsa_mt': [('au', 1), ('ag', -1)],
+    'auag_fxbasket_zs_yr': [('au', 2), ('cu', -1), ('rb', -1)],
 }
 
 factors_by_spread2 = {
@@ -156,6 +158,7 @@ factors_by_beta_neutral = {
     'ioarb_spd_qtl_1y': [('rb', 'i', 1), ('hc', 'i', 1)],
     'fef_c1_c2_ratio_spd_qtl': [('rb', 'i', 1), ('hc', 'i', 1)],
     'fef_basmom5_spd_qtl': [('rb', 'i', 1), ('hc', 'i', 1)],
+    'auag_csi500_zs_st': [('au', 'ag', 1),],
 }
 
 
@@ -698,7 +701,7 @@ def load_hist_fut_prices(markets, start_date, end_date,
 def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
     roll_name='hot'
     freq='d1'
-    funda_start = day_shift(run_date, '-4y')
+    funda_start = day_shift(run_date, '-8y')
     update_start = day_shift(run_date, '-120b', CHN_Holidays)
     markets = [
         'rb', 'hc', 'i', 'j', 'jm', 'FG', 'v', 'SM', 'SF', 'SA', 'ru', 'nr',
