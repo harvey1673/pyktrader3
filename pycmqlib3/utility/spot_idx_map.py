@@ -758,6 +758,9 @@ def process_spot_df(spot_df, adjust_time=False):
     spot_dict['pmi_order_rminv_ratio'] = (spot_df['pmi_cn_manu_new_order']/spot_df['pmi_cn_manu_rm_inv']).dropna()
 
     spot_dict["auag_cme_warrant_ratio"] = (spot_df["au_cme_warrant_all"]/spot_df["ag_cme_warrant_all"]).dropna()
+    spot_dict["au_etf_holdings"] = spot_df["au_etf_spdr_holding"].dropna()
+    spot_dict["ag_etf_holdings"] = spot_df["ag_etf_sivr_holding"].dropna()
+    
     spot_dict['usgg10_be'] = spot_df['usgg10yr'] - spot_df['usggt10yr']
     spot_dict['usgg10_2_spd'] = spot_df['usgg10yr'] - spot_df['usgg2yr']
     spot_dict['cgb_3m_1y_spd'] = spot_df['cn_govbond_yield_3m_sch'] - spot_df['cn_govbond_yield_1y_sch']

@@ -71,8 +71,8 @@ single_factors = {
     'cnh_cny_zs': ['rb', 'hc', 'FG', 'SA', 'cu', 'al', 'zn', 'au', 'ag', 'l', 'pp', 'v', 'TA', 'eg', 'MA'],
     'cny_dev_zs': ['rb', 'hc', 'i', 'FG', 'SA', 'cu', 'al', 'au', 'ag', 'l', 'pp', 'v', 'TA', 'eb', 'eg', 'MA', 'sc', 'lu', 'bu'],
     'vix_zs_st': ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA', 'ag'], 
-    'vix_mds_st': ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA', 'ag'],
-    'au_etf_st_mom': ['au'],
+    'vix_mds_st': ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA', 'ag'],    
+    
     "bond_fxbasket_zs":  ['T', 'TF', 'TL'],
     'bond_shibor1m_qtl': ['T', 'TF', 'TL'],
     'bond_r007_lt_zs': ['T', 'TF', 'TL'],
@@ -124,6 +124,7 @@ factors_by_asset = {
                            'rb', 'hc', 'i', 'SM', 'SF', 'v', 'FG', 'SA'],
     "exch_wnt_hlr": ['ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
     "exch_wnt_yoy_hlr": ['ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
+    'auag_etf_mrev': ["au", "ag"],
 }
 
 factors_by_spread = {
@@ -857,7 +858,7 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
 
     logging.info("updating factor for beta neutral ratio ...")
     beta_win = 244
-    asset_pairs = [('rb', 'i'), ('hc', 'i'), ('j', 'i'), ('au', 'ag'), ('au', 'cu'), , ('au', 'rb')]
+    asset_pairs = [('rb', 'i'), ('hc', 'i'), ('j', 'i'), ('au', 'ag'), ('au', 'cu'), ('au', 'rb')]
     beta_dict = {}
     for trade_asset, index_asset in asset_pairs:
         key = '_'.join([trade_asset, index_asset, 'beta'])        

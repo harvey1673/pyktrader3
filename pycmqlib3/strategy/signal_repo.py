@@ -469,7 +469,7 @@ signal_store = {
     'auag_fxbasket_zs_yr': [['au-cu', 'au-rb'], ['fxbasket_cumret', 'zscore', [240, 520, 5], '', '', True, '', '', 120, [-2,2]]], 
     
     'auag_csi500_zs_st': [['au_ag'], ['csi500_idx', 'zscore', [20, 40, 2], '', '', False, '', 'ema5', 120, [-2,2]]],
-    'au_etf_st_mom': [['au'], ['au_etf_spdr_holding', 'qtl', [5, 10, 1], 'df252', 'diff', True, '', 'buf0.2', 120, [-2,2]]], 
+    'auag_etf_mrev_xdemean': [['au', 'ag'], ['etf_holdings', 'zscore', [480, 520, 2], '', '', False, '', 'ema3', 120, [-2,2]]], 
     # 'cnyrr25_zsa': ('usdcny_rr25', 'zscore_adj', [10, 20, 2], 'ema10', 'pct_change', False, 'price'),
     #
     # 'vhsi_mds': ('vhsi', 'ma_dff_sgn', [10, 20, 2], '', 'pct_change', False, 'price'),
@@ -540,7 +540,6 @@ signal_buffer_config = {
     'rbhc_steel_spd_lyoy_mds': 0.25,
     'rbhc_rbsales_lyoy_zs': 0.25,
     'auag_vix_zsa_mt': 0.3,
-    'au_etf_st_mom': 0.2,
 }
 
 signal_execution_config = {
@@ -575,7 +574,7 @@ signal_execution_config = {
     'rbhc_rbsales_lyoy_zs': {"win": "close", "lag": 1},
     "auag_cme_wratio_zs": {"win": "a1505", "lag": 1},
     'auag_fxbasket_zs_yr': {"win": "a1505", "lag": 1},
-    'au_etf_st_mom': {"win": "a1505", "lag": 1},
+    'auag_etf_mrev_xdemean': {"win": "a1505", "lag": 1},
 }
 
 feature_to_feature_key_mapping = {
@@ -634,6 +633,7 @@ feature_to_feature_key_mapping = {
     'inv_lme_total': {},
     'inv_exch_d': {},
     "exch_warrant": {},
+    "etf_holdings": {},
     'metal_inv': {
         'cu': 'cu_inv_social_all',
         'al': 'al_inv_social_all',
