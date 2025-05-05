@@ -213,8 +213,8 @@ index_map = {
     'S004226163': 'io_inv_dom_mill(64)',
     'S003817887': 'io_invdays_imp_mill(64)',
 
-    'S005961310': 'io_removal_31ports',
-    'S005961321': 'io_removal_41ports',
+    #'S005961310': 'io_removal_31ports',
+    #'S005961321': 'io_removal_41ports',
     'S005961326': 'io_removal_45ports',
     'S008618299': 'consteel_dsales_mysteel',
     'S005656437': 'consteel_dsales_banksteel',
@@ -711,7 +711,8 @@ def adj_publish_time(spot_df):
     spot_df = data_wkday_adj(spot_df, col_list, shift_map=shift_map)
 
     col_list = [
-        'io_removal_41ports', 'io_inv_31ports', 'io_inv_45ports',
+        #'io_removal_41ports', 'io_inv_31ports', 
+        'io_inv_45ports',
     ]
     shift_map = {0: -3, 1: -4, 2: -5, 3: 1, 4: 0, 5: -1, 6: -2}
     spot_df = data_wkday_adj(spot_df, col_list, shift_map=shift_map)
@@ -760,7 +761,7 @@ def process_spot_df(spot_df, adjust_time=False):
     spot_dict["auag_cme_warrant_ratio"] = (spot_df["au_cme_warrant_all"]/spot_df["ag_cme_warrant_all"]).dropna()
     spot_dict["au_etf_holdings"] = spot_df["au_etf_spdr_holding"].dropna()
     spot_dict["ag_etf_holdings"] = spot_df["ag_etf_sivr_holding"].dropna()
-    
+
     spot_dict['usgg10_be'] = spot_df['usgg10yr'] - spot_df['usggt10yr']
     spot_dict['usgg10_2_spd'] = spot_df['usgg10yr'] - spot_df['usgg2yr']
     spot_dict['cgb_3m_1y_spd'] = spot_df['cn_govbond_yield_3m_sch'] - spot_df['cn_govbond_yield_1y_sch']
@@ -802,17 +803,6 @@ def process_spot_df(spot_df, adjust_time=False):
     spot_dict['long_flat_sinv_chg_diff'] = spot_dict['long_social_inv'].dropna().diff() - spot_dict['flat_social_inv'].dropna().diff()
     spot_dict['long_flat_sinv_lratio'] = np.log(spot_dict['long_social_inv']/spot_dict['flat_social_inv'])
     spot_dict['rebar_sales_inv_ratio'] = spot_df['consteel_dsales_mysteel']/spot_df['rebar_inv_social'].ffill()
-
-    # spot_dict['strip_billet'] = spot_df['strip_3.0x685'] - spot_df['billet_ts']
-    # spot_dict['pipe_billet'] = spot_df['pipe_1.5x3.25'] - spot_df['billet_ts']
-    # spot_dict['hsec_billet'] = spot_df['hsec_400x200'] - spot_df['billet_ts']
-    # spot_dict['channel_billet'] = spot_df['channel_16'] - spot_df['billet_ts']
-    # spot_dict['ibeam_billet'] = spot_df['ibeam_25'] - spot_df['billet_ts']
-    # spot_dict['angle_billet'] = spot_df['angle_50x5'] - spot_df['billet_ts']
-    # spot_dict['highwire_billet'] = spot_df['highwire_6.5'] - spot_df['billet_ts']
-    # spot_dict['hrc_billet'] = spot_df['hrc_sh'] - spot_df['billet_ts']
-    #spot_dict['plate_billet'] = spot_df['plate_8mm'] - spot_df['billet_ts']
-    #spot_dict['crc_billet'] = spot_df['crc_sh'] - spot_df['billet_ts']
     spot_dict['crc_hrc'] = spot_df['crc_sh'] - spot_df['hrc_sh']    
     spot_dict['pipe_strip'] = spot_df['pipe_1.5x3.25'] - spot_df['strip_3.0x685']
     spot_dict['rebar_billet'] = spot_df['rebar_sh'] - spot_df['billet_ts']
@@ -824,8 +814,8 @@ def process_spot_df(spot_df, adjust_time=False):
     spot_dict["al_scrap_shredded_sh_mid"] = (spot_df["al_scrap_shredded_sh_low"] + spot_df["al_scrap_shredded_sh_high"])/2
     spot_dict['rebar_total_stockdays'] = (spot_df['rebar_inv_social']).dropna()/spot_dict['rebar_app_dmd'].dropna().rolling(52).mean()*7
     spot_dict['hrc_total_stockdays'] = (spot_df['hrc_inv_social']).dropna()/spot_dict['hrc_app_dmd'].dropna().rolling(52).mean()*7
-    spot_dict['io_inv_removal_ratio_41p'] = spot_df['io_inv_41ports'] / spot_df['io_removal_41ports']
-    spot_dict['io_inv_rmv_pctchg_41p'] = spot_dict['io_inv_removal_ratio_41p'].dropna().pct_change()
+    spot_dict['io_inv_removal_ratio_45p'] = spot_df['io_inv_45ports'] / spot_df['io_removal_45ports']
+    spot_dict['io_inv_rmv_pctchg_45p'] = spot_dict['io_inv_removal_ratio_45p'].dropna().pct_change()
     spot_dict['io_inv_mill(64)'] = spot_df['io_inv_imp_mill(64)'] + spot_df['io_inv_dom_mill(64)']
     spot_dict['io_on_off_arb'] = vat_adj(spot_df['pbf_cfd'] - 25) / spot_df['usdcnh_spot'] / 0.915 / 61.5 * 62 \
                                - spot_df['plt62']

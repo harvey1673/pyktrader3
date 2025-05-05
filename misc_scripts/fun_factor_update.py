@@ -40,8 +40,9 @@ single_factors = {
     'fef_fly_ratio_or_qtl': ['rb', 'hc', 'j'],
     'fef_basmom_or_qtl': ['rb', 'hc'],
     'fef_basmom5_or_qtl': ['rb', 'hc'],
-    'sm_cost_mom': ['SM'],
-    'sf_cost_mom': ['SF'],
+    'mn_mine_mom': ['SM'],
+    'prop2hand_px_zs': ['rb', 'hc'],
+    
     "al_alumina_qtl": ['al'],
     "al_alumina_yoy_qtl": ['al'],
     "al_coal_qtl": ['al'],
@@ -124,7 +125,9 @@ factors_by_asset = {
                            'rb', 'hc', 'i', 'SM', 'SF', 'v', 'FG', 'SA'],
     "exch_wnt_hlr": ['ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
     "exch_wnt_yoy_hlr": ['ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
+    "exch_wnt_kdj": ['ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
     'auag_etf_mrev': ["au", "ag"],
+    'smsf_prodcost_mom': ["SM", "SF"],
 }
 
 factors_by_spread = {
