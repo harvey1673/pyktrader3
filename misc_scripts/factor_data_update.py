@@ -11,6 +11,7 @@ from pycmqlib3.utility.misc import inst2product, prod2exch, inst2contmth, day_sh
     sign, is_workday, CHN_Holidays, nearby
 import pycmqlib3.analytics.data_handler as dh
 from pycmqlib3.analytics.tstool import *
+from pycmqlib3.utility import base
 from pycmqlib3.strategy.strat_util import generate_strat_position
 from pycmqlib3.strategy.signal_repo import signal_buffer_config
 
@@ -610,6 +611,7 @@ def update_port_position(run_date=datetime.date.today()):
                 product = inst2product(under)
                 product_list.append(product)
 
+            logging.info(f"updating position for {strat_file}...")
             res = generate_strat_position(run_date, product_list, factor_repo,
                                           repo_type=repo_type,
                                           roll_label=roll,
@@ -670,4 +672,11 @@ if __name__ == "__main__":
         tday = now.date()
         if (not is_workday(tday, 'CHN')) or (now.time() < datetime.time(14, 59, 0)):
             tday = day_shift(tday, '-1b', CHN_Holidays)
+    folder = "C:/dev/data/"
+    name = "pf_position_update"            
+    base.config_logging(folder + name + ".log", level=logging.INFO,
+                        format='%(name)s:%(funcName)s:%(lineno)d:%(asctime)s %(levelname)s %(message)s',
+                        to_console=True,
+                        console_level=logging.INFO)      
+    logging.info("running portfolio position for %s" % str(tday))        
     res = update_port_position(run_date=tday)
