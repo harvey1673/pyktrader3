@@ -74,7 +74,7 @@ port_pos_config = {
             ('PTSIM1_CNMAC2.json', 3000),
             ('PTSIM1_FUNFER.json', 25000),
             ('PTSIM1_FERSPD.json', 70000),
-            ('PTSIM1_AUSPD.json', 20000),
+            ('PTSIM1_AUSPD.json', 30000),
             ('PTSIM1_FUNBASE.json', 25000),
             ('PTSIM1_FUNENE.json', 3000),
             ('PTSIM1_FUNMTL.json', 12000),
