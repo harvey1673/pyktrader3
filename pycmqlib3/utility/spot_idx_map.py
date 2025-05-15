@@ -598,14 +598,25 @@ index_map = {
     "S009621410": "al_rod_6063_procfee_sichuan",
     "S009621539": "al_rod_6063_procfee_gansu",
 
-    'S005971281': 'cu_mine_inv_ports',
-    "S006161499": "cu_inv_social_all",
-    "S005363047": "al_inv_social_all",
-    "S006161627": "zn_inv_social_3p",
-    "S006161628": "zn_inv_social_7p",
-    "S006161636": "ni_inv_social_6p",
     'S013735402': "sn_inv_social_all",
-    'S006161617': 'pb_inv_social_5p',
+    'S005971281': 'cu_mine_inv_ports',
+#    "S006161499": "cu_inv_social_all",
+    "S005118151": "cu_inv_social_dom",
+    "S011214521": "cu_inv_bonded_gd",
+    "S005118141": "cu_inv_bonded_sh",
+#    "S005363047": "al_inv_social_all", 
+    "S009010885": "al_inv_social_all",
+    #"S006161627": "zn_inv_social_3p",
+    #"S006161628": "zn_inv_social_7p",
+    "S004425257": "zn_inv_social_all",    
+    "S011334489": "zn_inv_smelter_finished",
+    #"S006161636": "ni_inv_social_6p",
+    "S011333399": "ni_inv27_plate_dom",
+    "S011333401": "ni_inv27_plate_bonded",
+    "S011333403": "ni_inv27_all",
+    #'S006161617': 'pb_inv_social_5p',
+    "S011334192": 'pb_inv_social_all',
+
     'S006167225': 'bauxite_inv_az_ports',
     'S006167236': 'alumina_inv_az_ports',
     'S004425326': 'alumina_inv_ports',
@@ -722,6 +733,7 @@ def adj_publish_time(spot_df):
         'rebar_inv_social', 'wirerod_inv_social', 'hrc_inv_social', 'crc_inv_social', 'plate_inv_social',
         'steel_inv_social', 'rebar_inv_all', 'rebar_prod_all', 'wirerod_prod_all', 'wirerod_inv_all',
         'hrc_prod_all', 'hrc_inv_all', 'crc_prod_all', 'crc_inv_all',
+        'fg_inv_mill',
     ]
     shift_map = {0: -4, 1: -5, 2: -6, 3: 0, 4: -1, 5: -2, 6: -3}
     spot_df = data_wkday_adj(spot_df, col_list, shift_map=shift_map)
@@ -824,6 +836,10 @@ def process_spot_df(spot_df, adjust_time=False):
     spot_dict['strip_hsec'] = spot_df['strip_3.0x685'] - spot_df['hsec_400x200']
     if ('coal_5500_sx_qhd' in spot_df.columns) and ('coal_5500_qhd' in spot_df.columns):
         spot_df.loc[:'2022-02-11', 'coal_5500_sx_qhd'] = spot_df.loc[:'2022-02-11', 'coal_5500_qhd']
+    
+    spot_dict["cu_inv_combo"] = spot_df[["cu_inv_social_dom", "cu_inv_bonded_gd", "cu_inv_bonded_sh"]].dropna(how='all').ffill().sum(axis=1)
+    spot_dict["ni_inv27_plate_all"] = spot_df[["ni_inv27_plate_dom", "ni_inv27_plate_bonded"]].dropna(how='all').ffill().sum(axis=1)
+    
     warrant_dict = {
         "cu": ["cu_inv_shfe_d"],
         "bc": ["bc_inv_ine_warrant"],

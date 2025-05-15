@@ -117,7 +117,11 @@ def generate_strat_position(cur_date, prod_list, factor_repo,
                     print('unsupported xs signal types')
             factor_pos[fact] = getattr(factor_pos[fact], rebal_func)(rebal_freq).mean().fillna(0.0)
         factor_pos[fact] = factor_pos[fact].ffill()
-        signal_df[fact] = factor_pos[fact].iloc[-1]
+        if len(factor_pos[fact]) >= 1:
+            signal_df[fact] = factor_pos[fact].iloc[-1]
+        else:
+            print(f"factor={fact} has No data -- pls check!")
+            continue
         if factor_repo[fact]['name'] in signal_config:
             buffer_size = signal_config[factor_repo[fact]['name']]
             if fact in curr_signal:
