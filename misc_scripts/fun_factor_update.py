@@ -23,12 +23,12 @@ single_factors = {
     'hc_rb_diff_20': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'UR', 'v', 'ru', 'au', 'ag', 'cu', 'al', 'zn', 'sn', 'ss', 'ni', 'ao'],
     'steel_margin_lvl_fast': ['i', 'j', 'jm', 'SF', 'SM'],
     'steel_margin_lvl_slow': ['SF', 'SM'],
-    'strip_hsec_lvl_mid': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
-    'io_removal_lvl': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
-    'io_removal_lyoy': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
-    'io_millinv_lyoy': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
-    'io_invdays_lvl': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
-    'io_invdays_lyoy': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'SF', 'v', 'al', 'SM'],
+    'strip_hsec_lvl_mid': ['rb', 'hc', 'i', 'j', 'jm'],
+    'io_removal_lvl': ['i'],
+    'io_removal_lyoy': ['i'],
+    'io_millinv_lyoy': ['hc', 'i'],
+    'io_invdays_lvl': ['hc', 'i'],
+    'io_invdays_lyoy': ['hc', 'i'],
     'io_inv_rmv_ratio_1y': ['i'],
     'ioarb_px_hlr': ['rb', 'hc', 'i'],
     'ioarb_px_hlrhys': ['rb', 'hc', 'i'],
@@ -42,7 +42,7 @@ single_factors = {
     'fef_basmom5_or_qtl': ['rb', 'hc'],
     'mn_mine_mom': ['SM'],
     'prop2hand_px_zs': ['rb', 'hc'],
-    
+
     "al_alumina_qtl": ['al'],
     "al_alumina_yoy_qtl": ['al'],
     "al_coal_qtl": ['al'],
@@ -119,13 +119,11 @@ factors_by_asset = {
                          'rb', 'hc', 'i', 'j', 'jm', 'SM', 'SF', 'v', 'FG', 'SA'],
     # 'metal_pbc_ema_xdemean': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si',
     #                           'rb', 'hc', 'i', 'j', 'jm', 'SM', 'SF', 'v', 'FG', 'SA'],
-    'metal_inv_hlr': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', # 'SM', 'SF', 'si', 
-                      'rb', 'hc', 'i', 'v', 'FG', 'SA'],
-    'metal_inv_lyoy_hlr': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si',
-                           'rb', 'hc', 'i', 'SM', 'SF', 'v', 'FG', 'SA'],
-    "exch_wnt_hlr": ['ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
-    "exch_wnt_yoy_hlr": ['ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
-    "exch_wnt_kdj": ['ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
+    'metal_inv_hlr': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si', 'rb', 'hc', 'i', 'v', 'FG', 'SA'],
+    'metal_inv_lyoy_hlr': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si', 'rb', 'hc', 'i', 'v', 'FG', 'SA'],
+    "exch_wnt_hlr": ["UR", "ru", 'si', 'lc', 'ao', 'ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
+    "exch_wnt_yoy_hlr": ["UR", "ru", 'si', 'lc', 'ao', 'ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
+    "exch_wnt_kdj": ["UR", "ru", 'si', 'lc', 'ao', 'ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
     'auag_etf_mrev': ["au", "ag"],
     'smsf_prodcost_mom': ["SM", "SF"],
 }
@@ -709,9 +707,9 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
     update_start = day_shift(run_date, '-120b', CHN_Holidays)
     markets = [
         'rb', 'hc', 'i', 'j', 'jm', 'FG', 'v', 'SM', 'SF', 'SA', 'ru', 'nr',
-        'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'si', 'ao', 'au', 'ag', 'bc',
+        'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'si', 'ao', 'au', 'ag', 'bc', 'lc', 'PX',
         'l', 'pp', 'TA', 'MA', 'sc', 'eb', 'eg', 'UR', 'lu', 'bu', 'fu', 'PF', 
-        'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'CF', 'jd', 'AP', 'lh', 'cs', 'CJ', 'PK', 'b',
+        'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'CF', 'jd', 'AP', 'lh', 'cs', 'CJ', 'PK', 'b',        
         'T', 'TF', 'TL',
     ]
     price_start = day_shift(run_date, '-30m')
