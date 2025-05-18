@@ -6,13 +6,13 @@ from pycmqlib3.utility.exch_ctd_func import *
 
 BROAD_MKTS = [
     'rb', 'hc', 'i', 'j', 'jm', 'FG', 'v', 'SM', 'SF', 'SA',
-    'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'ao', 'au', 'ag', 
-    'ru', 'l', 'pp', 'TA', 'MA', 'sc', 'eb', 'eg', 'UR', 'lu', #'PF', 'si', 
+    'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'ao', 'au', 'ag', 'si', 'lc', 'PX',
+    'ru', 'l', 'pp', 'TA', 'MA', 'sc', 'eb', 'eg', 'UR', 'lu',  #'PF', 
     'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'CF', 'jd', 'AP', 'lh', #'CJ', 'PK',
 ]
 
 IND_MKTS = ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'v', #'SM', 'SF', 'SA', 'UR', 
-    'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'ao', 'au', 'ag',#'bc', 'si', 
+    'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'ao', 'au', 'ag', 'si', 'lc', 'PX', #'bc',
     'ru', 'l', 'pp', 'TA', 'MA', 'sc', 'eb', 'eg', 'lu', #'bu', 'fu',
 ]
 
@@ -370,10 +370,9 @@ signal_store = {
     'metal_mom_hlrhys_xdemean': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'SA', 'v', 
                                   'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'au', 'ag'],
                          ['metal_px', 'hysteresis', [0.7, 60, 0.1], '', 'hlratio', True, 'price', "ema1", 120, [-2,2]]],
-    'metal_inv_hlr': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'v', 'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss'],
+    'metal_inv_hlr': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'v', 'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'ao'],
                       ['metal_inv', 'hlratio', [240, 250], '', '', False, 'price', "", 120, [-2,2]]],
-    'metal_inv_hlr_xdemean': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'v',
-                               'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss'],
+    'metal_inv_hlr_xdemean': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'v', 'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'si', 'ao'],
                               ['metal_inv', 'hlratio', [240, 250, 2], '', '', False, 'price', "", 120, [-2,2]]],
     'metal_inv_lyoy_hlr': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'v',
                             'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss'],
@@ -408,19 +407,19 @@ signal_store = {
                             ["us_oil_prod_etf_perf", "qtl", [40, 60, 2], '', '', True, 'price', "", 120, [-2,2]]],
 
     "exch_wnt_hlr": [
-        ['rb', 'hc', 'ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
-        ["exch_warrant", "hlratio", [230, 250, 2], "", "", False, "", "ema3", 240, [-2,2]]],
+        ['rb', 'hc', "UR", "ru", 'si', 'lc', 'ao', 'ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
+        ["exch_warrant", "hlratio", [230, 250, 2], "", "", False, "", "", 240, [-2,2]]],
     "exch_wnt_hlr_xdemean": [
-        ['rb', 'hc', 'ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
-        ["exch_warrant", "hlratio", [240, 260, 2], "", "", False, "", "ema3", 240, [-2,2]]],
+        ['rb', 'hc', "UR", "ru", 'si', 'lc', 'ao', 'ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
+        ["exch_warrant", "hlratio", [240, 260, 2], "", "", False, "", "", 240, [-2,2]]],
     "exch_wnt_yoy_hlr": [
-        ['rb', 'hc', 'ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
+        ['rb', 'hc', "UR", "ru", 'si', 'lc', 'ao', 'ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
         ["exch_warrant", "hlratio", [230, 250, 2], 'cal_yoy_day', "diff", False, "", "ema3", 240, [-2,2]]],
     "exch_wnt_yoy_hlr_xdemean": [
-        ['rb', 'hc', 'ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
+        ['rb', 'hc', "UR", "ru", 'si', 'lc', 'ao', 'ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
         ["exch_warrant", "hlratio", [240, 260, 2], 'cal_yoy_day', "diff", False, "", "ema3", 240, [-2,2]]],
     "exch_wnt_kdj": [
-        ['rb', 'hc', 'ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
+        ['rb', 'hc', "UR", "ru", 'si', 'lc', 'ao', 'ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
         ["exch_warrant", "kdj", [230, 250, 2], "", "", False, "", "ema1", 240, [-2,2]]],
 
     "cgb_1_2_spd_zs": [['cu', 'al', 'zn', 'rb', 'hc', 'i'],
@@ -635,7 +634,7 @@ feature_to_feature_key_mapping = {
     "exch_warrant": {},
     "etf_holdings": {},
     'metal_inv': {
-        'cu': "cu_inv_combo",
+        'cu': "cu_inv_social_dom",
         'al': 'al_inv_social_all',
         'zn': "zn_inv_social_all",
         'ni': "ni_inv27_all",
