@@ -115,7 +115,7 @@ factors_by_asset = {
     'base_phybasmom_1y_zs': ['cu', 'al', 'zn', 'ni', 'pb', 'sn'],
     'metal_pbc_ema': ['cu', 'al', 'zn', 'ni', 'ss', 'sn', 'ao', #'si', 'SM', 'SF', 'pb', 
                       'rb', 'hc', 'i', 'j', 'jm', 'v', 'FG', 'SA', "au", "ag"],
-    'metal_mom_hlrhys': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si',
+    'metal_mom_hlrhys': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si', 'lc', 'au', 'ag',
                          'rb', 'hc', 'i', 'j', 'jm', 'SM', 'SF', 'v', 'FG', 'SA'],
     # 'metal_pbc_ema_xdemean': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si',
     #                           'rb', 'hc', 'i', 'j', 'jm', 'SM', 'SF', 'v', 'FG', 'SA'],
@@ -132,6 +132,10 @@ factors_by_spread = {
     "auag_cme_wratio_zs": [('au', 1), ('ag', -1)],
     'auag_vix_zsa_mt': [('au', 1), ('ag', -1)],
     'auag_fxbasket_zs_yr': [('au', 2), ('cu', -1), ('rb', -1)],
+    'auag_fxbasket_zs_yr': [('au', 2), ('cu', -1), ('rb', -1)],
+    'smsf_workrate_ratio': [('SM', 1), ('SF', -1)],
+    'smsf_dmd_ratio': [('SM', 1), ('SF', -1)],
+    'smsf_margin_diff': [('SM', 1), ('SF', -1)],
 }
 
 factors_by_spread2 = {
@@ -161,6 +165,8 @@ factors_by_beta_neutral = {
     'fef_c1_c2_ratio_spd_qtl': [('rb', 'i', 1), ('hc', 'i', 1)],
     'fef_basmom5_spd_qtl': [('rb', 'i', 1), ('hc', 'i', 1)],
     'auag_csi500_zs_st': [('au', 'ag', 1),],
+    'smsf_coal_mom_st': [('SF', 'SM', 1),],
+    'smsf_coal_mom_yr': [('SF', 'SM', 1),],
 }
 
 
@@ -859,7 +865,7 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
 
     logging.info("updating factor for beta neutral ratio ...")
     beta_win = 244
-    asset_pairs = [('rb', 'i'), ('hc', 'i'), ('j', 'i'), ('au', 'ag'), ('au', 'cu'), ('au', 'rb')]
+    asset_pairs = [('rb', 'i'), ('hc', 'i'), ('j', 'i'), ('au', 'ag'), ('au', 'cu'), ('au', 'rb'), ('SF', 'SM')]
     beta_dict = {}
     for trade_asset, index_asset in asset_pairs:
         key = '_'.join([trade_asset, index_asset, 'beta'])        

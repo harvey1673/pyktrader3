@@ -230,7 +230,7 @@ def write_edb_by_xl_sheet(file_setup, data_folder=sec_bits.LOCAL_NUTSTORE_FOLDER
         if file_setup[key]['drop_zero']:
             xdf = xdf.replace(0, np.nan)
         xdf = xdf[xdf.index >= sdate]
-        print(f"saving data for {data_file}:{sheet_name}, total cols:{len(xdf.columns)}, col0={xdf.columns[0]}")
+        print(f"saving data for {data_file}:{sheet_name}, total cols:{len(xdf.columns)}, col0={xdf.columns[0]}, last_date={xdf.index[0]}")
         err = save_data_to_edb(xdf, file_setup[key]['source'])
         error_list += err
     return error_list

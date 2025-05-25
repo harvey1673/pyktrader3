@@ -289,6 +289,22 @@ index_map = {
     "S002825739": "sa_light_east",
     "S010861418": "sa_heavy_shahe",
     "S005349979": "sa_heavy_sys",
+    "S006404818": "sa_margin_lianchan",
+    "S006404817": "sa_margin_anjian",
+    "S011318571": "syn_ammonia_margin_coal",
+    "S011318572": "syn_ammonia_margin_gas",
+    "S009134956": "sa_wprod_cn",
+    "S005439592": "sa_workrate_cn",
+    "S005439594": "sa_workrate_anjian",
+    "S005439596": "sa_workrate_lianchan",
+    "S011311758": "sa_sales_prod_ratio",
+    "S019254411": "fg_margin_coal",
+    "S019254412": "fg_margin_petcoke",
+    "S017068418": "fg_margin_natgas",
+    "S019255501": "solarglass_dprod",
+    "S019255498": "solarglass_util",
+    "S017438009": "fg_dprod",
+    "S017438010": "fg_wprod",
     "S002959491": "sm_65s17_neimeng",
     "S002959498": "sm_65s17_tj",
     "S002959495": "sm_65s17_guangxi",
@@ -313,7 +329,15 @@ index_map = {
     "S017659520": "sf_neimeng_margin",
     "S017659519": "sf_ningxia_margin",
     "S008082266": "sf_operating_rate",
-
+    "S008082269": "sf_prod_cn",
+    "S008082268": "sf_dmd_cn",
+    "S008082267": "sf_dprod_cn",
+    "S008082266": "sf_workrate_cn",
+    "S008082272": "sm_dmd_cn",
+    "S008082273": "sm_prod_cn",
+    "S008082271": "sm_dprod_cn",
+    "S008082270": "sm_workrate_cn",
+    "S008618451": "sm_stockdays",
 
     'S008618440': 'sm_inv_mill',
     'S008618447': 'sf_inv_mill',
@@ -324,9 +348,18 @@ index_map = {
     "S003138068": "coke_inv_ports_tj", # 20110121
     "S003138069": "coke_inv_ports_lyg", # 20110121
     "S003138070": "coke_inv_ports_rz", # 20110121
-    "S010338984": "coke_inv_ports", # 20211217
+    "S010338984": "coke_inv_ports", # 20211217    
     "S012116529": "ckc_inv_ports", # 20220107
     "S009341306": "ckc_inv_cokery", #20210115
+    "S009341305": "coke_inv_cokery", #20210115
+    "S005653704": "coke_inv_230cokery", 
+    "S005653705": "ckc_inv_230cokery", 
+    "S009341250": "coke_inv_247mill", 
+    "S009341251": "ckc_inv_247mill",
+    "S004039587": "ckc_inv_6ports",
+    "S010308683": "ckc_inv_110washery",
+    "S012116534": "coke_inv_4ports", # 20140801
+    "S006136000": "ckc_inv_all",
 
     'S005814718': 'rebar_inv_social',
     'S005580635': 'hrc_inv_social',
@@ -821,6 +854,15 @@ def process_spot_df(spot_df, adjust_time=False):
     spot_dict['gi_billet'] = spot_df['gi_0.5_sh'] - spot_df['billet_ts']
     spot_dict['rb_hc_diff'] = spot_df['rebar_sh'] - spot_df['hrc_sh']
     spot_dict['rb_hc_steel_spd'] = spot_dict['rebar_billet'] - spot_dict['crc_hrc']
+
+    spot_dict['smsf_dmd_ratio'] = spot_df['sm_dmd_cn']/spot_df['sf_dmd_cn']
+    spot_dict['smsf_dprod_ratio'] = spot_df['sm_dprod_cn']/spot_df['sf_dprod_cn']
+    spot_dict['smsf_prod_ratio'] = spot_df['sm_prod_cn']/spot_df['sf_prod_cn']
+    spot_dict['sm_dmd_prod_ratio'] = spot_df['sm_dmd_cn']/spot_df['sm_prod_cn']
+    spot_dict['sf_dmd_prod_ratio'] = spot_df['sf_dmd_cn']/spot_df['sf_prod_cn']
+    spot_dict['smsf_workrate_ratio'] = spot_df['sm_workrate_cn']/spot_df['sf_workrate_cn']
+    spot_dict['smsf_margin_diff'] = spot_df["sm_margin_north"] - spot_df["sf_neimeng_margin"]
+    spot_dict['smsf_prodcost_diff'] = spot_df["sm_neimeng_cost"] - spot_df["sf_neimeng_cost"]
 
     spot_dict["zn_scrap_sh_mid"] = (spot_df["zn_scrap_sh_low"] + spot_df["zn_scrap_sh_high"])/2
     spot_dict["al_scrap_shredded_sh_mid"] = (spot_df["al_scrap_shredded_sh_low"] + spot_df["al_scrap_shredded_sh_high"])/2
