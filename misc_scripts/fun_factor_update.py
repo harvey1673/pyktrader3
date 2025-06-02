@@ -42,6 +42,8 @@ single_factors = {
     'fef_basmom5_or_qtl': ['rb', 'hc'],
     'mn_mine_mom': ['SM'],
     'prop2hand_px_zs': ['rb', 'hc'],
+    'coal_mom_st_hlr': ['SF', 'j', 'jm'],
+    'coal_mom_yr_hlr': ['SF', 'j', 'jm'],
 
     "al_alumina_qtl": ['al'],
     "al_alumina_yoy_qtl": ['al'],
@@ -53,6 +55,7 @@ single_factors = {
     'cu_prem_usd_md': ['cu'],
     'cu_phybasis_zsa': ['cu'],
     'cu_phybasis_hlr': ['cu'],
+    'cu_blister_rc_s_zs': ['cu'],
     "base_etf_mom_zsa": ["cu", "al", "zn", "pb", "ni", "sn"],
     "base_etf_mom_ewm": ["cu", "al", "zn", "pb", "ni", "sn"],
     "const_etf_mom_zsa": ["rb", "i", "j", "FG", "v"],
@@ -165,8 +168,8 @@ factors_by_beta_neutral = {
     'fef_c1_c2_ratio_spd_qtl': [('rb', 'i', 1), ('hc', 'i', 1)],
     'fef_basmom5_spd_qtl': [('rb', 'i', 1), ('hc', 'i', 1)],
     'auag_csi500_zs_st': [('au', 'ag', 1),],
-    'smsf_coal_mom_st': [('SF', 'SM', 1),],
-    'smsf_coal_mom_yr': [('SF', 'SM', 1),],
+    'smsf_coal_mom_st': [('SF', 'SM', 1), ('jm', 'i', 1), ('j', 'i', 1),],
+    'smsf_coal_mom_yr': [('SF', 'SM', 1), ('jm', 'i', 1), ('j', 'i', 1),],
 }
 
 
@@ -865,7 +868,7 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
 
     logging.info("updating factor for beta neutral ratio ...")
     beta_win = 244
-    asset_pairs = [('rb', 'i'), ('hc', 'i'), ('j', 'i'), ('au', 'ag'), ('au', 'cu'), ('au', 'rb'), ('SF', 'SM')]
+    asset_pairs = [('rb', 'i'), ('hc', 'i'), ('j', 'i'), ('jm', 'i'), ('au', 'ag'), ('au', 'cu'), ('au', 'rb'), ('SF', 'SM')]
     beta_dict = {}
     for trade_asset, index_asset in asset_pairs:
         key = '_'.join([trade_asset, index_asset, 'beta'])        

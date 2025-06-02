@@ -506,6 +506,9 @@ index_map = {
     "S005450012": "nr_inv_shfe_warrant",
 
     'S004630824': 'cu_mine_tc',
+    'S019779606': 'cu_blister_rc_south',
+    'S019779609': 'cu_blister_rc_north',
+    'S019779612': 'cu_anode_rc',
     #'S011211693': 'cu_25conc_tc',
     'S005951203': 'pb_60conc_tc_ports',
     'S006158372': 'pb_50conc_tc_hunan',
@@ -568,6 +571,8 @@ index_map = {
     "S002865592": "al_smm0_spot",
     "S002865578": "zn_smm0_spot",
     "S002865583": "pb_smm1_spot",
+    "S002865591": "pb_sec9997_spot",
+    "S002865595": "pb_sec985_spot",
     "S002981539": "sn_smm1_spot",
     "S002981540": "ni_smm1_spot",
     "S002981541": "ni_smm1_jc_spot",
@@ -575,6 +580,13 @@ index_map = {
     "S010361921": "ni_cj1_spot",
     "S004785205": "ss_304_gross_wuxi",
     "S004785215": "ss_304_wuxi_phybasis",
+    "S002865685": "lc_bat_dom_cn_spot",
+    "S019779625": "lc_ind_dom_cn_spot", # need to multiply 10000
+    "S020190575": "lc_bat_dom_east_spot",
+    "S020190572": "lc_ind_dom_east_spot",
+    "S020186608": "lc_mine_6pct_cif_cn", # in usd
+    "S010596542": "lioh_bat_coarse_spot", # need to multiply 10000
+    "S010596545": "lioh_bat_fine_spot", # need to multiply 10000
 
     'S003048722': 'cu_smm_phybasis',
     'S003048723': 'cu_flat_phybasis',
@@ -791,6 +803,10 @@ def adj_publish_time(spot_df):
 def process_spot_df(spot_df, adjust_time=False):
     if adjust_time:
         spot_df = adj_publish_time(spot_df)
+    for col in ["lc_ind_dom_cn_spot", "lioh_bat_coarse_spot", "lioh_bat_fine_spot"]:
+        if col in spot_df.columns:
+            spot_df[col] = spot_df[col] * 10000
+
     spot_dict = {}
     for asset in ['cu', 'al', 'zn', 'pb', 'ni', 'sn']:
         spot_dict[f'{asset}_inv_exch_d'] = spot_df[
