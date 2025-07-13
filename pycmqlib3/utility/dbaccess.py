@@ -183,7 +183,7 @@ def load_int_stock_daily(code_list, start_date=None, end_date=None, dbtable='int
         stmt = stmt + " and date <= '%s'" % end_date.strftime('%Y-%m-%d')
     df = pd.io.sql.read_sql(stmt, cnx)
     df['date'] = pd.to_datetime(df['date'])
-    pivot = df.pivot(index='date', columns='instID', values=['open', 'high', 'low', 'close', 'volume'])
+    pivot = pd.pivot_table(df, index='date', columns='instID', values=['open', 'high', 'low', 'close', 'volume'], aggfunc='last')
     pivot = pivot.swaplevel(1, 0, axis=1).sort_index(axis=1)
     return pivot
 
