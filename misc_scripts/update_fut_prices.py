@@ -68,6 +68,7 @@ def refresh_saved_fut_prices(
             if cont in daily_dict:
                 curr_ddf = daily_dict[cont]
                 curr_ddf = curr_ddf.dropna(subset=['close', 'contract'])
+                curr_ddf = curr_ddf[~curr_ddf.index.duplicated(keep='first')]
                 if 'a1505' not in curr_ddf.columns:
                     curr_ddf = pd.DataFrame()
                     start_d = start_date
@@ -90,6 +91,7 @@ def refresh_saved_fut_prices(
                                     nb,
                                     start_date=start_d, end_date=run_date,
                                     shift_mode=2, roll_name='hot', freq='d1')
+            ddf = ddf.drop_duplicates(subset=['date'], keep='first')
             if len(ddf) == 0:
                 logging.warning("no new data")
                 continue

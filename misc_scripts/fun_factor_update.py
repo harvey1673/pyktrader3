@@ -773,6 +773,12 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
     data_dict = {}
     for asset in markets:
         spot_df[f'{asset}_px'] = price_df[(asset+'c1', 'close')]
+        data_dict[f'{asset}_drng'] = (2*(price_df[(asset+'c1', 'high')] - price_df[(asset+'c1', 'low')]) * \
+                                        np.sign(price_df[(asset+'c1', 'close')] - price_df[(asset+'c1', 'open')]) - \
+                                        (price_df[(asset+'c1', 'close')] - price_df[(asset+'c1', 'open')])) / \
+                                            price_df[(asset+'c1', 'close')]
+        data_dict[f'{asset}_logret'] = np.log(price_df[(asset+'c1', 'close')].dropna()).diff()
+        data_dict[f'{asset}_colr'] = np.log(price_df[(asset+'c1', 'close')]/price_df[(asset+'c1', 'open')])
         if (asset+'c2', 'close') in price_df.columns:
             data_dict[f'{asset}_ryield'] = \
                 (np.log(price_df[(asset+'c1', 'close')]) - np.log(price_df[(asset+'c2', 'close')]) - \
@@ -780,6 +786,7 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
                     (pd.to_datetime(price_df[(asset+'c2', 'expiry')]) - pd.to_datetime(price_df[(asset+'c1', 'expiry')])).dt.days * 365.0 + \
                         spot_df['r007_cn'].reindex(index=price_df.index).ffill().ewm(5).mean()/100
         
+
             data_dict[f'{asset}_basmom'] = np.log(price_df[(asset+'c1', 'close')].pct_change()+1) - \
                 np.log(price_df[(asset+'c2', 'close')].pct_change()+1)
             data_dict[f'{asset}_basmom5'] = data_dict[f'{asset}_basmom'].dropna().rolling(5).sum() 
