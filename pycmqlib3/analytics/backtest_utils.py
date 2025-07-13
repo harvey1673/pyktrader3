@@ -235,7 +235,7 @@ def transform_output(pnl_stats, metrics=['sharpe', 'std', 'sortino']):
     df_list = []
     for key in metrics:
         adf = pnl_stats[key].reset_index()
-        adf['index'] = adf['index'].apply(lambda x: x.split('_')[1] if '_' in x else 'all')
+        adf['index'] = adf['index'].apply(lambda x: x.split('_')[-1] if '_' in x else 'all')
         adf = adf.rename(columns={'index': 'tenor', 'total': key}).set_index('tenor')
         df_list.append(adf)
     perf_df = pd.concat(df_list, axis=1, join='outer')

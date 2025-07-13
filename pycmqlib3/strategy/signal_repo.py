@@ -36,6 +36,11 @@ signal_store = {
     "mom_hlr_yr": [BROAD_MKTS, ["px", "hlratio", [240, 250, 2], "", "", True, "", "", 120, [-2, 2]]],
     "mom_hlr_yr_xdemean": [BROAD_MKTS, ["px", "hlratio", [240, 250, 2], "", "", True, "", "", 120, [-2, 2]]],  
     "mom_kdj_st": [BROAD_MKTS, ["px", "kdj", [20, 40, 2], "", "", True, "", "buf0.3", 120, [-2, 2]]],  
+    #"drng_ma": [BROAD_MKTS, ["drng", "ma", [20, 40, 2], "", "", True, "price", "ema3", 20, [-2, 2]]],
+    "cclr_mom_sgnma": [BROAD_MKTS, ["logret", "sgn_ma", [20, 40, 2], "", "", True, "price", "ema3", 20, [-2, 2]]],
+    "cclr_mom_sgnma_xdemean": [BROAD_MKTS, ["logret", "sgn_ma", [20, 40, 2], "", "", True, "price", "ema3", 20, [-2, 2]]],
+    "colr_mom_sgnma": [BROAD_MKTS, ["colr", "sgn_ma", [20, 40, 2], "", "", True, "price", "ema3", 20, [-2, 2]]],
+    "colr_mom_sgnma_xdemean": [BROAD_MKTS, ["colr", "sgn_ma", [20, 40, 2], "", "", True, "price", "ema3", 20, [-2, 2]]],
 
     "ryield_ema": [BROAD_MKTS, ["ryield", "ema", [1, 2, 1], "ema1", "", True, "", "", 60, [-2.5, 2.5]]],
     "ryield_ema_xdemean": [BROAD_MKTS, ["ryield", "ema", [1, 2, 1], "ema1", "", True, "", "", 60, [-2.5,2.5]]], 

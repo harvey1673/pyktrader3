@@ -110,6 +110,28 @@ def calmar(ts, cum_pnl=True, business_days_per_year=tstool.PNL_BDAYS):
         return daily_pnl.mean() * business_days_per_year / (-max_dd)
 
 
+def skew(ts, cum_pnl=True, business_days_per_year=tstool.PNL_BDAYS):
+    if cum_pnl:
+        ts = ts.diff(1).dropna()
+    return ts.skew()
+
+
+def lower_tail(ts, cum_pnl=True, business_days_per_year=tstool.PNL_BDAYS):
+    if cum_pnl:
+        ts = ts.diff(1).dropna()
+    p1 = ts.quantile(0.01)
+    p30 = ts.quantile(0.30)
+    return p1/p30/4.43
+
+
+def upper_tail(ts, cum_pnl=True, business_days_per_year=tstool.PNL_BDAYS):
+    if cum_pnl:
+        ts = ts.diff(1).dropna()
+    p99 = ts.quantile(0.99)
+    p70 = ts.quantile(0.70)
+    return p99/p70/4.43
+
+
 def max_drawdown(ts, cum_pnl=True):
     if cum_pnl:
         cum_pnl = ts
@@ -126,6 +148,9 @@ def calc_perf_by_tenors(ts, tenors, metric='sharpe', business_days_per_year=244)
         'sortino': sortino,
         'calmar': calmar,
         'maxdd': max_drawdown,
+        'skew': skew,
+        'uptail': upper_tail,
+        'lowtail': lower_tail,
     }
     edate = ts.index[-1]
     result = {}
@@ -189,6 +214,9 @@ class MetricsBase(object):
             'sortino': sortino,
             'calmar': calmar,
             'maxdd': max_drawdown,
+            'skew': skew,
+            'uptail': upper_tail,
+            'lowtail': lower_tail,
         }
         res_ts = pd.Series(index=pnl_df.columns)
         for col in pnl_df.columns:

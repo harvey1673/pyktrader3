@@ -170,6 +170,29 @@ def conv_ewm(ts, h1s: list, h2s: list, vol_win=0):
     return conv
 
 
+def conv_madiff(ts, h1s: list, h2s: list, vol_win=0, method='ewm'):
+    h1_rg = list(range(*h1s))
+    h2_rg = list(range(*h2s))
+    combinations = itertools.product(h1_rg, h2_rg)
+    collection = []
+    for h1, h2 in combinations:
+        if h1 >= h2:
+            continue
+        if method == 'ewm':
+            s1 = ts.ewm(span=h1, min_periods=1).mean()
+            s2 = ts.ewm(span=h2, min_periods=1).mean()
+        else:
+            s1 = ts.rolling(h1).mean()
+            s2 = ts.rolling(h2).mean()
+        if vol_win == 0:
+            sig = (s1 - s2)/robust_vol_calc(ts.diff(), 35)
+        else:
+            sig = risk_normalized(s1-s2, vol_win)
+        collection.append(sig.dropna())
+    conv = pd.concat(collection, axis=1).mean(axis=1)
+    return conv
+
+
 def risk_normalized(ts, win=252):
     return ts/ts.ewm(span=win, min_periods=10, ignore_na=True).std()
 
@@ -231,7 +254,7 @@ def response_curve(y, response='linear', param=1):
     return out
 
 
-def calc_conv_signal(feature_ts, signal_func, param_rng, signal_cap=2.5, vol_win=120):
+def calc_conv_signal(feature_ts, signal_func, param_rng, signal_cap=2.5, vol_win=120, param_args={}):
     sig_list = []
     for win in range(*param_rng):
         if len(feature_ts) <= win:
@@ -244,12 +267,28 @@ def calc_conv_signal(feature_ts, signal_func, param_rng, signal_cap=2.5, vol_win
                         / feature_ts.rolling(vol_win, min_periods=vol_win//2).std()
         elif signal_func == 'ma_sgn':
             signal_ts = np.sign(feature_ts.rolling(win).mean())
+        elif signal_func == 'sgn_ma':
+            signal_ts = np.sign(feature_ts).rolling(win).mean()
         elif signal_func == 'ema':
             signal_ts = feature_ts.ewm(win).mean()/feature_ts.abs().ewm(vol_win).mean()
         elif signal_func == 'emad':
             signal_ts = feature_ts.ewm(win).mean()/feature_ts.ewm(vol_win).std()
         elif signal_func == 'ema_sgn':
             signal_ts = np.sign(feature_ts.ewm(win).mean())
+        elif signal_func == 'sgn_ema':
+            signal_ts = np.sign(feature_ts).ewm(win).mean()
+        elif signal_func == "ema_spd":
+            signal_ts = conv_madiff(feature_ts, 
+                                    h1s=param_args.get("h1s", [1, 2, 1]), 
+                                    h2s=param_rng, 
+                                    vol_win=vol_win,
+                                    method='ewm')
+        elif signal_func == "sma_spd":
+            signal_ts = conv_madiff(feature_ts, 
+                                    h1s=param_args.get("h1s", [1, 2, 1]), 
+                                    h2s=param_rng, 
+                                    vol_win=vol_win,
+                                    method='rolling')
         elif signal_func == 'ema_dff':
             signal_ts = feature_ts - feature_ts.ewm(win).mean()
             signal_ts = risk_normalized(signal_ts, win=vol_win)
