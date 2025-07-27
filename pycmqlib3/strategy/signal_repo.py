@@ -81,9 +81,11 @@ signal_store = {
                      ['au_td_sge', 'qtl', [20, 60, 2], 'ema1', '', True, 'price', 'buf0.1', 120, [-2,2]]],
 
     # ferrous 
-    'pbf_yoy_qtl': [['fef', 'i'], ["pbf_prem", 'qtl', [20, 30, 2], "cal_yoy", "diff", True, "", "", 120, [-2,2]]],
-    'pbf_yoy_eds': [['fef', 'i'], ["pbf_prem", 'ema_dff_sgn', [5, 15, 1], "cal_yoy", "diff", True, "", "", 120, [-2,2]]],
-    'pbf_spd': [['rb_i', "hc_i"], ["pbf_prem", 'zscore_adj', [40, 80, 2], "", "", False, "", "", 120, [-2,2]]],
+    'nmf_yoy_qtl': [['fef', 'i'], ["nmf_prem", 'qtl', [10, 20, 1], "cal_yoy", "diff", True, "", "ema1", 120, [-2,2]]],
+    'macf_yoy_qtl': [['fef', 'i'], ["macf_prem", 'qtl', [10, 20, 1], "cal_yoy", "diff", True, "", "ema1", 120, [-2,2]]],
+    'macf_spd_qtl': [['rb_i', "hc_i"], ["macf_prem", 'qtl', [40, 80, 2], "", "", False, "", "ema1", 120, [-2,2]]],
+    'macf_spd2_qtl': [['i_rb', "i_hc"], ["macf_prem", 'qtl', [10, 30, 2], "", "", True, "", "ema3", 120, [-2,2]]],
+
     'pbf_mix_spd_hys': [['fef', 'i'],
                         ['pbf_iocj_ssf_spd', 'hysteresis', [0.5, 500, 0.5], "",  "hlratio", False, "", "", 120, [-2,2]]],
     'landsales_yoy_ma': [['rb', 'hc'], ['top100cities_land_supplied_area_res_all',
@@ -121,6 +123,7 @@ signal_store = {
                             ['FEF_ryield', 'zscore', [10, 80, 2], 'ema3', '', False, '', "sma1", 120, [-2,2]]],
     'fef_ryieldmom_spd_zs': [['rb_i', 'hc_i'],
                              ['FEF_ryield', 'zscore', [10, 30, 2], 'ema1', '', False, '', "buf0.2", 120, [-2,2]]],
+
     'fef_basmom_or_qtl': [['rb', 'hc'],
                           ['FEF_basmom', 'qtl', [60, 80, 2], 'ema20', '', False, 'price', "ema1", 120, [-2,2]]],
     'fef_basmom5_or_qtl': [['rb', 'hc'],
@@ -176,6 +179,10 @@ signal_store = {
                            ['steel_inv_social', 'zscore', [24, 30, 2], 'lunar_yoy_day', 'diff', False, '', "sma1", 120, [-2,2]]],
     'steel_sinv_lyoy_mds': [['rb', 'hc', 'i', 'FG', 'v'],
                            ['steel_inv_social', 'ma_dff_sgn', [5, 9, 1], 'lunar_yoy_day', 'diff', False, '', "sma1", 120, [-2,2]]],
+    'billet_inv_hlr_lt': [['rb', 'hc', 'i'],
+                          ['billet_inv_social_ts', 'hlratio', [100, 110, 1], '', '', False, '', '', 120, [-2,2]]],
+    'billet_inv_lyoy_hlr_lt': [['rb', 'hc', 'i'],
+                          ['billet_inv_social_ts', 'hlratio', [50, 55, 1], 'lunar_yoy_day', 'diff', False, '', '', 120, [-2,2]]],
     'hrc_arb_mom': [['hc', 'rb'],
                     ['hrc_exp_sea_arb', 'qtl', [40, 80, 2], '', '', True, '', "ema1", 120, [-2,2]]],
     'hrc_mb_saudi_qtl': [['hc'],
@@ -263,7 +270,6 @@ signal_store = {
     # 'wr_sinv_lyoy_fast': ('wirerod_inv_social', 'zscore', [20, 42, 2], 'lunar_yoy_day', 'diff', False, 'W-Fri'),
     # 'hc_soinv_lyoy_fast': ('hrc_inv_social', 'zscore', [20, 42, 2], 'lunar_yoy_day', 'diff', False, 'W-Fri'),
     # 'cc_soinv_lyoy_fast': ('crc_inv_social', 'zscore', [20, 42, 2], 'lunar_yoy_day', 'diff', False, 'W-Fri'),
-    # 'billet_inv_chg_slow': ('billet_inv_social_ts', 'zscore', [240, 252, 2], '', 'diff', False, 'price'),
 
     # 'margin_sea_lvl_mid': ('hrc_margin_sb', 'zscore', [40, 82, 2], '', 'pct_change', True, 'price'),
 

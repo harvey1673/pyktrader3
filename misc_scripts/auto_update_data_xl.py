@@ -64,6 +64,8 @@ def update_data_from_xl(data_folder=LOCAL_NUTSTORE_FOLDER, lookback=30):
                                         'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
         ('ifind_data.xlsx', 'const_d'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
                                     'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
+        ('ifind_wkly.xlsx', 'inv_w'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 6, 7, 8],
+                                        'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
             # special format from here
         ('ifind_data.xlsx', 'base_d2'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 6, 7, 8],
                                         'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
@@ -90,6 +92,7 @@ if __name__ == "__main__":
     now = datetime.datetime.now()
     if now.time() > datetime.time(18, 0, 0):
         update_ifind_xlsheet(filename=f'{data_folder}/ifind_data.xlsx', wait_time=40, excluded=['hist'])
+        update_ifind_xlsheet(filename=f'{data_folder}/ifind_wkly.xlsx', wait_time=40, excluded=[])
     update_ifind_xlsheet(filename=f'{data_folder}/ifind_daily.xlsx', wait_time=40, excluded=[])
     if now.time() < datetime.time(12, 0, 0):
         update_ifind_xlsheet(filename=f'{data_folder}/ifind_stock.xlsx', wait_time=10, excluded=['setup'])

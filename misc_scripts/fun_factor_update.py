@@ -26,12 +26,16 @@ single_factors = {
     'strip_hsec_lvl_mid': ['rb', 'hc', 'i', 'j', 'jm'],
     'io_removal_lvl': ['i'],
     'io_removal_lyoy': ['i'],
+    'nmf_yoy_qtl': ['i'],
+    'macf_yoy_qtl': ['i'],
     'io_millinv_lyoy': ['hc', 'i'],
     'io_invdays_lvl': ['hc', 'i'],
     'io_invdays_lyoy': ['hc', 'i'],
     'io_inv_rmv_ratio_1y': ['i'],
     'ioarb_px_hlr': ['rb', 'hc', 'i'],
     'ioarb_px_hlrhys': ['rb', 'hc', 'i'],
+    'billet_inv_hlr_lt': ['rb', 'hc', 'i'],
+    'billet_inv_lyoy_hlr_lt': ['rb', 'hc', 'i'],
     'steel_sinv_lyoy_zs': ['rb', 'hc', 'i', 'FG', 'v'],
     'steel_sinv_lyoy_mds': ['rb', 'hc', 'i', 'FG', 'v'],
     'rbsales_lyoy_mom_lt': ['rb'],
@@ -162,6 +166,8 @@ spread_config = {
 }
 
 factors_by_beta_neutral = {
+    'macf_spd_qtl': [('rb', 'i', 1), ('hc', 'i', 1)],
+    'macf_spd2_qtl': [('i', 'rb', 1), ('i', 'hc', 1)],
     'io_pinv31_lvl_zsa': [('rb', 'i', 1), ('hc', 'i', 1)],
     'io_pinv45_lvl_hlr': [('rb', 'i', 1), ('hc', 'i', 1)],
     'ioarb_spd_qtl_1y': [('rb', 'i', 1), ('hc', 'i', 1)],
@@ -875,7 +881,8 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
 
     logging.info("updating factor for beta neutral ratio ...")
     beta_win = 244
-    asset_pairs = [('rb', 'i'), ('hc', 'i'), ('j', 'i'), ('jm', 'i'), ('au', 'ag'), ('au', 'cu'), ('au', 'rb'), ('SF', 'SM')]
+    asset_pairs = [('rb', 'i'), ('hc', 'i'), ('i', 'rb'), ('i', 'hc'), ('j', 'i'), ('jm', 'i'), 
+                   ('au', 'ag'), ('au', 'cu'), ('au', 'rb'), ('SF', 'SM')]
     beta_dict = {}
     for trade_asset, index_asset in asset_pairs:
         key = '_'.join([trade_asset, index_asset, 'beta'])        
