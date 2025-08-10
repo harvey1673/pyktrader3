@@ -62,7 +62,7 @@ def update_data_from_xl(data_folder=LOCAL_NUTSTORE_FOLDER, lookback=30):
                                         'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
         ('ifind_data.xlsx', 'base_w'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 6, 7, 8],
                                         'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
-        ('ifind_data.xlsx', 'const_d'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
+        ('ifind_data.xlsx', 'const_d'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 6, 7, 8],
                                     'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
         ('ifind_wkly.xlsx', 'inv_w'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 6, 7, 8],
                                         'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},

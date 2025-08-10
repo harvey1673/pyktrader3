@@ -168,6 +168,14 @@ index_map = {
     'S008679902': 'jmb_sb',
     'S008679908': 'iocj_sb',
     'S008679910': 'brbf_sb',
+    'S019823003': 'hrc_cn_fob',
+    'S019823002': 'hrc_sea_cfr',
+    'S019822995': 'hrc_bs_fob',
+    'S019823001': 'hrc_mideast_cfr',
+    'S019823047': 'rebar_cn_fob',
+    'S019823046': 'rebar_sea_cfr',
+    'S019823080': 'billet_cn_fob',
+    'S019823072': 'billet_bs_fob',
 
     'S002827225': 'billet_ts',
     'S002827223': 'billet_js',
@@ -192,6 +200,8 @@ index_map = {
     'S002877299': "ckc_a10v24s10_ts",
     'S009785426': "ckc_outstock_ganqimaodu",
     'S004085268': "ckc_stock_ganqimaodu",
+    'S005580993': 'ckc_au_cfr_cn',
+    'S011799884': 'ckc_au_fob',
 
     'S004378612': 'coal_5500_jingtang',
     'S002882871': 'coal_5500_sx_qhd',
@@ -218,6 +228,12 @@ index_map = {
     'S005653695': 'bf_workrate_247',
     'S005653695': 'bf_workrate_num',
     'S005653695': 'bf_workrate_cap',
+
+    'S013050080': 'cement_mill_run_rate',
+    'S013050004': 'cement_dispatch_rate',
+    'S012683154': 'cement_inv_ratio',
+    'S012683281': 'cement_clinker_inv_ratio',
+    'S015756661': 'cement_clinker_util',
 
     "S005470470": 'fg_5mm_shahe',
     'S005470469': 'fg_5mm_north',
@@ -343,6 +359,8 @@ index_map = {
     'S008618447': 'sf_inv_mill',
     "S005696248": "fg_inv_mill",
     "S005439547": "v_inv_social",
+    'S005439550': "v_inv_social_east",
+    'S018042405': "v_inv_mill_mth",
     "S005439586": 'sa_inv_mill_all',
     "S011319484": "sh_inv_mill_all",
     "S003138068": "coke_inv_ports_tj", # 20110121
@@ -504,6 +522,111 @@ index_map = {
     "S006409299": "bc_inv_ine_warrant",
     "S004410360": "ru_inv_shfe_warrant",
     "S005450012": "nr_inv_shfe_warrant",
+
+    'S006018632': 'MA_inv_ports_total',
+    'S009065244': 'PF_inv_mill_treasury',
+    'S009065245': 'PF_inv_mill_physical',
+    'S011319525': 'PF_viscosefiber_invdays_mill',
+    'S011319524': 'PF_viscosefiber_inv_mill',
+    'S011319505': 'PET_chip_invdays_mill',
+    'S024761635': 'PET_invdays_mill',
+    'S022014758': 'PL_inv_all',
+    'S005439569': 'PTA_inv_social_mth',
+    'S019985011': 'PTA_inv_social_wk',
+    'S009065246': 'PTA_inv_mill',
+    'S003085584': 'PTA_invdays_mill',
+    'S004788710': 'UR_inv_mill',
+    'S004127496': 'UR_inv_social',
+    'S004647718': 'compound_fertilizer_inv_social',
+    'S004869809': 'eb_inv_mill', # in ton
+    'S004869807': 'eb_inv_port_east', # in W ton
+    'S004869808': 'eb_inv_port_east_trader',
+    'S008618767': 'eb_inv_port_south',
+    'S008618768': 'eb_inv_port_south_trader',
+    'S008618769': 'bz_inv_port_east',
+    'S022014760': 'bz_inv_ports',
+    'S004383001': 'eg_inv_port_east',
+    'S017643268': 'pe_inv_mill',
+    'S011319581': 'pe_pipe_invdays',
+    'S005439479': 'pe_coal_inv_wow_pct',
+    'S005439480': 'pe_coal_ldpe_inv_wow_pct',
+    'S005439481': 'pe_coal_hdpe_inv_wow_pct',
+    'S005439482': 'pe_coal_lldpe_inv_wow_pct',
+    'S005439484': 'pe_coaloil_ldpe_inv_wow_pct',
+    'S005439485': 'pe_coaloil_hdpe_inv_wow_pct',
+    'S005439486': 'pe_coaloil_lldpe_inv_wow_pct',
+    'S011319572': 'wovenplastics_invdays_raw_mill_sm',
+    'S011319574': 'wovenplastics_inv_finished_mill_lg',
+    'S011319499': 'BOPP_invdays_raw',
+    'S011319502': 'CPP_invdays_finished',
+    'S011319504': 'pp_nonwoven_inv_finished',
+    'S005439538': 'pp_inv_wow_pct',
+    'S005439520': 'pp_inv_2oil_wow_pct',
+    'S005439523': 'pp_inv_oth_wow_pct',
+    'S004494138': 'bu_inv_social',
+    'S004494153': 'bu_inv_mill',
+    'S004494149': 'bu_inv_mill_shandong',
+    'S007247253': 'bu_inv_shfe_all',
+    'S004302829': 'bu_inv_shfe_mill_w',
+    'S004302811': 'bu_inv_shfe_social',
+    'S004302793': 'bu_inv_shfe_social_addon',
+    'S007247476': 'bu_invcap_shfe_all',
+    'S004302841': 'bu_invcap_shfe_social',
+    'S004302859': 'bu_invcap_shfe_mill',
+    'S004410392': 'ru_inv_shfe_all',
+    'S005451604': 'nr_inv_shfe_all',
+    'S026354501': 'pg_inv_port_all',
+    'S019733356': 'pg_inv_port_south',
+    'S019733357': 'pg_inv_port_east',
+    'S026354504': 'pg_inv_port_north',
+    'S026354506': 'pg_invratio_ports',
+    'S026354493': 'pg_inv_mill_all',
+    'S026354485': 'pg_inv_mill_res',
+    'S018553310': 'gasoline_inv_social',
+    'S018553311': 'diesel_inv_social',
+    'S006374450': 'refined_products_inv_indep',
+    'S004248164': 'fu_inv_sing',
+    'S018521625': 'fu_inv_cnship',
+    'S005451610': 'fu_inv_shfe',
+    'S003583337': 'm_inv_mill_sm',
+    'S003583339': 'm_inv_mill_nonexec',
+    'S017385971': 'm_invdays_downstream',
+    'S018052590': 'm_inv_mill_lg',
+    'S018489426': 'RM_inv_mill_mth',
+    'S018862300': 'RM_inv_mill_east',
+    'S017942027': 'c_invdays_downstream',
+    'S017209307': 'c_inv_ports_4north',
+    'S017209293': 'c_inv_mill',
+    'S017647060': 'cs_inv_mill',
+    'S017406429': 'CJ_inv_sample',
+    'S018380017': 'jd_invdays_prod',
+    'S018380018': 'jd_invdays_transit',
+    'S006466874': 'AP_inv_frozen', # 10 days after data
+    'S002841991': 'lh_inv_mth',
+    'S002841992': 'lh_breeding_sow_inv_mth',
+    'S003986222': 'CF_inv_social_mth',
+    'S011936208': 'CF_inv_weaving_mth',
+    'S011936209': 'CF_inv_weaving_lg_mth',
+    'S016734044': 'y_inv_mill',
+    'S003148264': 'y_inv_ports',
+    'S003254707': 'p_inv_ports',
+    'S018493782': 'p_inv_mill',
+    'S003052593': 'bean_inv_ports_d',
+    'S017992344': 'bean_inv_mill',
+    'S017992372': 'bean_inv_ports_full',
+    'S018479716': 'OI_inv_mill_east',
+    'S018479717': 'OI_inv_mill_guangxi',
+    'S018479719': 'OI_inv_mill_coastal',
+    'S018634615': 'PK_oil_inv_mill',
+    'S018634610': 'PK_inv_mill',
+    'S004370169': 'RS_inv_mill',
+    'S017935492': 'ZC_inv_social',
+    'S003839317': 'ZC_inv_6gen',
+    'S003839331': 'ZC_invdays_6gen',
+    'S000009279': 'crude_inv_eia_ex_spr_all',
+    'S002958615': 'crude_inv_eia_ex_spr_cushing',
+    'S000009278': 'crude_refined_inv_eia_ex_spr',
+    'S000009280': 'oil_inv_eia_spr',
 
     'S004630824': 'cu_mine_tc',
     'S019779606': 'cu_blister_rc_south',
@@ -871,6 +994,15 @@ def process_spot_df(spot_df, adjust_time=False):
     spot_dict['rb_hc_diff'] = spot_df['rebar_sh'] - spot_df['hrc_sh']
     spot_dict['rb_hc_steel_spd'] = spot_dict['rebar_billet'] - spot_dict['crc_hrc']
 
+    port_fee = 25
+    spot_dict['import_arb_pbf'] = vat_adj(spot_df['pbf_qd'] - port_fee)/spot_df['usdcnh_spot']/0.915 - spot_df['pbf_sb']
+    spot_dict['import_arb_nmf'] = vat_adj(spot_df['nmf_qd'] - port_fee)/spot_df['usdcnh_spot']/0.917 - spot_df['nmf_sb']
+    spot_dict['import_arb_macf'] = vat_adj(spot_df['macf_qd'] - port_fee)/spot_df['usdcnh_spot']/0.915 - spot_df['macf_sb']
+    spot_dict['import_arb_jmb'] = vat_adj(spot_df['jmb_qd'] - port_fee)/spot_df['usdcnh_spot']/0.924 - spot_df['jmb_sb']
+    spot_dict['import_arb_ssf'] = vat_adj(spot_df['ssf_qd'] - port_fee)/spot_df['usdcnh_spot']/0.91 - spot_df['ssf_sb']
+    spot_dict['import_arb_iocj'] = vat_adj(spot_df['iocj_qd'] - port_fee)/spot_df['usdcnh_spot']/0.915 - spot_df['iocj_sb']
+    spot_dict['io_on_off_arb'] = vat_adj(spot_df['pbf_cfd'] - port_fee)/spot_df['usdcnh_spot']/0.915/61.5*62 - spot_df['plt62']
+    
     spot_dict['smsf_dmd_ratio'] = spot_df['sm_dmd_cn']/spot_df['sf_dmd_cn']
     spot_dict['smsf_dprod_ratio'] = spot_df['sm_dprod_cn']/spot_df['sf_dprod_cn']
     spot_dict['smsf_prod_ratio'] = spot_df['sm_prod_cn']/spot_df['sf_prod_cn']
@@ -887,8 +1019,7 @@ def process_spot_df(spot_df, adjust_time=False):
     spot_dict['io_inv_removal_ratio_45p'] = spot_df['io_inv_45ports'] / spot_df['io_removal_45ports']
     spot_dict['io_inv_rmv_pctchg_45p'] = spot_dict['io_inv_removal_ratio_45p'].dropna().pct_change()
     spot_dict['io_inv_mill(64)'] = spot_df['io_inv_imp_mill(64)'] + spot_df['io_inv_dom_mill(64)']
-    spot_dict['io_on_off_arb'] = vat_adj(spot_df['pbf_cfd'] - 25) / spot_df['usdcnh_spot'] / 0.915 / 61.5 * 62 \
-                               - spot_df['plt62']
+
     spot_dict['margin_hrc_pbf'] = spot_df['hrc_sh'] - 1.7 * spot_df['pbf_cfd'] - 0.45 * spot_df['coke_xuzhou_xb']
     spot_dict['margin_hrc_macf'] = spot_df['hrc_sh'] - 1.7 * spot_df['macf_cfd'] - 0.45 * spot_df['coke_xuzhou_xb']
     spot_dict['strip_hsec'] = spot_df['strip_3.0x685'] - spot_df['hsec_400x200']

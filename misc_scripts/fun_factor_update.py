@@ -34,6 +34,8 @@ single_factors = {
     'io_inv_rmv_ratio_1y': ['i'],
     'ioarb_px_hlr': ['rb', 'hc', 'i'],
     'ioarb_px_hlrhys': ['rb', 'hc', 'i'],
+    'nmf_arb_hlr': ['rb', 'hc', 'i'],
+    'macf_arb_hlr': ['rb', 'hc', 'i'],
     'billet_inv_hlr_lt': ['rb', 'hc', 'i'],
     'billet_inv_lyoy_hlr_lt': ['rb', 'hc', 'i'],
     'steel_sinv_lyoy_zs': ['rb', 'hc', 'i', 'FG', 'v'],
@@ -97,12 +99,16 @@ factors_by_asset = {
     "ryield_st_zsa": BROAD_MKTS,
     "ryield_lt_zsa": BROAD_MKTS,
     "basmom20_ema": BROAD_MKTS,
+    "basmom40_ema": BROAD_MKTS,
     "basmom60_ema": BROAD_MKTS,
     "basmom120_ema": BROAD_MKTS,
     "mom_hlr_st": BROAD_MKTS,
-    "mom_hlr_lt": BROAD_MKTS,
-    "mom_momma20": BROAD_MKTS,
+    #"mom_hlr_lt": BROAD_MKTS,
+    #"mom_momma20": BROAD_MKTS,
     "mom_momma240": BROAD_MKTS,
+    "cclr_mom_sgnma": BROAD_MKTS,
+    "colr_mom_sgnma": BROAD_MKTS,
+
     'bond_mr_st_qtl': ['T', 'TF'],    
     'bond_tf_lt_qtl': ['T', 'TF', 'TL'],
     'bond_carry_ma': ['T', 'TL'],
@@ -159,6 +165,24 @@ factors_by_spread2 = {
     'rbhc_sinv_lratio_mds': ['spd_rb_hc_c1'],
     'rbhc_sinv_lratio_lyoy_mds': ['spd_rb_hc_c1'],
     'rbhc_rbsales_lyoy_zs': ['spd_rb_hc_c1'],
+    'rbhc_eaf_util_lyoy_zs': ['spd_rb_hc_c1'],
+    'rbhc_eaf_util_yoy_zs': ['spd_rb_hc_c1'],
+}
+
+factors_by_spread3 = {
+    # 'rbhc_px_diff_mds': [('rbc1=hcc1', 60)],
+    # 'rbhc_px_diff_lyoy_mds': [('rbc1=hcc1', 60)],
+    # 'rbhc_phycarry_diff_zs': [('rbc1=hcc1', 60)],
+    # 'rbhc_basmom_diff_hlr': [('rbc1=hcc1', 60)],
+    # 'rbhc_steel_spd_mds': [('rbc1=hcc1', 60)],
+    # 'rbhc_steel_spd_lyoy_mds': [('rbc1=hcc1', 60)],
+    # 'rbhc_dmd_ratio_mds': [('rbc1=hcc1', 60)],
+    # 'rbhc_dmd_ratio_lyoy_mds': [('rbc1=hcc1', 60)],
+    # 'rbhc_sinv_chg_mds': [('rbc1=hcc1', 60)],
+    # 'rbhc_sinv_chg_lyoy_mds': [('rbc1=hcc1', 60)],
+    # 'rbhc_sinv_lratio_mds': [('rbc1=hcc1', 60)],
+    # 'rbhc_sinv_lratio_lyoy_mds': [('rbc1=hcc1', 60)],
+    # 'rbhc_rbsales_lyoy_zs': [('rbc1=hcc1', 60)],
 }
 
 spread_config = {
@@ -171,6 +195,8 @@ factors_by_beta_neutral = {
     'io_pinv31_lvl_zsa': [('rb', 'i', 1), ('hc', 'i', 1)],
     'io_pinv45_lvl_hlr': [('rb', 'i', 1), ('hc', 'i', 1)],
     'ioarb_spd_qtl_1y': [('rb', 'i', 1), ('hc', 'i', 1)],
+    'nmf_arb_spd_zs': [('rb', 'i', 1), ('hc', 'i', 1)],
+    'macf_arb_spd_zs': [('rb', 'i', 1), ('hc', 'i', 1)],
     'fef_c1_c2_ratio_spd_qtl': [('rb', 'i', 1), ('hc', 'i', 1)],
     'fef_basmom5_spd_qtl': [('rb', 'i', 1), ('hc', 'i', 1)],
     'auag_csi500_zs_st': [('au', 'ag', 1),],
@@ -735,24 +761,25 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
     except:
         price_df = load_hist_fut_prices(markets, start_date=price_start, end_date=run_date, 
                                         roll_name=roll_name, nb_cont=2, freq=freq)
-        spd_list = [price_df]
-        for spd_name in spread_config:
-            asset_list = spread_config[spd_name][0]
-            roll_rule=spread_config[spd_name][2]   
-            nb_cont=spread_config[spd_name][3]
-            leg1_df = nearby(asset_list[0][0], n=nb_cont,
-                             start_date=price_start,
-                             end_date=run_date,
-                             roll_rule=roll_rule, freq='d', shift_mode=1)
-            leg1_df.index = pd.to_datetime(leg1_df.index)
-            leg2_df = nearby(asset_list[1][0], n=nb_cont,
-                             start_date=price_start,
-                             end_date=run_date,
-                             roll_rule=roll_rule, freq='d', shift_mode=1)
-            leg2_df.index = pd.to_datetime(leg2_df.index) 
-            for field in ['close', 'shift', 'open']:
-                spd_list.append((leg1_df[field]*asset_list[0][1] + leg2_df[field]*asset_list[1][1]).to_frame((spd_name, field)))                    
-        price_df = pd.concat(spd_list, axis=1)
+        if len(spread_config) > 0:
+            spd_list = [price_df]
+            for spd_name in spread_config:
+                asset_list = spread_config[spd_name][0]
+                roll_rule=spread_config[spd_name][2]   
+                nb_cont=spread_config[spd_name][3]
+                leg1_df = nearby(asset_list[0][0], n=nb_cont,
+                                start_date=price_start,
+                                end_date=run_date,
+                                roll_rule=roll_rule, freq='d', shift_mode=1)
+                leg1_df.index = pd.to_datetime(leg1_df.index)
+                leg2_df = nearby(asset_list[1][0], n=nb_cont,
+                                start_date=price_start,
+                                end_date=run_date,
+                                roll_rule=roll_rule, freq='d', shift_mode=1)
+                leg2_df.index = pd.to_datetime(leg2_df.index) 
+                for field in ['close', 'shift', 'open']:
+                    spd_list.append((leg1_df[field]*asset_list[0][1] + leg2_df[field]*asset_list[1][1]).to_frame((spd_name, field)))                    
+            price_df = pd.concat(spd_list, axis=1)
         price_df.to_parquet(f"C:/dev/data/fut_eod_%s.parquet" % run_date.strftime("%Y%m%d"))
 
     logging.info("loading fundamental data ... ")
@@ -798,6 +825,7 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
             data_dict[f'{asset}_basmom5'] = data_dict[f'{asset}_basmom'].dropna().rolling(5).sum() 
             data_dict[f'{asset}_basmom10'] = data_dict[f'{asset}_basmom'].dropna().rolling(10).sum() 
             data_dict[f'{asset}_basmom20'] = data_dict[f'{asset}_basmom'].dropna().rolling(20).sum() 
+            data_dict[f'{asset}_basmom40'] = data_dict[f'{asset}_basmom'].dropna().rolling(40).sum()
             data_dict[f'{asset}_basmom60'] = data_dict[f'{asset}_basmom'].dropna().rolling(60).sum() 
             data_dict[f'{asset}_basmom120'] = data_dict[f'{asset}_basmom'].dropna().rolling(120).sum() 
         if asset in commod_phycarry_dict:
@@ -869,15 +897,31 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
                                                 curr_date=run_date)        
         for spd_name in factors_by_spread2[factor_name]:
             asset_list = spread_config[spd_name][0]
-            vol_win = spread_config[spd_name][1]
+            vwin = spread_config[spd_name][1]
             roll_label = spread_config[spd_name][2]
             nb_cont = spread_config[spd_name][3]
-            vol_ts = price_df[(spd_name, 'close')].diff().rolling(vol_win).std()
+            vol_ts = price_df[(spd_name, 'close')].diff().rolling(vwin).std()
             for asset, weight in asset_list: 
                 spd_vol = vol_ts
                 save_signal_to_db(asset, 'spd_vol', spd_vol[update_start:], run_date=cutoff_date, roll_label=roll_label, freq='d1', flavor=flavor) 
                 save_signal_to_db(asset, factor_name, weight*signal_ts[update_start:], run_date=cutoff_date, flavor=flavor)
 
+    for factor_name in factors_by_spread3.keys():
+        logging.info(f"calculating factor={factor_name}")
+        signal_ts = get_funda_signal_from_store(spot_df, factor_name,
+                                                price_df=price_df,
+                                                curr_date=run_date)
+        for spd_name, spd_win in factors_by_spread3[factor_name]:
+            asset_pair = spd_name.split('=')
+            asset1_ret = price_df[(asset_pair[0], 'close')].dropna().pct_change()
+            asset1_ret = asset1_ret/asset1_ret.rolling(vol_win).std()
+            asset2_ret = price_df[(asset_pair[1], 'close')].dropna().pct_change()
+            asset2_ret = asset2_ret/asset2_ret.rolling(vol_win).std()
+            spd_ret = asset1_ret - asset2_ret
+            spd_vol = spd_ret.rolling(spd_win).std()
+            sig_ts = signal_ts/spd_vol
+            save_signal_to_db(asset_pair[0][:-2], factor_name, sig_ts[update_start:], run_date=cutoff_date, flavor=flavor) 
+            save_signal_to_db(asset_pair[1][:-2], factor_name, -sig_ts[update_start:], run_date=cutoff_date, flavor=flavor)
 
     logging.info("updating factor for beta neutral ratio ...")
     beta_win = 244
