@@ -379,7 +379,7 @@ index_map = {
     "S012116534": "coke_inv_4ports", # 20140801
     "S006136000": "ckc_inv_all",
 
-    'S005814718': 'rebar_inv_social',
+    'S005580634': 'rebar_inv_social',
     'S005580635': 'hrc_inv_social',
     'S005580633': 'wirerod_inv_social',
     'S005580639': 'crc_inv_social',
@@ -980,6 +980,13 @@ def process_spot_df(spot_df, adjust_time=False):
     spot_dict['wirerod_app_dmd'] = spot_df['wirerod_prod_all'] - spot_df['wirerod_inv_all'].dropna().diff()
     spot_dict['hrc_app_dmd'] = spot_df['hrc_prod_all'] - spot_df['hrc_inv_all'].dropna().diff()
     spot_dict['crc_app_dmd'] = spot_df['crc_prod_all'] - spot_df['crc_inv_all'].dropna().diff()
+    spot_dict['long_demand'] = spot_dict['rebar_app_dmd'] + spot_dict['wirerod_app_dmd']
+    spot_dict['flat_demand'] = spot_dict['hrc_app_dmd'] + spot_dict['crc_app_dmd']
+    spot_dict['steel_demand'] = spot_dict['flat_demand'] + spot_dict['long_demand']
+    spot_dict['long_social_stockdays'] = spot_dict['long_social_inv'].dropna()/spot_dict['long_demand'].dropna().rolling(52).mean()*7
+    spot_dict['flat_social_stockdays'] = spot_dict['flat_social_inv'].dropna()/spot_dict['flat_demand'].dropna().rolling(52).mean()*7
+    spot_dict['steel_social_stockdays'] = spot_dict['steel_social_inv'].dropna()/spot_dict['steel_demand'].dropna().rolling(52).mean()*7
+    spot_dict['steel_total_stockdays'] = spot_dict['steel_inv_all'].dropna()/spot_dict['steel_demand'].dropna().rolling(52).mean()*7
     spot_dict['rb_hc_dmd_diff'] = spot_dict['rebar_app_dmd'] - spot_dict['hrc_app_dmd']
     spot_dict['rb_hc_dmd_ratio'] = spot_dict['rebar_app_dmd']/spot_dict['hrc_app_dmd']
     spot_dict['rb_hc_sinv_chg_diff'] = spot_df['rebar_inv_social'].dropna().diff() - spot_df['hrc_inv_social'].dropna().diff()
