@@ -133,7 +133,6 @@ index_map = {
     'S002808963': 'plt65',
     'S000020892': 'hrc_sh',
     'S002859801': 'hrc_tj',
-
     'S000020868': 'rebar_sh',
     'S002917430': 'plate_8mm',
     'S000020903': 'crc_sh',
@@ -142,6 +141,14 @@ index_map = {
     'S002917688': 'strip_3.0x685',
     'S002917771': 'pipe_1.5x3.25',
     'S002917646': 'hsec_400x200',
+    'S021281530': 'rebar_eaf_prodcost_base_cn',
+    'S021281525': 'rebar_eaf_prodcost_base_east',
+    'S021281538': 'rebar_eaf_prodcost_pk_cn',
+    'S021281533': 'rebar_eaf_prodcost_pk_east',
+    'S021281546': 'rebar_eaf_prodcost_opk_cn',
+    'S021281541': 'rebar_eaf_prodcost_opk_east',
+    'S021281570': 'rebar_eaf_margin_base_cn',
+    'S021281565': 'rebar_eaf_margin_base_east',
 
     'S002911091': 'pbf_cfd',
     'S002911136': 'pbf_qd',
@@ -216,6 +223,7 @@ index_map = {
     'S005961128': 'io_inv_45ports',
     'S002837160': 'io_inv_47ports',
     'S005961196': 'io_inv_31ports_trade',
+    'S010998475': 'io_inv_sb_ausbrl_7ports',
 
     'S004226161': 'io_inv_imp_mill(64)',
     'S004226163': 'io_inv_dom_mill(64)',
@@ -407,6 +415,14 @@ index_map = {
     'S006154238': 'eaf_util_87mills',
     'S006154248': 'eaf_util_all',
     'S006154226': 'eaf_prodcost_east',
+    'S021277623': 'scrap_use_mill_eaf',
+    'S021374817': 'scrap_use_mill_all',
+    'S021277629': 'scrap_ratio_mill_all',
+    'S021374832': 'scrap_inv_mill_all',
+    'S021277634': 'scrap_inv_mill_eaf',
+    'S021182444': 'scrap_use_300mill',
+    'S021182443': 'scrap_arr_300mill',
+    'S021182446': 'scrap_invdays_300mill',
     # base
     'S005808359': 'cu_lme_3m_close',
     'S005808360': 'al_lme_3m_close',
@@ -1000,7 +1016,8 @@ def process_spot_df(spot_df, adjust_time=False):
     spot_dict['gi_billet'] = spot_df['gi_0.5_sh'] - spot_df['billet_ts']
     spot_dict['rb_hc_diff'] = spot_df['rebar_sh'] - spot_df['hrc_sh']
     spot_dict['rb_hc_steel_spd'] = spot_dict['rebar_billet'] - spot_dict['crc_hrc']
-
+    spot_dict["coke_inv_3ports"] = spot_df[["coke_inv_ports_rz", "coke_inv_ports_tj", "coke_inv_ports_lyg"]].sum(axis=1, skipna=False).dropna()
+    
     port_fee = 25
     spot_dict['import_arb_pbf'] = vat_adj(spot_df['pbf_qd'] - port_fee)/spot_df['usdcnh_spot']/0.915 - spot_df['pbf_sb']
     spot_dict['import_arb_nmf'] = vat_adj(spot_df['nmf_qd'] - port_fee)/spot_df['usdcnh_spot']/0.917 - spot_df['nmf_sb']

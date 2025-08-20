@@ -130,6 +130,8 @@ factors_by_asset = {
     'base_cifprem_1y_zs': ['cu', 'al', 'zn', 'ni'],
     'base_phybasmom_1m_zs': ['cu', 'al', 'zn', 'ni', 'pb', 'sn'],
     'base_phybasmom_1y_zs': ['cu', 'al', 'zn', 'ni', 'pb', 'sn'],
+    'ferr_pinv_hlr_mt': ['j', 'jm', 'i', 'rb', 'hc'],
+    'ferr_pinv_hlr_yr': ['j', 'jm', 'i', 'rb', 'hc'],
     'metal_pbc_ema': ['cu', 'al', 'zn', 'ni', 'ss', 'sn', 'ao', #'si', 'SM', 'SF', 'pb', 
                       'rb', 'hc', 'i', 'j', 'jm', 'v', 'FG', 'SA', "au", "ag"],
     'metal_mom_hlrhys': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si', 'lc', 'au', 'ag',
@@ -198,8 +200,8 @@ factors_by_beta_neutral = {
     'macf_spd2_qtl': [('i', 'rb', 1), ('i', 'hc', 1)],
     'steel_sinv_spd2_hlr_1m': [('i', 'rb', 1), ('i', 'hc', 1)],
     'steel_sinv_spd2_hlr_3m': [('i', 'rb', 1), ('i', 'hc', 1)],
-    'io_pinv31_lvl_zsa': [('rb', 'i', 1), ('hc', 'i', 1)],
     'io_pinv45_lvl_hlr': [('rb', 'i', 1), ('hc', 'i', 1)],
+    'ckc_pinv_spd_hlr': [('jm', 'rb', 1), ('jm', 'hc', 1)],
     'ioarb_spd_qtl_1y': [('rb', 'i', 1), ('hc', 'i', 1)],
     'nmf_arb_spd_zs': [('rb', 'i', 1), ('hc', 'i', 1)],
     'macf_arb_spd_zs': [('rb', 'i', 1), ('hc', 'i', 1)],
@@ -931,7 +933,7 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
 
     logging.info("updating factor for beta neutral ratio ...")
     beta_win = 244
-    asset_pairs = [('rb', 'i'), ('hc', 'i'), ('i', 'rb'), ('i', 'hc'), ('j', 'i'), ('jm', 'i'), 
+    asset_pairs = [('rb', 'i'), ('hc', 'i'), ('i', 'rb'), ('i', 'hc'), ('j', 'i'), ('jm', 'i'), ('jm', 'rb'), ('jm', 'hc'),  
                    ('au', 'ag'), ('au', 'cu'), ('au', 'rb'), ('SF', 'SM')]
     beta_dict = {}
     for trade_asset, index_asset in asset_pairs:
