@@ -171,8 +171,8 @@ factors_by_spread2 = {
     'rbhc_sinv_lratio_mds': ['spd_rb_hc_c1'],
     'rbhc_sinv_lratio_lyoy_mds': ['spd_rb_hc_c1'],
     'rbhc_rbsales_lyoy_zs': ['spd_rb_hc_c1'],
-    'rbhc_eaf_util_lyoy_zs': ['spd_rb_hc_c1'],
-    'rbhc_eaf_util_yoy_zs': ['spd_rb_hc_c1'],
+    'rbhc_eaf_util_lyoy_mds': ['spd_rb_hc_c1'],
+    # 'rbhc_eaf_util_yoy_zs': ['spd_rb_hc_c1'],
 }
 
 factors_by_spread3 = {

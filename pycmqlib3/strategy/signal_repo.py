@@ -166,13 +166,21 @@ signal_store = {
                        ['io_invdays_imp_mill(64)', 'qtl', [20, 40, 2], '', 'pct_change', True, 'price', 'sma1', 120, [-2,2]]],
     'io_invdays_lyoy': [['hc', 'i'],
                         ['io_invdays_imp_mill(64)', 'qtl', [2, 4], 'lunar_yoy_day', 'pct_change', True, 'W-Thu', "ema3", 120, [-2,2]]],
-    # 'io_pinv31_lvl_zsa': [['rb_i', 'hc_i'],
-    #                       ['io_inv_45ports', 'zscore', [8, 56, 4], '', '', True, '', "sma2", 120, [-2,2]]],
+
     'io_pinv45_lvl_hlr': [['rb_i', 'hc_i'],
                           ['io_inv_45ports', 'hlratio', [8, 56, 4], '', '', True, '', "ema1", 120, [-2,2]]],
     'ckc_pinv_spd_hlr': [['jm_rb', 'jm_hc'],
                         ['ckc_inv_6ports', 'hlratio', [40, 260, 5], '', '', False, 'price', "ema1", 120, [-2,2]]], 
-                          
+
+    'scrap_arr_eaf_spd_lyoy_mds': [
+        ['hc_i'], ['scrap_arrival_mill_49eaf', 'ma_dff_sgn', [30, 50, 2], 'lunar_yoy_day', 'diff', True, 'price', 'ema3', 120, [-2, 2]]], 
+    'scrap_arr_bof_spd_lyoy_mds': [
+        ['hc_i'], ['scrap_arrival_mill_70bof', 'ma_dff_sgn', [30, 50, 2], 'lunar_yoy_day', 'diff', True, 'price', 'ema3', 120, [-2, 2]]], 
+    'scrap_inv_use_ratio_spd_lyoy_mds': [
+        ['hc_i'], ['scrap_inv_use_total', 'ma_dff_sgn', [4, 8, 1], 'lunar_yoy_day', 'diff', False, '', 'ema5', 120, [-2, 2]]], 
+    'rebar_bof_eaf_diff_ema': [
+        ['i_rb', 'i_hc'], ['rebar_bof_eaf_diff', 'ema', [1, 2, 1], '', '', False, 'price', 'ema1', 60, [-2, 2]]],
+    
     'long_inv_mqs_st': [['rb', 'hc', 'i'],
                         ['long_inv_social', 'ma_dff_sgn', [40, 60, 2], '', '', False, 'price', "sma2", 120, [-2,2]]],
     'long_inv_mqs_lt': [['rb', 'hc', 'i'],
@@ -279,13 +287,18 @@ signal_store = {
                           ['rb_hc_sinv_lratio', 'ma_dff_sgn', [2, 4, 1], '', '', False, '', "", 120, [-2,2]]],
     'rbhc_sinv_lratio_lyoy_mds': [['spd_rb_hc_c1'],
                                ['rb_hc_sinv_lratio', 'ma_dff_sgn', [2, 4, 1], 'lunar_yoy_day', 'diff', False, '', "", 120, [-2,2]]],
-    'rbhc_rbsales_lyoy_zs': [['spd_rb_hc_c1'],
+    'rbhc_rbsales_lyoy_zs': [['spd_rb_hc_c1', 'rb_hc'],
                             ['consteel_dsales_mysteel', 'zscore', [20, 30, 2],
                              'lunar_yoy_day|ema1', 'diff', True, 'price', "ema2|buf0.3", 120, [-2,2]]],
-    'rbhc_eaf_util_lyoy_zs': [['spd_rb_hc_c1'],
-                              ["eaf_util_all", 'zscore', [20, 52, 2], 'lunar_yoy_day', 'diff', False, '', "", 120, [-2,2]]],
-    'rbhc_eaf_util_yoy_zs': [['spd_rb_hc_c1'],
-                             ["eaf_util_all", 'zscore', [20, 52, 2], 'cal_yoy', 'diff', False, '', "", 120, [-2,2]]],
+    'rbhc_eaf_util_lyoy_mds': [['spd_rb_hc_c1', 'rb_hc'],
+                               ["eaf_util_all", 'ma_dff_sgn', [20, 40, 2], 'lunar_yoy_day', 'diff', False, '', "", 120, [-2,2]]],
+    'rbhc_scrap_use_lyoy_mds': [['spd_rb_hc_c1', 'rb_hc'],
+                                ["scrap_use_mill_49eaf", 'ma_dff_sgn', [16, 28, 1], 'lunar_yoy_day', 'diff', False, '', "", 120, [-2,2]]],
+    'rbhc_scrap_inv_use_lyoy_mds': [['spd_rb_hc_c1', 'rb_hc'],
+                                    ["scrap_inv_use_49eaf", 'ma_dff_sgn', [16, 28, 1], 'lunar_yoy_day', 'diff', True, '', "", 120, [-2,2]]],
+    
+    # 'rbhc_eaf_util_yoy_mds': [['spd_rb_hc_c1', 'rb_hc'],
+    #                           ["eaf_util_all", 'ma_dff_sgn', [20, 50, 2], 'cal_yoy', 'diff', False, '', "", 120, [-2,2]]],
                              
     # 'rbsales_lyoy_spd_st': [['rb-hc'],
     #                         ['consteel_dsales_mysteel', 'zscore', [20, 30, 1],
