@@ -1,6 +1,7 @@
 import numpy as np
 import json
 import os
+import re
 import pathlib
 import math
 import zipfile
@@ -595,16 +596,67 @@ def combine_data_wt_store(src_folder, dst_folder, target_folder, curr_date, time
                 save_ticks_to_dsb(src_df, tick_settings)
 
                 
-def zip_wt_dir(path, filename, cutoff=None, file_types=['.dsb', 'csv']):
+def zip_wt_dir(path, filename, cutoff: datetime.date):
+    """
+    Zip selected files under `path` based on cutoff date.
+
+    Assumes contracts use 4-digit YYMM format in filenames.
+
+    Rules:
+      - day/, min1/, min5/: include contract files (.dsb) with YYMM >= cutoff YYMM
+      - snapshot/: include CSV files YYYYMMDD.csv >= cutoff date
+      - ticks/: include files under YYYYMMDD subfolders >= cutoff date
+    """
+    cutoff_yymm = (cutoff.year % 100) * 100 + cutoff.month   # e.g. 2025-08 -> 2508
+    cutoff_ymd = cutoff.year * 10000 + cutoff.month * 100 + cutoff.day
+
+    contract_pattern = re.compile(r"([A-Za-z]+)(\d{4})\.dsb$")
+    snapshot_pattern = re.compile(r"(\d{8})\.csv$")
+    ymd_pattern = re.compile(r"^\d{8}$")  # for ticks subfolder names
+
+    added_count = 0
+
     with zipfile.ZipFile(filename, 'w', zipfile.ZIP_DEFLATED) as ziph:
         for root, dirs, files in os.walk(path):
+            rel_dir = os.path.relpath(root, path)
+            parts = rel_dir.split(os.sep)
+            base_folder = parts[0]
+
             for file in files:
-                if file.endswith(tuple(file_types)):
-                    time_mod = os.path.getmtime(f'{root}/{file}')
-                    time_mod = datetime.datetime.fromtimestamp(time_mod)
-                    if cutoff and (time_mod.date() < cutoff):
+                file_path = os.path.join(root, file)
+                arcname = os.path.relpath(file_path, path)
+
+                # --- Case 1: snapshot ---
+                if base_folder == "snapshot":
+                    m = snapshot_pattern.match(file)
+                    if not m:
                         continue
-                    ziph.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), os.path.join(path, '..')))
+                    file_date = int(m.group(1))  # YYYYMMDD
+                    if file_date >= cutoff_ymd:
+                        ziph.write(file_path, arcname)
+                        added_count += 1
+
+                # --- Case 2: day/min1/min5 ---
+                elif base_folder in ("day", "min1", "min5"):
+                    m = contract_pattern.match(file)
+                    if not m:
+                        continue
+                    digits = int(m.group(2))  # YYMM
+                    if digits >= cutoff_yymm:
+                        ziph.write(file_path, arcname)
+                        added_count += 1
+
+                # --- Case 3: ticks ---
+                elif base_folder == "ticks" and len(parts) >= 3:
+                    # parts = ["ticks", exch, YYYYMMDD, ...]
+                    date_folder = parts[2]
+                    if ymd_pattern.match(date_folder):
+                        folder_date = int(date_folder)
+                        if folder_date >= cutoff_ymd:
+                            ziph.write(file_path, arcname)
+                            added_count += 1
+
+    print(f"Zipping complete. Total files added: {added_count}")
 
 
 def update_wt_store(base_folder, update_folder, cutoff=None):
