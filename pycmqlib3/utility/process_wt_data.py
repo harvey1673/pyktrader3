@@ -124,6 +124,10 @@ def load_fut_by_product(code, start_date, end_date, freq='d', folder_loc='C:/dev
         period = 'min1'
     elif freq in ['m5']:
         period = 'min5'
+    if period == 'day':
+        is_day = True
+    else:
+        is_day = False
     if product == 'MA':
         prod_keys = ['ME', 'MA']
     elif product == 'ZC':
@@ -139,7 +143,7 @@ def load_fut_by_product(code, start_date, end_date, freq='d', folder_loc='C:/dev
         prod = cont[:2] if exch in ['CZCE', ] else cont[:-4]
         if prod not in prod_keys:
             continue
-        dst_df = dtHelper.read_dsb_bars(f'{src_path}/{file}')
+        dst_df = dtHelper.read_dsb_bars(f'{src_path}/{file}', isDay=is_day)
         if dst_df:
             dst_df = dst_df.to_df()
             dst_df = dst_df.rename(columns={'hold': 'openInterest', 'diff': 'diff_oi'})
@@ -164,7 +168,11 @@ def load_hist_bars_to_df(code, start_date=None, end_date=None,
         period = 'min1'
     elif freq in ['m5']:
         period = 'min5'
-    mdf = dtHelper.read_dsb_bars(f'{folder_loc}/{period}/{exch}/{instID}.dsb')
+    if period == 'day':
+        is_day = True
+    else:
+        is_day = False
+    mdf = dtHelper.read_dsb_bars(f'{folder_loc}/{period}/{exch}/{instID}.dsb', isDay=is_day)
     if mdf:
         mdf = mdf.to_df().rename(columns={'hold': 'openInterest', 'diff': 'diff_oi'})
         mdf = convert_wt_data(mdf, instID, freq=freq)
@@ -191,7 +199,11 @@ def load_bars_by_code(code, start_date=None, end_date=None,
         period = 'min1'
     elif freq in ['m5']:
         period = 'min5'
-    mdf = dtHelper.read_dsb_bars(f'{folder_loc}/{period}/{exch}/{instID}.dsb')
+    if period == 'day':
+        is_day = True
+    else:
+        is_day = False
+    mdf = dtHelper.read_dsb_bars(f'{folder_loc}/{period}/{exch}/{instID}.dsb', isDay=is_day)
     if mdf:
         mdf = mdf.to_df().rename(columns={'hold': 'openInterest', 'diff': 'diff_oi'})
         mdf = mdf[(mdf['openInterest'] > 0) & (mdf['date'] < 20990000)]
@@ -282,7 +294,8 @@ def save_bars_to_dsb(df, contract, folder_loc = '.', period = 'm1'):
     buffer = BUFFER()
     df.apply(assign, buffer=buffer)
     pathlib.Path(folder_loc).mkdir(parents=True, exist_ok=True)
-    dtHelper.store_bars(barFile=f'{folder_loc}/{contract}.dsb', firstBar=buffer, count=len(df), period=period)
+    res = dtHelper.store_bars(barFile=f'{folder_loc}/{contract}.dsb', firstBar=buffer, count=len(df), period=period)
+    return res
 
 
 def save_ticks_to_dsb(tdf, tick_settings):
@@ -405,10 +418,10 @@ def save_bars_to_wt_store(exchange_list=['DCE', 'CZCE', 'SHFE', 'INE', 'CFFEX'],
                         ddf = ddf[dcol_list]
                         filename = '%s/%s/%s/%s.dsb' % (src_folder, period, exch, cont)
                         if cutoff_date:
-                            curr_df = dtHelper.read_dsb_bars(filename)
+                            curr_df = dtHelper.read_dsb_bars(filename, isDay=True)
                             if curr_df:
                                 curr_df = curr_df.to_df().rename(columns={'bartime': 'time', 'volume': 'vol'})
-                                curr_df['time'] = curr_df['time'] - 199000000000
+                                curr_df['time'] = 0
                                 curr_df = curr_df[curr_df['date'] >= cutoff_date]
                                 ddf = ddf[ddf['date'] < cutoff_date]
                                 ddf = pd.concat([ddf, curr_df])
