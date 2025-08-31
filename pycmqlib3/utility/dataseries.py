@@ -205,3 +205,14 @@ def nearby(code, n=1, start_date=None, end_date=None,
                         df[ticker] = df[ticker] * shift
         df = pd.concat([df, new_df])
     return df.rename(columns={'instID': 'contract'})
+
+
+if __name__ == "__main__":
+    xdf = nearby("rb", 
+                 1,
+                 start_date=datetime.date(2025,5,1),
+                 end_date=datetime.date(2025,8,15),
+                 shift_mode=2,
+                 freq='d1',
+                 roll_name='hot')
+    print(xdf)

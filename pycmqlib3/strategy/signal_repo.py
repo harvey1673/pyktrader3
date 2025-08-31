@@ -291,7 +291,7 @@ signal_store = {
                             ['consteel_dsales_mysteel', 'zscore', [20, 30, 2],
                              'lunar_yoy_day|ema1', 'diff', True, 'price', "ema2|buf0.3", 120, [-2,2]]],
     'rbhc_eaf_util_lyoy_mds': [['spd_rb_hc_c1', 'rb_hc'],
-                               ["eaf_util_all", 'ma_dff_sgn', [20, 40, 2], 'lunar_yoy_day', 'diff', False, '', "", 120, [-2,2]]],
+                               ["eaf_util_all", 'ma_dff_sgn', [20, 52, 1], 'lunar_yoy_day', 'diff', False, '', "", 120, [-2,2]]],
     'rbhc_scrap_use_lyoy_mds': [['spd_rb_hc_c1', 'rb_hc'],
                                 ["scrap_use_mill_49eaf", 'ma_dff_sgn', [16, 28, 1], 'lunar_yoy_day', 'diff', False, '', "", 120, [-2,2]]],
     'rbhc_scrap_inv_use_lyoy_mds': [['spd_rb_hc_c1', 'rb_hc'],
