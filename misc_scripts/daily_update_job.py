@@ -13,7 +13,7 @@ from misc_scripts.fun_factor_update import update_db_factor
 from misc_scripts.auto_update_data_xl import update_data_from_xl
 from misc_scripts.port_position_update import update_port_pos
 from pycmqlib3.utility.email_tool import send_html_by_smtp
-from pycmqlib3.utility.process_wt_data import save_bars_to_dsb
+from pycmqlib3.utility.process_wt_data import save_bars_to_dsb, read_wt_dsb_bars
 from pycmqlib3.utility import dbaccess, base
 from wtpy.wrapper import WtDataHelper
 if not sys.warnoptions:
@@ -237,9 +237,12 @@ def update_wt_from_db(tday):
                 ddf = ddf[dcol_list]
                 filename = '%s/%s/%s/%s.dsb' % (dst_folder, period, exch, cont)
                 if cutoff_date:
-                    curr_df = dtHelper.read_dsb_bars(filename)
+                    curr_df = read_wt_dsb_bars(dtHelper, filename, is_day=False)  
                     if curr_df:
-                        curr_df = curr_df.to_df().rename(columns={'bartime': 'time', 'volume': 'vol'})
+                        curr_df = curr_df.to_df().rename(columns={'bartime': 'time', 
+                                                                  'money': 'turnover',
+                                                                  'hold': 'open_interest',
+                                                                  })
                         curr_df['time'] = curr_df['time'] - 199000000000
                         curr_df = curr_df[curr_df['date'] < cutoff_date]
                         ddf = ddf[ddf['date'] >= cutoff_date]

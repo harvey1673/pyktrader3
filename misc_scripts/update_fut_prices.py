@@ -233,7 +233,7 @@ if __name__ == "__main__":
         tday = now.date()
         if (not is_workday(tday, 'CHN')) or (now.time() < datetime.time(17, 00, 0)):
             tday = day_shift(tday, '-1b', CHN_Holidays)
-    refresh_saved_fut_prices(run_date=tday)
+    refresh_saved_fut_prices(run_date=tday, use_marker=False)
     _ = load_saved_fut(tday=tday, freq='d')
     #_ = load_saved_fut(tday=tday, freq='m', cont='c1')
     #_ = load_saved_fut(tday=tday, freq='m', cont='c2')

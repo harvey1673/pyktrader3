@@ -9,7 +9,7 @@ import shutil
 import pandas as pd
 import datetime
 from os import listdir
-from os.path import isfile, join
+from os.path import isfile, join, exists
 from pycmqlib3.utility import misc
 from pycmqlib3.utility import dbaccess
 import pycmqlib3.analytics.data_handler as dh
@@ -20,6 +20,15 @@ from wtpy.WtCoreDefs import WTSBarStruct, WTSTickStruct
 
 def assign(procession, buffer):
     tuple(map(lambda x: setattr(buffer[x[0]], procession.name, x[1]), enumerate(procession)))
+
+
+def read_wt_dsb_bars(dtHelper, filename, is_day=True):
+    if exists(filename):
+        mdf = dtHelper.read_dsb_bars(filename, isDay=is_day)
+    else:
+        print(f"File '{filename}' does not exist.")
+        mdf = None
+    return mdf
 
 
 def wtcode_to_code(wtcode):
@@ -144,7 +153,7 @@ def load_fut_by_product(code, start_date, end_date, freq='d', folder_loc='C:/dev
         prod = cont[:2] if exch in ['CZCE', ] else cont[:-4]
         if prod not in prod_keys:
             continue
-        dst_df = dtHelper.read_dsb_bars(f'{src_path}/{file}', isDay=is_day)
+        dst_df = read_wt_dsb_bars(dtHelper, f'{src_path}/{file}', is_day=is_day)
         if dst_df:
             dst_df = dst_df.to_df()
             dst_df = dst_df.rename(columns={'hold': 'openInterest', 'diff': 'diff_oi'})
@@ -173,7 +182,7 @@ def load_hist_bars_to_df(code, start_date=None, end_date=None,
         is_day = True
     else:
         is_day = False
-    mdf = dtHelper.read_dsb_bars(f'{folder_loc}/{period}/{exch}/{instID}.dsb', isDay=is_day)
+    mdf = read_wt_dsb_bars(dtHelper, f'{folder_loc}/{period}/{exch}/{instID}.dsb', is_day=is_day)
     if mdf:
         mdf = mdf.to_df().rename(columns={'hold': 'openInterest', 'diff': 'diff_oi'})
         mdf = convert_wt_data(mdf, instID, freq=freq)
@@ -204,7 +213,7 @@ def load_bars_by_code(code, start_date=None, end_date=None,
         is_day = True
     else:
         is_day = False
-    mdf = dtHelper.read_dsb_bars(f'{folder_loc}/{period}/{exch}/{instID}.dsb', isDay=is_day)
+    mdf = read_wt_dsb_bars(dtHelper, f'{folder_loc}/{period}/{exch}/{instID}.dsb', is_day=is_day)
     if mdf:
         mdf = mdf.to_df().rename(columns={'hold': 'openInterest', 'diff': 'diff_oi'})
         mdf = mdf[(mdf['openInterest'] > 0) & (mdf['date'] < 20990000)]
@@ -368,9 +377,12 @@ def save_bars_to_wt_store(exchange_list=['DCE', 'CZCE', 'SHFE', 'INE', 'CFFEX'],
                         period = 'min1'
                         filename = '%s/%s/%s/%s.dsb' % (src_folder, period, exch, cont)
                         if cutoff_date:
-                            curr_df = dtHelper.read_dsb_bars(filename)
+                            curr_df = read_wt_dsb_bars(dtHelper, filename, is_day=False)
                             if curr_df:
-                                curr_df = curr_df.to_df().rename(columns={'bartime': 'time', 'volume': 'vol'})
+                                curr_df = curr_df.to_df().rename(columns={'bartime': 'time', 
+                                                                          'money': 'turnover',
+                                                                          'hold': 'open_interest',
+                                                                          })
                                 curr_df['time'] = curr_df['time'] - 199000000000
                                 curr_df = curr_df[curr_df['date'] >= cutoff_date]
                                 mdf = mdf[mdf['date'] < cutoff_date]
@@ -392,9 +404,12 @@ def save_bars_to_wt_store(exchange_list=['DCE', 'CZCE', 'SHFE', 'INE', 'CFFEX'],
                         period = 'min5'
                         filename = '%s/%s/%s/%s.dsb' % (src_folder, period, exch, cont)
                         if cutoff_date:
-                            curr_df = dtHelper.read_dsb_bars(filename)
+                            curr_df = read_wt_dsb_bars(dtHelper, filename, is_day=False)
                             if curr_df:
-                                curr_df = curr_df.to_df().rename(columns={'bartime': 'time', 'volume': 'vol'})
+                                curr_df = curr_df.to_df().rename(columns={'bartime': 'time', 
+                                                                          'money': 'turnover',
+                                                                          'hold': 'open_interest',
+                                                                          })
                                 curr_df['time'] = curr_df['time'] - 199000000000
                                 curr_df = curr_df[curr_df['date'] >= cutoff_date]
                                 m5df = m5df[m5df['date'] < cutoff_date]
@@ -419,9 +434,12 @@ def save_bars_to_wt_store(exchange_list=['DCE', 'CZCE', 'SHFE', 'INE', 'CFFEX'],
                         ddf = ddf[dcol_list]
                         filename = '%s/%s/%s/%s.dsb' % (src_folder, period, exch, cont)
                         if cutoff_date:
-                            curr_df = dtHelper.read_dsb_bars(filename, isDay=True)
+                            curr_df = read_wt_dsb_bars(dtHelper, filename, is_day=True)
                             if curr_df:
-                                curr_df = curr_df.to_df().rename(columns={'bartime': 'time', 'volume': 'vol'})
+                                curr_df = curr_df.to_df().rename(columns={'bartime': 'time', 
+                                                                          'money': 'turnover',
+                                                                          'hold': 'open_interest',
+                                                                          })
                                 curr_df['time'] = 0
                                 curr_df = curr_df[curr_df['date'] >= cutoff_date]
                                 ddf = ddf[ddf['date'] < cutoff_date]
@@ -525,15 +543,21 @@ def combine_bars_wt_store(src_folder, dst_folder, target_folder, cutoff=None):
             file_list = [f for f in listdir(dst_path) if isfile(join(dst_path, f))]
             for file in file_list:
                 cont = file.split('.')[0]
-                dst_df = dtHelper.read_dsb_bars(f'{dst_path}/{file}')                
-                dst_df = dst_df.to_df().rename(columns={'bartime': 'time', 'volume': 'vol'})
+                dst_df = dtHelper.read_dsb_bars(f'{dst_path}/{file}')           
+                dst_df = dst_df.to_df().rename(columns={'bartime': 'time', 
+                                                        'money': 'turnover',
+                                                        'hold': 'open_interest',
+                                                        })
                 dst_df['time'] = dst_df['time'] - 199000000000
-                dst_df = dst_df[dst_df['vol'] > 0]
-                src_df = dtHelper.read_dsb_bars(f'{src_path}/{file}')
+                dst_df = dst_df[dst_df['volume'] > 0]
+                src_df = read_wt_dsb_bars(dtHelper, f'{src_path}/{file}', is_day=False)  
                 if src_df:
-                    src_df = src_df.to_df().rename(columns={'bartime': 'time', 'volume': 'vol'})
+                    src_df = src_df.to_df().rename(columns={'bartime': 'time', 
+                                                        'money': 'turnover',
+                                                        'hold': 'open_interest',
+                                                        })
                     src_df['time'] = src_df['time'] - 199000000000
-                    src_df = src_df[src_df['vol']>0]                
+                    src_df = src_df[src_df['volume']>0]                
                     if cutoff is None:
                         cutoff = src_df['date'].iloc[-1]
                     src_df = src_df[src_df['date'] <= cutoff]
@@ -556,10 +580,16 @@ def combine_data_wt_store(src_folder, dst_folder, target_folder, curr_date, time
                 print(f'{period}-{exch}-{file}')
                 cont = file.split('.')[0]                
                 dst_df = dtHelper.read_dsb_bars(f'{dst_path}/{file}')                
-                dst_df = dst_df.to_df().rename(columns={'bartime': 'time', 'volume': 'vol'})                
-                src_df = dtHelper.read_dsb_bars(f'{src_path}/{file}')
+                dst_df = dst_df.to_df().rename(columns={'bartime': 'time', 
+                                                        'money': 'turnover',
+                                                        'hold': 'open_interest',
+                                                        })              
+                src_df = read_wt_dsb_bars(dtHelper, f'{src_path}/{file}', is_day=False)  
                 if src_df:
-                    src_df = src_df.to_df().rename(columns={'bartime': 'time', 'volume': 'vol'})                    
+                    src_df = src_df.to_df().rename(columns={'bartime': 'time', 
+                                                            'money': 'turnover',
+                                                            'hold': 'open_interest',
+                                                            })                  
                     src_df = pd.concat([
                         src_df[src_df['time'] < time_range[0]], 
                         dst_df[(dst_df['time'] >= time_range[0]) & (dst_df['time'] <= time_range[1])],
