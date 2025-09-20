@@ -252,6 +252,8 @@ signal_store = {
     'fgsa_margin_mom_st': [['FG-SA'],
                          ['fg_margin_petcoke', 'qtl', [2, 4, 1], '', '', True, '', "", 120, [-2,2]]],
     'ferr_pinv_hlr_mt': [['j', 'jm', 'i', 'rb', 'hc'],
+                        ['fer_pinv', 'hlratio', [80, 120, 2], '', '', False, 'price', "ema1", 120, [-2,2]]],
+    'ferr_pinv_hlr_mt_xdemean': [['j', 'jm', 'i', 'rb', 'hc'],
                         ['fer_pinv', 'hlratio', [80, 120, 2], '', '', False, 'price', "ema1", 120, [-2,2]]], 
     'ferr_pinv_hlr_yr': [['j', 'jm', 'i', 'rb', 'hc'],
                         ['fer_pinv', 'hlratio', [240, 260, 2], '', '', False, 'price', "ema1", 120, [-2,2]]], 

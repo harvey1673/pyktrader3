@@ -12,12 +12,12 @@ from pycmqlib3.utility.misc import contract_expiry, inst2contmth, day_shift, \
 All_MARKETS = [
     'rb', 'hc', 'i', 'j', 'jm', 'FG', 'SM', 'SF', 'SA', 'ru', 'nr',
     'cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ss', 'si', 'ao', 'bc',
-    'l', 'pp', 'v', 'TA', 'sc', 'lu', 'eb', 'eg',
+    'l', 'pp', 'v', 'TA', 'sc', 'lu', 'eb', 'eg', 
     'pg', 'PF', 'MA', 'fu', 'bu',
     'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'CF', 'jd', 'lh', 'b', 'CY', 'cs',
-    'AP', 'CJ', 'UR', 'PK', 'SR', 'sp', 'au', 'ag', 'lc', 'ec',     
-    'T', 'TF', 'IF', 'IH', 'IC', 
-    'SH', 'PX', 'br', 'TS', 'TL', 'IM', 
+    'AP', 'CJ', 'UR', 'PK', 'SR', 'sp', 'au', 'ag', 'lc', 'ec',   
+    'T', 'TF', 'TS', 'TL', 'IF', 'IH', 'IC', 'IM', 
+    'SH', 'PX', 'br', 'ps', 'PR',  
 ]
 
 
