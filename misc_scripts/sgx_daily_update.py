@@ -54,7 +54,7 @@ def futures_sgx_daily(page_range=[6760, 6770]):
             data_df = data_df[FUTURE_COLUMNS]
             save_data('fut_daily', data_df, flavor='mysql')
         except Exception as e:
-            print(f"error on {page}: exception={e}")
+            print(f"sgx update from exchange: skipping on {page}")
             failed_dates.append(page)
             continue
     with open(save_json_file, 'w') as ofile:

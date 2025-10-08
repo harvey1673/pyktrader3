@@ -662,16 +662,23 @@ def get_fun_data(start_date, run_date):
         fef_nb.index = pd.to_datetime(fef_nb.index)
         fef_nb.loc[fef_nb['settle'] <= 0, 'settle'] = np.nan
         fef_nb.loc[fef_nb['close'] <= 0, 'close'] = np.nan
+        fef_nb['fe_viu'] = spot_df['viu_fe']
         spot_dict[f'FEFc{nb-1}'] = fef_nb['settle']
         spot_dict[f'FEFc{nb-1}_close'] = fef_nb['close']
-        spot_dict[f'FEFc{nb-1}_shift'] = fef_nb['shift'] 
-    spot_dict['FEF_c1_c2_ratio'] = (spot_dict['FEFc1']/np.exp(spot_dict['FEFc1_shift'])) / \
-                                 (spot_dict['FEFc2']/np.exp(spot_dict['FEFc2_shift']))
-    spot_dict['FEF_c123fly_ratio'] = spot_dict['FEFc1'] * spot_dict['FEFc3'] / \
-                                   (spot_dict['FEFc2'] * spot_dict['FEFc2']) * \
-                                   np.exp(2 * spot_dict['FEFc2_shift'] - spot_dict['FEFc1_shift'] - spot_dict['FEFc3_shift'])
-    spot_dict['FEF_ryield'] = (np.log(spot_dict['FEFc1'] / np.exp(spot_dict['FEFc1_shift'])) -
-                             np.log(spot_dict['FEFc2'] / np.exp(spot_dict['FEFc2_shift']))) * 12
+        spot_dict[f'FEFc{nb-1}_shift'] = fef_nb['shift']
+        fef_nb['viu_fe'] = spot_df['viu_fe'].ffill()
+        adj_flag = (fef_nb.index>=pd.Timestamp("2025-09-01")) & (fef_nb['contract'].apply(lambda cont: int(cont[-4:-2])>=26))
+        fef_nb['cont_adj'] = 0
+        fef_nb.loc[adj_flag, 'cont_adj'] = fef_nb.loc[adj_flag, 'viu_fe']*1.4
+        spot_dict[f'FEFc{nb-1}_pxadj'] = fef_nb['cont_adj']
+
+    spot_dict['FEF_c1_c2_ratio'] = (spot_dict['FEFc1']/np.exp(spot_dict['FEFc1_shift']) + spot_dict['FEFc1_pxadj']) \
+        / (spot_dict['FEFc2']/np.exp(spot_dict['FEFc2_shift'])+ spot_dict['FEFc2_pxadj'])
+    spot_dict['FEF_c123fly_ratio'] = (spot_dict['FEFc1']/np.exp(spot_dict['FEFc1_shift']) + spot_dict['FEFc1_pxadj']) \
+        * (spot_dict['FEFc3'] / np.exp(spot_dict['FEFc3_shift']) + spot_dict['FEFc3_pxadj']) \
+        / ((spot_dict['FEFc2'] / np.exp(spot_dict['FEFc2_shift']) + spot_dict['FEFc2_pxadj'])**2)
+    spot_dict['FEF_ryield'] = (np.log(spot_dict['FEFc1'] / np.exp(spot_dict['FEFc1_shift']) + spot_dict['FEFc1_pxadj']) -
+                             np.log(spot_dict['FEFc2'] / np.exp(spot_dict['FEFc2_shift']) + spot_dict['FEFc2_pxadj'])) * 12
     spot_dict['FEF_basmom'] = np.log(1 + spot_dict['FEFc1'].dropna().pct_change()) - \
                             np.log(1 + spot_dict['FEFc2'].dropna().pct_change())
     spot_dict['FEF_basmom10'] = spot_dict['FEF_basmom'].dropna().rolling(10).sum()
