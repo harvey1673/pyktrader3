@@ -25,6 +25,35 @@ font = font_manager.FontProperties(fname='C:\\windows\\fonts\\simsun.ttc')
 PNL_BDAYS = 244
 
 
+def compute_corr(x, y, method='spearman'):
+    if len(x) < 10 or len(y) < 10:
+        return np.nan
+    if method == 'spearman':
+        return stats.spearmanr(x, y, nan_policy='omit')[0]
+    elif method == 'pearson':
+        return stats.pearsonr(x, y)[0]
+    elif method == 'kendall':
+        return stats.kendalltau(x, y)[0]
+    else:
+        raise ValueError(f"Unknown method: {method}")
+
+
+def compute_ic_ir_grid_multi(df, feature_col, ret_cols=None, max_lag=60, 
+                             commodity_col='commodity', method='spearman'):
+    if ret_cols is None:
+        ret_cols = ["ret_1d", "ret_3d", "ret_5d", "ret_10d", "ret_20d"]
+    if "date" in df.columns:
+        df = df.set_index("date")
+    ic_results = {}
+    summary_rows = []
+
+    for comm, subdf in df.groupby(commodity_col):
+        ic_grid = pd.DataFrame(index=range(max_lag+1), columns=ret_cols, dtype=float)
+        for lag in range(max_lag + 1):
+            pass
+    return
+
+
 def multislice_many(df, label_map):
     idx_label_map = {idx: label_map[label] for idx, label in enumerate(df.columns.names) if label in label_map}
     num_levels = len(df.columns.names)
