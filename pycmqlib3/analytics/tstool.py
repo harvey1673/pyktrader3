@@ -968,6 +968,17 @@ def xs_demean(df_in):
     return df_out
 
 
+def xs_sec_demean(df_in, sector_map) -> pd.DataFrame:
+    df_demeaned = df_in.copy()
+    for sector, commodities in sector_map.items():
+        valid_cols = [c for c in commodities if c in df_in.columns]
+        if not valid_cols:
+            continue
+        sector_mean = df_in[valid_cols].mean(axis=1)
+        df_demeaned[valid_cols] = df_in[valid_cols].subtract(sector_mean, axis=0)
+    return df_demeaned
+
+
 def xs_score(df_in, demean=True, hl=None):
     if demean:
         df_demeaned = xs_demean(df_in)
