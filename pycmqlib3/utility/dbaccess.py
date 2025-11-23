@@ -236,6 +236,35 @@ def write_edb_by_xl_sheet(file_setup, data_folder=sec_bits.LOCAL_NUTSTORE_FOLDER
     return error_list
 
 
+def write_fut_roll_daily_by_xl(data_file, data_folder=sec_bits.LOCAL_NUTSTORE_FOLDER):
+    data_list = []
+    for col in ["close", "pre_close","high", "low","open", "settle"]:
+        tmp_df = pd.read_excel(f"{data_folder}/{data_file}", 
+                            sheet_name=col, 
+                            header=[0, 1, 2], 
+                            skiprows=[3, 4, 5, 6], 
+                            index_col=0)
+        tmp_df.index.name = "date"
+        tmp_df = tmp_df.stack(level=[0, 1, 2]).reset_index().rename(columns={0: "value"})
+        tmp_df["field"] = col
+        data_list.append(tmp_df)
+
+    data_df = pd.concat(data_list)
+    ddf = pd.pivot_table(data_df, index=["date", "code", "cont", "exchange"], columns="field", values="value", aggfunc='last')
+    ddf = ddf.reset_index()
+    ddf["code"] = ddf["code"].apply(lambda s: s.replace("@", ""))
+    ddf['cont'] = ddf['cont'].astype("str")
+    conn = create_engine('mysql+mysqlconnector://{user}:{passwd}@{host}/{dbase}'.format(
+        user=dbconfig['user'],
+        passwd=dbconfig['password'],
+        host=dbconfig['host'],
+        dbase=dbconfig['database']), echo=False)
+    func = mysql_replace_into
+    dbtable="fut_roll_cont_daily"
+    ddf.to_sql(dbtable, con=conn, if_exists='append', index=False, method=func)
+    conn.dispose()
+
+
 def write_stock_data_by_xl(data_file, data_folder=sec_bits.LOCAL_NUTSTORE_FOLDER, lookback=20000):
     sdate = pd.to_datetime("today") - pd.Timedelta(lookback, unit='D')
     conn = create_engine('mysql+mysqlconnector://{user}:{passwd}@{host}/{dbase}'.format(

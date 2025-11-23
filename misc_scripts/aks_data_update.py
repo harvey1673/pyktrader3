@@ -7,8 +7,8 @@ import numpy as np
 import itertools
 from pycmqlib3.utility.dbaccess import save_data, get_fut_daily_from_db
 from pycmqlib3.utility.misc import CHN_Holidays, day_shift, is_workday, product_code, instID_adjust, inst2product
-from akshare.futures.cot import get_dce_rank_table, \
-                                get_czce_rank_table, get_shfe_rank_table, get_cffex_rank_table
+from akshare.futures.cot import get_dce_rank_table, get_rank_table_czce, \
+                                get_shfe_rank_table, get_cffex_rank_table
 from akshare.futures import cons, symbol_var
 chn_calendar = cons.get_calendar()
 
@@ -142,7 +142,7 @@ def update_rank_table(start_date=datetime.date.today(), end_date=datetime.date.t
         elif exch == 'SHFE':
             exch_func[exch] = get_shfe_rank_table
         elif exch == 'CZCE':
-            exch_func[exch] = get_czce_rank_table
+            exch_func[exch] = get_rank_table_czce
         elif exch == 'CFFEX':
             exch_func[exch] = get_cffex_rank_table
         else:

@@ -6,7 +6,7 @@ import win32com.client
 import win32gui
 import win32con
 from pycmqlib3.utility.sec_bits import LOCAL_NUTSTORE_FOLDER, IFIND_XL_HOTKEYS
-from pycmqlib3.utility.dbaccess import write_edb_by_xl_sheet, write_stock_data_by_xl
+from pycmqlib3.utility.dbaccess import write_edb_by_xl_sheet, write_stock_data_by_xl, write_fut_roll_daily_by_xl
 
 
 def update_ifind_xlsheet(filename='C:/Users/harvey/Nutstore/1/Nutstore/ifind_data.xlsx', 
@@ -73,7 +73,7 @@ def update_data_from_xl(data_folder=LOCAL_NUTSTORE_FOLDER, lookback=30):
                                         'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
         ('ifind_data.xlsx', 'warrant_d'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 6, 7, 8],
                                         'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
-        ('ifind_daily.xlsx', 'petchem_d'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
+        ('ifind_daily.xlsx', 'petchem_d'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 6, 7, 8],
                                         'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},                                        
         ('ifind_daily.xlsx', 'macro_d'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 6, 7, 8],
                                         'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
@@ -84,6 +84,7 @@ def update_data_from_xl(data_folder=LOCAL_NUTSTORE_FOLDER, lookback=30):
     }
     write_edb_by_xl_sheet(file_setup, data_folder=data_folder, lookback=lookback)
     write_stock_data_by_xl('ifind_stock.xlsx', data_folder=LOCAL_NUTSTORE_FOLDER, lookback=1000)
+    write_fut_roll_daily_by_xl('fut_cont_hist.xlsx', data_folder=LOCAL_NUTSTORE_FOLDER, lookback=1000)
 
 
 
@@ -96,3 +97,4 @@ if __name__ == "__main__":
     update_ifind_xlsheet(filename=f'{data_folder}/ifind_daily.xlsx', wait_time=40, excluded=[])
     if now.time() < datetime.time(12, 0, 0):
         update_ifind_xlsheet(filename=f'{data_folder}/ifind_stock.xlsx', wait_time=10, excluded=['setup'])
+        update_ifind_xlsheet(filename=f'{data_folder}/fut_cont_hist.xlsx', wait_time=10, excluded=['config'])

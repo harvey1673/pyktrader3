@@ -568,10 +568,18 @@ def combine_bars_wt_store(src_folder, dst_folder, target_folder, cutoff=None):
                                  period=period_map[period])
 
 
-def combine_data_wt_store(src_folder, dst_folder, target_folder, curr_date, time_range=[202504150859, 202504150905], exch_list=['INE']):
+def combine_data_wt_store(src_folder, dst_folder, target_folder, curr_date, 
+                          time_range=[202504150859, 202504150905], 
+                          exch_list=['INE'], periods=["day", "min1", "min5", "ticks"]):
     dtHelper = WtDataHelper()
-    period_map = {'min1': 'm1', 'min5': 'm5'}
-    for period in ['min1', 'min5']:
+    period_map = {'min1': 'm1', 'min5': 'm5', 'day': 'd'}
+    for period in ['min1', 'min5', 'day']:
+        if period not in periods:
+            continue
+        if period == 'day':
+            is_day = True
+        else:
+            is_day = False
         for exch in exch_list:            
             src_path = '%s/%s/%s' % (src_folder, period, exch)
             dst_path = '%s/%s/%s' % (dst_folder, period, exch)
@@ -584,46 +592,54 @@ def combine_data_wt_store(src_folder, dst_folder, target_folder, curr_date, time
                                                         'money': 'turnover',
                                                         'hold': 'open_interest',
                                                         })              
-                src_df = read_wt_dsb_bars(dtHelper, f'{src_path}/{file}', is_day=False)  
+                src_df = read_wt_dsb_bars(dtHelper, f'{src_path}/{file}', is_day=is_day)  
                 if src_df:
                     src_df = src_df.to_df().rename(columns={'bartime': 'time', 
                                                             'money': 'turnover',
                                                             'hold': 'open_interest',
-                                                            })                  
-                    src_df = pd.concat([
-                        src_df[src_df['time'] < time_range[0]], 
-                        dst_df[(dst_df['time'] >= time_range[0]) & (dst_df['time'] <= time_range[1])],
-                        src_df[src_df['time'] > time_range[1]], 
-                    ])
+                                                            })
+                    if is_day:
+                        src_df = pd.concat([
+                            src_df[src_df['date'] < time_range[0]//10000], 
+                            dst_df[(dst_df['date'] >= time_range[0]//10000) & (dst_df['date'] <= time_range[1]//10000)],
+                            src_df[src_df['date'] > time_range[1]//10000], 
+                        ])
+                    else:           
+                        src_df = pd.concat([
+                            src_df[src_df['time'] < time_range[0]], 
+                            dst_df[(dst_df['time'] >= time_range[0]) & (dst_df['time'] <= time_range[1])],
+                            src_df[src_df['time'] > time_range[1]], 
+                        ])
                     src_df['time'] = src_df['time'].astype('int64') - 199000000000
                     save_bars_to_dsb(src_df, contract=cont, folder_loc=f'{target_folder}/{period}/{exch}',
                                      period=period_map[period])
     # update ticks
     period = 'ticks'
-    for exch in exch_list:        
-        src_path = f'{src_folder}/{period}/{exch}/{curr_date}'
-        dst_path = f'{dst_folder}/{period}/{exch}/{curr_date}'
-        file_list = [f for f in listdir(dst_path) if isfile(join(dst_path, f))]
-        for file in file_list:
-            print(f'ticks-{exch}-{curr_date}-{file}')
-            cont = file.split('.')[0]                
-            dst_df = dtHelper.read_dsb_ticks(f'{dst_path}/{file}')                
-            dst_df = dst_df.to_df()         
-            src_df = dtHelper.read_dsb_ticks(f'{src_path}/{file}')
-            if src_df:
-                src_df = src_df.to_df()                 
-                src_df = pd.concat([
-                    src_df[src_df['time'] < time_range[0]*100000], 
-                    dst_df[(dst_df['time'] >= time_range[0]*100000) & (dst_df['time'] <= time_range[1]*100000)],
-                    src_df[src_df['time'] > time_range[1]*100000], 
-                ])
-            #src_df['time'] = src_df['time'].astype('int64') - 199000000000
-                tick_settings = {
-                    'exchange': exch,
-                    'contract': cont,
-                    'folder_loc': f'{target_folder}/{period}/{exch}/{curr_date}/',
-                }
-                save_ticks_to_dsb(src_df, tick_settings)
+    if period in periods:
+        for exch in exch_list:        
+            src_path = f'{src_folder}/{period}/{exch}/{curr_date}'
+            dst_path = f'{dst_folder}/{period}/{exch}/{curr_date}'
+            file_list = [f for f in listdir(dst_path) if isfile(join(dst_path, f))]
+            for file in file_list:
+                print(f'ticks-{exch}-{curr_date}-{file}')
+                cont = file.split('.')[0]                
+                dst_df = dtHelper.read_dsb_ticks(f'{dst_path}/{file}')                
+                dst_df = dst_df.to_df()         
+                src_df = dtHelper.read_dsb_ticks(f'{src_path}/{file}')
+                if src_df:
+                    src_df = src_df.to_df()                 
+                    src_df = pd.concat([
+                        src_df[src_df['time'] < time_range[0]*100000], 
+                        dst_df[(dst_df['time'] >= time_range[0]*100000) & (dst_df['time'] <= time_range[1]*100000)],
+                        src_df[src_df['time'] > time_range[1]*100000], 
+                    ])
+                #src_df['time'] = src_df['time'].astype('int64') - 199000000000
+                    tick_settings = {
+                        'exchange': exch,
+                        'contract': cont,
+                        'folder_loc': f'{target_folder}/{period}/{exch}/{curr_date}/',
+                    }
+                    save_ticks_to_dsb(src_df, tick_settings)
 
                 
 def zip_wt_dir(path, filename, cutoff: datetime.date):
