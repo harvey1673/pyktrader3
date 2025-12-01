@@ -49,6 +49,8 @@ def futures_sgx_daily(page_range=[6760, 6770]):
             if str(run_date) <= "20180118":
                 for col in ['open', 'high', 'low', 'close', 'settle']:
                     data_df[col] = data_df[col]/100
+            data_df["year"] = pd.to_numeric(data_df["year"], errors="coerce").astype("Int64")
+            data_df["mth"] = pd.to_numeric(data_df["mth"], errors="coerce").astype("Int64")
             data_df['instID'] = data_df.apply(lambda x: f"{x['product']}{x['year'] % 100:02}{x['mth']:02}", axis=1)
             data_df['exch'] = 'SGX'
             data_df = data_df[FUTURE_COLUMNS]

@@ -84,7 +84,7 @@ def update_data_from_xl(data_folder=LOCAL_NUTSTORE_FOLDER, lookback=30):
     }
     write_edb_by_xl_sheet(file_setup, data_folder=data_folder, lookback=lookback)
     write_stock_data_by_xl('ifind_stock.xlsx', data_folder=LOCAL_NUTSTORE_FOLDER, lookback=1000)
-    write_fut_roll_daily_by_xl('fut_cont_hist.xlsx', data_folder=LOCAL_NUTSTORE_FOLDER, lookback=1000)
+    write_fut_roll_daily_by_xl('fut_cont_hist.xlsx', data_folder=LOCAL_NUTSTORE_FOLDER)
 
 
 
