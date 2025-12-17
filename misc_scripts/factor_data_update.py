@@ -63,23 +63,23 @@ port_pos_config = {
     'PTSIM1_hot': {
         'pos_loc': 'C:/dev/pyktrader3/process/pt_test1',
         'strat_list': [
-            ('PTSIM1_FACTPORT.json', 25000),
-            ('PTSIM1_EXCHWNT.json', 14000),
-            ('PTSIM1_SEAZN.json', 12000),
-            ('PTSIM1_HRCRB.json', 14000),
-            ('PTSIM1_LL.json', 14000),
-            ('PTSIM1_LL2MR.json', 14000),
-            ('PTSIM1_SPDTF.json', 14000),
-            ('PTSIM1_MR1Y.json', 14000),
-            ('PTSIM1_CNMAC1.json', 10000),
-            ('PTSIM1_CNMAC2.json', 3000),
-            ('PTSIM1_FUNFER.json', 25000),
-            ('PTSIM1_FERSPD.json', 70000),
-            ('PTSIM1_AUSPD.json', 30000),
-            ('PTSIM1_FUNBASE.json', 25000),
-            ('PTSIM1_FUNENE.json', 3000),
-            ('PTSIM1_FUNMTL.json', 12000),
-            ('PTSIM1_BND1.json', 50000),
+            ('PTSIM1_FACTPORT1.json', 25000),
+            ('PTSIM1_EXCHWNT.json', 18000),
+            ('PTSIM1_SEAZN.json', 19000),
+            ('PTSIM1_HRCRB.json', 18000),
+            ('PTSIM1_LL.json', 18000),
+            ('PTSIM1_LL2MR.json', 18000),
+            ('PTSIM1_SPDTF.json', 18000),
+            ('PTSIM1_MR1Y.json', 18000),
+            ('PTSIM1_CNMAC1.json', 9000), # 10000
+            ('PTSIM1_CNMAC2.json', 6000),
+            ('PTSIM1_FUNFER.json', 28000),
+            ('PTSIM1_FERSPD.json', 80000),
+            ('PTSIM1_AUSPD.json', 50000),
+            ('PTSIM1_FUNBASE.json', 30000),
+            ('PTSIM1_FUNENE.json', 4000),
+            ('PTSIM1_FUNMTL.json', 16000),
+            ('PTSIM1_BND1.json', 40000),
         ], },
 }
 
@@ -610,7 +610,7 @@ def update_port_position(run_date=datetime.date.today()):
                 under = asset_dict["underliers"][0]
                 product = inst2product(under)
                 product_list.append(product)
-
+            
             logging.info(f"updating position for {strat_file}...")
             res = generate_strat_position(run_date, product_list, factor_repo,
                                           repo_type=repo_type,
@@ -635,10 +635,8 @@ def update_port_position(run_date=datetime.date.today()):
             if np.isnan(target_pos[prodcode]):
                 target_pos[prodcode] = 0
                 continue
-            if prodcode in ['UR', 'SM']:
+            if prodcode in []:
                 target_pos[prodcode] = int((target_pos[prodcode] / 4 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 4
-            elif prodcode in ['RM']:
-                target_pos[prodcode] = int((target_pos[prodcode] / 10 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 10
             else:
                 target_pos[prodcode] = int(target_pos[prodcode] + (0.5 if target_pos[prodcode] > 0 else -0.5))
 

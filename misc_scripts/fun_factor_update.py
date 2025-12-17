@@ -762,10 +762,14 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
     funda_start = day_shift(run_date, '-8y')
     update_start = day_shift(run_date, '-120b', CHN_Holidays)
     markets = [
-        'rb', 'hc', 'i', 'j', 'jm', 'FG', 'v', 'SM', 'SF', 'SA', 'ru', 'nr',
-        'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'si', 'ao', 'au', 'ag', 'bc', 'lc', 'PX',
-        'l', 'pp', 'TA', 'MA', 'sc', 'eb', 'eg', 'UR', 'lu', 'bu', 'fu', 'PF', 
-        'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'CF', 'jd', 'AP', 'lh', 'cs', 'CJ', 'PK', 'b',        
+        'rb', 'hc', 'i', 'j', 'jm', 'FG', 'SA', 'SH', 'v', 
+        'SM', 'SF', 'ru', 'nr', 'br',
+        'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'ao', 
+        'au', 'ag', 'bc', 'lc', 'si', 'ps', 'sp', 'ec',
+        'l', 'pp', 'TA', 'MA', 'sc', 'eb', 'eg', 
+        'UR', 'lu', 'bu', 'fu', 'PX', 'PF', 
+        'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'cs', 'b',
+        'CF', 'jd', 'AP', 'lh', 'CJ', 'PK', 
         'T', 'TF', 'TL',
     ]
     price_start = day_shift(run_date, '-30m')

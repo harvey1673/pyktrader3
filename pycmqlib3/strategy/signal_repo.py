@@ -5,14 +5,14 @@ from pycmqlib3.utility.misc import CHN_Holidays, day_shift
 from pycmqlib3.utility.exch_ctd_func import *
 
 BROAD_MKTS = [
-    'rb', 'hc', 'i', 'j', 'jm', 'FG', 'v', 'SM', 'SF', 'SA',
-    'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'ao', 'au', 'ag', 'si', 'lc', 'PX',
-    'ru', 'l', 'pp', 'TA', 'MA', 'sc', 'eb', 'eg', 'UR', 'lu',  #'PF', 
-    'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'CF', 'jd', 'AP', 'lh', #'CJ', 'PK',
+    'rb', 'hc', 'i', 'j', 'jm', 'FG', 'v', 'SM', 'SF', 'SA', 'SH',
+    'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'ao', 'au', 'ag', 'si', 'ps', 'lc', 'sp', 
+    'ru', 'l', 'pp', 'TA', 'MA', 'sc', 'eb', 'eg', 'UR', 'lu',  'PX', #'PF', 
+    'm', 'RM', 'y', 'p', 'OI', 'a', 'b', 'c', 'CF', 'jd', 'AP', 'lh', 'CJ', #'PK',
 ]
 
-IND_MKTS = ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'v', #'SM', 'SF', 'SA', 'UR', 
-    'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'ao', 'au', 'ag', 'si', 'lc', 'PX', #'bc',
+IND_MKTS = ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'v', 'SH', #'SM', 'SF', 'SA', 'UR', 
+    'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'ao', 'au', 'ag', 'si', 'lc', 'PX', 'ps', #'bc',
     'ru', 'l', 'pp', 'TA', 'MA', 'sc', 'eb', 'eg', 'lu', #'bu', 'fu',
 ]
 
