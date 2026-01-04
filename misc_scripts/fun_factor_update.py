@@ -771,6 +771,7 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
         'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'cs', 'b',
         'CF', 'jd', 'AP', 'lh', 'CJ', 'PK', 
         'T', 'TF', 'TL',
+        # 'pt', 'pd', 'PL', 'bz', 'ad', 'PR', 'op',
     ]
     price_start = day_shift(run_date, '-30m')
     # load tmp saved file

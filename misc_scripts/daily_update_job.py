@@ -98,7 +98,7 @@ commod_mkts = [
     'cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ss',
     'l', 'pp', 'v', 'TA', 'sc', 'lu', 'eb', 'eg', 'pg', 'MA', 'fu', 'PF',
     'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'cs', 'ao', 'bu',
-    'CF', 'jd', 'lh', 'AP', 'CJ', 'PK', 'SR', 'TF', 'T',
+    'CF', 'jd', 'lh', 'AP', 'CJ', 'PK', 'SR', 'TF', 'T', 'pd', 'pt',
 ]
 
 scenarios_all = [

@@ -17,7 +17,8 @@ All_MARKETS = [
     'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'CF', 'jd', 'lh', 'b', 'CY', 'cs',
     'AP', 'CJ', 'UR', 'PK', 'SR', 'sp', 'au', 'ag', 'lc', 'ec',   
     'T', 'TF', 'TS', 'TL', 'IF', 'IH', 'IC', 'IM', 
-    'SH', 'PX', 'br', 'ps', 'PR',  
+    'SH', 'PX', 'br', 'ps', 'PR', 
+    'PL', 'bz', 'lg', 'op', 'pt', 'pd', 'ad', 
 ]
 
 
