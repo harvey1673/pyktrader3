@@ -1078,11 +1078,14 @@ def get_opt_expiry(fut_inst, cont_mth, exch=''):
     return datetime.datetime.combine(expiry, datetime.time(15, 0))
 
 
-def cont_expiry_list(prodcode, start_date, end_date, roll_rule='-0d'):
+def cont_expiry_list(prodcode, start_date, end_date, roll_rule='-0d', full_name=False):
     cont_mth, exch = dbaccess.prod_main_cont_exch(prodcode)
     hols = get_hols_by_exch(exch)
-    contlist, tenor_list = contract_range(prodcode, exch, cont_mth, start_date, day_shift(end_date, '12m', hols))
-    exp_dates = [day_shift(contract_expiry(cont, curr_dt=ten), roll_rule, hols) for cont, ten in zip(contlist, tenor_list)]
+    contlist, tenor_list = contract_range(prodcode, exch, cont_mth, 
+                                          start_date, 
+                                          day_shift(end_date, '12m', hols), 
+                                          full_name=full_name)
+    exp_dates = [day_shift(cont_date_expiry(ten, prod_code=prodcode, exch=exch), roll_rule, hols) for cont, ten in zip(contlist, tenor_list)]
     return contlist, exp_dates, tenor_list
 
 
@@ -1276,7 +1279,7 @@ def cont_date_expiry(cont_date, prod_code, exch):
     return expiry
 
 
-def _contract_range(product, exch, cont_mth, start_date, end_date, tenor = '2y'):
+def _contract_range(product, exch, cont_mth, start_date, end_date, tenor='2y', full_name=False):
     st_year = start_date.year
     cont_list = []
     tenor_list = []
@@ -1294,7 +1297,7 @@ def _contract_range(product, exch, cont_mth, start_date, end_date, tenor = '2y')
                         if cont_ten == datetime.date(2015, 5, 1):
                             mth = 6
                             prod = 'MA'
-                    if exch == 'CZCE' and cont_ten >= datetime.date(2015, 1, 1):
+                    if (full_name== False) and (exch == 'CZCE') and (cont_ten >= datetime.date(2015, 1, 1)):
                         contLabel = prod + "%01d" % (yr % 10) + "%02d" % mth
                     else:
                         contLabel = prod + "%02d" % (yr % 100) + "%02d" % mth
@@ -1303,14 +1306,14 @@ def _contract_range(product, exch, cont_mth, start_date, end_date, tenor = '2y')
     return cont_list, tenor_list
 
 
-def contract_range(product, exch, cont_mth, start_date, end_date):
+def contract_range(product, exch, cont_mth, start_date, end_date, full_name=False):
     product_cont_map = {'ni': [datetime.date(2019, 5, 1), [1, 5, 9]],
                         'sn': [datetime.date(2020, 5, 1), [1, 5, 9]],
                         'eg': [datetime.date(2020, 5, 1), [1, 5, 9]],
                         #'ZC': [datetime.date(2020, 9, 1), [1, 5, 9]],
                         }
     if product in product_cont_map:
-        cont_list, tenor_list = _contract_range(product, exch, cont_mth, start_date, end_date)
+        cont_list, tenor_list = _contract_range(product, exch, cont_mth, start_date, end_date, full_name=full_name)
         res_cont = []
         res_ten = []
         for cont, ten in zip(cont_list, tenor_list):
@@ -1320,7 +1323,7 @@ def contract_range(product, exch, cont_mth, start_date, end_date):
             res_ten.append(ten)
         return res_cont, res_ten
     else:
-        return _contract_range(product, exch, cont_mth, start_date, end_date)
+        return _contract_range(product, exch, cont_mth, start_date, end_date, full_name=full_name)
 
 
 def get_asset_tradehrs(asset):

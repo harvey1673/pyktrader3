@@ -4,7 +4,7 @@ import json
 import datetime
 from pycmqlib3.utility import misc
 from pycmqlib3.utility.dbaccess import prod_main_cont_exch
-from pycmqlib3.utility.process_wt_data import load_fut_by_product, load_bars_by_code
+from pycmqlib3.utility.process_wt_data import load_fut_by_product, load_bars_by_code, load_hist_bars_to_df
 from matplotlib import font_manager
 font = font_manager.FontProperties(fname='C:/windows/fonts/simsun.ttc')
 
@@ -152,7 +152,7 @@ def nearby(code, n=1, start_date=None, end_date=None,
             roll_dict = json.load(infile)
         roll_list = roll_dict[exch][prodcode]
     except:
-        print("cant find roll file %s" % roll_file)
+        print(f"{code} cant find roll file {roll_file}")
         return pd.DataFrame()
     if end_date is None:
         end_date = datetime.date.today()
@@ -205,6 +205,62 @@ def nearby(code, n=1, start_date=None, end_date=None,
                         df[ticker] = df[ticker] * shift
         df = pd.concat([df, new_df])
     return df.rename(columns={'instID': 'contract'})
+
+
+def nearby_wt(prodcode, n=1, start_date=None, end_date=None, roll_rule='-20b', freq='d', shift_mode=0, roll_col='close'):
+    contlist, exp_dates, _ = misc.cont_expiry_list(prodcode, start_date, end_date, roll_rule, full_name=True)
+    _, exch = prod_main_cont_exch(prodcode)
+    if prodcode == 'sn':
+        if 'sn2001' in contlist:
+            idx = contlist.index('sn2001')
+            exp_dates[idx] = max(datetime.date(2019, 12, 26), exp_dates[idx])
+    elif prodcode == 'ni':
+        if ('ni1905' in contlist) and ('ni1901' in contlist):
+            idx = contlist.index('ni1901')
+            exp_dates[idx] = max(datetime.date(2018, 12, 27), exp_dates[idx])
+    sdate = start_date
+    df = pd.DataFrame()
+    if freq == 'd':
+        index_col = 'date'
+    else:
+        index_col = 'datetime'
+    for idx, exp in enumerate(exp_dates):
+        if exp < start_date:
+            continue
+        elif sdate > min(exp, end_date):
+            break
+        nb_cont = contlist[idx + n - 1]
+        new_df = load_hist_bars_to_df(f"{exch}.{nb_cont}", start_date=sdate, end_date=min(exp, end_date), index_col=index_col, freq=freq)
+        if new_df is not None and len(new_df) > 0:
+            new_df['contract'] = nb_cont
+            new_df['shift'] = 0.0
+        else:
+            print("continuous contract stopped at %s for start = %s, expiry= %s" % (nb_cont, sdate, exp))
+            if exp > end_date:
+                break
+            else:
+                continue
+        if len(df) > 0 and shift_mode > 0:
+            if isinstance(df.index[-1], datetime.datetime):
+                last_date = df.index[-1].date()
+            else:
+                last_date = df.index[-1]
+            tmp_df = load_hist_bars_to_df(f"{exch}.{nb_cont}", start_date=last_date, end_date=last_date, index_col=index_col, freq='d')
+            if shift_mode == 1:
+                shift = tmp_df[roll_col][-1] - df[roll_col][-1]
+                df['shift'] = df['shift'] + shift
+                for ticker in ['open', 'high', 'low', 'close', 'settle']:
+                    if ticker in df.columns:
+                        df[ticker] = df[ticker] + shift
+            else:
+                shift = float(tmp_df[roll_col][-1])/float(df[roll_col][-1])
+                df['shift'] = df['shift'] + math.log(shift)
+                for ticker in ['open', 'high', 'low', 'close', 'settle']:
+                    if ticker in df.columns:
+                        df[ticker] = df[ticker] * shift
+        df = pd.concat([df, new_df])
+        sdate = exp + datetime.timedelta(days=1)
+    return df
 
 
 if __name__ == "__main__":
