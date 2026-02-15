@@ -4,8 +4,10 @@ from shutil import copyfile
 import json
 import datetime
 import logging
-from pycmqlib3.utility.sec_bits import EMAIL_QQ, EMAIL_NOTIFY, NOTIFIERS
+from pycmqlib3.utility.sec_bits import EMAIL_QQ, EMAIL_NOTIFY, NOTIFIERS, \
+    HOT_UPDATE_NUTSHARE, LOCAL_NUTSTORE_FOLDER
 from pycmqlib3.utility import update_contract_roll
+from pycmqlib3.utility.convert_hot_json import process_file_only_czce
 
 logging.basicConfig(filename='hotsel.log', level=logging.INFO, filemode="w",
     format='[%(asctime)s - %(levelname)s] %(message)s',
@@ -51,7 +53,7 @@ def rebuild_hot_rules(start_date, end_date,
 def daily_hot_rules(end_date=None,
                     files={'loc': './', 'hot': 'hots.json', 'sec': 'seconds.json', 'marker': 'marker.json'},
                     snapshot_loc="C:/dev/wtdev/storage/his/snapshot/",
-                    notify=False):
+                    notify=EMAIL_NOTIFY):
     # 增量更新主力合约切换规则
     if snapshot_loc:
         # 从datakit落地的行情快照直接读取
@@ -67,7 +69,7 @@ def daily_hot_rules(end_date=None,
                                   pwd=EMAIL_QQ['passwd'],
                                   host=EMAIL_QQ['host'],
                                   port=EMAIL_QQ['port'],
-                                  isSSL=False)
+                                  isSSL=True)
         for rec in NOTIFIERS:
             notifier.add_receiver(addr=rec)
         picker.set_mail_notifier(notifier)
@@ -75,24 +77,43 @@ def daily_hot_rules(end_date=None,
 
 
 if __name__ == "__main__":
-    files = {'loc': 'C:/dev/wtdev/hotpicker/', 'hot': 'hots.json', 'sec': 'seconds.json', 'marker': 'marker.json'}
+    files = {'loc': 'C:/dev/wtdev/deploy/hotpicker/', 'hot': 'hots.json', 'sec': 'seconds.json', 'marker': 'marker.json'}
     daily_hot_rules(files=files, notify=EMAIL_NOTIFY)
+    
     prod_loc = 'C:/dev/wtdev/common/'
+    hot_config_loc = 'C:/dev/wtdev/config/'
+    nutstore_common_loc = f'{LOCAL_NUTSTORE_FOLDER}/common'
+    nutstore_config_loc = f'{LOCAL_NUTSTORE_FOLDER}/config'
+
+    file_map = {
+        'hots': 'hot1',
+        'seconds': 'hot2',
+    }
+
     for file in ['hots', 'seconds', ]:
         try:
             os.rename(f'{prod_loc}{file}.json', f'{prod_loc}{file}_old.json')
         except WindowsError:
             os.remove(f'{prod_loc}{file}_old.json')
             os.rename(f'{prod_loc}{file}.json', f'{prod_loc}{file}_old.json')
-        copyfile('%s%s.json' % (files['loc'], file), '%s%s.json' % (prod_loc, file))
+        
+        copyfile('%s%s.json' % (files['loc'], file), 
+                 '%s%s.json' % (prod_loc, file))
+        
+        copyfile('%s%s.json' % (files['loc'], file), 
+                 '%s%s.json' % (hot_config_loc, file_map[file]))
+        
+        if HOT_UPDATE_NUTSHARE:
+            copyfile('%s%s.json' % (files['loc'], file), 
+                     '%s%s.json' % (nutstore_common_loc, file))
+            
+            copyfile('%s%s.json' % (hot_config_loc, file_map[file]), 
+                     '%s%s.json' % (nutstore_config_loc, file_map[file]))
+        else:
+            copyfile('%s%s.json' % (nutstore_common_loc, file),
+                     '%s%s.json' % (files['loc'], file))
+            
+            copyfile('%s%s.json' % (nutstore_config_loc, file_map[file]),
+                     '%s%s.json' % (hot_config_loc, file_map[file]))
 
-    name_map = {
-        'hots': 'hot1',
-        'seconds': 'hot2',
-    }
-    config_loc = 'C:/dev/wtdev/config/'
-    for file in ['hots', 'seconds']:
-        copyfile('%s%s.json' % (files['loc'], file), '%s%s.json' % (config_loc, name_map[file]))
-
-    #update_contract_roll.run()
     input("press enter key to exit\n")

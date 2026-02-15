@@ -222,6 +222,7 @@ def write_edb_by_xl_sheet(file_setup, data_folder=sec_bits.LOCAL_NUTSTORE_FOLDER
     for data_file, sheet_name in file_setup:
         key = (data_file, sheet_name)
         xdf = pd.read_excel(f'{data_folder}/{data_file}',
+                            nrows=lookback,
                             sheet_name=sheet_name,
                             header=file_setup[key]['header'],
                             skiprows=file_setup[key]['skiprows']).reorder_levels(file_setup[key]['reorder'], axis=1)
@@ -229,6 +230,7 @@ def write_edb_by_xl_sheet(file_setup, data_folder=sec_bits.LOCAL_NUTSTORE_FOLDER
         xdf = xdf.set_index('date')
         if file_setup[key]['drop_zero']:
             xdf = xdf.replace(0, np.nan)
+        xdf = xdf.dropna(how='all')
         xdf = xdf[xdf.index >= sdate]
         print(f"saving data for {data_file}:{sheet_name}, total cols:{len(xdf.columns)}, col0={xdf.columns[0]}, last_date={xdf.index[0]}")
         err = save_data_to_edb(xdf, file_setup[key]['source'])

@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 import datetime
 import pyautogui
@@ -54,7 +55,7 @@ def update_ifind_xlsheet(filename='C:/Users/harvey/Nutstore/1/Nutstore/ifind_dat
     xl.Quit()
 
 
-def update_data_from_xl(data_folder=LOCAL_NUTSTORE_FOLDER, lookback=30):
+def update_data_from_xl(data_folder=LOCAL_NUTSTORE_FOLDER, lookback=1000):
     file_setup = {
         # ('ifind_data.xlsx', 'hist'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
         #                                 'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
@@ -91,10 +92,21 @@ def update_data_from_xl(data_folder=LOCAL_NUTSTORE_FOLDER, lookback=30):
 if __name__ == "__main__":
     data_folder = LOCAL_NUTSTORE_FOLDER 
     now = datetime.datetime.now()
-    if now.time() > datetime.time(18, 0, 0):
-        update_ifind_xlsheet(filename=f'{data_folder}/ifind_data.xlsx', wait_time=40, excluded=['hist'])
-        update_ifind_xlsheet(filename=f'{data_folder}/ifind_wkly.xlsx', wait_time=40, excluded=[])
-    update_ifind_xlsheet(filename=f'{data_folder}/ifind_daily.xlsx', wait_time=40, excluded=[])
-    if now.time() < datetime.time(12, 0, 0):
-        update_ifind_xlsheet(filename=f'{data_folder}/ifind_stock.xlsx', wait_time=10, excluded=['setup'])
-        update_ifind_xlsheet(filename=f'{data_folder}/fut_cont_hist.xlsx', wait_time=10, excluded=['config'])
+
+    args = sys.argv[1:]
+    if len(args) == 0:
+        cmd = 'refresh'
+    else:
+        cmd = args[0]
+    if cmd in ['refresh_all', 'refresh', 'all']:
+        if (now.time() > datetime.time(18, 0, 0)) or (cmd in ['refresh_all']):
+            update_ifind_xlsheet(filename=f'{data_folder}/ifind_data.xlsx', wait_time=40, excluded=['hist'])
+            update_ifind_xlsheet(filename=f'{data_folder}/ifind_wkly.xlsx', wait_time=40, excluded=[])
+        update_ifind_xlsheet(filename=f'{data_folder}/ifind_daily.xlsx', wait_time=40, excluded=[])
+        if (now.time() < datetime.time(12, 0, 0)) or (cmd in ['refresh_all']):
+            update_ifind_xlsheet(filename=f'{data_folder}/ifind_stock.xlsx', wait_time=10, excluded=['setup'])
+            update_ifind_xlsheet(filename=f'{data_folder}/fut_cont_hist.xlsx', wait_time=10, excluded=['config'])
+
+    if cmd in ['load', 'all']:
+        update_data_from_xl(data_folder=LOCAL_NUTSTORE_FOLDER, lookback=100)
+        
