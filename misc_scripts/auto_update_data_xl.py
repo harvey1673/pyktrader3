@@ -55,7 +55,11 @@ def update_ifind_xlsheet(filename='C:/Users/harvey/Nutstore/1/Nutstore/ifind_dat
     xl.Quit()
 
 
-def update_data_from_xl(data_folder=LOCAL_NUTSTORE_FOLDER, lookback=1000):
+def update_data_from_xl(data_folder=LOCAL_NUTSTORE_FOLDER, lookback=1000, full_hist=False):
+    if full_hist:
+        daily_file_name = 'ifind_daily_full.xlsx'
+    else:
+        daily_file_name = 'ifind_daily.xlsx'
     file_setup = {
         # ('ifind_data.xlsx', 'hist'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
         #                                 'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
@@ -74,13 +78,13 @@ def update_data_from_xl(data_folder=LOCAL_NUTSTORE_FOLDER, lookback=1000):
                                         'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
         ('ifind_data.xlsx', 'warrant_d'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 6, 7, 8],
                                         'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
-        ('ifind_daily.xlsx', 'petchem_d'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 6, 7, 8],
+        (daily_file_name, 'petchem_d'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 6, 7, 8],
                                         'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},                                        
-        ('ifind_daily.xlsx', 'macro_d'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 6, 7, 8],
+        (daily_file_name, 'macro_d'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 6, 7, 8],
                                         'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
-        ('ifind_daily.xlsx', 'ferrous_d'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 6, 7, 8],
+        (daily_file_name, 'ferrous_d'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 6, 7, 8],
                                         'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
-        ('ifind_daily.xlsx', 'base_d'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 6, 7, 8],
+        (daily_file_name, 'base_d'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 6, 7, 8],
                                         'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
     }
     write_edb_by_xl_sheet(file_setup, data_folder=data_folder, lookback=lookback)
