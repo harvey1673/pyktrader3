@@ -113,6 +113,95 @@ def rolling_percentile(ts, win=100, direction='max'):
     return scores_np_ts
 
 
+def rolling_trend(prices: pd.Series, window: int, return_mode: str = 'slope', log: bool = True,
+                  min_periods: int = None) -> pd.Series:
+    """Compute a rolling linear trend on a price series.
+
+    Parameters
+    - prices: pandas Series of prices (indexed by time)
+    - window: int, rolling window size
+    - return_mode: one of {'slope', 'residual', 't-stat'}
+        'slope'  -> returns slope of linear fit over window
+        'residual' -> returns last-point residual (actual - fitted)
+        't-stat' -> returns t-statistic of the slope estimate
+    - log: whether to take natural log of prices before regression (default True)
+    - min_periods: minimum periods required (defaults to window)
+
+    Returns
+    - pandas Series aligned with `prices` containing the requested rolling statistic
+    """
+    if min_periods is None:
+        min_periods = window
+    if return_mode not in {'slope', 'residual', 't-stat'}:
+        raise ValueError("return_mode must be one of 'slope', 'residual', or 't-stat'")
+
+    s = prices.copy().astype(float)
+    if log:
+        # convert non-positive values to NaN
+        with np.errstate(invalid='ignore'):
+            s = np.log(s)
+
+    def _apply(arr: np.ndarray) -> float:
+        if arr.size < 2 or np.isnan(arr).any():
+            return np.nan
+        x = np.arange(arr.size)
+        try:
+            coeffs, cov = np.polyfit(x, arr, 1, cov=True)
+            slope = coeffs[0]
+            intercept = coeffs[1]
+            if return_mode == 'slope':
+                return float(slope)
+            elif return_mode == 'residual':
+                fitted_last = intercept + slope * (arr.size - 1)
+                return float(arr[-1] - fitted_last)
+            else:  # t-stat
+                se = np.sqrt(cov[0, 0]) if cov is not None else np.nan
+                if se == 0 or np.isnan(se):
+                    return np.nan
+                return float(slope / se)
+        except Exception:
+            return np.nan
+
+    return s.rolling(window=window, min_periods=min_periods).apply(lambda a: _apply(a), raw=True)
+
+
+def ema_moments(ts: pd.Series, *, nan_policy: str = 'raise', adjust: bool = False, **ewm_kwargs) -> pd.DataFrame:
+    """Compute exponentially-weighted mean, variance, skew and kurtosis for a time series.
+
+    Parameters
+    - ts: pandas Series
+    - nan_policy: 'raise' (default) or 'ffill' to forward-fill NaNs before computation
+    - adjust: passed to `Series.ewm(adjust=...)`
+    - ewm_kwargs: one of the kwargs accepted by `Series.ewm` (e.g. span=..., com=..., halflife=..., alpha=...)
+
+    Returns
+    - pandas DataFrame with columns ['mean','var','skew','kurt']
+    """
+    if nan_policy not in {'raise', 'ffill'}:
+        raise ValueError("nan_policy must be 'raise' or 'ffill'")
+
+    s = ts.copy().astype(float)
+    if s.isna().any():
+        if nan_policy == 'raise':
+            raise ValueError('Input series contains NaN values; set nan_policy="ffill" to allow forward-fill')
+        else:
+            s = s.ffill()
+
+    # exponentially weighted mean
+    mu = s.ewm(adjust=adjust, **ewm_kwargs).mean()
+    # central moments via ewm on demeaned powers
+    dev = s - mu
+    m2 = (dev ** 2).ewm(adjust=adjust, **ewm_kwargs).mean()
+    m3 = (dev ** 3).ewm(adjust=adjust, **ewm_kwargs).mean()
+    m4 = (dev ** 4).ewm(adjust=adjust, **ewm_kwargs).mean()
+
+    skew = m3 / (m2 ** 1.5)
+    kurt = m4 / (m2 ** 2)
+
+    out = pd.DataFrame({'mean': mu, 'var': m2, 'skew': skew, 'kurt': kurt})
+    return out
+
+
 def robust_vol_calc(
     daily_returns: pd.Series,
     days: int = 35,
@@ -300,7 +389,7 @@ def calc_conv_signal(feature_ts, signal_func, param_rng, signal_cap=2.5, vol_win
             signal_ts = np.sign(feature_ts).rolling(win).mean()
         elif signal_func == 'ema':
             signal_ts = feature_ts.ewm(win).mean()/feature_ts.abs().ewm(vol_win).mean()
-        elif signal_func == 'emad':
+        elif signal_func == 'emd':
             signal_ts = feature_ts.ewm(win).mean()/feature_ts.ewm(vol_win).std()
         elif signal_func == 'ema_sgn':
             signal_ts = np.sign(feature_ts.ewm(win).mean())
@@ -684,6 +773,9 @@ def plot_df_on_2ax(df, left_on=[], right_on=[], left_style='-', right_style=':')
     plt.show()
 
 
+
+
+
 def lunar_label(df: pd.DataFrame, copy=True):
     def find_nearest_cny(d):
         curr_yr = int(d.year)
@@ -1007,6 +1099,64 @@ def xs_rank(df_in, cutoff=0.5):
     return df_out
 
 
+def sector_neutralize(df_in: pd.DataFrame,
+                      commod_to_sector: dict,
+                      mode: str = 'sec_mean',
+                      sector_scale_pow: float = 0.0,
+                      missing: str = 'self') -> pd.DataFrame:
+    
+    if mode not in {'sec_mean', 'signal_demeaned', 'sec_mean_demeaned'}:
+        raise ValueError("mode must be one of 'sec_mean', 'signal_demeaned', 'sec_mean_demeaned'")
+    if missing not in {'raise', 'self', 'uncategorized'}:
+        raise ValueError("missing must be one of 'raise', 'self', 'uncategorized'")
+
+    df = df_in.copy()
+    unmapped_cols = [col for col in df.columns if col not in commod_to_sector]
+
+    if unmapped_cols:
+        if missing == 'raise':
+            raise ValueError(f"Unmapped assets in commod_to_sector: {unmapped_cols}")
+        elif missing == 'self':
+            sector_map = pd.Series({col: commod_to_sector.get(col, col) for col in df.columns})
+        else:  # missing == 'uncategorized'
+            sector_map = pd.Series({col: commod_to_sector.get(col, 'uncategorized') for col in df.columns})
+    else:
+        sector_map = pd.Series({col: commod_to_sector[col] for col in df.columns})
+
+    # number of assets per sector (aligned by column name)
+    sector_counts = sector_map.value_counts()
+
+
+    # scale assets before computing sector statistics
+    if sector_scale_pow != 0.0:
+        denom = sector_map.map(sector_counts).astype(float).pow(sector_scale_pow)
+        df_scaled = df.div(denom, axis=1)
+    else:
+        df_scaled = df.copy()
+
+    # group means per sector (resulting DataFrame has same columns via transform)
+    sector_mean = (
+        df_scaled
+        .T.groupby(sector_map, axis=1)
+        .transform('mean')
+        .T
+        )
+    sector_mean = sector_mean.where(df_scaled.notna(), np.nan)
+
+    if mode == 'sec_mean':
+        return sector_mean
+
+    if mode == 'signal_demeaned':
+        # return scaled signal demeaned by (scaled) sector mean
+        return df_scaled.sub(sector_mean, axis=1)
+
+    # mode == 'sec_mean_demeaned'
+    sector_mean_by_sector = df_scaled.T.groupby(by=sector_map, axis=1).mean().T
+    cross_sector_avg = sector_mean_by_sector.mean(axis=1)
+    sector_means_demeaned = sector_mean.sub(cross_sector_avg, axis=0)
+    return sector_means_demeaned
+
+
 def seasonal_helper(df_in, func, date_range=None, min_obs=0,
                     backward=30, forward=30, rolling_years=100, **kwargs):
     import datetime as dt
@@ -1155,14 +1305,16 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
             if 'df' in pfunc:
                 n_diff = int(pfunc[2:])
                 feature_ts = getattr(feature_ts, chg_func)(n_diff)
+            elif 'lret' == pfunc:
+                feature_ts = np.log(feature_ts).diff()
+            elif 'lr' == pfunc:
+                feature_ts = np.log(1+feature_ts)
             elif 'sma' in pfunc:
                 n_days = int(pfunc[3:])
                 feature_ts = feature_ts.rolling(n_days).mean()
             elif 'ema' in pfunc:
                 n_days = int(pfunc[3:])
                 feature_ts = feature_ts.ewm(n_days).mean()            
-            elif 'lr' in pfunc:
-                feature_ts = np.log(1+feature_ts)
             elif 'csum' == pfunc:
                 feature_ts = feature_ts.cumsum()
             elif 'flr' == pfunc:
@@ -1170,6 +1322,16 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
             elif 'sum' in pfunc:
                 n_days = int(pfunc[3:])
                 feature_ts = feature_ts.rolling(n_days).sum()
+            elif 'regt' in pfunc:
+                n_days = int(pfunc[4:])
+                feature_ts = rolling_trend(feature_ts, n_days, return_mode='t-stat')
+            elif 'regs' in pfunc:
+                n_days = int(pfunc[4:])
+                feature_ts = rolling_trend(feature_ts, n_days, return_mode='slope')
+            elif 'skcor' in pfunc:
+                n_days = int(pfunc[5:])
+                res = ema_moments(feature_ts.dropna(), span=n_days)
+                feature_ts = res['skew'] / np.sqrt(res['kurt']-1)        
 
     if signal_func == 'seasonal_score_w':
         signal_ts = seasonal_score(feature_ts.to_frame(),

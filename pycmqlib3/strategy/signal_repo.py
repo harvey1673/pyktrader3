@@ -445,6 +445,39 @@ signal_store = {
     'metal_mom_hlrhys_xdemean': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'SA', 'v', 
                                   'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'si', 'lc', 'au', 'ag'],
                          ['metal_px', 'hysteresis', [0.7, 60, 0.1], '', 'hlratio', True, 'price', "ema1", 120, [-2,2]]],
+    'mtlmom_st_hlr': [[
+        'i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'SA', 'v', 'SH',
+        'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'ao', 'si', 'lc', 'ps', 'au', 'ag'],
+        ['px', 'hlratio', [20, 60, 2], '', '', True, 'price', "ema1", 120, [-2,2]]],
+    'mtlmom_st_hlr_xdemean': [[
+        'i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'SA', 'v', 'SH',
+        'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'ao', 'si', 'lc', 'ps', 'au', 'ag'],
+        ['px', 'hlratio', [20, 60, 2], '', '', True, 'price', "ema1", 120, [-2,2]]],
+    'mtlmom_lt_hlr': [[
+        'i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'SA', 'v', 'SH',
+        'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'ao', 'si', 'lc', 'ps', 'au', 'ag'],
+        ['px', 'hlratio', [240, 260, 2], '', '', True, 'price', "", 120, [-2,2]]],
+    'mtlmom_lt_hlr_xdemean': [[
+        'i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'SA', 'v', 'SH',
+        'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'ao', 'si', 'lc', 'ps', 'au', 'ag'],
+        ['px', 'hlratio', [240, 260, 2], '', '', True, 'price', "", 120, [-2,2]]],
+    'mtlmom_regt_mt': [[
+        'i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'SA', 'v', 'SH',
+        'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'ao', 'si', 'lc', 'ps', 'au', 'ag'],
+        ['px', 'ema', [1, 2, 1], 'regt40', '', True, 'price', "", 60, [-2,2]]],
+    'mtlmom_regt_mt_xdemean': [[
+        'i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'SA', 'v', 'SH',
+        'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'ao', 'si', 'lc', 'ps', 'au', 'ag'],
+        ['px', 'ema', [1, 2, 1], 'regt40', '', True, 'price', "", 60, [-2,2]]],
+    'mtlmom_regt_lt': [[
+        'i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'SA', 'v', 'SH',
+        'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'ao', 'si', 'lc', 'ps', 'au', 'ag'],
+        ['px', 'ema', [1, 2, 1], 'regt240', '', True, 'price', "", 60, [-2,2]]],
+    'mtlmom_regt_lt_xdemean': [[
+        'i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'SA', 'v', 'SH',
+        'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'ao', 'si', 'lc', 'ps', 'au', 'ag'],
+        ['px', 'ema', [1, 2, 1], 'regt240', '', True, 'price', "", 60, [-2,2]]],
+
     'metal_inv_hlr': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'v', 'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'ao', 'si'],
                       ['metal_inv', 'hlratio', [240, 250], '', '', False, 'price', "", 120, [-2,2]]],
     'metal_inv_hlr_xdemean': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'v', 'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'si', 'ao'],
