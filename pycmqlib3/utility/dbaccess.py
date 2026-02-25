@@ -47,6 +47,12 @@ deal_columns = ['status', 'internal_id', 'external_id', 'cpty', 'positions', \
                 'trader', 'sales', 'desk', 'business', 'portfolio', 'premium', 'product', 'reporting_ccy', \
                 'enter_date', 'last_date', 'commission', 'day1_comments']
 
+engine = create_engine('mysql+mysqlconnector://{user}:{passwd}@{host}/{dbase}'.format(
+    user=dbconfig['user'],
+    passwd=dbconfig['password'],
+    host=dbconfig['host'],
+    dbase=dbconfig['database']), echo=False)
+
 
 def get_proxy_server():
     user = sec_bits.PROXY_CREDENTIALS['user']
@@ -188,12 +194,7 @@ def load_int_stock_daily(code_list, start_date=None, end_date=None, dbtable='int
     return pivot
 
 
-def save_data_to_edb(xdf, source):
-    conn = create_engine('mysql+mysqlconnector://{user}:{passwd}@{host}/{dbase}'.format(
-        user=dbconfig['user'],
-        passwd=dbconfig['password'],
-        host=dbconfig['host'],
-        dbase=dbconfig['database']), echo=False)
+def save_data_to_edb(xdf, source, conn):
     func = mysql_replace_into
     error_list = []
     for index_name, freq, unit, index_code in xdf.columns:
@@ -221,19 +222,21 @@ def write_edb_by_xl_sheet(file_setup, data_folder=sec_bits.LOCAL_NUTSTORE_FOLDER
     error_list = []
     for data_file, sheet_name in file_setup:
         key = (data_file, sheet_name)
+        cfg = file_setup[key]
         xdf = pd.read_excel(f'{data_folder}/{data_file}',
-                            nrows=lookback,
                             sheet_name=sheet_name,
-                            header=file_setup[key]['header'],
-                            skiprows=file_setup[key]['skiprows']).reorder_levels(file_setup[key]['reorder'], axis=1)
+                            header=cfg['header'],
+                            skiprows=cfg['skiprows'], 
+                            engine="openpyxl").reorder_levels(cfg['reorder'], axis=1)
         xdf.columns = [col if idx > 0 else 'date' for idx, col in enumerate(xdf.columns)]
+        xdf["date"] = pd.to_datetime(xdf["date"], errors="coerce")
         xdf = xdf.set_index('date')
-        if file_setup[key]['drop_zero']:
+        if cfg['drop_zero']:
             xdf = xdf.replace(0, np.nan)
-        xdf = xdf.dropna(how='all')
+        #xdf = xdf.dropna(how='all')
         xdf = xdf[xdf.index >= sdate]
         print(f"saving data for {data_file}:{sheet_name}, total cols:{len(xdf.columns)}, col0={xdf.columns[0]}, last_date={xdf.index[0]}")
-        err = save_data_to_edb(xdf, file_setup[key]['source'])
+        err = save_data_to_edb(xdf, cfg['source'], engine)
         error_list += err
     return error_list
 
