@@ -194,8 +194,57 @@ def load_int_stock_daily(code_list, start_date=None, end_date=None, dbtable='int
     return pivot
 
 
-def save_data_to_edb(xdf, source, conn):
-    func = mysql_replace_into
+class EDBBatchWriter:
+    def __init__(self, dbtable='edb', flavor='mysql', flush_rows=25000):
+        self.dbtable = dbtable
+        self.flavor = flavor
+        self.flush_rows = flush_rows
+        self.buffer = []
+        self.buffer_rows = 0
+        self.error_list = []
+        if flavor == 'mysql':
+            self.conn = create_engine(
+                'mysql+mysqlconnector://{user}:{passwd}@{host}/{dbase}'.format(user=dbconfig['user'],
+                                                                               passwd=dbconfig['password'],
+                                                                               host=dbconfig['host'],
+                                                                               dbase=dbconfig['database']),
+                echo=False)
+            self.func = mysql_replace_into
+        else:
+            self.conn = None
+            self.func = None
+
+    def add(self, df):
+        if len(df) == 0:
+            return
+        self.buffer.append(df)
+        self.buffer_rows += len(df)
+        if self.buffer_rows >= self.flush_rows:
+            self.flush()
+
+    def flush(self):
+        if self.buffer_rows == 0:
+            return
+        out_df = pd.concat(self.buffer, axis=0, ignore_index=True)
+        try:
+            out_df.to_sql(self.dbtable,
+                          con=self.conn,
+                          if_exists='append',
+                          index=False,
+                          method=self.func,
+                          chunksize=self.flush_rows)
+        except Exception as e:
+            print(f"error in flush: {e}")
+        self.buffer = []
+        self.buffer_rows = 0
+
+    def close(self):
+        self.flush()
+        if hasattr(self.conn, 'dispose'):
+            self.conn.dispose()
+
+
+def save_data_to_edb(xdf, source, db_writer):
     error_list = []
     for index_name, freq, unit, index_code in xdf.columns:
         adf = xdf[(index_name, freq, unit, index_code)].to_frame('value').dropna()
@@ -207,27 +256,27 @@ def save_data_to_edb(xdf, source, conn):
         adf['publish_time'] = adf['date']
         adf['source'] = source
         adf['ref_name'] = '_'.join(index_name.split(':'))
-        try:
-            # insert_df_to_sql(adf, 'edb', is_replace=True)
-            adf.to_sql('edb', con=conn, if_exists='append', index=False, method=func)
-        except Exception as e:
-            print("error: %s" % e)
-            error_list.append(index_code)
-    conn.dispose()
+        db_writer.add(adf)
     return error_list
 
 
-def write_edb_by_xl_sheet(file_setup, data_folder=sec_bits.LOCAL_NUTSTORE_FOLDER, lookback=20000):
+def write_edb_by_xl_sheet(file_setup,
+                          data_folder=sec_bits.LOCAL_NUTSTORE_FOLDER,
+                          lookback=20000,
+                          excel_engine='calamine'):
     sdate = pd.to_datetime("today") - pd.Timedelta(lookback, unit='D')
     error_list = []
+    db_writer = EDBBatchWriter(dbtable='edb', flavor='mysql', flush_rows=25000)
+
     for data_file, sheet_name in file_setup:
         key = (data_file, sheet_name)
         cfg = file_setup[key]
-        xdf = pd.read_excel(f'{data_folder}/{data_file}',
-                            sheet_name=sheet_name,
-                            header=cfg['header'],
-                            skiprows=cfg['skiprows'], 
-                            engine="openpyxl").reorder_levels(cfg['reorder'], axis=1)
+        xdf = pd.read_excel(
+            f'{data_folder}/{data_file}',
+            sheet_name=sheet_name,
+            header=cfg['header'],
+            skiprows=cfg['skiprows'],
+            engine=excel_engine).reorder_levels(cfg['reorder'], axis=1)
         xdf.columns = [col if idx > 0 else 'date' for idx, col in enumerate(xdf.columns)]
         xdf["date"] = pd.to_datetime(xdf["date"], errors="coerce")
         xdf = xdf.set_index('date')
@@ -236,19 +285,25 @@ def write_edb_by_xl_sheet(file_setup, data_folder=sec_bits.LOCAL_NUTSTORE_FOLDER
         #xdf = xdf.dropna(how='all')
         xdf = xdf[xdf.index >= sdate]
         print(f"saving data for {data_file}:{sheet_name}, total cols:{len(xdf.columns)}, col0={xdf.columns[0]}, last_date={xdf.index[0]}")
-        err = save_data_to_edb(xdf, cfg['source'], engine)
+        err = save_data_to_edb(xdf, cfg['source'], db_writer=db_writer)
         error_list += err
+
+    db_writer.close()
     return error_list
 
 
-def write_fut_roll_daily_by_xl(data_file, data_folder=sec_bits.LOCAL_NUTSTORE_FOLDER):
+def write_fut_roll_daily_by_xl(data_file,
+                               data_folder=sec_bits.LOCAL_NUTSTORE_FOLDER,
+                               excel_engine='calamine'):
     data_list = []
     for col in ["close", "pre_close","high", "low","open", "settle"]:
-        tmp_df = pd.read_excel(f"{data_folder}/{data_file}", 
-                            sheet_name=col, 
-                            header=[0, 1, 2], 
-                            skiprows=[3, 4, 5, 6], 
-                            index_col=0)
+        tmp_df = pd.read_excel(
+            f"{data_folder}/{data_file}",
+            sheet_name=col,
+            header=[0, 1, 2],
+            skiprows=[3, 4, 5, 6],
+            index_col=0,
+            engine=excel_engine)
         tmp_df.index.name = "date"
         tmp_df = tmp_df.stack(level=[0, 1, 2]).reset_index().rename(columns={0: "value"})
         tmp_df["field"] = col
@@ -270,21 +325,34 @@ def write_fut_roll_daily_by_xl(data_file, data_folder=sec_bits.LOCAL_NUTSTORE_FO
     conn.dispose()
 
 
-def write_stock_data_by_xl(data_file, data_folder=sec_bits.LOCAL_NUTSTORE_FOLDER, lookback=20000):
+def write_stock_data_by_xl(data_file,
+                           data_folder=sec_bits.LOCAL_NUTSTORE_FOLDER,
+                           lookback=20000,
+                           excel_engine='calamine'):
     sdate = pd.to_datetime("today") - pd.Timedelta(lookback, unit='D')
     conn = create_engine('mysql+mysqlconnector://{user}:{passwd}@{host}/{dbase}'.format(
         user=dbconfig['user'],
         passwd=dbconfig['password'],
         host=dbconfig['host'],
         dbase=dbconfig['database']), echo=False)
-    error_list = [] 
-    func = mysql_replace_into    
-    rows = pd.read_excel(f'{data_folder}/{data_file}', sheet_name="setup", header=None, skiprows=2, nrows=2).T.dropna() 
+    error_list = []
+    func = mysql_replace_into
+    rows = pd.read_excel(
+        f'{data_folder}/{data_file}',
+        sheet_name="setup",
+        header=None,
+        skiprows=2,
+        nrows=2,
+        engine=excel_engine).T.dropna()
     rows.columns = rows.iloc[0]
     setup_df = rows[1:].reset_index(drop=True).set_index("sheet_name")
-    ref_date_dict = setup_df['ref_date'].to_dict()    
-    for sheet_name in ref_date_dict:        
-        xdf = pd.read_excel(f'{data_folder}/{data_file}', sheet_name=sheet_name, header=[0, 1, 2])
+    ref_date_dict = setup_df['ref_date'].to_dict()
+    for sheet_name in ref_date_dict:
+        xdf = pd.read_excel(
+            f'{data_folder}/{data_file}',
+            sheet_name=sheet_name,
+            header=[0, 1, 2],
+            engine=excel_engine)
         xdf.columns = [col if idx > 0 else 'date' for idx, col in enumerate(xdf.columns)]
         xdf = xdf.set_index('date')
         xdf.columns = pd.MultiIndex.from_tuples(xdf.columns)
@@ -308,9 +376,9 @@ def write_stock_data_by_xl(data_file, data_folder=sec_bits.LOCAL_NUTSTORE_FOLDER
             xdf.to_sql('int_stock_daily', con=conn, if_exists='append', index=False, method=func)
         except Exception as e:
             print("error: %s" % e)
-            error_list.append(sheet_name)        
+            error_list.append(sheet_name)
     conn.dispose()
-    return error_list    
+    return error_list
 
 
 def tick2dict(tick):
@@ -1043,7 +1111,7 @@ def load_fut_by_product(product, exch, start_date, end_date, freq = 'd'):
             prod_key = f'{prod}%'
         else:
             prod_key = f"{prod}____"
-        cnx = connect(**dbconfig)        
+        cnx = connect(**dbconfig)
         stmt = "select {variables} from {table} where instID like '{prod_key}'  ".format(\
                             prod_key = prod_key,
                             variables=','.join(columns), table = db_table)
@@ -1053,9 +1121,8 @@ def load_fut_by_product(product, exch, start_date, end_date, freq = 'd'):
         stmt = stmt + "order by %s" % (','.join(order_fields))
         df = pd.io.sql.read_sql(stmt, cnx)
         out_df = out_df.append(df)
-    if product == 'MA':        
+    if product == 'MA':
         out_df = out_df[out_df.instID != 'ME505']
         out_df['instID'] = out_df['instID'].replace(['MA506'], 'MA505')
     return out_df
 
-    

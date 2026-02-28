@@ -10,7 +10,7 @@ from pycmqlib3.utility.sec_bits import LOCAL_NUTSTORE_FOLDER, IFIND_XL_HOTKEYS
 from pycmqlib3.utility.dbaccess import write_edb_by_xl_sheet, write_stock_data_by_xl, write_fut_roll_daily_by_xl
 
 
-def update_ifind_xlsheet(filename='C:/Users/harvey/Nutstore/1/Nutstore/ifind_data.xlsx', 
+def update_ifind_xlsheet(filename='C:/Users/harvey/Nutstore/1/Nutstore/ifind_data.xlsx',
                          wait_time=40, excluded=['hist']):
     file_name = os.path.basename(filename)
     xl = win32com.client.DispatchEx("Excel.Application")
@@ -55,7 +55,10 @@ def update_ifind_xlsheet(filename='C:/Users/harvey/Nutstore/1/Nutstore/ifind_dat
     xl.Quit()
 
 
-def update_data_from_xl(data_folder=LOCAL_NUTSTORE_FOLDER, lookback=1000, full_hist=False):
+def update_data_from_xl(data_folder=LOCAL_NUTSTORE_FOLDER,
+                        lookback=1000,
+                        full_hist=False,
+                        excel_engine='calamine'):
     if full_hist:
         daily_file_name = 'ifind_daily_full.xlsx'
     else:
@@ -79,7 +82,7 @@ def update_data_from_xl(data_folder=LOCAL_NUTSTORE_FOLDER, lookback=1000, full_h
         ('ifind_data.xlsx', 'warrant_d'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 6, 7, 8],
                                         'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
         (daily_file_name, 'petchem_d'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 6, 7, 8],
-                                        'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},                                        
+                                        'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
         (daily_file_name, 'macro_d'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 6, 7, 8],
                                         'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
         (daily_file_name, 'ferrous_d'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 6, 7, 8],
@@ -87,14 +90,22 @@ def update_data_from_xl(data_folder=LOCAL_NUTSTORE_FOLDER, lookback=1000, full_h
         (daily_file_name, 'base_d'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 6, 7, 8],
                                         'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
     }
-    write_edb_by_xl_sheet(file_setup, data_folder=data_folder, lookback=lookback)
-    write_stock_data_by_xl('ifind_stock.xlsx', data_folder=LOCAL_NUTSTORE_FOLDER, lookback=1000)
-    write_fut_roll_daily_by_xl('fut_cont_hist.xlsx', data_folder=LOCAL_NUTSTORE_FOLDER)
+    write_edb_by_xl_sheet(file_setup,
+                          data_folder=data_folder,
+                          lookback=lookback,
+                          excel_engine=excel_engine)
+    write_stock_data_by_xl('ifind_stock.xlsx',
+                           data_folder=LOCAL_NUTSTORE_FOLDER,
+                           lookback=1000,
+                           excel_engine=excel_engine)
+    write_fut_roll_daily_by_xl('fut_cont_hist.xlsx',
+                               data_folder=LOCAL_NUTSTORE_FOLDER,
+                               excel_engine=excel_engine)
 
 
 
 if __name__ == "__main__":
-    data_folder = LOCAL_NUTSTORE_FOLDER 
+    data_folder = LOCAL_NUTSTORE_FOLDER
     now = datetime.datetime.now()
 
     args = sys.argv[1:]
@@ -112,5 +123,4 @@ if __name__ == "__main__":
             update_ifind_xlsheet(filename=f'{data_folder}/fut_cont_hist.xlsx', wait_time=10, excluded=['config'])
 
     if cmd in ['load', 'all']:
-        update_data_from_xl(data_folder=LOCAL_NUTSTORE_FOLDER, lookback=100)
-        
+        update_data_from_xl(data_folder=LOCAL_NUTSTORE_FOLDER, lookback=1000)
