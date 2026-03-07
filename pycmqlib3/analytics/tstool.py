@@ -221,7 +221,7 @@ def robust_vol_calc(
         floor_days: int = 500,
     ) -> pd.Series:
         vol_min = vol.rolling(min_periods=floor_min_periods, window=floor_days).quantile(
-            quantile=floor_min_quant
+            q=floor_min_quant
         )
         vol_min.iloc[0] = 0.0
         vol_min.ffill(inplace=True)
@@ -511,9 +511,9 @@ def signal_buffer(signal_ts, gap=0.2):
         for idx in range(1, len(sig_np)):
             if ~np.isnan(sig_np[idx]):
                 if (sig_np[idx] - gap_np[idx] - pos_np[idx-1]) >= 0:
-                    pos_np[idx] = sig_np[idx] - gap[idx]
+                    pos_np[idx] = sig_np[idx] - gap_np[idx]
                 elif (sig_np[idx] + gap_np[idx] - pos_np[idx-1]) < 0:
-                    pos_np[idx] = sig_np[idx] + gap[idx]
+                    pos_np[idx] = sig_np[idx] + gap_np[idx]
                 else:
                     pos_np[idx] = pos_np[idx-1]
             else:
@@ -565,7 +565,7 @@ def make_seasonal_df(ser, limit=1, fill=False, weekly_dense=False):
     df = pd.pivot_table(df, values='data', index='date_s', columns='year', aggfunc=np.sum)
 
     if fill:
-        df = df.fillna(method='ffill', limit=limit)
+        df = df.ffill(limit=limit)
 
     if type(ser.index) == pd.PeriodIndex and ser.index.freqstr[0] == 'W':
         df = df.ffill(limit=4)
@@ -584,7 +584,7 @@ def make_lunar_df(ser, limit=1, fill=False, group_col='label_day'):
     tdf = lunar_label(df)
     df = pd.pivot_table(tdf, values='data', index=group_col, columns='label_yr', aggfunc='last')
     if fill:
-        df = df.fillna(method='ffill', limit=limit)
+        df = df.ffill(limit=limit)
     if type(ser.index) == pd.PeriodIndex and ser.index.freqstr[0] == 'W':
         df = df.ffill(limit=4)
     return df
@@ -649,8 +649,8 @@ def plot_lunar_df(ts, cutoff=None, title='', group_col='label_day', convert_seas
         plt.plot(xts.index[ts_mask], xts.values[ts_mask], linestyle=linestyle, marker=marker, label=yr)
 
         if yr == curr_yr:
-            ax.text(xts.index[ts_mask][-1], xts.values[ts_mask][-1],
-                    "%s: %.1fs" % (xts.index[ts_mask][-1], xts.values[ts_mask][-1]))
+            ax.text(xts.index[ts_mask].iloc[-1], xts.values[ts_mask].iloc[-1],
+                    "%s: %.1fs" % (xts.index[ts_mask].iloc[-1], xts.values[ts_mask].iloc[-1]))
     plt.title(title, fontproperties=font)
     ax.grid(True)
     plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
@@ -953,12 +953,12 @@ def lag(df_in, lag):
 
 
 def filldown(df_in, maxfill=1):
-    df_out = df_in.fillna(method='ffill', limit=maxfill)
+    df_out = df_in.ffill(limit=maxfill)
     return df_out
 
 
 def fillup(df_in, maxfill=1):
-    df_out = df_in.fillna(method='bfill', limit=maxfill)
+    df_out = df_in.bfill(limit=maxfill)
     return df_out
 
 
@@ -1000,7 +1000,7 @@ def np_diff(nd_in, window=1):
 def exp_smooth(df_in, hl, min_obs=0, fill_backward=True):
     df_out = df_in.ewm(halflife=hl,  min_periods=min_obs).mean()
     if fill_backward:
-        df_out = df_out.fillna(method='bfill')
+        df_out = df_out.bfill()
     return df_out
 
 
@@ -1254,7 +1254,7 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
         end_date = max(curr_date, end_date)
     cdates = pd.date_range(start=start_date, end=end_date, freq='D')
     if bdates is None:
-        bdates = pd.bdate_range(start=start_date, end=end_date, freq='C')
+        bdates = pd.bdate_range(start=start_date, end=end_date, freq='C', holidays=CHN_Holidays)
     if len(freq) > 0 and 'W-' in freq:
         feature_ts = spot_df[feature].reindex(index=cdates).ffill().reindex(
             index=pd.date_range(start=start_date, end=end_date, freq=freq)).ffill()

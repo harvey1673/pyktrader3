@@ -283,7 +283,7 @@ def daily_position_update(tday = datetime.date.today(), update_level = 0, \
         inst_margin_dict = {}
         for inst in inst_list:
             adf = dbaccess.load_daily_data_to_df(conn, 'fut_daily', inst, misc.day_shift(tday, '-5b', misc.CHN_Holidays), tday)
-            inst_close_dict[inst] = float(adf['close'][-1]) * misc.product_lotsize[misc.inst2product(inst)]
+            inst_close_dict[inst] = float(adf['close'].iloc[-1]) * misc.product_lotsize[misc.inst2product(inst)]
             inst_margin_dict[inst] = margin_dict[misc.inst2product(inst)]
         df['price'] = df['instID'].apply(lambda x: inst_close_dict[x])
         df['margin_ratio'] = df['instID'].apply(lambda x: inst_margin_dict[x])
@@ -357,7 +357,7 @@ def epoch_pos_update(tday = datetime.date.today(), label = 'am', scaler_old = 1.
         inst_margin_dict = {}
         for inst in inst_list:
             adf = dbaccess.load_daily_data_to_df(conn, 'fut_daily', inst, misc.day_shift(tday, '-5b', misc.CHN_Holidays), tday)
-            inst_close_dict[inst] = float(adf['close'][-1]) * misc.product_lotsize[misc.inst2product(inst)]
+            inst_close_dict[inst] = float(adf['close'].iloc[-1]) * misc.product_lotsize[misc.inst2product(inst)]
             inst_margin_dict[inst] = margin_dict[misc.inst2product(inst)]
         df['price'] = df['instID'].apply(lambda x: inst_close_dict[x])
         df['margin_ratio'] = df['instID'].apply(lambda x: inst_margin_dict[x])

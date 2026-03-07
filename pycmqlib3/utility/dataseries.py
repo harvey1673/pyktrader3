@@ -247,13 +247,13 @@ def nearby_wt(prodcode, n=1, start_date=None, end_date=None, roll_rule='-20b', f
                 last_date = df.index[-1]
             tmp_df = load_hist_bars_to_df(f"{exch}.{nb_cont}", start_date=last_date, end_date=last_date, index_col=index_col, freq='d')
             if shift_mode == 1:
-                shift = tmp_df[roll_col][-1] - df[roll_col][-1]
+                shift = tmp_df[roll_col].iloc[-1] - df[roll_col].iloc[-1]
                 df['shift'] = df['shift'] + shift
                 for ticker in ['open', 'high', 'low', 'close', 'settle']:
                     if ticker in df.columns:
                         df[ticker] = df[ticker] + shift
             else:
-                shift = float(tmp_df[roll_col][-1])/float(df[roll_col][-1])
+                shift = float(tmp_df[roll_col].iloc[-1])/float(df[roll_col].iloc[-1])
                 df['shift'] = df['shift'] + math.log(shift)
                 for ticker in ['open', 'high', 'low', 'close', 'settle']:
                     if ticker in df.columns:

@@ -123,4 +123,4 @@ if __name__ == "__main__":
             update_ifind_xlsheet(filename=f'{data_folder}/fut_cont_hist.xlsx', wait_time=10, excluded=['config'])
 
     if cmd in ['load', 'all']:
-        update_data_from_xl(data_folder=LOCAL_NUTSTORE_FOLDER, lookback=1000)
+        update_data_from_xl(data_folder=LOCAL_NUTSTORE_FOLDER, lookback=100)

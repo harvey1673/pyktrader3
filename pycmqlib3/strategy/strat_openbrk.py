@@ -67,13 +67,13 @@ class OpenBrkChan(Strategy):
             self.last_min_id[idx] = int(min_id / 60) * 100 + min_id % 60
             ddf = self.agent.day_data[inst].data
             mdf = self.agent.bar_factory[under][self.split_mode[idx]].data
-            min_date = mdf['date'][-1]
-            last_date = ddf['date'][-1]
+            min_date = mdf['date'].iloc[-1]
+            last_date = ddf['date'].iloc[-1]
             if last_date < min_date:
-                self.tday_open[idx] = mdf['open'][-1]
+                self.tday_open[idx] = mdf['open'].iloc[-1]
                 self.recalc_rng(idx, -1)
             else:
-                self.tday_open[idx] = mdf['close'][-1]
+                self.tday_open[idx] = mdf['close'].iloc[-1]
                 self.recalc_rng(idx, 0)
         self.update_trade_unit()
         self.save_state()
@@ -83,21 +83,21 @@ class OpenBrkChan(Strategy):
         under = self.underlying[idx].name
         ddf = self.agent.bar_factory[under][self.split_mode[idx]].data
         ddf = ddf[:(len(ddf) + shift)]
-        atr = ddf['ATR' + str(self.atr_win[idx])][-1]
+        atr = ddf['ATR' + str(self.atr_win[idx])].iloc[-1]
         if self.channels[idx] > 0:
             mode = self.channel_type[idx]
             self.chan_high[idx] = self.high_func[mode](ddf[self.high_field[mode]][-self.channels[idx]:])
             self.chan_low[idx] = self.low_func[mode](ddf[self.low_field[mode]][-self.channels[idx]:])
         if self.ma_chan[idx] > 0:
-            self.ma_level[idx] = ddf['MA_CLOSE_' + str(self.ma_chan[idx])][-1]
+            self.ma_level[idx] = ddf['MA_CLOSE_' + str(self.ma_chan[idx])].iloc[-1]
         if win > 0:
             self.cur_rng[idx] = max(max(ddf['high'][-win:]) - min(ddf['close'][-win:]), \
                                     max(ddf['close'][-win:]) - min(ddf['low'][-win:]))/np.sqrt(win)
         elif win == 0:
-            self.cur_rng[idx] = max(ddf['high'][-1] - ddf['low'][-1], abs(ddf['close'][-1] - ddf['close'][-2]))
+            self.cur_rng[idx] = max(ddf['high'].iloc[-1] - ddf['low'].iloc[-1], abs(ddf['close'].iloc[-1] - ddf['close'][-2]))
         else:
             abs_win = abs(win)
-            self.cur_rng[idx] = max(ddf['high'][-1] - ddf['close'][-1], ddf['close'][-1] - ddf['low'][-1])
+            self.cur_rng[idx] = max(ddf['high'].iloc[-1] - ddf['close'].iloc[-1], ddf['close'].iloc[-1] - ddf['low'].iloc[-1])
             for win in range(2, abs_win + 1):
                 fact = np.sqrt(1.0 / abs_win)
                 self.cur_rng[idx] = max((max(ddf['high'][-abs_win:]) - min(ddf['close'][-abs_win:])) * fact, \
@@ -132,13 +132,13 @@ class OpenBrkChan(Strategy):
         if (self.freq[idx] > 0):
             min_data = self.agent.bar_factory[under_name]['m1'].bar_array.data
             if self.price_mode[idx] == 'HL':
-                buy_p = min_data['high'][-1]
-                sell_p = min_data['low'][-1]
+                buy_p = min_data['high'].iloc[-1]
+                sell_p = min_data['low'].iloc[-1]
             elif self.price_mode[idx] == 'CL':
-                buy_p = min_data['close'][-1]
+                buy_p = min_data['close'].iloc[-1]
                 sell_p = buy_p
             elif self.price_mode[idx] == 'TP':
-                buy_p = (min_data['high'][-1] + min_data['low'][-1] + min_data['close'][-1]) / 3.0
+                buy_p = (min_data['high'].iloc[-1] + min_data['low'].iloc[-1] + min_data['close'].iloc[-1]) / 3.0
                 sell_p = buy_p
             else:
                 self.on_log('Unsupported price type for strat=%s inst=%s' % (self.name, under_name), level=logging.WARNING)

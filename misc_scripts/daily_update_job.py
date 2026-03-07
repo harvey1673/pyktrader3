@@ -223,7 +223,7 @@ def update_wt_from_db(tday):
             prod = contracts[exch][cont]['product']
             multiple = product_lotsize[prod]
             ddf = dbaccess.load_daily_data_to_df(cnx, 'fut_daily', cont, start_date, end_date, index_col=None)
-            ddf['settle'] = ddf['settle'].fillna(method='ffill')
+            ddf['settle'] = ddf['settle'].ffill()
             ddf = ddf.dropna(subset=['close', 'volume', 'settle'])
             if len(ddf) > 0:
                 #print('daily data for contract = %s\n' % cont)

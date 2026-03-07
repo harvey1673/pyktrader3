@@ -25,7 +25,7 @@ def update_port_pos(tday=datetime.date.today(), email_notify=EMAIL_NOTIFY):
     details = {}
     for update_field in update_func_list:
         if update_field == 'fun_data_xl_loading':
-            update_data_from_xl(lookback=300)
+            update_data_from_xl(lookback=100)
         elif update_field == 'fun_factor_update':
             update_db_factor(run_date=tday)
         elif update_field == 'fetch_sgx_eod':

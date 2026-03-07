@@ -81,7 +81,7 @@ def read_roll_map_from_excel(src_excel: str,
             roll_dict[prodcode].append(roll_map)
     roll_map_dict = {}
     for prodcode in roll_dict.keys():
-        roll_map_dict[prodcode] = pd.concat(roll_dict[prodcode], axis=1, join='outer').fillna(method='ffill')
+        roll_map_dict[prodcode] = pd.concat(roll_dict[prodcode], axis=1, join='outer').ffill()
     return roll_map_dict
 
 
@@ -362,7 +362,7 @@ def handle_roll_schedule(df, roll_map):
         daily_roll = roll_df.reindex(pd.bdate_range(start=sdate,
                                                     end=edate,
                                                     holidays=misc.CHN_Holidays,
-                                                    freq='C')).fillna(method='ffill')
+                                                    freq='C')).ffill()
         daily_roll.index.name = 'date'
         daily_roll = daily_roll.reset_index().rename(columns={col: 'instID'})
         daily_roll['date'] = daily_roll['date'].dt.date

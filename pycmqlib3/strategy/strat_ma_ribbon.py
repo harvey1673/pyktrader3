@@ -60,9 +60,9 @@ class MARibbonTrader(Strategy):
     def update_mkt_state(self, idx):
         instID = self.underliers[idx][0]
         xdf = self.agent.bar_factory[instID][self.freq[idx]].data
-        self.ribbon_corr[idx] = xdf['MARIBBON_CORR'][-1]
-        self.ribbon_pval[idx] = xdf['MARIBBON_PVAL'][-1]
-        self.ribbon_dist[idx] = xdf['MARIBBON_DIST'][-1]
+        self.ribbon_corr[idx] = xdf['MARIBBON_CORR'].iloc[-1]
+        self.ribbon_pval[idx] = xdf['MARIBBON_PVAL'].iloc[-1]
+        self.ribbon_dist[idx] = xdf['MARIBBON_DIST'].iloc[-1]
         if self.channels[idx] > 0:
             key = self.channel_keys[0] + str(self.channels[idx])
             self.chan_high[idx] = xdf[key][-2]

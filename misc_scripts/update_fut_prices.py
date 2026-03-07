@@ -111,7 +111,7 @@ def refresh_saved_fut_prices(
                             if col in curr_mdf.columns:
                                 curr_mdf.loc[:, col] = curr_mdf.loc[:, col] * np.exp(shift)
                     curr_mdf['shift'] = curr_mdf['shift'] - shift
-                start_d = curr_mdf['date'][-1]
+                start_d = curr_mdf['date'].iloc[-1]
             else:
                 curr_mdf = pd.DataFrame()
                 start_d = start_date
@@ -127,8 +127,8 @@ def refresh_saved_fut_prices(
             mdf = mdf.set_index('datetime')
             mdf.index = pd.to_datetime(mdf.index)
             if len(curr_mdf) > 0:
-                cutoff = curr_mdf['date'][-1]
-                new_shift = mdf[mdf['date'] == cutoff]['shift'][0]
+                cutoff = curr_mdf['date'].iloc[-1]
+                new_shift = mdf[mdf['date'] == cutoff]['shift'].iloc[0]
                 if new_shift != 0:
                     for col in ['open', 'high', 'low', 'close']:
                         if col in curr_mdf.columns:

@@ -26,9 +26,9 @@ class RBreaker(Strategy):
             a = self.ratios[idx][0]
             b = self.ratios[idx][1]
             c = self.ratios[idx][2]
-            dhigh = ddf['high'][-1]
-            dlow = ddf['low'][-1]
-            dclose = ddf['close'][-1]
+            dhigh = ddf['high'].iloc[-1]
+            dlow = ddf['low'].iloc[-1]
+            dclose = ddf['close'].iloc[-1]
             if dhigh - dlow <= self.min_rng[idx] * dclose:
                 self.reverse_flag[idx] = False
             self.ssetup[idx] = dhigh + a*(dclose - dlow)
@@ -85,8 +85,8 @@ class RBreaker(Strategy):
         tick_base = self.tick_base[idx]
         dhigh = self.agent.cur_day[inst].data['high']
         dlow  = self.agent.cur_day[inst].data['low']
-        mhigh = self.agent.bar_factory[inst][self.freq[idx]].data['high'][-1]
-        mlow  = self.agent.bar_factory[inst][self.freq[idx]].data['low'][-1]
+        mhigh = self.agent.bar_factory[inst][self.freq[idx]].data['high'].iloc[-1]
+        mlow  = self.agent.bar_factory[inst][self.freq[idx]].data['low'].iloc[-1]
         if num_pos > 1:
             self.logger.warning('something wrong with position management - submitted trade is empty but trade position is more than 1')
             return save_status

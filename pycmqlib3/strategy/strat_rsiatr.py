@@ -63,11 +63,11 @@ class RsiAtrStrat(Strategy):
         instID = self.underliers[idx][0]
         xdf = self.agent.bar_factory[instID][self.freq[idx]].data
         rsi_key = "RSI" + str(self.rsi_win[idx])
-        self.rsi[idx] = xdf[rsi_key][-1]
+        self.rsi[idx] = xdf[rsi_key].iloc[-1]
         atr_key = "ATR" + str(self.atr_win[idx])
-        self.atr[idx]  = xdf[atr_key][-1]
+        self.atr[idx]  = xdf[atr_key].iloc[-1]
         atrma_key = "MA_ATR" + str(self.atr_win[idx]) + '_' + str(self.atrma_win[idx])
-        self.atrma[idx] = xdf[atrma_key][-1]
+        self.atrma[idx] = xdf[atrma_key].iloc[-1]
 
     def on_bar(self, idx, freq_list):
         self.update_mkt_state(idx)

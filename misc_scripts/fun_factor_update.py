@@ -325,7 +325,7 @@ def beta_spd_trend(price_df, spot_df, product_list, pair_list,
         feature_ts = spd_pxchg.dropna().cumsum()
         signal_ts = calc_conv_signal(feature_ts, signal_func=signal_func,
                                      param_rng=param_rng, signal_cap=signal_cap, vol_win=120)
-        signal_ts = signal_buffer(signal_ts, signal_buf)
+        #signal_ts = signal_buffer(signal_ts, signal_buf)
         if not bullish:
             signal_ts = -signal_ts
         signal_df[trade_asset] += signal_ts*trade_vol/spd_vol
@@ -402,19 +402,19 @@ def mr_pair(price_df, spot_df, product_list, mr_pair_list=mr_commod_pairs,
 
 
 def seasonal_custom_1(price_df, spot_df, product_list, now=datetime.datetime.now()):
-    signal_df = pd.DataFrame(0, index=price_df.index, columns=product_list)
+    signal_df = pd.DataFrame(0.0, index=price_df.index, columns=product_list)
     if 'au' in product_list:
         signal_ts = calc_conv_signal(price_df[("auc1", "close")],
                                      signal_func='hlratio',
                                      param_rng=[120, 160, 2],
                                      signal_cap=[-2, 2],
                                      vol_win=120)
-        last_signal = signal_ts[-1]
-        signal_ts.loc[signal_ts.index.weekday.isin([2, 3])] = 1
+        last_signal = signal_ts.iloc[-1]
+        signal_ts.loc[signal_ts.index.weekday.isin([2, 3])] = 1.0
         if (signal_df.index[-1].weekday() == 2) and (now.weekday() == 2):
-            signal_ts[-1] = last_signal
+            signal_ts.iloc[-1] = last_signal
         elif (signal_df.index[-1].weekday() == 4) and (now.weekday() == 4):
-            signal_ts[-1] = 1
+            signal_ts.iloc[-1] = 1.0
         signal_df['au'] = signal_ts*1.5
 
     for asset in ['l', 'pp', 'v', 'MA']:
@@ -425,7 +425,7 @@ def seasonal_custom_1(price_df, spot_df, product_list, now=datetime.datetime.now
             signal_df.loc[~signal_df.index.day.isin(range(5, 23)), asset] += 0.25
 
     if 'SF' in product_list:
-        signal_df.loc[signal_df.index.weekday.isin([2, 3]), 'SF'] = 1
+        signal_df.loc[signal_df.index.weekday.isin([2, 3]), 'SF'] = 1.0
 
     for asset in ['T', 'TF']:
         if asset in product_list:
@@ -434,12 +434,12 @@ def seasonal_custom_1(price_df, spot_df, product_list, now=datetime.datetime.now
             signal_df.loc[signal_df.index.weekday.isin([1]), asset] += 0.25
 
     if 'bu' in product_list:
-        signal_df.loc[signal_df.index.month.isin([1, 12]), 'bu'] = 1
+        signal_df.loc[signal_df.index.month.isin([1, 12]), 'bu'] = 1.0
         signal_df.loc[signal_df.index.month.isin([8, 9, 10]), 'bu'] = -0.5
 
     if 'ru' in product_list:
         flag = signal_df.index.month.isin([3, 4, 5, 6]) | signal_df.index.day.isin(range(18, 26))
-        signal_df.loc[flag, 'ru'] = -1
+        signal_df.loc[flag, 'ru'] = -1.0
 
     flag1 = signal_df.index.month.isin([1, 2])
     flag2 = signal_df.index.month.isin([10, 11])
@@ -449,7 +449,7 @@ def seasonal_custom_1(price_df, spot_df, product_list, now=datetime.datetime.now
             signal_df.loc[flag2, asset] = -0.5
 
     if 'pb' in product_list:
-        signal_df.loc[signal_df.index.day.isin(range(17, 31)), 'pb'] = 1
+        signal_df.loc[signal_df.index.day.isin(range(17, 31)), 'pb'] = 1.0
     ferrous_products = ['rb', 'hc', 'i']
     if set(ferrous_products) <= set(product_list):
         start_mth = 11
@@ -672,8 +672,8 @@ def get_fun_data(start_date, run_date):
         spot_dict[f'FEFc{nb-1}_shift'] = fef_nb['shift']
         fef_nb['viu_fe'] = spot_df['viu_fe'].ffill()
         adj_flag = (fef_nb.index>=pd.Timestamp("2025-09-01")) & (fef_nb['contract'].apply(lambda cont: int(cont[-4:-2])>=26))
-        fef_nb['cont_adj'] = 0
-        fef_nb.loc[adj_flag, 'cont_adj'] = fef_nb.loc[adj_flag, 'viu_fe']*1.4
+        fef_nb['cont_adj'] = 0.0
+        fef_nb.loc[adj_flag, 'cont_adj'] = fef_nb['viu_fe']*1.4
         spot_dict[f'FEFc{nb-1}_pxadj'] = fef_nb['cont_adj']
 
     spot_dict['FEF_c1_c2_ratio'] = (spot_dict['FEFc1']/np.exp(spot_dict['FEFc1_shift']) + spot_dict['FEFc1_pxadj']) \

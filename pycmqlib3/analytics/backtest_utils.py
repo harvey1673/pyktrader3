@@ -14,16 +14,16 @@ def get_asset_vols(df, product_list, vol_win, vol_type='atr'):
         df_list = []
         for asset in product_list:
             asset_df = df.loc[:, (df.columns.get_level_values(0) == asset)].droplevel([0], axis=1)
-            vol_ts = dh.ATR(asset_df, vol_win).fillna(method='bfill')
+            vol_ts = dh.ATR(asset_df, vol_win).bfill()
             df_list.append(vol_ts)
-        vol_df = pd.concat(df_list, axis=1, join='outer').fillna(method='ffill')
+        vol_df = pd.concat(df_list, axis=1, join='outer').ffill()
         vol_df.columns = product_list
     elif vol_type == 'pct_chg':
         df_list = []
         for asset in product_list:
             vol_ts = df[(asset, 'close')].pct_change().rolling(vol_win).std()
             df_list.append(vol_ts)
-        vol_df = pd.concat(df_list, axis=1, join='outer').fillna(method='ffill')
+        vol_df = pd.concat(df_list, axis=1, join='outer').ffill()
         vol_df.columns = product_list
     elif vol_type == 'lret':
         df_list = []
@@ -31,7 +31,7 @@ def get_asset_vols(df, product_list, vol_win, vol_type='atr'):
             vol_ts = (np.log(df[(asset, 'close')])
                       - np.log(df[(asset, 'close')].shift(1))).rolling(vol_win).std()
             df_list.append(vol_ts)
-        vol_df = pd.concat(df_list, axis=1, join='outer').fillna(method='ffill')
+        vol_df = pd.concat(df_list, axis=1, join='outer').ffill()
         vol_df.columns = product_list
     elif vol_type == 'close':
         vol_df = df.loc[:, df.columns.get_level_values(0).isin(product_list)].droplevel([1], axis=1)
@@ -203,7 +203,7 @@ def default_signal_gen(df, input_args):
 
 
 def generate_holding_from_signal(signal_df, vol_df, risk_scaling=1.0, asset_scaling=True):
-    vol_df = vol_df.reindex(index=signal_df.index).fillna(method='ffill')
+    vol_df = vol_df.reindex(index=signal_df.index).ffill()
     sig_df = signal_df.div(vol_df)
     nperiod, nasset = sig_df.shape
     prod_count = sig_df.apply(lambda x: x.count() if x.count() > 0 else np.nan, axis=1)

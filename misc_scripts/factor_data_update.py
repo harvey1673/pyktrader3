@@ -2,7 +2,7 @@ import sys
 import json
 import copy
 import logging
-
+import csv
 import numpy as np
 from sqlalchemy import create_engine
 from pycmqlib3.utility.dbaccess import dbconfig, mysql_replace_into, connect, load_factor_data
@@ -75,23 +75,24 @@ port_pos_config = {
     'PTSIM1_FACTPORT1_hot': {
         'pos_loc': 'C:/dev/pyktrader3/process/paper_sim1',
         'strat_list': [
-            ('PTSIM1_FACTPORT1.json', 30000),
-            ('PTSIM1_EXCHWNT.json', 26000),
-            ('PTSIM1_SEAZN.json', 32000),
-            ('PTSIM1_HRCRB.json', 26000),
-            ('PTSIM1_LL.json', 26000),
-            ('PTSIM1_LL2MR.json', 26000),
-            ('PTSIM1_SPDTF.json', 26000),
-            ('PTSIM1_MR1Y.json', 26000),
-            ('PTSIM1_CNMAC1.json', 13000),
+            ('PTSIM1_FACTPORT1.json', 38000), #32000
+            ('PTSIM1_EXCHWNT.json', 30000), 
+            ('PTSIM1_SEAZN.json', 27000), #34000
+            ('PTSIM1_HRCRB.json', 20000), #27000
+            ('PTSIM1_LL.json', 30000), # 27000
+            ('PTSIM1_LL2MR.json', 24000), # 27000
+            ('PTSIM1_SPDTF.json', 27000),
+            ('PTSIM1_MR1Y.json', 24000), # 27000
+            ('PTSIM1_CNMAC1.json', 10000), #13000
             ('PTSIM1_CNMAC2.json', 14000),
-            ('PTSIM1_FUNFER.json', 30000),
-            ('PTSIM1_FERSPD.json', 110000),
+            ('PTSIM1_FUNFER.json', 30000), # 37000
+            ('PTSIM1_FERSPD.json', 90000), # 110000
             ('PTSIM1_AUSPD.json', 80000),
-            ('PTSIM1_FUNBASE.json', 39000),
-            ('PTSIM1_FUNENE.json', 7000),
-            ('PTSIM1_FUNMTL.json', 25000),
-            ('PTSIM1_BND1.json', 50000),
+            ('PTSIM1_FUNBASE.json', 40000),
+            ('PTSIM1_FUNENE.json', 10000), # 7000
+            ('PTSIM1_FUNMTL.json', 25000), # 20000
+            ('PTSIM1_BND1.json', 50000), # 
+            ('PTSIM1_MANUEL_TRADING.csv', 1)
         ], },
 }
 
@@ -251,35 +252,40 @@ def update_port_position(run_date=datetime.date.today()):
         port_file = port_name
         for strat_file, pos_scaler in port_pos_config[port_name]['strat_list']:
             config_file = f'{pos_loc}/settings/{strat_file}'
-            with open(config_file, 'r') as fp:
-                strat_conf = json.load(fp)
-            strat_args = strat_conf['config']
-            assets = strat_args['assets']
-            vol_key = strat_conf.get("vol_key", "pct_vol")
-            roll = strat_conf.get("roll_label", "hot")
-            repo_type = strat_args.get('repo_type', 'asset')
-            freq = strat_conf.get("freq", "d1")
-            hist_fact_lookback = strat_conf.get("hist_fact_lookback", 20)
-            factor_repo = strat_args['factor_repo']
-            product_list = []
-            for asset_dict in assets:
-                under = asset_dict["underliers"][0]
-                product = inst2product(under)
-                product_list.append(product)
+            if ".json" in strat_file:
+                with open(config_file, 'r') as fp:
+                    strat_conf = json.load(fp)
+                strat_args = strat_conf['config']
+                assets = strat_args['assets']
+                vol_key = strat_conf.get("vol_key", "pct_vol")
+                roll = strat_conf.get("roll_label", "hot")
+                repo_type = strat_args.get('repo_type', 'asset')
+                freq = strat_conf.get("freq", "d1")
+                hist_fact_lookback = strat_conf.get("hist_fact_lookback", 20)
+                factor_repo = strat_args['factor_repo']
+                product_list = []
+                for asset_dict in assets:
+                    under = asset_dict["underliers"][0]
+                    product = inst2product(under)
+                    product_list.append(product)
 
-            logging.info(f"updating position for {strat_file}...")
-            res = generate_strat_position(run_date, product_list, factor_repo,
-                                          repo_type=repo_type,
-                                          roll_label=roll,
-                                          pos_scaler=pos_scaler,
-                                          freq=freq,
-                                          hist_fact_lookback=hist_fact_lookback,
-                                          vol_key=vol_key,
-                                          curr_signal=curr_signal,
-                                          signal_config=signal_buffer_config)
-            strat_target = res['target_pos']
-            next_signal = {**(res['curr_signal'].to_dict()), **next_signal}
-            results['details'][f'{port_name}:{strat_file}'] = res['pos_sum'].T
+                logging.info(f"updating position for {strat_file}...")
+                res = generate_strat_position(run_date, product_list, factor_repo,
+                                            repo_type=repo_type,
+                                            roll_label=roll,
+                                            pos_scaler=pos_scaler,
+                                            freq=freq,
+                                            hist_fact_lookback=hist_fact_lookback,
+                                            vol_key=vol_key,
+                                            curr_signal=curr_signal,
+                                            signal_config=signal_buffer_config)
+                strat_target = res['target_pos']
+                next_signal = {**(res['curr_signal'].to_dict()), **next_signal}
+                results['details'][f'{port_name}:{strat_file}'] = res['pos_sum'].T
+            elif ".csv" in config_file:
+                with open(config_file) as f:
+                    strat_target= {k: int(v) * pos_scaler  for k, v in csv.reader(f)}
+   
             pos_by_strat[strat_file] = strat_target
             for prod in strat_target:
                 if prod not in target_pos:
@@ -294,7 +300,9 @@ def update_port_position(run_date=datetime.date.today()):
             if prodcode in ['ps']:
                 target_pos[prodcode] = int((target_pos[prodcode] / 10 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 10
             elif prodcode in ['lc']:
-                target_pos[prodcode] = int((target_pos[prodcode] / 5 + (0.7 if target_pos[prodcode] > 0 else -0.7))) * 5
+                target_pos[prodcode] = int((target_pos[prodcode] / 5 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 5
+            elif prodcode in ['MA']:
+                target_pos[prodcode] = int((target_pos[prodcode] / 8 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 8
             else:
                 target_pos[prodcode] = int(target_pos[prodcode] + (0.5 if target_pos[prodcode] > 0 else -0.5))
 

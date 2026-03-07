@@ -183,7 +183,7 @@ class StratSim(object):
         pass
 
 def stat_min2daily(df):
-    return pd.Series([df['pnl'].sum(), df['cost'].sum(), df['margin'][-1]], index = ['pnl','cost','margin'])
+    return pd.Series([df['pnl'].sum(), df['cost'].sum(), df['margin'].iloc[-1]], index = ['pnl','cost','margin'])
 
 def simdf_to_trades1(df, slippage = 0):
     xdf = df[df['pos'] != df['pos'].shift(1)]

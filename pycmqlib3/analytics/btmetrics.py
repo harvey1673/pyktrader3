@@ -178,7 +178,7 @@ class MetricsBase(object):
         self.freq = freq
         self.raw_holdings, self.raw_returns = holdings, returns
         self.holdings, self.returns = self._align_holding_returns(holdings, returns, limits, backtest)
-        self.holdings = self.holdings.shift(shift_holdings)
+        self.holdings = self.holdings.shift(shift_holdings).apply(pd.to_numeric, errors="coerce")
         self.portfolio_obj = portfolio_obj
         self.date_range = self.holdings.index
         self.universe = self.holdings.columns

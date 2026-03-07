@@ -420,7 +420,7 @@ def save_bars_to_wt_store(exchange_list=['DCE', 'CZCE', 'SHFE', 'INE', 'CFFEX'],
 
                 if process_day:
                     ddf = dbaccess.load_daily_data_to_df(cnx, 'fut_daily', cont, start_date, end_date, index_col=None)
-                    ddf['settle'] = ddf['settle'].fillna(method='ffill')
+                    ddf['settle'] = ddf['settle'].ffill()
                     ddf = ddf.dropna(subset=['close', 'volume', 'settle'])
                     if len(ddf) > 0:
                         print('daily data for contract = %s\n' % cont)
