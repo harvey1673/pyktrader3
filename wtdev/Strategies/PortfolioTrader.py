@@ -49,6 +49,10 @@ class StraPortTrader(BaseCtaStrategy):
                 context.stra_prepare_bars(code, 'm1', 10, isMain=True)
             else:
                 context.stra_prepare_bars(code, 'm1', 10, isMain=False)
+            context.stra_sub_ticks(code)
+            if len(self.__prev_codes[idx])>0:
+                context.stra_prepare_bars(self.__prev_codes[idx], 'm1', 10, isMain=False)
+                context.stra_sub_ticks(self.__prev_codes[idx])
 
     def reload_position(self, context: CtaContext):
         cur_date = context.stra_get_tdate()
@@ -86,8 +90,8 @@ class StraPortTrader(BaseCtaStrategy):
             cur_pos = context.stra_get_position(code)
             target_pos = self.__target_pos[idx]
             if cur_pos != target_pos:
-                if (self.__prod_list[idx] in ['UR', 'SM']) and (cur_pos * target_pos >=0) and \
-                    (abs(cur_pos) < abs(target_pos)) and (abs(cur_pos-target_pos)<4):
+                if (self.__prod_list[idx] in ['MA']) and (cur_pos * target_pos >=0) and \
+                    (abs(cur_pos) < abs(target_pos)) and (abs(cur_pos-target_pos)<8):
                     context.stra_log_text(f"Ignoring position diff for {code} from {cur_pos} to {target_pos} due to restriction")
                     continue                    
                 context.stra_set_position(code, target_pos, 'AdjustPosition')

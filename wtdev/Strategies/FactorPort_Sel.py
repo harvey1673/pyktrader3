@@ -98,10 +98,10 @@ class StraFactorPortSel(BaseSelStrategy):
                         nflag = (self.__fact_data[fact][asset] <= 0.0)
                         long_pos[flag & pflag] = self.__fact_data[fact][asset][flag & pflag]
                         long_pos[flag & (~pflag)] = 0.0
-                        long_pos[flag] = long_pos[flag].fillna(method='ffill').fillna(0.0)
+                        long_pos[flag] = long_pos[flag].ffill().fillna(0.0)
                         short_pos[flag & nflag] = self.__fact_data[fact][asset][flag & nflag]
                         short_pos[flag & (~nflag)] = 0.0
-                        short_pos[flag] = short_pos[flag].fillna(method='ffill').fillna(0.0)
+                        short_pos[flag] = short_pos[flag].ffill().fillna(0.0)
                         self.__factor_pos[fact].loc[flag, asset] = long_pos[flag] + short_pos[flag]
             elif self.__factor_repo[fact]['type'] == 'xs':
                 lower_rank = int(len(self.__prod_list) * self.__factor_repo[fact]['threshold']) + 1
@@ -118,10 +118,10 @@ class StraFactorPortSel(BaseSelStrategy):
                         nflag = (rank_df[asset] < lower_rank)
                         long_pos[flag & pflag] = 1.0
                         long_pos[flag & (~pflag)] = 0.0
-                        long_pos[flag] = long_pos[flag].fillna(method='ffill').fillna(0.0)
+                        long_pos[flag] = long_pos[flag].ffill().fillna(0.0)
                         short_pos[flag & nflag] = -1.0
                         short_pos[flag & (~nflag)] = 0.0
-                        short_pos[flag] = short_pos[flag].fillna(method='ffill').fillna(0.0)
+                        short_pos[flag] = short_pos[flag].ffill().fillna(0.0)
                         self.__factor_pos[fact].loc[flag, asset] = long_pos[flag] + short_pos[flag]
                 self.__factor_pos[fact] = self.__factor_pos[fact].fillna(0.0)
             fact_pos = pd.Series(self.__factor_pos[fact].iloc[-rebal_freq:, :].sum()/rebal_freq * weight,
