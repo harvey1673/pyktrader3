@@ -7,6 +7,13 @@ import json
 from pycmqlib3.utility.misc import inst2exch, inst2product, inst2contmth
 from pycmqlib3.utility.process_wt_data import wt_time_to_min_id
 
+min_open_rule = {
+    'MA':8,'PX':8,'TA':8,'PF':8,'eb':8,'eg':8,'pg':8,'l':8,'pp':8,'v':8,
+    'PR':4,'SH':4,'PL':4,'bz':4,
+    'pd':2,'pt':2,
+    'lc':5,'ps':5
+}
+
 
 class StraPortTrader(BaseCtaStrategy):
     def __init__(self, name, pos_loc='C:/dev/pyktrader3/process/pt_test2',
@@ -90,12 +97,22 @@ class StraPortTrader(BaseCtaStrategy):
             cur_pos = context.stra_get_position(code)
             target_pos = self.__target_pos[idx]
             if cur_pos != target_pos:
-                if (self.__prod_list[idx] in ['MA']) and (cur_pos * target_pos >=0) and \
-                    (abs(cur_pos) < abs(target_pos)) and (abs(cur_pos-target_pos)<8):
-                    context.stra_log_text(f"Ignoring position diff for {code} from {cur_pos} to {target_pos} due to restriction")
-                    continue                    
-                context.stra_set_position(code, target_pos, 'AdjustPosition')
-                context.stra_log_text(f"adjust position for {code} from {cur_pos} to {target_pos}")
+                prod = self.__prod_list[idx]
+                diff = abs(cur_pos - target_pos)
+
+                same_dir = cur_pos * target_pos >= 0
+                increasing = abs(cur_pos) < abs(target_pos)
+                threshold = min_open_rule.get(prod)
+
+                if threshold and same_dir and increasing and diff < threshold:
+                    context.stra_log_text(
+                        f"Ignoring position diff for {code} from {cur_pos} to {target_pos} due to restriction"
+                    )
+                else:
+                    context.stra_set_position(code, target_pos, 'AdjustPosition')
+                    context.stra_log_text(
+                        f"adjust position for {code} from {cur_pos} to {target_pos}"
+                    )
             continue
 
     def on_tick(self, context: CtaContext, code: str, newTick: dict):

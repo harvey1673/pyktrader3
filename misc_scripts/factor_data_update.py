@@ -76,13 +76,13 @@ port_pos_config = {
         'pos_loc': 'C:/dev/pyktrader3/process/paper_sim1',
         'strat_list': [
             ('PTSIM1_FACTPORT1.json', 38000), #32000
-            ('PTSIM1_EXCHWNT.json', 30000), 
             ('PTSIM1_SEAZN.json', 27000), #34000
+            ('PTSIM1_EXCHWNT.json', 30000), #27000
             ('PTSIM1_HRCRB.json', 20000), #27000
             ('PTSIM1_LL.json', 30000), # 27000
-            ('PTSIM1_LL2MR.json', 24000), # 27000
+            ('PTSIM1_LL2MR.json', 27000), 
             ('PTSIM1_SPDTF.json', 27000),
-            ('PTSIM1_MR1Y.json', 24000), # 27000
+            ('PTSIM1_MR1Y.json', 27000), 
             ('PTSIM1_CNMAC1.json', 10000), #13000
             ('PTSIM1_CNMAC2.json', 14000),
             ('PTSIM1_FUNFER.json', 30000), # 37000
@@ -90,7 +90,7 @@ port_pos_config = {
             ('PTSIM1_AUSPD.json', 80000),
             ('PTSIM1_FUNBASE.json', 40000),
             ('PTSIM1_FUNENE.json', 10000), # 7000
-            ('PTSIM1_FUNMTL.json', 25000), # 20000
+            ('PTSIM1_FUNMTL.json', 25000),
             ('PTSIM1_BND1.json', 50000), # 
             ('PTSIM1_MANUEL_TRADING.csv', 1)
         ], },
@@ -301,7 +301,9 @@ def update_port_position(run_date=datetime.date.today()):
                 target_pos[prodcode] = int((target_pos[prodcode] / 10 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 10
             elif prodcode in ['lc']:
                 target_pos[prodcode] = int((target_pos[prodcode] / 5 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 5
-            elif prodcode in ['MA']:
+            elif prodcode in ['SH', 'PR']:
+                target_pos[prodcode] = int((target_pos[prodcode] / 4 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 4
+            elif prodcode in ['MA', 'PX', 'TA', 'PF', 'eb', 'eg', 'pg', 'l', 'v', 'pp']:
                 target_pos[prodcode] = int((target_pos[prodcode] / 8 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 8
             else:
                 target_pos[prodcode] = int(target_pos[prodcode] + (0.5 if target_pos[prodcode] > 0 else -0.5))
