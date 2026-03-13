@@ -6,6 +6,7 @@ For a given run_date, produce a combined table for c1/c2 contracts with:
   - pct change (%) over 1d, 2d, 5d, 10d, 20d
   - 20-day annualised vol
   - 1-std daily PnL move for 1 lot (20d window): std(price_diff) * volscale
+  - contract value per lot in 10k CNY: close * volscale / 10000
   - individual OI per contract
   - OI change (c1+c2 combined) over 1d, 2d, 5d, 10d, 20d
 
@@ -43,11 +44,11 @@ ASSET_LIST = [
     'rb', 'hc', 'i', 'j', 'jm', 'FG', 'SA', 'SH', 'v',
     'SM', 'SF', 'ru', 'nr', 'br',
     'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'ao',
-    'au', 'ag', 'bc', 'lc', 'si', 'ps', 'sp', 'ec',
-    'l', 'pp', 'TA', 'MA', 'sc', 'eb', 'eg', 'pg',
-    'UR', 'lu', 'bu', 'fu', 'PX', 'PF',
+    'lc', 'si', 'ps', 'ec', 'au', 'ag', 'pt', 'pd',
+    'l', 'pp', 'PX', 'TA', 'MA', 'eb', 'eg', 'PF', 'UR', 'PL',
+    'pg', 'sc', 'lu', 'bu', 'fu',
     'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'cs', 'b',
-    'CF', 'jd', 'AP', 'lh', 'CJ', 'PK',
+    'CF', 'jd', 'AP', 'lh', 'CJ', 'PK', 'sp',
     'T', 'TF', 'TL',
 ]
 
@@ -98,6 +99,7 @@ def contract_stats(contract: str, end_date: datetime.date, volscale_map: dict) -
             row[f'pct_{p}'] = None
         row['vol_20d'] = None
         row['risk'] = None
+        row['value_10k'] = None
         row['oi']      = None
         return row
 
@@ -117,6 +119,11 @@ def contract_stats(contract: str, end_date: datetime.date, volscale_map: dict) -
     row['risk'] = (
         round(price_diff.iloc[-STD_WIN:].std() * volscale, 2)
         if (len(price_diff) >= STD_WIN and volscale is not None)
+        else None
+    )
+    row['value_10k'] = (
+        round(close.iloc[-1] * volscale / 10000, 2)
+        if (len(close) and volscale is not None)
         else None
     )
 
@@ -170,7 +177,7 @@ def build_summary(asset_list, hot_map, sec_map, run_date, volscale_map) -> pd.Da
     # Reorder columns
     pct_cols    = [f'pct_{p}'    for p in PERIODS]
     oi_chg_cols = [f'oi_chg_{p}' for p in PERIODS]
-    df = df[pct_cols + ['vol_20d', 'risk', 'oi'] + oi_chg_cols]
+    df = df[pct_cols + ['vol_20d', 'risk', 'value_10k', 'oi'] + oi_chg_cols]
 
     return df
 
