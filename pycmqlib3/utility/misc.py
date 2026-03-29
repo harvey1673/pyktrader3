@@ -37,7 +37,7 @@ rev_month_code_map = {v: k for k, v in month_code_map.items()}
 
 product_code = {'SHFE': ['cu', 'cu_Opt', 'al', 'al_Opt', 'ao', 'ao_Opt', 'zn', 'zn_Opt', 'pb', 'pb_Opt',
                          'wr', 'rb', 'rb_Opt', 'fu', 'ru', 'ru_Opt', 'bu', 'hc', 'ag', 'ag_Opt',
-                         'au', 'au_Opt', 'sn', 'sn_Opt', 'ni', 'ni_Opt', 'sp', 'sp_Opt', 'ss', 'br', 'br_Opt', 
+                         'au', 'au_Opt', 'sn', 'sn_Opt', 'ni', 'ni_Opt', 'sp', 'sp_Opt', 'ss', 'br', 'br_Opt',
                          'op', 'op_Opt', 'ad', 'ad_Opt'],
                 'CFFEX': ['IF', 'TF', 'IO_Opt', 'T', 'TS', 'TL', 'IH', 'IH_Opt', 'IC', 'IM', 'MO_Opt'],
                 'DCE': ['c', 'c_Opt', 'cs', 'cs_Opt', 'j', 'jd', 'jd_Opt', 'a', 'a_Opt', 'b', 'b_Opt',
@@ -67,11 +67,11 @@ option_market_products = [
     'jd_Opt', 'lh_Opt', 'lg_Opt',
     'OI_Opt', 'PK_Opt', 'SR_Opt', 'CF_Opt', 'TA_Opt', 'MA_Opt', 'RM_Opt',
     'ZC_Opt', 'FG_Opt', 'PK_Opt', 'PF_Opt', 'SH_Opt', 'SA_Opt', 'PX_Opt',
-    'UR_Opt', 'SM_Opt', 'SF_Opt', 'AP_Opt', 'CJ_Opt', 'PL_Opt', 
-    'cu_Opt', 'al_Opt', 'zn_Opt', 'ao_Opt', 'ru_Opt', 'au_Opt', 'ag_Opt', 
-    'si_Opt', 'lc_Opt', 'br_Opt', 'ad_Opt', 'op_Opt', 'sp_Opt', 
-    'ps_Opt', 'pt_Opt', 'pd_Opt', 
-    'ETF_Opt', 'IO_Opt', 'MO_Opt', 'HO_Opt', 
+    'UR_Opt', 'SM_Opt', 'SF_Opt', 'AP_Opt', 'CJ_Opt', 'PL_Opt',
+    'cu_Opt', 'al_Opt', 'zn_Opt', 'ao_Opt', 'ru_Opt', 'au_Opt', 'ag_Opt',
+    'si_Opt', 'lc_Opt', 'br_Opt', 'ad_Opt', 'op_Opt', 'sp_Opt',
+    'ps_Opt', 'pt_Opt', 'pd_Opt',
+    'ETF_Opt', 'IO_Opt', 'MO_Opt', 'HO_Opt',
 ]
 
 night_session_markets = {
@@ -189,7 +189,7 @@ day_split_dict = {'s1': [300, 2115],
                   's2': [300, 1500, 2115],
                   's3': [300, 1500, 1900, 2115],
                   's4': [300, 1500, 1630, 1900, 2115],}
-                  
+
 bar_shift_table1 = {1: [(1630, -15), (1800, -120)],
                     2: [(1500, -390), (1630, -15), (1800, -120)],
                     3: [(1630, -15), (1800, -120)],
@@ -197,136 +197,155 @@ bar_shift_table1 = {1: [(1630, -15), (1800, -120)],
                     }
 
 product_class_map = {
-    'zn': ('Ind', "BaseMetal"),
-    'zn_Opt': ('Ind', "BaseMetal"),
-    'cu': ('Ind', "BaseMetal"),
-    'cu_Opt': ('Ind', "BaseMetal"),
-    'bc': ('Ind', "BaseMetal"),
-    'ru': ('Ind', 'NonFerrous'),
-    'ru_Opt': ('Ind', 'NonFerrous'),
-    'nr': ('Ind', 'NonFerrous'),
-    'ru_Opt': ('Ind', 'NonFerrous'),
-    'rb': ('Ind', "Ferrous"),
-    'rb_Opt': ('Ind', "Ferrous"),
-    'fu': ('Ind', "Petro"),
-    'al': ('Ind', "BaseMetal"),
-    'al_Opt': ('Ind', "BaseMetal"),
-    'ao': ('Ind', "BaseMetal"),
-    'ao_Opt': ('Ind', "BaseMetal"),
-    'au': ('Macro', 'PreciousMetal'),
-    'au_Opt': ('Macro', 'PreciousMetal'),
-    'wr': ('Ind', "Ferrous"),
-    'pb': ('Ind', "BaseMetal"),
-    'ag': ('Macro', 'PreciousMetal'),
-    'ag_Opt': ('Macro', 'PreciousMetal'),
-    'bu': ('Ind', "Petro"),
-    'hc': ('Ind', "Ferrous"),
-    'sp': ('Ags', 'Soft'),
-    'ni': ('Ind', "BaseMetal"),
-    'ni_Opt': ('Ind', "BaseMetal"),
-    'sn': ('Ind', "BaseMetal"),
-    'sn_Opt': ('Ind', "BaseMetal"),
-    'ss': ('Ind', "BaseMetal"),
-    'WH': ('Ags', 'Grain'),
-    'PM': ('Ags', 'Grain'),
-    'CF': ('Ags', 'Soft'),
-    'CF_Opt': ('Ags', 'Soft'),
-    'CY': ('Ags', 'Soft'),
-    'SR': ('Ags', 'Soft'),
-    'SR_Opt': ('Ags', 'Soft'),
-    'TA': ('Ind', "Petro"),
-    'TA_Opt': ('Ind', "Petro"),
-    'PX': ('Ind', "Petro"),
-    'PX_Opt': ('Ind', "Petro"),
-    'PR': ('Ind', 'Petro'),
-    'OI': ('Ags', 'Grain'),
-    'OI_Opt': ('Ags', 'Grain'),
-    'RI': ('Ags', 'Grain'),
-    'ME': ('Ind', "Petro"),
-    'MA': ('Ind', "Petro"),
-    'MA_Opt': ('Ind', "Petro"),
-    'FG': ('Ind', "NonFerrous"),
-    'FG_Opt': ('Ind', "NonFerrous"),
-    'RS': ('Ags', 'Grain'),
-    'RM': ('Ags', 'Grain'),
-    'RM_Opt': ('Ags', 'Grain'),
-    'TC': ('Ind', "NonFerrous"),
-    'ZC': ('Ind', "NonFerrous"),
-    'ZC_Opt': ('Ind', "NonFerrous"),
-    'JR': ('Ags', 'Grain'),
-    'LR': ('Ags', 'Grain'),
-    'SM': ('Ind', "NonFerrous"),
-    'SM_Opt': ('Ind', "NonFerrous"),
-    'SF': ('Ind', "NonFerrous"),
-    'SF_Opt': ('Ind', "NonFerrous"),
-    'AP': ('Ags', 'Soft'),
-    'AP_Opt': ('Ags', 'Soft'),
-    'CJ': ('Ags', 'Soft'),
-    'CJ_Opt': ('Ags', 'Soft'),
-    'UR': ('Ags', 'Soft'),
-    'UR_Opt': ('Ags', 'Soft'),
-    'SA': ('Ags', 'Soft'),
-    'SA_Opt': ('Ags', 'Soft'),
-    'SH': ('Ags', 'Soft'),
-    'SH_Opt': ('Ags', 'Soft'),
-    'PF': ('Ags', 'Soft'),
-    'PF_Opt': ('Ags', 'Soft'),
-    'PK': ('Ags', 'Soft'),
-    'PK_Opt': ('Ags', 'Soft'),
-    'c': ('Ags', 'Grain'),
-    'c_Opt': ('Ags', 'Grain'),
-    'cs': ('Ags', 'Grain'),
-    'cs_Opt': ('Ags', 'Grain'),
-    'j': ('Ind', "Ferrous"),
-    'jd': ('Ags', 'Soft'),
-    'jd_Opt': ('Ags', 'Soft'),
-    'lh': ('Ags', 'Soft'),
-    'lh_Opt': ('Ags', 'Soft'),
-    'a': ('Ags', 'Grain'),
-    'a_Opt': ('Ags', 'Grain'),
-    'b': ('Ags', 'Grain'),
-    'b_Opt': ('Ags', 'Grain'),
-    'm': ('Ags', 'Grain'),
-    'm_Opt': ('Ags', 'Grain'),
-    'y': ('Ags', 'Grain'),
-    'y_Opt': ('Ags', 'Grain'),
-    'p': ('Ags', 'Grain'),
-    'p_Opt': ('Ags', 'Grain'),
-    'l': ('Ind', "Petro"),
-    'l_Opt': ('Ind', "Petro"),
-    'v': ('Ind', "Petro"),
-    'v_Opt': ('Ind', "Petro"),
-    'pp': ('Ind', "Petro"),
-    'pp_Opt': ('Ind', "Petro"),
-    'eg': ('Ind', "Petro"),
-    'eg_Opt': ('Ind', "Petro"),
-    'eb': ('Ind', "Petro"),
-    'eb_Opt': ('Ind', "Petro"),
-    'pg': ('Ind', "Petro"),
-    'pg_Opt': ('Ind', "Petro"),
-    'rr': ('Ags', "Grain"),
-    'jm': ('Ind', "Ferrous"),
-    'i': ('Ind', "Ferrous"),
-    'i_Opt': ('Ind', "Ferrous"),
-    'fb': ('Ind', "NonFerrous"),
-    'bb': ('Ind', "NonFerrous"),
-    'IF': ('Macro', 'Equity'),
-    'IH': ('Macro', 'Equity'),
-    'IC': ('Macro', 'Equity'),
-    'IM': ('Macro', 'Equity'),
-    'MO_Opt': ('Macro', 'Equity'),
-    'TF': ('Macro', 'Bond'),
-    'T': ('Macro', 'Bond'),
-    'TS': ('Macro', 'Bond'),
-    'TL': ('Macro', 'Bond'),
-    'IO_Opt': ('Macro', 'Equity'),
-    'sc': ('Ind', "Petro"),
-    'sc_Opt': ('Ind', "Petro"),
-    'lu': ('Ind', "Petro"),
-    'si': ('Ind', "NonFerrous"),
-    'si_Opt': ('Ind', "NonFerrous"),
-    'ps': ('Ind', "NonFerrous"),
-    'ps_Opt': ('Ind', "NonFerrous"),
+    'au': ('metal', 'precious'),
+    'au_Opt': ('metal', 'precious'),
+    'ag': ('metal', 'precious'),
+    'ag_Opt': ('metal', 'precious'),
+    'pt': ('metal', 'precious'),
+    'pt_Opt': ('metal', 'precious'),
+    'pd': ('metal', 'precious'),
+    'pd_Opt': ('metal', 'precious'),
+
+    'cu': ('metal', "base"),
+    'cu_Opt': ('metal', "base"),
+    'bc': ('metal', "base"),
+    'al': ('metal', "base"),
+    'al_Opt': ('metal', "base"),
+    'ad': ('metal', "base"),
+    'ao': ('metal', "base"),
+    'ao_Opt': ('metal', "base"),
+    'zn': ('metal', "base"),
+    'zn_Opt': ('metal', "base"),
+    'pb': ('metal', "base"),
+    'ni': ('metal', "base"),
+    'ni_Opt': ('metal', "base"),
+    'sn': ('metal', "base"),
+    'sn_Opt': ('metal', "base"),
+    'ss': ('metal', "base"),
+    'si': ('metal', "battery"),
+    'si_Opt': ('metal', "battery"),
+    'ps': ('metal', "battery"),
+    'ps_Opt': ('metal', "battery"),
+    'lc': ('metal', "battery"),
+    'lc_Opt': ('metal', "battery"),
+
+    'rb': ('metal', "ferrous"),
+    'rb_Opt': ('metal', "ferrous"),
+    'jm': ('metal', "ferrous"),
+    'j': ('metal', "ferrous"),
+    'i': ('metal', "ferrous"),
+    'i_Opt': ('metal', "ferrous"),
+    'wr': ('metal', "ferrous"),
+    'hc': ('metal', "ferrous"),
+    'SM': ('metal', "ferrous_misc"),
+    'SM_Opt': ('metal', "ferrous_misc"),
+    'SF': ('metal', "ferrous_misc"),
+    'SF_Opt': ('metal', "ferrous_misc"),
+    'TC': ('metal', "ferrous_misc"),
+    'ZC': ('metal', "ferrous_misc"),
+    'ZC_Opt': ('metal', "ferrous_misc"),
+    'FG': ('metal', "consts"),
+    'FG_Opt': ('metal', "consts"),
+    'SA': ('metal', 'consts'),
+    'SA_Opt': ('metal', 'consts'),
+    'v': ('metal', "consts"),
+    'v_Opt': ('metal', "consts"),
+    'fb': ('metal', "consts"),
+    'bb': ('metal', "consts"),
+
+    'TA': ('energy', "petchem"),
+    'TA_Opt': ('energy', "petchem"),
+    'PX': ('energy', "petchem"),
+    'PX_Opt': ('energy', "petchem"),
+    'PR': ('energy', 'petchem'),
+    'ME': ('energy', "petchem"),
+    'MA': ('energy', "petchem"),
+    'MA_Opt': ('energy', "petchem"),
+    'SH': ('energy', 'petchem'),
+    'SH_Opt': ('energy', 'petchem'),
+    'PF': ('energy', 'petchem'),
+    'PF_Opt': ('energy', 'petchem'),
+    'PL': ('energy', 'petchem'),
+    'PL_Opt': ('energy', 'petchem'),
+    'UR': ('energy', 'petchem'),
+    'UR_Opt': ('energy', 'petchem'),
+    'l': ('energy', "petchem"),
+    'l_Opt': ('energy', "petchem"),
+    'pp': ('energy', "petchem"),
+    'pp_Opt': ('energy', "petchem"),
+    'eg': ('energy', "petchem"),
+    'eg_Opt': ('energy', "petchem"),
+    'eb': ('energy', "petchem"),
+    'eb_Opt': ('energy', "petchem"),
+
+    'sc': ('energy', "oil"),
+    'sc_Opt': ('energy', "oil"),
+    'lu': ('energy', "oil"),
+    'pg': ('energy', "oil"),
+    'pg_Opt': ('energy', "oil"),
+    'fu': ('energy', "oil"),
+    'bu': ('energy', "oil"),
+    'ru': ('energy', 'oth_pet'),
+    'ru_Opt': ('energy', 'oth_pet'),
+    'nr': ('energy', 'oth_pet'),
+    'nr_Opt': ('energy', 'oth_pet'),
+    'br': ('energy', 'oth_pet'),
+    'br_Opt': ('energy', 'oth_pet'),
+    'sp': ('energy', 'oth_pet'),
+
+    'a': ('grain', 'oilseed'),
+    'a_Opt': ('grain', 'oilseed'),
+    'b': ('grain', 'oilseed'),
+    'b_Opt': ('grain', 'oilseed'),
+    'm': ('grain', 'oilseed'),
+    'm_Opt': ('grain', 'oilseed'),
+    'y': ('grain', 'vegoil'),
+    'y_Opt': ('grain', 'vegoil'),
+    'p': ('grain', 'vegoil'),
+    'p_Opt': ('grain', 'vegoil'),
+    'rr': ('grain', "oth_grain"),
+    'OI': ('grain', 'vegoil'),
+    'OI_Opt': ('grain', 'vegoil'),
+    'c': ('grain', 'oth_grain'),
+    'c_Opt': ('grain', 'oth_grain'),
+    'cs': ('grain', 'oth_grain'),
+    'cs_Opt': ('grain', 'oth_grain'),
+    'RI': ('grain', 'oth_grain'),
+    'RS': ('grain', 'oilseed'),
+    'RM': ('grain', 'oilseed'),
+    'RM_Opt': ('grain', 'oilseed'),
+    'WH': ('grain', 'oth_grain'),
+    'PM': ('grain', 'oth_grain'),
+    'JR': ('grain', 'oth_grain'),
+    'LR': ('grain', 'oth_grain'),
+
+    'CF': ('soft', 'soft'),
+    'CF_Opt': ('soft', 'soft'),
+    'CY': ('soft', 'soft'),
+    'SR': ('soft', 'soft'),
+    'SR_Opt': ('soft', 'soft'),
+    'PK': ('soft', 'soft'),
+    'PK_Opt': ('soft', 'soft'),
+
+    'jd': ('soft', 'soft'),
+    'jd_Opt': ('soft', 'soft'),
+    'lh': ('soft', 'soft'),
+    'lh_Opt': ('soft', 'soft'),
+    'AP': ('soft', 'soft'),
+    'AP_Opt': ('soft', 'soft'),
+    'CJ': ('soft', 'soft'),
+    'CJ_Opt': ('soft', 'soft'),
+
+    'IF': ('eqidx', 'eqidx'),
+    'IH': ('eqidx', 'eqidx'),
+    'IC': ('eqidx', 'eqity'),
+    'IM': ('eqidx', 'eqity'),
+    'MO_Opt': ('eqidx', 'eqidx'),
+    'TF': ('bond', 'bond'),
+    'T': ('bond', 'bond'),
+    'TS': ('bond', 'bond'),
+    'TL': ('bond', 'bond'),
+    'IO_Opt': ('eqidx', 'eqidx'),
 }
 
 product_lotsize = {
@@ -455,7 +474,7 @@ product_lotsize = {
     'lg': 90,
     'lg_Opt': 90,
     'bz': 30,
-    'bz_Opt': 30,    
+    'bz_Opt': 30,
     'fb': 500,
     'bb': 500,
     'IF': 300,
@@ -475,7 +494,7 @@ product_lotsize = {
     'si': 5,
     'si_Opt': 5,
     'ps': 3,
-    'ps_Opt': 3,    
+    'ps_Opt': 3,
     'lc': 1,
     'lc_Opt': 1,
     'pt': 1000,
@@ -601,7 +620,7 @@ product_ticksize = {
     'lh_Opt': 2.5,
     'lg': 0.5,
     'lg_Opt': 0.25,
-    'bz': 1,   
+    'bz': 1,
     'fb': 0.05,
     'bb': 0.05,
     'IF': 0.2,
@@ -622,7 +641,7 @@ product_ticksize = {
     'si': 5.0,
     'si_Opt': 5.0,
     'ps': 5.0,
-    'ps_Opt': 1.0,    
+    'ps_Opt': 1.0,
     'lc': 50,
     'pd': 0.05,
     'pt': 0.05,
@@ -677,8 +696,8 @@ def get_hols_by_ec(exch='DCE', start_date=datetime.date(2008, 1, 1), end_date=da
     ec_cal = ec.get_calendar(exch_map[exch])
     if exch == 'SGX':
         hols = [cdate.date() for cdate in pd.date_range(start=start_date, end='20231229', freq='B') if ec_cal.is_session(cdate) is False]
-        hols += [datetime.date(2024,1,1), datetime.date(2024,2,12), datetime.date(2024,3, 29), datetime.date(2024,4,10), 
-                 datetime.date(2024,5,1), datetime.date(2024,5,22), datetime.date(2024,6,17), datetime.date(2024,8,9), 
+        hols += [datetime.date(2024,1,1), datetime.date(2024,2,12), datetime.date(2024,3, 29), datetime.date(2024,4,10),
+                 datetime.date(2024,5,1), datetime.date(2024,5,22), datetime.date(2024,6,17), datetime.date(2024,8,9),
                  datetime.date(2024,10,31), datetime.date(2024,12,25)]
     else:
         hols = [cdate.date() for cdate in pd.date_range(start=start_date, end=end_date, freq='B') if ec_cal.is_session(cdate) is False]
@@ -852,7 +871,7 @@ def filter_main_cont(sdate, filter=False):
 
 def get_first_day_of_month(t_date):
     return t_date.replace(day=1)
-    
+
 
 def trading_hours(product, exch):
     if product in ['sc']:
@@ -875,7 +894,7 @@ def trading_hours(product, exch):
 
 def check_trading_range(tick_id, product, exch, tick_buffer = 0):
     in_range = False
-    hrs = trading_hours(product, exch)    
+    hrs = trading_hours(product, exch)
     for ptime in hrs:
         if (tick_id>=ptime[0]*1000 - tick_buffer) and (tick_id < ptime[1] *1000 + tick_buffer):
             in_range = True
@@ -1081,9 +1100,9 @@ def get_opt_expiry(fut_inst, cont_mth, exch=''):
 def cont_expiry_list(prodcode, start_date, end_date, roll_rule='-0d', full_name=False):
     cont_mth, exch = dbaccess.prod_main_cont_exch(prodcode)
     hols = get_hols_by_exch(exch)
-    contlist, tenor_list = contract_range(prodcode, exch, cont_mth, 
-                                          start_date, 
-                                          day_shift(end_date, '12m', hols), 
+    contlist, tenor_list = contract_range(prodcode, exch, cont_mth,
+                                          start_date,
+                                          day_shift(end_date, '12m', hols),
                                           full_name=full_name)
     exp_dates = [day_shift(cont_date_expiry(ten, prod_code=prodcode, exch=exch), roll_rule, hols) for cont, ten in zip(contlist, tenor_list)]
     return contlist, exp_dates, tenor_list
@@ -1110,7 +1129,7 @@ def nearby(prodcode, n=1, start_date=None, end_date=None, roll_rule='-20b', freq
     dbconf = copy.deepcopy(dbaccess.dbconfig)
     if database:
         dbconf['database'] = database
-    
+
     cnx = create_engine(f"mysql+mysqlconnector://{dbconf['user']}:{dbconf['password']}@{dbconf['host']}/{dbconf['database']}")
     df = pd.DataFrame()
     for idx, exp in enumerate(exp_dates):
@@ -1229,7 +1248,7 @@ def contract_expiry(cont, curr_dt=None, hols=CHN_Holidays):
                 base_yr = 2010
             else:
                 base_yr = 2020
-            yr = base_yr + int(cont[-3:-2])            
+            yr = base_yr + int(cont[-3:-2])
         else:
             yr = 2000 + int(cont[-4:-2])
         cont_date = datetime.date(yr, mth, 1)
@@ -1265,11 +1284,11 @@ def cont_date_expiry(cont_date, prod_code, exch):
     elif prod_code in ['T', 'TF', 'TS', 'TL']:
         wkday = cont_date.weekday()
         expiry = cont_date + datetime.timedelta(days=6+(11-wkday)%7)
-        expiry = workdays.workday(expiry, 1, CHN_Holidays)                    
+        expiry = workdays.workday(expiry, 1, CHN_Holidays)
     elif prod_code in ['ZC', 'TC']:
-        expiry = workdays.workday(cont_date - datetime.timedelta(days=1), 5, hols)   
+        expiry = workdays.workday(cont_date - datetime.timedelta(days=1), 5, hols)
     elif exch in ['DCE', 'CZCE', 'GFEX',]:
-        expiry = workdays.workday(cont_date - datetime.timedelta(days=1), 10, hols)    
+        expiry = workdays.workday(cont_date - datetime.timedelta(days=1), 10, hols)
     elif exch in ['SHFE', 'INE']:
         expiry = datetime.date(yr, mth, 14)
         expiry = workdays.workday(expiry, 1, CHN_Holidays)
@@ -1381,7 +1400,7 @@ def cleanup_mindata(df, asset, index_col='datetime', skip_hl=False):
         cond = cond | ((xdf.index < datetime.datetime(2016, 1, 1, 15, 0, 0)) & (xdf.min_id >= 1515) & (xdf.min_id < 1530))
         cond = cond | ((xdf.index < datetime.datetime(2016, 1, 1, 15, 0, 0)) & (xdf.min_id >= 2100) & (xdf.min_id < 2115))
     elif asset in ['T', 'TF', 'TS', 'TL']:
-        cond = cond | ((xdf.index < datetime.datetime(2020, 7, 20, 0, 0, 0)) & (xdf.min_id >= 1515) & (xdf.min_id < 1530))        
+        cond = cond | ((xdf.index < datetime.datetime(2020, 7, 20, 0, 0, 0)) & (xdf.min_id >= 1515) & (xdf.min_id < 1530))
     if asset in ['CF', 'CF_Opt', 'CY', 'SR', 'SR_Opt', 'RM', 'TA', 'MA', 'SA', 'OI', 'ZC', 'ZC_Opt', 'FG']:
         cond = cond | ((xdf.date < datetime.date(2019, 12, 12)) & (xdf.min_id >= 300) & (xdf.min_id < 530))
     if asset in product_code['DCE'] + product_code['SHFE'] + product_code['CZCE'] + product_code['INE']:
