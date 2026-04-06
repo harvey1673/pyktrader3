@@ -219,29 +219,45 @@ factors_by_beta_neutral = {
 
 leadlag_port_d = {
     'ferrous': {'lead': ['hc', 'rb', ],
-                'lag': [],
-                'param_rng': [40, 80, 2],
+                'lag': ['rb', 'hc', 'i', 'j', 'jm', 'SM', 'SF'],
+                'param_rng': [20, 60, 2],
+                'w': 1.0,
                 },
-    'constrs': {'lead': ['hc', 'rb', 'v'],
-                'lag': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'v', 'SM', 'SF'],
-                'param_rng': [40, 80, 2],
+    'constrs': {'lead': ['rb', 'v', 'FG'],
+                'lag': ['FG', 'SA', 'v',],
+                'param_rng': [20, 60, 2],
+                'w': 1.0,
                 },
-    'petchem': {'lead': ['v'],
-                'lag': ['TA', 'MA', 'pp', 'eg', 'eb', 'PF'],
-                'param_rng': [40, 80, 2],
+    'petchem': {'lead': ['v', 'sc'],
+                'lag': ['TA', 'pp', 'eb', 'l', 'v', 'MA', 'eg'],
+                'param_rng': [20, 60, 2],
+                'w': 1.0,
                 },
-    'base': {'lead': ['al'],
-             'lag': ['al', 'ni', 'sn', 'ss'],  # 'zn', 'cu'
-             'param_rng': [40, 80, 2],
+    'base1': {'lead': ['al'],
+             'lag': ['al', 'ao'],  # 'zn', 'cu'
+             'param_rng': [20, 60, 2],
+             'w': 1.0,
              },
-    'oil': {'lead': ['sc'],
-            'lag': ['sc', 'pg', 'bu', ],
+    'base2': {'lead': ['cu'],
+             'lag': ['cu', 'zn', 'sn'],  # 'zn', 'cu'
+             'param_rng': [20, 60, 2],
+             'w': 1.0,
+             },
+    'oil': {'lead': ['sc',],
+            'lag': ['sc', 'bu', 'fu',],
             'param_rng': [20, 30, 2],
+            'w': 1.0,
             },
     'bean': {'lead': ['b'],
-             'lag': ['p', 'y', 'OI', ],
-             'param_rng': [60, 80, 2],
-             },
+             'lag': ['p', 'y', 'OI'],
+             'param_rng': [20, 60, 2],
+             'w': 1.0,
+            },
+    'solar': {'lead': ['si'],
+              'lag': ['si', 'ps'],
+              'param_rng': [20, 60, 2],
+              'w': 1,
+            },
 }
 
 mr_commod_pairs = [
@@ -334,20 +350,20 @@ def beta_spd_trend(price_df, spot_df, product_list, pair_list,
 
 
 def leader_lagger(price_df, spot_df, product_list, leadlag_port=leadlag_port_d, conv_func='qtl', signal_cap=None):
-    signal_df = pd.DataFrame(index=price_df.index, columns=product_list)
-    for prod in product_list:
-        for sector in leadlag_port:
-            if prod in leadlag_port[sector]['lag']:
-                signal_list = []
-                for lead_prod in leadlag_port[sector]['lead']:
-                    feature_ts = price_df[(lead_prod+'c1', 'close')]
-                    signal_ts = calc_conv_signal(feature_ts.dropna(), conv_func,
-                                                 leadlag_port[sector]['param_rng'], signal_cap=signal_cap)
-                    signal_list.append(signal_ts)
-                signal_df[prod] = pd.concat(signal_list, axis=1).mean(axis=1)
-                break
-            else:
-                signal_df[prod] = 0
+    signal_df = pd.DataFrame(0, index=price_df.index, columns=product_list)
+    for sector in leadlag_port:
+        signal_list = []
+        for lead_prod in leadlag_port[sector]['lead']:
+            feature_ts = price_df[(lead_prod+'c1' , 'close')]
+            signal_ts = calc_conv_signal(feature_ts.dropna(), conv_func,
+                                            leadlag_port[sector]['param_rng'],
+                                            signal_cap=signal_cap)
+            signal_ts = signal_ts.ewm(1).mean()
+            signal_list.append(signal_ts)
+        ts = pd.concat(signal_list, axis=1).mean(axis=1)
+        sig_df = pd.DataFrame({f"{asset}c1": ts for asset in leadlag_port[sector]['lag']})
+        sig_df = sig_df.reindex_like(signal_df).ffill().fillna(0) * leadlag_port[sector]['w']
+        signal_df = signal_df.add(sig_df)
     return signal_df
 
 
@@ -531,12 +547,13 @@ factors_by_func = {
         'func': leader_lagger,
         'args': {
             'leadlag_port': leadlag_port_d,
-            'conv_func': 'qtl',
+            'conv_func': 'hlratio',
             'signal_cap': [-2, 2],
             'product_list': [
-                'rb', 'hc', 'i', 'j', 'jm', 'FG', 'SM', 'SF', 'UR',
-                'cu', 'al', 'zn', 'sn', 'ss', 'ni',
-                'l', 'pp', 'v', 'TA', 'sc', 'eb', 'eg', 'y', 'p', 'OI'
+                'rb', 'hc', 'i', 'j', 'jm', 'SM', 'SF', 'FG', 'SA', 'v',
+                'TA', 'pp', 'eb', 'l', 'MA', 'eg', 'sc', 'bu', 'fu',
+                'cu', 'zn', 'sn', 'al', 'ao', 'si', 'ps',
+                'y', 'p', 'OI'
             ],
         },
     },

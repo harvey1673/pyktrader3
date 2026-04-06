@@ -15,21 +15,21 @@ from pycmqlib3.utility import base
 from pycmqlib3.strategy.strat_util import generate_strat_position
 from pycmqlib3.strategy.signal_repo import signal_buffer_config
 
-ferrous_products_mkts = ['rb', 'hc', 'i', 'j', 'jm']
-ferrous_mixed_mkts = ['ru', 'FG', 'ZC', 'SM', "SF"]
-base_metal_mkts = ['cu', 'al', 'zn', 'pb', 'ni', 'sn']
-precious_metal_mkts = ['au', 'ag']
-ind_metal_mkts = ferrous_products_mkts + ferrous_mixed_mkts + base_metal_mkts
-petro_chem_mkts = ['l', 'pp', 'v', 'TA', 'MA', 'bu']  # , 'sc', 'fu', 'eg']
-ind_all_mkts = ind_metal_mkts + petro_chem_mkts
-ags_oil_mkts = ['m', 'RM', 'y', 'p', 'OI', 'a', 'c', 'cs']  # , 'b']
-ags_soft_mkts = ['CF', 'CY', 'SR', 'jd', 'AP', 'UR', 'CJ']  # , 'sp', 'CJ', 'UR']
-ags_all_mkts = ags_oil_mkts + ags_soft_mkts
-eq_fut_mkts = ['IF', 'IH', 'IC', "IM"]
-bond_fut_mkts = ['T', 'TF', 'TS', 'TL']
-fin_all_mkts = eq_fut_mkts + bond_fut_mkts
-commod_all_mkts = ind_all_mkts + ags_all_mkts + precious_metal_mkts
-all_markets = commod_all_mkts + fin_all_mkts
+# ferrous_products_mkts = ['rb', 'hc', 'i', 'j', 'jm']
+# ferrous_mixed_mkts = ['ru', 'FG', 'ZC', 'SM', "SF"]
+# base_metal_mkts = ['cu', 'al', 'zn', 'pb', 'ni', 'sn']
+# precious_metal_mkts = ['au', 'ag']
+# ind_metal_mkts = ferrous_products_mkts + ferrous_mixed_mkts + base_metal_mkts
+# petro_chem_mkts = ['l', 'pp', 'v', 'TA', 'MA', 'bu']  # , 'sc', 'fu', 'eg']
+# ind_all_mkts = ind_metal_mkts + petro_chem_mkts
+# ags_oil_mkts = ['m', 'RM', 'y', 'p', 'OI', 'a', 'c', 'cs']  # , 'b']
+# ags_soft_mkts = ['CF', 'CY', 'SR', 'jd', 'AP', 'UR', 'CJ']  # , 'sp', 'CJ', 'UR']
+# ags_all_mkts = ags_oil_mkts + ags_soft_mkts
+# eq_fut_mkts = ['IF', 'IH', 'IC', "IM"]
+# bond_fut_mkts = ['T', 'TF', 'TS', 'TL']
+# fin_all_mkts = eq_fut_mkts + bond_fut_mkts
+# commod_all_mkts = ind_all_mkts + ags_all_mkts + precious_metal_mkts
+# all_markets = commod_all_mkts + fin_all_mkts
 
 trade_cont_map = {}
 
