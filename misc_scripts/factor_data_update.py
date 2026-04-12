@@ -15,22 +15,6 @@ from pycmqlib3.utility import base
 from pycmqlib3.strategy.strat_util import generate_strat_position
 from pycmqlib3.strategy.signal_repo import signal_buffer_config
 
-# ferrous_products_mkts = ['rb', 'hc', 'i', 'j', 'jm']
-# ferrous_mixed_mkts = ['ru', 'FG', 'ZC', 'SM', "SF"]
-# base_metal_mkts = ['cu', 'al', 'zn', 'pb', 'ni', 'sn']
-# precious_metal_mkts = ['au', 'ag']
-# ind_metal_mkts = ferrous_products_mkts + ferrous_mixed_mkts + base_metal_mkts
-# petro_chem_mkts = ['l', 'pp', 'v', 'TA', 'MA', 'bu']  # , 'sc', 'fu', 'eg']
-# ind_all_mkts = ind_metal_mkts + petro_chem_mkts
-# ags_oil_mkts = ['m', 'RM', 'y', 'p', 'OI', 'a', 'c', 'cs']  # , 'b']
-# ags_soft_mkts = ['CF', 'CY', 'SR', 'jd', 'AP', 'UR', 'CJ']  # , 'sp', 'CJ', 'UR']
-# ags_all_mkts = ags_oil_mkts + ags_soft_mkts
-# eq_fut_mkts = ['IF', 'IH', 'IC', "IM"]
-# bond_fut_mkts = ['T', 'TF', 'TS', 'TL']
-# fin_all_mkts = eq_fut_mkts + bond_fut_mkts
-# commod_all_mkts = ind_all_mkts + ags_all_mkts + precious_metal_mkts
-# all_markets = commod_all_mkts + fin_all_mkts
-
 trade_cont_map = {}
 
 sim_start_dict = {'c': datetime.date(2011, 1, 1), 'm': datetime.date(2011, 1, 1),
@@ -60,38 +44,26 @@ sim_start_dict = {'c': datetime.date(2011, 1, 1), 'm': datetime.date(2011, 1, 1)
 field_list = ['open', 'high', 'low', 'close', 'volume', 'openInterest', 'contract', 'shift']
 
 port_pos_config = {
-    # 'PTSIM1_FACTPORT_hot': {
-    #     'pos_loc': 'C:/dev/pyktrader3/process/pt_test1',
-    #     'roll': 'hot',
-    #     'shift_mode': 2,
-    #     'strat_list': [
-    #         ('PTSIM1_FACTPORT1.json', 9000, 'd1'),
-    #         ('PTSIM1_HRCRB.json', 18000, 'd1'),
-    #         ('PTSIM1_LL.json', 5400, 'd1'),
-    #         ('PTSIM1_FUNMTL.json', 4500, 'd1'),
-    #         ('PTSIM1_FUNFER.json', 4500, 'd1'),
-    #         ('PTSIM1_FUNBASE.json', 4500, 'd1'),
-    #     ], },
     'PTSIM1_FACTPORT1_hot': {
         'pos_loc': 'C:/dev/pyktrader3/process/paper_sim1',
         'strat_list': [
-            ('PTSIM1_FACTPORT1.json', 38000), #32000
-            ('PTSIM1_SEAZN.json', 27000), #34000
+            ('PTSIM1_FACTPORT1.json', 40000), #32000
+            ('PTSIM1_SEAZN.json', 31000), #34000
             ('PTSIM1_EXCHWNT.json', 30000), #27000
-            ('PTSIM1_HRCRB.json', 20000), #27000
+            ('PTSIM1_HRCRB.json', 30000), #27000
             ('PTSIM1_LL.json', 30000), # 27000
-            ('PTSIM1_LL2MR.json', 27000),
-            ('PTSIM1_SPDTF.json', 27000),
-            ('PTSIM1_MR1Y.json', 27000),
-            ('PTSIM1_CNMAC1.json', 10000), #13000
-            ('PTSIM1_CNMAC2.json', 14000),
-            ('PTSIM1_FUNFER.json', 30000), # 37000
+            ('PTSIM1_LL2MR.json', 30000), 
+            ('PTSIM1_SPDTF.json', 30000),
+            ('PTSIM1_MR1Y.json', 30000), 
+            ('PTSIM1_CNMAC1.json', 13000), #13000
+            ('PTSIM1_CNMAC2.json', 15000),
+            ('PTSIM1_FUNFER.json', 42000), # 37000
             ('PTSIM1_FERSPD.json', 90000), # 110000
             ('PTSIM1_AUSPD.json', 80000),
-            ('PTSIM1_FUNBASE.json', 40000),
+            ('PTSIM1_FUNBASE.json', 47000),
             ('PTSIM1_FUNENE.json', 10000), # 7000
-            ('PTSIM1_FUNMTL.json', 25000),
-            ('PTSIM1_BND1.json', 50000), #
+            ('PTSIM1_FUNMTL.json', 28000),
+            ('PTSIM1_BND1.json', 50000), # 
             ('PTSIM1_MANUEL_TRADING.csv', 1)
         ], },
 }
@@ -261,7 +233,7 @@ def update_port_position(run_date=datetime.date.today()):
                 roll = strat_conf.get("roll_label", "hot")
                 repo_type = strat_args.get('repo_type', 'asset')
                 freq = strat_conf.get("freq", "d1")
-                hist_fact_lookback = strat_conf.get("hist_fact_lookback", 20)
+                hist_fact_lookback = strat_conf.get("hist_fact_lookback", 60)
                 factor_repo = strat_args['factor_repo']
                 product_list = []
                 for asset_dict in assets:
@@ -285,7 +257,7 @@ def update_port_position(run_date=datetime.date.today()):
             elif ".csv" in config_file:
                 with open(config_file) as f:
                     strat_target= {k: int(v) * pos_scaler  for k, v in csv.reader(f)}
-
+   
             pos_by_strat[strat_file] = strat_target
             for prod in strat_target:
                 if prod not in target_pos:
@@ -297,14 +269,16 @@ def update_port_position(run_date=datetime.date.today()):
             if np.isnan(target_pos[prodcode]):
                 target_pos[prodcode] = 0
                 continue
-            if prodcode in ['ps']:
+            if prodcode in []:
                 target_pos[prodcode] = int((target_pos[prodcode] / 10 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 10
-            elif prodcode in ['lc']:
+            elif prodcode in ['lc', 'ps']:
                 target_pos[prodcode] = int((target_pos[prodcode] / 5 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 5
             elif prodcode in ['SH', 'PR']:
                 target_pos[prodcode] = int((target_pos[prodcode] / 4 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 4
             elif prodcode in ['MA', 'PX', 'TA', 'PF', 'eb', 'eg', 'pg', 'l', 'v', 'pp']:
                 target_pos[prodcode] = int((target_pos[prodcode] / 8 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 8
+            elif prodcode in ['AP']:
+                target_pos[prodcode] = int((target_pos[prodcode] / 2 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 2
             else:
                 target_pos[prodcode] = int(target_pos[prodcode] + (0.5 if target_pos[prodcode] > 0 else -0.5))
 

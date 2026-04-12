@@ -779,14 +779,16 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
     funda_start = day_shift(run_date, '-8y')
     update_start = day_shift(run_date, '-120b', CHN_Holidays)
     markets = [
-        'rb', 'hc', 'i', 'j', 'jm', 'FG', 'SA', 'SH', 'v',
-        'SM', 'SF', 'ru', 'nr', 'br',
+        'rb', 'hc', 'i', 'j', 'jm',
+        'SM', 'SF', 'SA', 'FG', 'v', 'SH',
         'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'ao',
-        'au', 'ag', 'bc', 'lc', 'si', 'ps', 'sp', 'ec',
-        'l', 'pp', 'TA', 'MA', 'sc', 'eb', 'eg',
-        'UR', 'lu', 'bu', 'fu', 'PX', 'PF',
-        'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'cs', 'b',
-        'CF', 'jd', 'AP', 'lh', 'CJ', 'PK',
+        'au', 'ag', #'pt', #'bc',
+        'si', 'lc', 'ps', 'ec',
+        'ru', 'UR', 'sp', 'nr', 'br',
+        'l', 'pp', 'TA', 'PX', 'eg', 'MA', 'eb', 'PF',
+        'sc', 'lu', 'bu', 'fu', 'pg',
+        'm', 'RM', 'y', 'p', 'OI', 'a', 'b', 'c', 'cs',
+        'CJ', 'CF', 'jd', 'AP', 'lh', 'SR', 'PK',
         'T', 'TF', 'TL',
         # 'pt', 'pd', 'PL', 'bz', 'ad', 'PR', 'op',
     ]
@@ -804,12 +806,12 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
                 asset_list = spread_config[spd_name][0]
                 roll_rule=spread_config[spd_name][2]
                 nb_cont=spread_config[spd_name][3]
-                leg1_df = nearby(asset_list[0][0], n=nb_cont,
+                leg1_df = dataseries.nearby_wt(asset_list[0][0], n=nb_cont,
                                 start_date=price_start,
                                 end_date=run_date,
                                 roll_rule=roll_rule, freq='d', shift_mode=1)
                 leg1_df.index = pd.to_datetime(leg1_df.index)
-                leg2_df = nearby(asset_list[1][0], n=nb_cont,
+                leg2_df = dataseries.nearby_wt(asset_list[1][0], n=nb_cont,
                                 start_date=price_start,
                                 end_date=run_date,
                                 roll_rule=roll_rule, freq='d', shift_mode=1)
