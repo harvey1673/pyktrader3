@@ -5,24 +5,31 @@ from pycmqlib3.utility.misc import CHN_Holidays, day_shift
 from pycmqlib3.utility.exch_ctd_func import *
 
 BROAD_MKTS = [
-    'rb', 'hc', 'i', 'j', 'jm', 'FG', 'v', 'SM', 'SF', 'SA', 'SH',
-    'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'ao', 'au', 'ag', 'si', 'ps', 'lc', 'sp', 
-    'ru', 'l', 'pp', 'TA', 'MA', 'sc', 'eb', 'eg', 'UR', 'lu',  'PX', #'PF', 
-    'm', 'RM', 'y', 'p', 'OI', 'a', 'b', 'c', 'CF', 'jd', 'AP', 'lh', 'CJ', #'PK',
+    'rb', 'hc', 'i', 'j', 'jm',
+    'SM', 'SF', 'SA', 'FG', 'v', 'SH',
+    'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'ao',
+    'au', 'ag', #'pt', #'bc',
+    'si', 'lc', 'ps', #'ec',
+    'ru', 'UR', 'sp', 'nr', 'br',
+    'l', 'pp', 'TA', 'PX', 'eg', 'MA', 'eb', #'PF',
+    'sc', 'lu', 'bu', 'fu', 'pg',
+    'm', 'RM', 'y', 'p', 'OI', 'a', 'b', 'c', 'cs',
+    'CJ', 'CF', 'jd', 'AP', 'lh', 'SR', 'PK',
 ]
 
-IND_MKTS = ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'v', 'SH', #'SM', 'SF', 'SA', 'UR', 
+IND_MKTS = [
+    'rb', 'hc', 'i', 'j', 'jm', 'FG', 'v', 'SH', #'SM', 'SF', 'SA', 'UR',
     'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'ao', 'au', 'ag', 'si', 'lc', 'PX', 'ps', #'bc',
     'ru', 'l', 'pp', 'TA', 'MA', 'sc', 'eb', 'eg', 'lu', #'bu', 'fu',
 ]
 
 AGS_MKTS = [
-    'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'CF', 'jd', 'AP', 
+    'm', 'RM', 'y', 'p', 'OI', 'a', 'b', 'c', 'cs', 'CF', 'jd', 'AP', 'CJ', 'lh', 'SR', 'PK',
 ]
 
 signal_store = {
     "ryield_ema": [BROAD_MKTS, ["ryield", "ema", [1, 2, 1], "ema1", "", True, "", "", 60, [-2.5, 2.5]]],
-    "ryield_ema_xdemean": [BROAD_MKTS, ["ryield", "ema", [1, 2, 1], "ema1", "", True, "", "", 60, [-2.5,2.5]]], 
+    "ryield_ema_xdemean": [BROAD_MKTS, ["ryield", "ema", [1, 2, 1], "ema1", "", True, "", "", 60, [-2.5,2.5]]],
     "ryield_st_zsa": [BROAD_MKTS, ["ryield", "zscore_adj", [20, 30, 1], "", "", True, "", "ema1", 240, [-2,2]]],
     "ryield_st_zsa_xdemean": [BROAD_MKTS, ["ryield", "zscore_adj", [20, 30, 1], "", "", True, "", "ema1", 240, [-2,2]]],
     "ryield_lt_zsa": [BROAD_MKTS, ["ryield", "zscore_adj", [80, 120, 2], "", "", True, "", "ema1", 240, [-2,2]]],
@@ -36,26 +43,26 @@ signal_store = {
     "basmom20_ema": [BROAD_MKTS, ["basmom20", "ema", [1, 2, 1], "", "", True, "price", "ema1", 240, [-2,2]]],
     "basmom20_ema_xdemean": [BROAD_MKTS, ["basmom20", "ema", [1, 2, 1], "", "", True, "price", "ema1", 240, [-2,2]]],
     "basmom40_ema": [BROAD_MKTS, ["basmom40", "ema", [1, 2, 1], "", "", True, "price", "ema1", 240, [-2, 2]]],
-    "basmom40_ema_xdemean": [BROAD_MKTS, ["basmom40", "ema", [1, 2, 1], "", "", True, "price", "ema1", 240, [-2, 2]]],     
+    "basmom40_ema_xdemean": [BROAD_MKTS, ["basmom40", "ema", [1, 2, 1], "", "", True, "price", "ema1", 240, [-2, 2]]],
     "basmom60_ema": [BROAD_MKTS, ["basmom60", "ema", [1, 2, 1], "", "", True, "price", "ema1", 240, [-2,2]]],
     "basmom60_ema_xdemean": [BROAD_MKTS, ["basmom60", "ema", [1, 2, 1], "", "", True, "price", "ema1", 240, [-2,2]]],
     "basmom120_ema": [BROAD_MKTS, ["basmom120", "ema", [1, 2, 1], "", "", True, "price", "ema1", 240, [-2,2]]],
     "basmom120_ema_xdemean": [BROAD_MKTS, ["basmom120", "ema", [1, 2, 1], "", "", True, "price", "ema1", 240, [-2,2]]],
     "mom_ewmac": [BROAD_MKTS, ["px", "ewmac", [3, 10, 1], "", "", True, "price", "ema1", 40, [-2, 2]]],
-    "mom_ewmac_xdemean": [BROAD_MKTS, ["px", "ewmac", [3, 10, 1], "", "", True, "price", "ema1", 40, [-2, 2]]],    
-    "mom_momma240": [BROAD_MKTS, ["px", "ema", [1, 2, 1], "df240", "pct_change", True, "price", "ema1", 60, [-2, 2]]],
-    "mom_momma240_xdemean": [BROAD_MKTS, ["px", "ema", [1, 2, 1], "df240", "pct_change", True, "price", "ema1", 60, [-2, 2]]],
-    "mom_momma20": [BROAD_MKTS, ["px", "ema", [1, 2, 1], "df20", "pct_change", True, "price", "ema1", 60, [-2, 2]]],
-    "mom_momma20_xdemean": [BROAD_MKTS, ["px", "ema", [1, 2, 1], "df20", "pct_change", True, "price", "ema1", 60, [-2, 2]]], 
-    "mom_hlr_st": [BROAD_MKTS, ["px", "hlratio", [10, 20, 2], "", "", True, "", "buf0.3", 120, [-2, 2]]],
-    "mom_hlr_st_xdemean": [BROAD_MKTS, ["px", "hlratio", [10, 20, 2], "", "", True, "", "buf0.3", 120, [-2, 2]]],
-    "mom_hlr_mt": [BROAD_MKTS, ["px", "hlratio", [40, 60, 2], "", "", True, "", "buf0.1", 120, [-2, 2]]],
-    "mom_hlr_mt_xdemean": [BROAD_MKTS, ["px", "hlratio", [40, 60, 2], "", "", True, "", "buf0.1", 120, [-2, 2]]],
-    "mom_hlr_lt": [BROAD_MKTS, ["px", "hlratio", [80, 120, 2], "", "", True, "", "buf0.1", 120, [-2, 2]]],
-    "mom_hlr_lt_xdemean": [BROAD_MKTS, ["px", "hlratio", [80, 120, 2], "", "", True, "", "buf0.1", 120, [-2, 2]]],  
+    "mom_ewmac_xdemean": [BROAD_MKTS, ["px", "ewmac", [3, 10, 1], "", "", True, "price", "ema1", 40, [-2, 2]]],
+    "mom_momma240": [BROAD_MKTS, ["px", "ema", [1, 2, 1], "df240", "pct_change", True, "price", "", 60, [-2, 2]]],
+    "mom_momma240_xdemean": [BROAD_MKTS, ["px", "ema", [1, 2, 1], "df240", "pct_change", True, "price", "", 60, [-2, 2]]],
+    "mom_momma20": [BROAD_MKTS, ["px", "ema", [1, 2, 1], "df20", "pct_change", True, "price", "ema1", 20, [-2, 2]]],
+    "mom_momma20_xdemean": [BROAD_MKTS, ["px", "ema", [1, 2, 1], "df20", "pct_change", True, "price", "ema1", 20, [-2, 2]]],
+    "mom_hlr_st": [BROAD_MKTS, ["px", "hlratio", [20, 40, 2], "", "", True, "", "ema1", 120, [-2, 2]]],
+    "mom_hlr_st_xdemean": [BROAD_MKTS, ["px", "hlratio", [20, 40, 2], "", "", True, "", "ema1", 120, [-2, 2]]],
+    "mom_hlr_mt": [BROAD_MKTS, ["px", "hlratio", [40, 60, 2], "", "", True, "", "ema1", 120, [-2, 2]]],
+    "mom_hlr_mt_xdemean": [BROAD_MKTS, ["px", "hlratio", [40, 60, 2], "", "", True, "", "ema1", 120, [-2, 2]]],
+    "mom_hlr_lt": [BROAD_MKTS, ["px", "hlratio", [80, 120, 2], "", "", True, "", "ema1", 120, [-2, 2]]],
+    "mom_hlr_lt_xdemean": [BROAD_MKTS, ["px", "hlratio", [80, 120, 2], "", "", True, "", "ema1", 120, [-2, 2]]],
     #"mom_hlr_yr": [BROAD_MKTS, ["px", "hlratio", [240, 250, 2], "", "", True, "", "", 120, [-2, 2]]],
-    #"mom_hlr_yr_xdemean": [BROAD_MKTS, ["px", "hlratio", [240, 250, 2], "", "", True, "", "", 120, [-2, 2]]],  
-    #"mom_kdj_st": [BROAD_MKTS, ["px", "kdj", [20, 40, 2], "", "", True, "", "buf0.3", 120, [-2, 2]]],  
+    #"mom_hlr_yr_xdemean": [BROAD_MKTS, ["px", "hlratio", [240, 250, 2], "", "", True, "", "", 120, [-2, 2]]],
+    #"mom_kdj_st": [BROAD_MKTS, ["px", "kdj", [20, 40, 2], "", "", True, "", "buf0.3", 120, [-2, 2]]],
     #"drng_ma": [BROAD_MKTS, ["drng", "ma", [20, 40, 2], "", "", True, "price", "ema3", 20, [-2, 2]]],
     "cclr_mom_sgnma": [BROAD_MKTS, ["logret", "sgn_ma", [20, 40, 2], "", "", True, "price", "ema3", 20, [-2, 2]]],
     "cclr_mom_sgnma_xdemean": [BROAD_MKTS, ["logret", "sgn_ma", [20, 40, 2], "", "", True, "price", "ema3", 20, [-2, 2]]],
@@ -80,7 +87,7 @@ signal_store = {
     'bond_au_st_qtl': [['T', ],
                      ['au_td_sge', 'qtl', [20, 60, 2], 'ema1', '', True, 'price', 'buf0.1', 120, [-2,2]]],
 
-    # ferrous 
+    # ferrous
     'nmf_yoy_qtl': [['fef', 'i'], ["nmf_prem", 'qtl', [10, 20, 1], "cal_yoy", "diff", True, "", "ema1", 120, [-2,2]]],
     'macf_yoy_qtl': [['fef', 'i'], ["macf_prem", 'qtl', [10, 20, 1], "cal_yoy", "diff", True, "", "ema1", 120, [-2,2]]],
     'macf_spd_qtl': [['rb_i', "hc_i"], ["macf_prem", 'qtl', [40, 80, 2], "", "", False, "", "ema1", 120, [-2,2]]],
@@ -93,7 +100,7 @@ signal_store = {
                        ['import_arb_nmf', 'zscore', [40, 80, 2], 'ema5', '', False, 'price', 'ema1', 120, [-2,2]]],
     'macf_arb_spd_zs': [['rb_i', 'hc_i'], # macf jmb
                         ['import_arb_macf', 'zscore', [40, 80, 2], 'ema5', '', False, 'price', 'ema1', 120, [-2,2]]],
-                    
+
     'nmf_arb_hlrhys': [['rb', 'hc', 'i', 'j', 'jm'], # nmf macf jmb
                        ['pbf_imp_profit', 'hysteresis', [0.7, 240, 0.1], '', 'hlratio', False, '', 'ema1', 120, [-2,2]]],
     'ioarb_px_hlr': [['rb', 'hc', 'i'],
@@ -129,7 +136,7 @@ signal_store = {
     'ckc_phycarry_ema': [['fef', 'i'],
                          ['jm_phycarry', 'ema', [10, 20, 1], '', '', True, '', "sma3", 120, [-2,2]]],
     'fef_c1_c2_ratio_or_qtl': [['rb', 'hc', 'j'],
-                               ['FEF_c1_c2_ratio', 'hlratio', [40, 60, 2], '', '', False, '', "buf0.2", 120, [-2,2]]], 
+                               ['FEF_c1_c2_ratio', 'hlratio', [40, 60, 2], '', '', False, '', "buf0.2", 120, [-2,2]]],
     'fef_c1_c2_ratio_spd_qtl': [['rb_i', 'hc_i', 'j_i'],
                                 ['FEF_c1_c2_ratio', 'qtl', [20, 40, 2], '', '', False, '', "buf0.15", 120, [-2,2]]],
     'fef_fly_ratio_or_qtl': [['rb', 'hc', 'j'],
@@ -170,17 +177,17 @@ signal_store = {
     'io_pinv45_lvl_hlr': [['rb_i', 'hc_i'],
                           ['io_inv_45ports', 'hlratio', [8, 56, 4], '', '', True, '', "ema1", 120, [-2,2]]],
     'ckc_pinv_spd_hlr': [['jm_rb', 'jm_hc'],
-                        ['ckc_inv_6ports', 'hlratio', [40, 260, 5], '', '', False, 'price', "ema1", 120, [-2,2]]], 
+                        ['ckc_inv_6ports', 'hlratio', [40, 260, 5], '', '', False, 'price', "ema1", 120, [-2,2]]],
 
     'scrap_arr_eaf_spd_lyoy_mds': [
-        ['hc_i'], ['scrap_arrival_mill_49eaf', 'ma_dff_sgn', [30, 50, 2], 'lunar_yoy_day', 'diff', True, 'price', 'ema3', 120, [-2, 2]]], 
+        ['hc_i'], ['scrap_arrival_mill_49eaf', 'ma_dff_sgn', [30, 50, 2], 'lunar_yoy_day', 'diff', True, 'price', 'ema3', 120, [-2, 2]]],
     'scrap_arr_bof_spd_lyoy_mds': [
-        ['hc_i'], ['scrap_arrival_mill_70bof', 'ma_dff_sgn', [30, 50, 2], 'lunar_yoy_day', 'diff', True, 'price', 'ema3', 120, [-2, 2]]], 
+        ['hc_i'], ['scrap_arrival_mill_70bof', 'ma_dff_sgn', [30, 50, 2], 'lunar_yoy_day', 'diff', True, 'price', 'ema3', 120, [-2, 2]]],
     'scrap_inv_use_ratio_spd_lyoy_mds': [
-        ['hc_i'], ['scrap_inv_use_total', 'ma_dff_sgn', [4, 8, 1], 'lunar_yoy_day', 'diff', False, '', 'ema5', 120, [-2, 2]]], 
+        ['hc_i'], ['scrap_inv_use_total', 'ma_dff_sgn', [4, 8, 1], 'lunar_yoy_day', 'diff', False, '', 'ema5', 120, [-2, 2]]],
     'rebar_bof_eaf_diff_ema': [
         ['i_rb', 'i_hc'], ['rebar_bof_eaf_diff', 'ema', [1, 2, 1], '', '', False, 'price', 'ema1', 60, [-2, 2]]],
-    
+
     'long_inv_mqs_st': [['rb', 'hc', 'i'],
                         ['long_inv_social', 'ma_dff_sgn', [40, 60, 2], '', '', False, 'price', "sma2", 120, [-2,2]]],
     'long_inv_mqs_lt': [['rb', 'hc', 'i'],
@@ -193,10 +200,10 @@ signal_store = {
                         ['flat_inv_social', 'ma_dff_sgn', [40, 60, 2], '', '', False, 'price', "sma2", 120, [-2,2]]],
     'flat_inv_mqs_lt': [['rb', 'hc', 'i'],
                         ['flat_inv_social', 'ma_dff_sgn', [240, 250, 2], '', '', False, 'price', "sma2", 120, [-2,2]]],
-    'steel_sinv_spd2_hlr_1m': [['i_rb', 'i_hc'], 
+    'steel_sinv_spd2_hlr_1m': [['i_rb', 'i_hc'],
                                ['steel_social_inv', 'hlratio', [4, 8, 1], '', '', False, '', "ema1", 120, [-2,2]]],
-    'steel_sinv_spd2_hlr_3m': [['i_rb', 'i_hc'], 
-                               ['steel_social_inv', 'hlratio', [12, 16, 1], '', '', False, '', "ema1", 120, [-2,2]]],    
+    'steel_sinv_spd2_hlr_3m': [['i_rb', 'i_hc'],
+                               ['steel_social_inv', 'hlratio', [12, 16, 1], '', '', False, '', "ema1", 120, [-2,2]]],
     'steel_total_stu_lyoy_hlr_st': [['rb', 'hc', 'i'],
                                     ['steel_total_stockdays', 'hlratio', [12, 24, 1], 'lunar_yoy_day', 'diff', False, '', "ema1", 120, [-2,2]]],
     'steel_total_stu_hlr_st': [['rb', 'hc', 'i'],
@@ -205,7 +212,7 @@ signal_store = {
                                     ['steel_total_stockdays', 'hlratio', [48, 56, 1], 'lunar_yoy_day', 'diff', False, '', "ema1", 120, [-2,2]]],
     'steel_total_stu_hlr_yr': [['rb', 'hc', 'i'],
                                ['steel_total_stockdays', 'hlratio', [48, 56, 1], '', '', False, '', "ema1", 120, [-2,2]]],
-          
+
     'steel_sinv_lyoy_zs': [['rb', 'hc', 'i', 'FG', 'v'],
                            ['steel_inv_social', 'zscore', [24, 30, 2], 'lunar_yoy_day', 'diff', False, '', "sma1", 120, [-2,2]]],
     'steel_sinv_lyoy_mds': [['rb', 'hc', 'i', 'FG', 'v'],
@@ -224,15 +231,15 @@ signal_store = {
                       ['hrc_cn_eu_cfr', 'qtl', [20, 30, 2], '', '', True, '', "ema1", 120, [-2,2]]],
     'hrc_arb_ma': [['hc', 'rb'],
                    ['hrc_exp_sea_arb', 'ma', [1, 4, 1], '', '', True, '', "ema1", 120, [-2,2]]],
-                   
+
     'steel_margin_lvl_fast': [['j', 'jm', 'SM', 'SF'],
                               ['margin_hrc_macf', 'hlratio', [20, 40, 2], '', '', True, 'price', "buf0.2", 120, [-2,2]]],
     'steel_margin_lvl_slow': [['SM', 'SF'],
                               ['margin_hrc_macf', 'hlratio', [240, 260, 2], '', '', True, 'price', "", 120, [-2,2]]],
     'mn_mine_mom': [['SM'],
-                    ['mn_44_gabon_tj', 'zscore', [40, 60, 2], '', '', True, 'price', "", 120, [-2,2]]],                 
+                    ['mn_44_gabon_tj', 'zscore', [40, 60, 2], '', '', True, 'price', "", 120, [-2,2]]],
     'smsf_prodcost_mom': [['SM', 'SF'],
-                          ['smsf_prodcost', 'zscore', [40, 60, 2], '', '', True, 'price', "", 120, [-2,2]]],                           
+                          ['smsf_prodcost', 'zscore', [40, 60, 2], '', '', True, 'price', "", 120, [-2,2]]],
     'smsf_prodcost_mom_xdemean': [['SM', 'SF'],
                           ['smsf_prodcost', 'zscore', [40, 60, 2], '', '', True, 'price', "", 120, [-2,2]]],
     'smsf_workrate_ratio': [['SM-SF'],
@@ -244,19 +251,19 @@ signal_store = {
     'smsf_coal_mom_st': [['SF_SM', 'j_i', 'jm_i'],
                          ['coal_5500_sx_qhd', 'zscore', [20, 60, 2], '', '', True, 'price', "", 120, [-2,2]]],
     'smsf_coal_mom_yr': [['SF_SM', 'j_i', 'jm_i'],
-                         ['coal_5500_sx_qhd', 'zscore', [230, 250, 2], '', '', True, 'price', "", 120, [-2,2]]],     
+                         ['coal_5500_sx_qhd', 'zscore', [230, 250, 2], '', '', True, 'price', "", 120, [-2,2]]],
     'coal_mom_st_hlr': [['SF', 'j', 'jm'],
                         ['coal_5500_sx_qhd', 'hlratio', [40, 60, 2], '', '', True, 'price', "", 120, [-2,2]]],
     'coal_mom_yr_hlr': [['SF', 'j', 'jm'],
-                        ['coal_5500_sx_qhd', 'hlratio', [240, 260, 2], '', '', True, 'price', "", 120, [-2,2]]], 
+                        ['coal_5500_sx_qhd', 'hlratio', [240, 260, 2], '', '', True, 'price', "", 120, [-2,2]]],
     'fgsa_margin_mom_st': [['FG-SA'],
                          ['fg_margin_petcoke', 'qtl', [2, 4, 1], '', '', True, '', "", 120, [-2,2]]],
     'ferr_pinv_hlr_mt': [['j', 'jm', 'i', 'rb', 'hc'],
                         ['fer_pinv', 'hlratio', [80, 120, 2], '', '', False, 'price', "ema1", 120, [-2,2]]],
     'ferr_pinv_hlr_mt_xdemean': [['j', 'jm', 'i', 'rb', 'hc'],
-                        ['fer_pinv', 'hlratio', [80, 120, 2], '', '', False, 'price', "ema1", 120, [-2,2]]], 
+                        ['fer_pinv', 'hlratio', [80, 120, 2], '', '', False, 'price', "ema1", 120, [-2,2]]],
     'ferr_pinv_hlr_yr': [['j', 'jm', 'i', 'rb', 'hc'],
-                        ['fer_pinv', 'hlratio', [240, 260, 2], '', '', False, 'price', "ema1", 120, [-2,2]]], 
+                        ['fer_pinv', 'hlratio', [240, 260, 2], '', '', False, 'price', "ema1", 120, [-2,2]]],
 
     'strip_hsec_lvl_mid': [['rb', 'hc', 'i', 'j', 'jm'],
                            ['strip_hsec', 'qtl', [60, 80, 2], '', '', True, 'price', "sma1", 120, [-2,2]]],
@@ -298,10 +305,10 @@ signal_store = {
                                 ["scrap_use_mill_49eaf", 'ma_dff_sgn', [16, 28, 1], 'lunar_yoy_day', 'diff', False, '', "", 120, [-2,2]]],
     'rbhc_scrap_inv_use_lyoy_mds': [['spd_rb_hc_c1', 'rb_hc'],
                                     ["scrap_inv_use_49eaf", 'ma_dff_sgn', [16, 28, 1], 'lunar_yoy_day', 'diff', True, '', "", 120, [-2,2]]],
-    
+
     # 'rbhc_eaf_util_yoy_mds': [['spd_rb_hc_c1', 'rb_hc'],
     #                           ["eaf_util_all", 'ma_dff_sgn', [20, 50, 2], 'cal_yoy', 'diff', False, '', "", 120, [-2,2]]],
-                             
+
     # 'rbsales_lyoy_spd_st': [['rb-hc'],
     #                         ['consteel_dsales_mysteel', 'zscore', [20, 30, 1],
     #                          'lunar_yoy_day|ema1', 'diff', True, 'price', "ema1|buf0.3", 120, [-2,2]]],
@@ -433,16 +440,16 @@ signal_store = {
     'lmebase_long_2y': [['MCU', 'MAL', 'MZN', 'MPB', 'MNI'],
                         ['shfe_arb', 'hysteresis', [0.9, 500, 0.1], '', 'pct_score', True, 'price', "pos", 240, [-2,2]]],
 
-    'metal_pbc_ema': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'SA', 'v', 
+    'metal_pbc_ema': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'SA', 'v',
                        'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'au', 'ag'],
                       ['phycarry', 'ema', [10, 20], '', '', True, 'price', "", 120, [-2,2]]],
     'metal_pbc_ema_xdemean': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'SA', 'v',
                                'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'au', 'ag'],
                               ['phycarry', 'ema', [10, 20], '', '', True, 'price', "", 120, [-2,2]]],
-    'metal_mom_hlrhys': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'SA', 'v', 
+    'metal_mom_hlrhys': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'SA', 'v',
                           'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'ao', 'si', 'lc', 'au', 'ag'],
                          ['metal_px', 'hysteresis', [0.7, 60, 0.1], '', 'hlratio', True, 'price', "ema1", 120, [-2,2]]],
-    'metal_mom_hlrhys_xdemean': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'SA', 'v', 
+    'metal_mom_hlrhys_xdemean': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'SA', 'v',
                                   'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'si', 'lc', 'au', 'ag'],
                          ['metal_px', 'hysteresis', [0.7, 60, 0.1], '', 'hlratio', True, 'price', "ema1", 120, [-2,2]]],
     'mtlmom_st_hlr': [[
@@ -508,9 +515,9 @@ signal_store = {
     "prop_etf_mom_dbth_qtl2": [['rb', 'i', 'v', 'FG'],
                                ["prop_sw_csi500_ret", "dbl_th", [0.8, 240, 1], "ema3", "pct_score", True, "", "", 120, [-2,2]]],
     "glass_etf_mom_dbth_zs": [['FG'],
-                             ["glass_sw_csi500_ret", "hysteresis", [1.2, 120, 0.6], "ema3", "zscore_roll", True, "", "", 120, [-2,2]]],                             
+                             ["glass_sw_csi500_ret", "hysteresis", [1.2, 120, 0.6], "ema3", "zscore_roll", True, "", "", 120, [-2,2]]],
     # "rubber_etf_mom_dbth_zs": [['ru', 'nr'],
-    #                          ["rubber_sw_csi500_ret", "hysteresis", [1.5, 60, 1], "ema3", "zscore_roll", True, "", "", 120, [-2,2]]],                             
+    #                          ["rubber_sw_csi500_ret", "hysteresis", [1.5, 60, 1], "ema3", "zscore_roll", True, "", "", 120, [-2,2]]],
     "us_oil_prod_etf_mom": [['sc', 'bu', 'TA',],
                             ["us_oil_prod_etf_perf", "qtl", [40, 60, 2], '', '', True, 'price', "", 120, [-2,2]]],
 
@@ -544,32 +551,32 @@ signal_store = {
     'shibor1m_qtl': [['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'ag', 'l', 'pp', 'v', 'TA', 'eg', 'MA',],
                      ['shibor_1m', 'qtl', [40, 80, 2], 'ema3', '', True, 'price', '', 120, [-2,2]]],
     'r007_lt_zs': [['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'ag',  'l', 'pp', 'v', 'TA', 'eg', 'MA',],
-                     ['r007_cn', 'zscore', [80, 120, 2], 'ema5', '', True, 'price', '', 120, [-2,2]]],   
+                     ['r007_cn', 'zscore', [80, 120, 2], 'ema5', '', True, 'price', '', 120, [-2,2]]],
 
     "MCU3_zs": [['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA',],
                 ['cu_lme_3m_close', 'zscore', [40, 80, 2], '', '', True, '', 'buf0.2', 120, [-2,2]]],
     # "MAL3_zs": [['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA',],
-    #             ['al_lme_3m_close', 'zscore', [40, 80, 2], '', '', True, '', 'buf0.2', 120, [-2,2]]],  
+    #             ['al_lme_3m_close', 'zscore', [40, 80, 2], '', '', True, '', 'buf0.2', 120, [-2,2]]],
 
     'cnh_cny_zs': [['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA', 'au', 'ag'],
                    ['cnh_cny_spd2', 'zscore', [10, 20, 1], 'ema1', '', False, '', 'buf0.4', 120, [-3, 3]]],
     'cny_dev_zs': [['rb', 'hc', 'i', 'FG', 'SA', 'cu', 'al', 'au', 'ag',
                     'l', 'pp', 'v', 'TA', 'eb', 'eg', 'MA', 'sc', 'lu', 'bu'],
                    ['cny_mid_dev1', 'zscore', [60, 80, 2], 'ema10', '', True, '', '', 120, [-2,2]]],
-                
-    'vix_zs_st': [['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA', 'ag'], 
+
+    'vix_zs_st': [['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA', 'ag'],
                   ['vix', 'zscore', [20, 60, 2], '', '', False, '', 'buf0.5', 120, [-2,2]]],
-    'vix_mds_st': [['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA', 'ag'], 
-                   ['vix', 'ma_dff_sgn', [40, 80, 2], '', '', False, '', '', 120, [-2,2]]], 
-    
+    'vix_mds_st': [['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA', 'ag'],
+                   ['vix', 'ma_dff_sgn', [40, 80, 2], '', '', False, '', '', 120, [-2,2]]],
+
     "usggbe10_zs": [['rb', 'hc', 'cu', 'al', 'zn', 'ag', 'pb'], # shift_holding=2
-                    ['usggbe10', 'zscore', [40, 80, 2], '', '', True, '', 'buf0.4', 120, [-2,2]]],                  
-    # au-ag                       
-    #'ag_etf_st_mom': [['au'], ['ag_etf_sivr_holding', 'qtl', [5, 10, 1], 'df252', 'diff', True, '', 'buf0.2', 120, [-2,2]]], 
-    "auag_cme_wratio_zs": [['au-ag'], ["auag_cme_warrant_ratio", 'zscore', [20, 40, 2], '', '', False, '', 'ema1', 120, [-2,2]]], 
-    'auag_vix_zsa_mt': [['au-ag'], ['vix', 'zscore_adj', [40, 80, 2], '', '', True, '', 'buf0.3', 120, [-2,2]]], 
-    'auag_fxbasket_zs_yr': [['au-cu', 'au-rb'], ['fxbasket_cumret', 'zscore', [240, 520, 5], '', '', True, '', '', 120, [-2,2]]], 
-    
+                    ['usggbe10', 'zscore', [40, 80, 2], '', '', True, '', 'buf0.4', 120, [-2,2]]],
+    # au-ag
+    #'ag_etf_st_mom': [['au'], ['ag_etf_sivr_holding', 'qtl', [5, 10, 1], 'df252', 'diff', True, '', 'buf0.2', 120, [-2,2]]],
+    "auag_cme_wratio_zs": [['au-ag'], ["auag_cme_warrant_ratio", 'zscore', [20, 40, 2], '', '', False, '', 'ema1', 120, [-2,2]]],
+    'auag_vix_zsa_mt': [['au-ag'], ['vix', 'zscore_adj', [40, 80, 2], '', '', True, '', 'buf0.3', 120, [-2,2]]],
+    'auag_fxbasket_zs_yr': [['au-cu', 'au-rb'], ['fxbasket_cumret', 'zscore', [240, 520, 5], '', '', True, '', '', 120, [-2,2]]],
+
     'auag_csi500_zs_st': [['au_ag'], ['csi500_idx', 'zscore', [20, 40, 2], '', '', False, '', 'ema5', 120, [-2,2]]],
     'auag_etf_mrev': [['au', 'ag'], ['etf_holdings', 'zscore', [480, 520, 2], '', '', False, '', 'ema3', 120, [-2,2]]], # dump
     'auag_etf_mrev_xdemean': [['au', 'ag'], ['etf_holdings', 'zscore', [480, 520, 2], '', '', False, '', 'ema3', 120, [-2,2]]],
@@ -604,24 +611,20 @@ signal_store = {
     "pmi_cn_purchase_yoy": [['rb', 'hc', 'j', 'jm', 'i', 'FG', 'v', 'al', 'cu'],
                         ['pmi_cn_manu_purchase', 'ma', [1, 2, 1], 'df12', 'diff', True, '', '', 24, [-2,2]]],
     "pmi_stl_o2inv_zs": [['rb', 'hc', 'j', 'jm', 'i'],
-                        ['pmi_steel_order_inv_ratio', 'zscore', [60, 72, 1], '', '', True, '', '', 24, [-2,2]]], 
+                        ['pmi_steel_order_inv_ratio', 'zscore', [60, 72, 1], '', '', True, '', '', 24, [-2,2]]],
     "pmi_stl_o2inv_qtl_sgn": [['rb', 'hc', 'j', 'jm', 'i'],
-                        ['pmi_steel_order_inv_ratio', 'qtl', [48, 60, 1], '', '', True, '', 'sgn', 24, [-2,2]]], 
+                        ['pmi_steel_order_inv_ratio', 'qtl', [48, 60, 1], '', '', True, '', 'sgn', 24, [-2,2]]],
     "pmi_order_rminv_ratio_zs": [['rb', 'hc', 'v', 'FG', 'cu', 'al', 'zn'],
-                        ['pmi_order_rminv_ratio', 'zscore', [60, 72, 1], '', '', True, '', 'sgn', 24, [-2,2]]], 
+                        ['pmi_order_rminv_ratio', 'zscore', [60, 72, 1], '', '', True, '', 'sgn', 24, [-2,2]]],
     # "ppi_cpi_spd_zs": [['rb', 'hc', 'j', 'jm', 'v', 'SM', 'SF', 'cu', 'al', 'zn', 'ni', 'sn', 'ss', 'pp', 'sc', 'lu'],
     #                     ['ppi_cpi_mom_spd', 'zscore', [48, 60, 1], 'sum12', '', True, '', 'arr2|sgn', 24, [-2,2]]],
-    "m1_m2_spd_zs_sgn": [['rb', 'hc', 'v', 'FG', 'cu', 'zn', 'al'], 
+    "m1_m2_spd_zs_sgn": [['rb', 'hc', 'v', 'FG', 'cu', 'zn', 'al'],
                          ["m1_m2_spd", 'zscore', [24, 36, 1], '', '', True, '', 'sgn', 24, [-2,2]]],
 }
 
 signal_buffer_config = {
-    "mom_hlr_st": 0.3,
-    "mom_hlr_mt": 0.1,
-    "mom_hlr_lt": 0.1,
-    "mom_kdj_st": 0.3,
     'bond_mr_st_qtl': 0.1,
-    'bond_tf_lt_qtl': 0.1,    
+    'bond_tf_lt_qtl': 0.1,
     'bond_au_st_qtl': 0.1,
     'bond_r007_lt_zs': 0.4,
     'bond_shibor1m_qtl': 0.3,
@@ -631,10 +634,10 @@ signal_buffer_config = {
     "lme_futbasis_ma": 0.5,
     "base_inv_exch_ma": 0.15,
     "base_inv_lme_ma": 0.2,
-    "base_inv_shfe_ma": 0.2,    
+    "base_inv_shfe_ma": 0.2,
     "fxbasket_zs": 0.2,
     'dxy_zsa_s': 0.5,
-    "MCU3_zs": 0.2, 
+    "MCU3_zs": 0.2,
     'cnh_cny_zs': 0.4,
     'vix_zs_st': 0.5,
     'rbhc_phycarry_diff_zs': 0.4,
@@ -699,7 +702,7 @@ feature_to_feature_key_mapping = {
         'zn': 'zn_lme_3m_15m_spd',
         # 'cu': 'cu_lme_0m_3m_spd',
         # 'al': 'al_lme_0m_3m_spd',
-        # 'zn': 'zn_lme_0m_3m_spd',                
+        # 'zn': 'zn_lme_0m_3m_spd',
         'ni': 'ni_lme_0m_3m_spd',
         'sn': 'sn_lme_0m_3m_spd',
         'pb': 'pb_lme_0m_3m_spd',
@@ -725,9 +728,9 @@ feature_to_feature_key_mapping = {
     },
     'fer_pinv': {
         "j": "coke_inv_3ports",
-        "jm": "ckc_inv_6ports", 
-        "i": 'io_inv_45ports', 
-        "rb": 'rebar_inv_social', 
+        "jm": "ckc_inv_6ports",
+        "i": 'io_inv_45ports',
+        "rb": 'rebar_inv_social',
         "hc": 'hrc_inv_social',
     },
     'smsf_prodcost': {
@@ -798,7 +801,7 @@ commod_phycarry_dict = {
     "i": "io_ctd_spot",
     "j": "coke_sub_a_rz",
     "jm": "ckc_outstock_ganqimaodu",
-    "FG": "fg_5mm_shahe",        
+    "FG": "fg_5mm_shahe",
     "SM": "sm_65s17_tj",
     "SF": "sf_72_neimeng",
     "v": "pvc_cac2_east",
@@ -834,16 +837,16 @@ def get_funda_signal_from_store(spot_df, signal_name, price_df=None,
                 print("ERROR: no future price is passed for metal_pbc")
                 return pd.Series()
             if f'{asset}_phybasis' not in spot_df.columns:
-                data_dict = {}            
+                data_dict = {}
                 data_dict[f'{asset}_c1'] = price_df[(asset+'c1', 'close')] / np.exp(price_df[(asset+'c1', 'shift')])
                 data_dict[f'{asset}_expiry'] = pd.to_datetime(price_df[(asset+'c1', 'expiry')])
                 if asset == 'i':
                     data_dict['io_ctd_spot'] = io_ctd_basis(spot_df, price_df[('i'+'c1', 'expiry')])
                 else:
                     data_dict[asset_feature] = spot_df[asset_feature].dropna()
-                data_dict['r007_cn'] = spot_df['r007_cn']            
+                data_dict['r007_cn'] = spot_df['r007_cn']
                 data_df = pd.DataFrame(data_dict).dropna(how='all')
-                data_df['date'] = pd.to_datetime(data_df.index)                
+                data_df['date'] = pd.to_datetime(data_df.index)
                 data_df[f'{asset}_phybasis'] = (np.log(data_df[asset_feature]) - np.log(data_df[f'{asset}_c1'])) / \
                                             (data_df[f'{asset}_expiry'] - data_df['date']).dt.days * 365 + data_df['r007_cn'].ffill().ewm(5).mean()/100
                 spot_df = pd.concat([spot_df, data_df[[f'{asset}_phybasis']]], axis=1)
@@ -853,7 +856,7 @@ def get_funda_signal_from_store(spot_df, signal_name, price_df=None,
                 print("ERROR: no future price is passed for metal_pbc")
                 return pd.Series()
             if f'{asset}_px' not in spot_df.columns:
-                spot_df = pd.cocnat([spot_df, price_df[(asset+'c1', 'close')].to_frame(f'{asset}_px')], axis=1)            
+                spot_df = pd.cocnat([spot_df, price_df[(asset+'c1', 'close')].to_frame(f'{asset}_px')], axis=1)
             asset_feature = f'{asset}_px'
         if feature in param_rng_by_feature_key:
             param_rng = param_rng_by_feature_key[feature].get(asset, param_rng)

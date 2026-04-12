@@ -80,9 +80,9 @@ port_pos_config = {
             ('PTSIM1_EXCHWNT.json', 30000), #27000
             ('PTSIM1_HRCRB.json', 20000), #27000
             ('PTSIM1_LL.json', 30000), # 27000
-            ('PTSIM1_LL2MR.json', 27000), 
+            ('PTSIM1_LL2MR.json', 27000),
             ('PTSIM1_SPDTF.json', 27000),
-            ('PTSIM1_MR1Y.json', 27000), 
+            ('PTSIM1_MR1Y.json', 27000),
             ('PTSIM1_CNMAC1.json', 10000), #13000
             ('PTSIM1_CNMAC2.json', 14000),
             ('PTSIM1_FUNFER.json', 30000), # 37000
@@ -91,7 +91,7 @@ port_pos_config = {
             ('PTSIM1_FUNBASE.json', 40000),
             ('PTSIM1_FUNENE.json', 10000), # 7000
             ('PTSIM1_FUNMTL.json', 25000),
-            ('PTSIM1_BND1.json', 50000), # 
+            ('PTSIM1_BND1.json', 50000), #
             ('PTSIM1_MANUEL_TRADING.csv', 1)
         ], },
 }
@@ -285,7 +285,7 @@ def update_port_position(run_date=datetime.date.today()):
             elif ".csv" in config_file:
                 with open(config_file) as f:
                     strat_target= {k: int(v) * pos_scaler  for k, v in csv.reader(f)}
-   
+
             pos_by_strat[strat_file] = strat_target
             for prod in strat_target:
                 if prod not in target_pos:

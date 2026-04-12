@@ -8,6 +8,8 @@ import zipfile
 import shutil
 import pandas as pd
 import datetime
+from typing import Optional, Sequence, Union
+from dateutil.relativedelta import relativedelta
 from os import listdir
 from os.path import isfile, join, exists
 from pycmqlib3.utility import misc
@@ -107,7 +109,7 @@ def roll_list_to_df(roll_list: list, field_name: str='instID') -> pd.DataFrame:
 def convert_wt_data(df, cont, freq='d'):
     df['date'] = df['date'].apply(lambda x: datetime.date(x//10000, (x % 10000)//100, x % 100))
     df = df.rename(columns={'hold': 'openInterest'})
-    df['instID'] = cont    
+    df['instID'] = cont
     if freq in ['d', 'day', 'd1']:
         col_list = ['instID', 'date', 'open', 'high', 'low', 'close', 'volume', 'openInterest', 'diff_oi', 'settle']
     else:
@@ -165,6 +167,103 @@ def load_fut_by_product(code, start_date, end_date, freq='d', folder_loc='C:/dev
     out_df['expiry'] = out_df.apply(lambda x: misc.contract_expiry(x["instID"], curr_dt=x["date"], hols=misc.CHN_Holidays), axis=1)
     out_df = out_df.sort_values(["date", "expiry"])
     return out_df
+
+
+def _parse_period(period: str) -> relativedelta:
+    """Convert period strings like '12m'/'1y'/'30d' into relativedelta."""
+    if period.endswith('m'):
+        return relativedelta(months=int(period[:-1]))
+    if period.endswith('y'):
+        return relativedelta(years=int(period[:-1]))
+    if period.endswith('d'):
+        return relativedelta(days=int(period[:-1]))
+    raise ValueError(
+        f"Cannot parse period string '{period}'. "
+        "Use suffix 'm' (months), 'y' (years), or 'd' (days)."
+    )
+
+
+def aggregate_product_oi_volume(
+    product: str,
+    start_date: Union[datetime.date, str],
+    end_date: Union[datetime.date, str],
+    freq: str = 'd',
+    contract_period: str = '12m',
+    contract_months: Optional[Sequence[int]] = None,
+    folder_loc: str = 'C:/dev/wtdev/storage/his',
+) -> pd.DataFrame:
+    """Aggregate volume/openInterest across all live contracts for a product.
+
+    Contracts are loaded from `start_date` to `end_date + contract_period` and
+    filtered row-wise by:
+    1) contract is live: expiry >= observation date
+    2) within horizon: expiry <= observation date + contract_period
+    3) optional contract month whitelist
+    """
+    if freq not in {'d', 'm1', 'm5'}:
+        raise ValueError(f"Unsupported freq='{freq}'. Use one of: d, m1, m5")
+
+    start_date = pd.to_datetime(start_date).date()
+    end_date = pd.to_datetime(end_date).date()
+    if start_date > end_date:
+        raise ValueError(
+            f"start_date ({start_date}) must be <= end_date ({end_date})"
+        )
+
+    period_offset = _parse_period(contract_period)
+    extended_end = end_date + period_offset
+    exch = misc.prod2exch(product)
+    code = f"{exch}.{product}"
+
+    raw_df = load_fut_by_product(
+        code,
+        start_date=start_date,
+        end_date=extended_end,
+        freq=freq,
+        folder_loc=folder_loc,
+    )
+
+    if raw_df is None or raw_df.empty:
+        raise ValueError(
+            f"No data found for product='{product}' between "
+            f"{start_date} and {extended_end} at freq='{freq}'."
+        )
+
+    raw_df = raw_df[
+        (raw_df['date'] >= start_date) & (raw_df['date'] <= end_date)
+    ].copy()
+    if raw_df.empty:
+        raise ValueError(
+            f"No observations for product='{product}' in "
+            f"[{start_date}, {end_date}] at freq='{freq}'."
+        )
+
+    raw_df['_deadline'] = raw_df['date'].apply(lambda d: d + period_offset)
+    raw_df = raw_df[
+        (raw_df['expiry'] >= raw_df['date'])
+        & (raw_df['expiry'] <= raw_df['_deadline'])
+    ]
+
+    if contract_months:
+        month_set = {int(m) for m in contract_months}
+        raw_df['_cont_month'] = raw_df.apply(
+            lambda x: misc.inst2contmth(x['instID'], x['date']) % 100,
+            axis=1,
+        )
+        raw_df = raw_df[raw_df['_cont_month'].isin(month_set)]
+
+    if raw_df.empty:
+        raise ValueError(
+            "No contracts satisfy filters for "
+            f"product='{product}', contract_period='{contract_period}', "
+            f"contract_months={contract_months}."
+        )
+
+    if freq == 'd':
+        agg = raw_df.groupby('date')[['volume', 'openInterest']].sum()
+    else:
+        agg = raw_df.groupby(['date', 'min_id'])[['volume', 'openInterest']].sum()
+    return agg
 
 
 def load_hist_bars_to_df(code, start_date=None, end_date=None,
@@ -379,7 +478,7 @@ def save_bars_to_wt_store(exchange_list=['DCE', 'CZCE', 'SHFE', 'INE', 'CFFEX'],
                         if cutoff_date:
                             curr_df = read_wt_dsb_bars(dtHelper, filename, is_day=False)
                             if curr_df:
-                                curr_df = curr_df.to_df().rename(columns={'bartime': 'time', 
+                                curr_df = curr_df.to_df().rename(columns={'bartime': 'time',
                                                                           'money': 'turnover',
                                                                           'hold': 'open_interest',
                                                                           })
@@ -406,7 +505,7 @@ def save_bars_to_wt_store(exchange_list=['DCE', 'CZCE', 'SHFE', 'INE', 'CFFEX'],
                         if cutoff_date:
                             curr_df = read_wt_dsb_bars(dtHelper, filename, is_day=False)
                             if curr_df:
-                                curr_df = curr_df.to_df().rename(columns={'bartime': 'time', 
+                                curr_df = curr_df.to_df().rename(columns={'bartime': 'time',
                                                                           'money': 'turnover',
                                                                           'hold': 'open_interest',
                                                                           })
@@ -436,7 +535,7 @@ def save_bars_to_wt_store(exchange_list=['DCE', 'CZCE', 'SHFE', 'INE', 'CFFEX'],
                         if cutoff_date:
                             curr_df = read_wt_dsb_bars(dtHelper, filename, is_day=True)
                             if curr_df:
-                                curr_df = curr_df.to_df().rename(columns={'bartime': 'time', 
+                                curr_df = curr_df.to_df().rename(columns={'bartime': 'time',
                                                                           'money': 'turnover',
                                                                           'hold': 'open_interest',
                                                                           })
@@ -543,21 +642,21 @@ def combine_bars_wt_store(src_folder, dst_folder, target_folder, cutoff=None):
             file_list = [f for f in listdir(dst_path) if isfile(join(dst_path, f))]
             for file in file_list:
                 cont = file.split('.')[0]
-                dst_df = dtHelper.read_dsb_bars(f'{dst_path}/{file}')           
-                dst_df = dst_df.to_df().rename(columns={'bartime': 'time', 
+                dst_df = dtHelper.read_dsb_bars(f'{dst_path}/{file}')
+                dst_df = dst_df.to_df().rename(columns={'bartime': 'time',
                                                         'money': 'turnover',
                                                         'hold': 'open_interest',
                                                         })
                 dst_df['time'] = dst_df['time'] - 199000000000
                 dst_df = dst_df[dst_df['volume'] > 0]
-                src_df = read_wt_dsb_bars(dtHelper, f'{src_path}/{file}', is_day=False)  
+                src_df = read_wt_dsb_bars(dtHelper, f'{src_path}/{file}', is_day=False)
                 if src_df:
-                    src_df = src_df.to_df().rename(columns={'bartime': 'time', 
+                    src_df = src_df.to_df().rename(columns={'bartime': 'time',
                                                         'money': 'turnover',
                                                         'hold': 'open_interest',
                                                         })
                     src_df['time'] = src_df['time'] - 199000000000
-                    src_df = src_df[src_df['volume']>0]                
+                    src_df = src_df[src_df['volume']>0]
                     if cutoff is None:
                         cutoff = src_df['date'].iloc[-1]
                     src_df = src_df[src_df['date'] <= cutoff]
@@ -568,8 +667,8 @@ def combine_bars_wt_store(src_folder, dst_folder, target_folder, cutoff=None):
                                  period=period_map[period])
 
 
-def combine_data_wt_store(src_folder, dst_folder, target_folder, curr_date, 
-                          time_range=[202504150859, 202504150905], 
+def combine_data_wt_store(src_folder, dst_folder, target_folder, curr_date,
+                          time_range=[202504150859, 202504150905],
                           exch_list=['INE'], periods=["day", "min1", "min5", "ticks"]):
     dtHelper = WtDataHelper()
     period_map = {'min1': 'm1', 'min5': 'm5', 'day': 'd'}
@@ -580,35 +679,35 @@ def combine_data_wt_store(src_folder, dst_folder, target_folder, curr_date,
             is_day = True
         else:
             is_day = False
-        for exch in exch_list:            
+        for exch in exch_list:
             src_path = '%s/%s/%s' % (src_folder, period, exch)
             dst_path = '%s/%s/%s' % (dst_folder, period, exch)
             file_list = [f for f in listdir(dst_path) if isfile(join(dst_path, f))]
             for file in file_list:
                 print(f'{period}-{exch}-{file}')
-                cont = file.split('.')[0]                
-                dst_df = dtHelper.read_dsb_bars(f'{dst_path}/{file}')                
-                dst_df = dst_df.to_df().rename(columns={'bartime': 'time', 
+                cont = file.split('.')[0]
+                dst_df = dtHelper.read_dsb_bars(f'{dst_path}/{file}')
+                dst_df = dst_df.to_df().rename(columns={'bartime': 'time',
                                                         'money': 'turnover',
                                                         'hold': 'open_interest',
-                                                        })              
-                src_df = read_wt_dsb_bars(dtHelper, f'{src_path}/{file}', is_day=is_day)  
+                                                        })
+                src_df = read_wt_dsb_bars(dtHelper, f'{src_path}/{file}', is_day=is_day)
                 if src_df:
-                    src_df = src_df.to_df().rename(columns={'bartime': 'time', 
+                    src_df = src_df.to_df().rename(columns={'bartime': 'time',
                                                             'money': 'turnover',
                                                             'hold': 'open_interest',
                                                             })
                     if is_day:
                         src_df = pd.concat([
-                            src_df[src_df['date'] < time_range[0]//10000], 
+                            src_df[src_df['date'] < time_range[0]//10000],
                             dst_df[(dst_df['date'] >= time_range[0]//10000) & (dst_df['date'] <= time_range[1]//10000)],
-                            src_df[src_df['date'] > time_range[1]//10000], 
+                            src_df[src_df['date'] > time_range[1]//10000],
                         ])
-                    else:           
+                    else:
                         src_df = pd.concat([
-                            src_df[src_df['time'] < time_range[0]], 
+                            src_df[src_df['time'] < time_range[0]],
                             dst_df[(dst_df['time'] >= time_range[0]) & (dst_df['time'] <= time_range[1])],
-                            src_df[src_df['time'] > time_range[1]], 
+                            src_df[src_df['time'] > time_range[1]],
                         ])
                     src_df['time'] = src_df['time'].astype('int64') - 199000000000
                     save_bars_to_dsb(src_df, contract=cont, folder_loc=f'{target_folder}/{period}/{exch}',
@@ -616,22 +715,22 @@ def combine_data_wt_store(src_folder, dst_folder, target_folder, curr_date,
     # update ticks
     period = 'ticks'
     if period in periods:
-        for exch in exch_list:        
+        for exch in exch_list:
             src_path = f'{src_folder}/{period}/{exch}/{curr_date}'
             dst_path = f'{dst_folder}/{period}/{exch}/{curr_date}'
             file_list = [f for f in listdir(dst_path) if isfile(join(dst_path, f))]
             for file in file_list:
                 print(f'ticks-{exch}-{curr_date}-{file}')
-                cont = file.split('.')[0]                
-                dst_df = dtHelper.read_dsb_ticks(f'{dst_path}/{file}')                
-                dst_df = dst_df.to_df()         
+                cont = file.split('.')[0]
+                dst_df = dtHelper.read_dsb_ticks(f'{dst_path}/{file}')
+                dst_df = dst_df.to_df()
                 src_df = dtHelper.read_dsb_ticks(f'{src_path}/{file}')
                 if src_df:
-                    src_df = src_df.to_df()                 
+                    src_df = src_df.to_df()
                     src_df = pd.concat([
-                        src_df[src_df['time'] < time_range[0]*100000], 
+                        src_df[src_df['time'] < time_range[0]*100000],
                         dst_df[(dst_df['time'] >= time_range[0]*100000) & (dst_df['time'] <= time_range[1]*100000)],
-                        src_df[src_df['time'] > time_range[1]*100000], 
+                        src_df[src_df['time'] > time_range[1]*100000],
                     ])
                 #src_df['time'] = src_df['time'].astype('int64') - 199000000000
                     tick_settings = {
@@ -641,7 +740,7 @@ def combine_data_wt_store(src_folder, dst_folder, target_folder, curr_date,
                     }
                     save_ticks_to_dsb(src_df, tick_settings)
 
-                
+
 def zip_wt_dir(path, filename, cutoff: datetime.date):
     """
     Zip selected files under `path` based on cutoff date.
