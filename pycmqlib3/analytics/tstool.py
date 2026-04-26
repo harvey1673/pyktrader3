@@ -38,7 +38,7 @@ def compute_corr(x, y, method='spearman'):
         raise ValueError(f"Unknown method: {method}")
 
 
-def compute_ic_ir_grid_multi(df, feature_col, ret_cols=None, max_lag=60, 
+def compute_ic_ir_grid_multi(df, feature_col, ret_cols=None, max_lag=60,
                              commodity_col='commodity', method='spearman'):
     if ret_cols is None:
         ret_cols = ["ret_1d", "ret_3d", "ret_5d", "ret_10d", "ret_20d"]
@@ -227,9 +227,9 @@ def robust_vol_calc(
         vol_min.ffill(inplace=True)
         vol_floored = np.maximum(vol, vol_min)
         return vol_floored
-    
+
     vol = daily_returns.ewm(adjust=True, span=days, min_periods=min_periods).std()
-    vol[vol < vol_abs_min] = vol_abs_min 
+    vol[vol < vol_abs_min] = vol_abs_min
     if vol_floor:
         vol = apply_vol_floor(
             vol,
@@ -237,7 +237,7 @@ def robust_vol_calc(
             floor_min_periods=floor_min_periods,
             floor_days=floor_days,
         )
-    if backfill:        
+    if backfill:
         vol = vol.ffill().bfill()
     return vol
 
@@ -253,7 +253,7 @@ def zscore_adj_roll(ts, win, alpha=1):
 def zscore_ewm(ts, win, min_periods=0, alpha=1):
     if min_periods < 1:
         min_periods = max(1, int(win/2))
-    return (ts.ewm(span=alpha, min_periods=1).mean() - 
+    return (ts.ewm(span=alpha, min_periods=1).mean() -
             ts.ewm(span=win, min_periods=min_periods).mean())/ts.ewm(span=win, min_periods=min_periods).std()
 
 
@@ -396,15 +396,15 @@ def calc_conv_signal(feature_ts, signal_func, param_rng, signal_cap=2.5, vol_win
         elif signal_func == 'sgn_ema':
             signal_ts = np.sign(feature_ts).ewm(win).mean()
         elif signal_func == "ema_spd":
-            signal_ts = conv_madiff(feature_ts, 
-                                    h1s=param_args.get("h1s", [1, 2, 1]), 
-                                    h2s=param_rng, 
+            signal_ts = conv_madiff(feature_ts,
+                                    h1s=param_args.get("h1s", [1, 2, 1]),
+                                    h2s=param_rng,
                                     vol_win=vol_win,
                                     method='ewm')
         elif signal_func == "sma_spd":
-            signal_ts = conv_madiff(feature_ts, 
-                                    h1s=param_args.get("h1s", [1, 2, 1]), 
-                                    h2s=param_rng, 
+            signal_ts = conv_madiff(feature_ts,
+                                    h1s=param_args.get("h1s", [1, 2, 1]),
+                                    h2s=param_rng,
                                     vol_win=vol_win,
                                     method='rolling')
         elif signal_func == 'ema_dff':
@@ -927,7 +927,7 @@ def calendar_aggregation(df_in, period='monthly', how='returns'):
         period_code = 'A'
     else:
         raise ValueError("Don't recognise period")
-    
+
     if how in ['first', 'last', 'sum', 'mean']:
         df_out = df_in.resample(period_code)
         f = getattr(df_out, how)
@@ -982,7 +982,7 @@ def np_diff(nd_in, window=1):
     if len(nd_in.shape) == 1:
         nd_in = nd_in.copy()
         nd_in.shape = (nd_in.shape[0], 1)
-    
+
     nd_out = np.empty(nd_in.shape) * np.nan
     for j in range(nd_in.shape[1]):
         j_non_nan_index = ~np.isnan(nd_in[:,j].astype(float))
@@ -991,12 +991,12 @@ def np_diff(nd_in, window=1):
         j_differenced_values = np.empty(j_non_nan_values.shape) * np.nan
         for t in range(window, len(j_non_nan_values)):
             j_differenced_values[t] = j_non_nan_values[t] - j_non_nan_values[t-window]
-        
+
         nd_out[j_non_nan_index, j] = j_differenced_values
     nd_out.shape = shape_original
     return nd_out
 
-    
+
 def exp_smooth(df_in, hl, min_obs=0, fill_backward=True):
     df_out = df_in.ewm(halflife=hl,  min_periods=min_obs).mean()
     if fill_backward:
@@ -1081,7 +1081,7 @@ def xs_score(df_in, demean=True, hl=None):
         vols = vols_raw
     else:
         vols = exp_smooth(vols_raw, hl)
-        
+
     data_scored = df_demeaned.values/np.repeat(vols.values.reshape([len(vols.index), 1]),
                                                len(df_in.columns), axis=1)
     df_out = pd.DataFrame(data_scored, index=df_in.index, columns=df_in.columns)
@@ -1094,8 +1094,9 @@ def xs_rank(df_in, cutoff=0.5):
     median_ts = rank_df.quantile(0.5, axis=1)
     df_out = rank_df.sub(median_ts, axis=0).div(prod_count - 1, axis=0) * 2.0
     if cutoff < 0.5:
-        df_out = df_out[(df_out <= -1 + cutoff * 2) | (df_out >= 1 - cutoff * 2)].fillna(0)
-    df_out = df_out.div(df_out.abs().sum(axis=1)/2, axis=0)
+        flag = (df_out <= -1 + cutoff * 2) | (df_out >= 1 - cutoff * 2)
+        df_out = df_out.where(flag, 0)
+    #df_out = df_out.div(df_out.abs().sum(axis=1)/2, axis=0)
     return df_out
 
 
@@ -1104,7 +1105,7 @@ def sector_neutralize(df_in: pd.DataFrame,
                       mode: str = 'sec_mean',
                       sector_scale_pow: float = 0.0,
                       missing: str = 'self') -> pd.DataFrame:
-    
+
     if mode not in {'sec_mean', 'signal_demeaned', 'sec_mean_demeaned'}:
         raise ValueError("mode must be one of 'sec_mean', 'signal_demeaned', 'sec_mean_demeaned'")
     if missing not in {'raise', 'self', 'uncategorized'}:
@@ -1165,21 +1166,21 @@ def seasonal_helper(df_in, func, date_range=None, min_obs=0,
     results = {}
     if date_range is None:
         date_range = df_in.index
-        
+
     for t_date in date_range:
         try:
             past_years = set(df_in[:t_date].index.year)
             mask = []
-            
+
             for y in past_years:
                 if t_date.year - y > rolling_years:
                     continue
-                
+
                 if t_date.month == 2 and t_date.day == 29:
                     start = t_date.replace(year=y, day=28) - dt.timedelta(days = backward)
                 else:
                     start = t_date.replace(year=y) - dt.timedelta(days = backward)
-                    
+
                 if y == t_date.year:
                     end = t_date
                 else:
@@ -1314,7 +1315,7 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
                 feature_ts = feature_ts.rolling(n_days).mean()
             elif 'ema' in pfunc:
                 n_days = int(pfunc[3:])
-                feature_ts = feature_ts.ewm(n_days).mean()            
+                feature_ts = feature_ts.ewm(n_days).mean()
             elif 'csum' == pfunc:
                 feature_ts = feature_ts.cumsum()
             elif 'flr' == pfunc:
@@ -1331,7 +1332,7 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
             elif 'skcor' in pfunc:
                 n_days = int(pfunc[5:])
                 res = ema_moments(feature_ts.dropna(), span=n_days)
-                feature_ts = res['skew'] / np.sqrt(res['kurt']-1)        
+                feature_ts = res['skew'] / np.sqrt(res['kurt']-1)
 
     if signal_func == 'seasonal_score_w':
         signal_ts = seasonal_score(feature_ts.to_frame(),
@@ -1363,7 +1364,7 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
         else:
             use_sgn = True
         signal_ts = signal_hysteresis(signal_ts, param_rng[0], param_rng[2], use_sgn=use_sgn)
-    elif len(signal_func) > 0:        
+    elif len(signal_func) > 0:
         signal_ts = calc_conv_signal(feature_ts, signal_func=signal_func, param_rng=param_rng,
                                      signal_cap=signal_cap, vol_win=vol_win)
     else:
@@ -1400,9 +1401,9 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
                 signal_ts = (n_win + 1) * signal_ts - n_win * signal_ts
             elif pfunc[:3] =='acl':
                 n_win = int(pfunc[3:])
-                signal_ts = signal_ts - signal_ts.shift(n_win)          
+                signal_ts = signal_ts - signal_ts.shift(n_win)
             elif pfunc[:3] == 'sgn':
-                signal_ts = np.sign(signal_ts)  
+                signal_ts = np.sign(signal_ts)
     return signal_ts
 
 
@@ -1443,13 +1444,13 @@ def get_rolling_percentiles(vector, window=252, min_periods=None, use_abs=False)
         min_periods = window // 3 + 1
     if not isinstance(vector, pd.Series):
         vector = pd.Series(vector)
-        
+
     if use_abs:
-        percentiles = vector.abs().rolling(window + 1, 
+        percentiles = vector.abs().rolling(window + 1,
                                            min_peridos=min_periods).apply(lambda s: percentile(s[-1], s[:-1]), raw=True)
         percentiles *= np.sign(vector)
     else:
-        percentiles = vector.rolling(window + 1, 
+        percentiles = vector.rolling(window + 1,
                                      min_peridos=min_periods).apply(lambda s: percentile(s[-1], s[:-1]), raw=True)
     return percentiles
 
@@ -1549,12 +1550,12 @@ def generate_signal_sensitivity_report(signals, pnls, quantiles=None, nb_bins=6,
             quantiles = [0.1, 0.25, 0.5]
         fig, axarray = plt.subplots(2, 2, figsize=(12, 8))
         fig.subplots_adjust(hspace=0.4, wspace=0.25)
-        
+
         colors1 = sns.color_palatte("Set1", len(quantiles) + 2)
         colors2 = sns.color_palatte("Set2", 3)
-        
+
         signals = signals.loc[pnls.index].copy()
-        
+
         Q = pd.DataFrame(index=signals.index)
         Q['100th Perc'] = pnls
         for q in quantiles:
@@ -1563,7 +1564,7 @@ def generate_signal_sensitivity_report(signals, pnls, quantiles=None, nb_bins=6,
         unique_signals = signals.unique()
         unique_signals.sort()
         unique_signals = [unique_signals[0] - 1e-6] + unique_signals.tolist()
-        
+
         if nb_bins < len(unique_signals):
             binned = pd.qcut(signals, nb_bins, duplicates='drop')
             bin_delta = 0
@@ -1572,7 +1573,7 @@ def generate_signal_sensitivity_report(signals, pnls, quantiles=None, nb_bins=6,
                 binned = pd.qcut(signals, nb_bins + bin_delta, duplicates='drop')
         else:
             binned = pd.qcut(signals, unique_signals, duplicates='drop')
-        
+
         df = pnls.copy().to_frame()
         df.columns = ['PnL']
         df['binned'] = binned
@@ -1580,7 +1581,7 @@ def generate_signal_sensitivity_report(signals, pnls, quantiles=None, nb_bins=6,
         Q25_per_bin = df.groupby('binned').quantile(0.25)['PNL']
         Q75_per_bin = df.groupby('binned').quantile(0.75)['PNL']
         bins = list(binned.cat.categories)
-        
+
         ax = axarray[0, 0]
         for i, col in enumerate(Q.columns):
             sharpe = get_sharpe(Q[col])
@@ -1591,9 +1592,9 @@ def generate_signal_sensitivity_report(signals, pnls, quantiles=None, nb_bins=6,
         ax.legend(loc='best', frameon=False)
         ax.set_title('cumulative PnL signal dependence')
         ax.set_ylabel('cumulative PnL')
-        
+
         last_signal = signals.iloc[-1]
-        
+
         ax = axarray[0, 1]
         ax.bar(
             x=np.arrange(len(PnL_per_bin)),
@@ -1604,23 +1605,23 @@ def generate_signal_sensitivity_report(signals, pnls, quantiles=None, nb_bins=6,
         )
         ax.set_xticklabels(ax.xaxis.get_ticklabels(), rotation=70, fontsize=9)
         ax.set_ylabel('average PnL')
-        
+
         pvals_sharpe = df.groupby('binned')['PnL'].apply(get_sharpe)
         for i, bbb in enumerate(ax.patches):
             ax.annotate(f'{pvals_sharpe.iloc[i]:.2f}', (bbb.get_x(), PnL_per_bin.values[i] * 1.5), fontsize=12)
-        
+
         sub_strats = []
         ns = int(p + len(pnls))
         for _ in range(50):
             sub_strats += [sklearn.utils.resample(pnls, n_samples=ns).sort_index().cumsum()]
-        
+
         ax = axarray[1, 0]
         PnL_cols = sns.cubehelix_palette(len(sub_strats))
         ax.set_ylabel('subsample cumulative PnL', fontsize=12)
-        
+
         for cum_pnl, col in zip(sub_strats, PnL_cols):
             ax.plot(cum_pnl, color=col, linewidth=0.6)
-            
+
         ax.set_xlim(pnls.index[0], pnls.index[-1])
         for tick in ax.get_xticklabels():
             tick.set_rotation(45)
@@ -1636,7 +1637,7 @@ def generate_signal_sensitivity_report(signals, pnls, quantiles=None, nb_bins=6,
         ax.set_ylabel('cumulative PnL', fontsize=12)
         ax.legend(loc='best', frameon=False)
         plt.tight_layout()
-    
+
     if return_fig:
         return fig
 

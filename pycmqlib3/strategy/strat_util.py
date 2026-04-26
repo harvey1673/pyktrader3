@@ -93,22 +93,19 @@ def generate_strat_position(cur_date, prod_list, factor_repo,
                     xs_signal = 'rank_cutoff'
                 else:
                     xs_signal = xs_split[1]
-                if xs_signal == 'rank_cutoff':
-                    cutoff = factor_repo[fact]['threshold']
-                    lower_rank = int(len(prod_list) * cutoff) + 1
-                    upper_rank = len(prod_list) - int(len(prod_list) * cutoff)
-                    rank_df = factor_pos[fact].rank(axis=1)
-                    factor_pos[fact] = rank_df.gt(upper_rank, axis=0) * 1.0 - rank_df.lt(lower_rank, axis=0) * 1.0
-                elif xs_signal == 'demedian':
+                if xs_signal == 'demedian':
                     median_ts = factor_pos[fact].quantile(0.5, axis=1)
                     factor_pos[fact] = factor_pos[fact].sub(median_ts, axis=0)
                 elif xs_signal == 'demean':
                     mean_ts = factor_pos[fact].mean(axis=1)
                     factor_pos[fact] = factor_pos[fact].sub(mean_ts, axis=0)
                 elif xs_signal == 'rank':
+                    cutoff = factor_repo[fact]['threshold']
                     rank_df = factor_pos[fact].rank(axis=1)
                     median_ts = rank_df.quantile(0.5, axis=1)
                     factor_pos[fact] = rank_df.sub(median_ts, axis=0)/len(prod_list) * 2.0
+                    if cutoff < 0.5:
+                        factor_pos[fact] = factor_pos[fact].where(factor_pos[fact].abs() > (1.0 - cutoff*2), 0.0)
                 elif xs_signal == 'xdemean':
                     factor_pos[fact] = xs_demean(factor_pos[fact])
                 elif xs_signal == 'xscore':

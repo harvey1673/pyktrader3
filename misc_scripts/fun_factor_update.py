@@ -890,8 +890,8 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
             db_fact_name = factor_name[:-8]
         elif factor_name[-7:] == '_xscore':
             db_fact_name = factor_name[:-7]
-        elif factor_name[-6:] == '_xrank':
-            db_fact_name = factor_name[:-6]
+        elif '_xrank' in factor_name:
+            db_fact_name = "_".join(factor_name.split("_")[:-1])
         else:
             db_fact_name = factor_name
         if db_fact_name in asset_factors:
