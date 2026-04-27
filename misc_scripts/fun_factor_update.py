@@ -361,7 +361,7 @@ def leader_lagger(price_df, spot_df, product_list, leadlag_port=leadlag_port_d, 
             signal_ts = signal_ts.ewm(1).mean()
             signal_list.append(signal_ts)
         ts = pd.concat(signal_list, axis=1).mean(axis=1)
-        sig_df = pd.DataFrame({f"{asset}c1": ts for asset in leadlag_port[sector]['lag']})
+        sig_df = pd.DataFrame({asset: ts for asset in leadlag_port[sector]['lag']})
         sig_df = sig_df.reindex_like(signal_df).ffill().fillna(0) * leadlag_port[sector]['w']
         signal_df = signal_df.add(sig_df)
     return signal_df

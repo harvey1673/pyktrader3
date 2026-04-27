@@ -47,20 +47,20 @@ port_pos_config = {
     'PTSIM1_FACTPORT1_hot': {
         'pos_loc': 'C:/dev/pyktrader3/process/paper_sim1',
         'strat_list': [
-            ('PTSIM1_FACTPORT1.json', 40000), #32000
-            ('PTSIM1_SEAZN.json', 31000), #34000
-            ('PTSIM1_EXCHWNT.json', 30000), #27000
-            ('PTSIM1_HRCRB.json', 30000), #27000
-            ('PTSIM1_LL.json', 30000), # 27000
-            ('PTSIM1_LL2MR.json', 30000), 
-            ('PTSIM1_SPDTF.json', 30000),
-            ('PTSIM1_MR1Y.json', 30000), 
+            ('PTSIM1_FACTPORT1.json',40000), #32000
+            ('PTSIM1_SEAZN.json', 34000), #34000
+            ('PTSIM1_EXCHWNT.json', 32000), #27000
+            ('PTSIM1_HRCRB.json', 32000), #27000
+            ('PTSIM1_LL.json', 32000), # 27000
+            ('PTSIM1_LL2MR.json', 32000), 
+            ('PTSIM1_SPDTF.json', 32000),
+            ('PTSIM1_MR1Y.json', 32000), 
             ('PTSIM1_CNMAC1.json', 13000), #13000
             ('PTSIM1_CNMAC2.json', 15000),
-            ('PTSIM1_FUNFER.json', 42000), # 37000
+            ('PTSIM1_FUNFER.json', 45000), # 37000
             ('PTSIM1_FERSPD.json', 90000), # 110000
             ('PTSIM1_AUSPD.json', 80000),
-            ('PTSIM1_FUNBASE.json', 47000),
+            ('PTSIM1_FUNBASE.json', 48000),
             ('PTSIM1_FUNENE.json', 10000), # 7000
             ('PTSIM1_FUNMTL.json', 28000),
             ('PTSIM1_BND1.json', 50000), # 
@@ -269,15 +269,13 @@ def update_port_position(run_date=datetime.date.today()):
             if np.isnan(target_pos[prodcode]):
                 target_pos[prodcode] = 0
                 continue
-            if prodcode in []:
-                target_pos[prodcode] = int((target_pos[prodcode] / 10 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 10
-            elif prodcode in ['lc', 'ps']:
+            if prodcode in ['lc', 'ps']:
                 target_pos[prodcode] = int((target_pos[prodcode] / 5 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 5
-            elif prodcode in ['SH', 'PR']:
+            elif prodcode in ['MA']:
                 target_pos[prodcode] = int((target_pos[prodcode] / 4 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 4
-            elif prodcode in ['MA', 'PX', 'TA', 'PF', 'eb', 'eg', 'pg', 'l', 'v', 'pp']:
+            elif prodcode in ['eb', 'eg', 'pg', 'l', 'v', 'pp']:
                 target_pos[prodcode] = int((target_pos[prodcode] / 8 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 8
-            elif prodcode in ['AP']:
+            elif prodcode in ['AP', 'PX']:
                 target_pos[prodcode] = int((target_pos[prodcode] / 2 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 2
             else:
                 target_pos[prodcode] = int(target_pos[prodcode] + (0.5 if target_pos[prodcode] > 0 else -0.5))
