@@ -8,9 +8,8 @@ from pycmqlib3.utility.misc import inst2exch, inst2product, inst2contmth
 from pycmqlib3.utility.process_wt_data import wt_time_to_min_id
 
 min_open_rule = {
-    'MA':8,'PX':8,'TA':8,'PF':8,'eb':8,'eg':8,'pg':8,'l':8,'pp':8,'v':8,
-    'PR':4,'SH':4,'PL':4,'bz':4,
-    'pd':2,'pt':2,
+    'eb':8,'eg':8,'pg':8,'l':8,'pp':8,'v':8, 'bz':4,
+    'MA':4,'PX':2,'AP':2,
     'lc':5,'ps':5
 }
 

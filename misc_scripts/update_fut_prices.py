@@ -10,15 +10,18 @@ from pycmqlib3.utility.misc import contract_expiry, inst2contmth, day_shift, \
     is_workday, CHN_Holidays
 
 All_MARKETS = [
-    'rb', 'hc', 'i', 'j', 'jm', 'FG', 'SM', 'SF', 'SA', 'ru', 'nr',
-    'cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ss', 'si', 'ao', 'bc',
-    'l', 'pp', 'v', 'TA', 'sc', 'lu', 'eb', 'eg', 
+    'rb', 'hc', 'i', 'j', 'jm', 
+    'SM', 'SF', 'FG', 'SA', 'v', 'SH', 'ec',
+    'cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ss', 'ao', 'bc', 'ad', 
+    'si', 'ps', 'lc', 
+    'au', 'ag', 'pt', 'pd', 
+    'l', 'pp', 'TA', 'PX', 'PR', 'eg', 'eb', 'PL', 'bz', 
+    'sc', 'lu', 
     'pg', 'PF', 'MA', 'fu', 'bu',
-    'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'CF', 'jd', 'lh', 'b', 'CY', 'cs',
-    'AP', 'CJ', 'UR', 'PK', 'SR', 'sp', 'au', 'ag', 'lc', 'ec',   
+    'ru', 'nr', 'br', 'sp', 'UR', 'lg', 'op', 
+    'm', 'RM', 'y', 'p', 'OI', 'a', 'b', 'c', 'cs',
+    'CF', 'CY', 'jd', 'lh', 'AP', 'CJ', 'PK', 'SR',    
     'T', 'TF', 'TS', 'TL', 'IF', 'IH', 'IC', 'IM', 
-    'SH', 'PX', 'br', 'ps', 'PR', 
-    'PL', 'bz', 'lg', 'op', 'pt', 'pd', 'ad', 
 ]
 
 
@@ -68,21 +71,20 @@ def refresh_saved_fut_prices(
             cont = f"{asset}c{nb}"
             if cont in daily_dict:
                 curr_ddf = daily_dict[cont]
+                if last_update:
+                    curr_ddf = curr_ddf[curr_ddf.index <= pd.Timestamp(last_update)]
                 curr_ddf = curr_ddf.dropna(subset=['close', 'contract'])
                 curr_ddf = curr_ddf[~curr_ddf.index.duplicated(keep='first')]
-                if 'a1505' not in curr_ddf.columns:
+                if ('a1505' not in curr_ddf.columns) or (len(curr_ddf) == 0):
                     curr_ddf = pd.DataFrame()
                     start_d = start_date
                 else:                    
-                    if last_update:
-                        start_d = pd.Timestamp(last_update)
-                        curr_ddf = curr_ddf[curr_ddf.index <= start_d]
-                        shift = curr_ddf['shift'].iloc[-1]
-                        if shift != 0:
-                            for col in ['open', 'high', 'low', 'close', 'settle'] + list(period_setup.keys()):
-                                if col in curr_ddf.columns:
-                                    curr_ddf.loc[:, col] = curr_ddf.loc[:, col] * np.exp(shift)
-                        curr_ddf['shift'] = curr_ddf['shift'] - shift
+                    shift = curr_ddf['shift'].iloc[-1]
+                    if shift != 0:
+                        for col in ['open', 'high', 'low', 'close', 'settle'] + list(period_setup.keys()):
+                            if col in curr_ddf.columns:
+                                curr_ddf.loc[:, col] = curr_ddf.loc[:, col] * np.exp(shift)
+                    curr_ddf['shift'] = curr_ddf['shift'] - shift
                     start_d = curr_ddf.index[-1]
             else:
                 curr_ddf = pd.DataFrame()
@@ -105,13 +107,17 @@ def refresh_saved_fut_prices(
                 if last_update:
                     last_update = pd.Timestamp(last_update)
                     curr_mdf = curr_mdf[curr_mdf['date'] <= last_update]
+                if len(curr_mdf) == 0:
+                    curr_mdf = pd.DataFrame()
+                    start_d = start_date
+                else:
                     shift = curr_mdf['shift'].iloc[-1]
                     if shift != 0:
                         for col in ['open', 'high', 'low', 'close']:
                             if col in curr_mdf.columns:
                                 curr_mdf.loc[:, col] = curr_mdf.loc[:, col] * np.exp(shift)
                     curr_mdf['shift'] = curr_mdf['shift'] - shift
-                start_d = curr_mdf['date'].iloc[-1]
+                    start_d = curr_mdf['date'].iloc[-1]
             else:
                 curr_mdf = pd.DataFrame()
                 start_d = start_date
