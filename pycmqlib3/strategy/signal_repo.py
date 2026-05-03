@@ -760,7 +760,7 @@ feature_to_feature_key_mapping = {
         'ni': "ni_inv27_all",
         'pb': 'pb_inv_social_all',
         'sn': 'sn_inv_social_all',
-        #'si': 'si_inv_social_all',
+        'si': "si_inv_gfex_d",
         'ao': 'bauxite_inv_az_ports',
         'ss': "ss_inv_social_300",
         'rb': 'rebar_inv_social',
