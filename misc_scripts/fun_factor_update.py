@@ -431,41 +431,61 @@ def seasonal_custom_1(price_df, spot_df, product_list, now=datetime.datetime.now
             signal_ts.iloc[-1] = last_signal
         elif (signal_df.index[-1].weekday() == 4) and (now.weekday() == 4):
             signal_ts.iloc[-1] = 1.0
-        signal_df['au'] = signal_ts*1.5
+        signal_df['au'] = signal_ts
 
-    for asset in ['l', 'pp', 'v', 'MA']:
+    for asset in ['l', 'pp']:
         if asset in product_list:
-            signal_df.loc[signal_df.index.day.isin(range(4, 10)), asset] += -0.25
-            signal_df.loc[~signal_df.index.day.isin(range(4, 10)), asset] += 0.25
-            signal_df.loc[signal_df.index.day.isin(range(5, 23)), asset] += -0.25
-            signal_df.loc[~signal_df.index.day.isin(range(5, 23)), asset] += 0.25
+            signal_df.loc[signal_df.index.day.isin(range(24, 32)), asset] = 0.5
 
     if 'SF' in product_list:
         signal_df.loc[signal_df.index.weekday.isin([2, 3]), 'SF'] = 1.0
 
     for asset in ['T', 'TF']:
         if asset in product_list:
-            signal_df.loc[signal_df.index.month.isin([1, 2, 3, 4, 5, 6, 7, 12]), asset] += 0.5
+            #signal_df.loc[signal_df.index.month.isin([1, 2, 3, 4, 5, 6, 7, 12]), asset] += 0.5
             signal_df.loc[signal_df.index.day.isin(range(16, 32)), asset] += 0.5
-            signal_df.loc[signal_df.index.weekday.isin([1]), asset] += 0.25
+            signal_df.loc[signal_df.index.weekday.isin([1]), asset] += 0.5
 
     if 'bu' in product_list:
         signal_df.loc[signal_df.index.month.isin([1, 12]), 'bu'] = 1.0
-        signal_df.loc[signal_df.index.month.isin([8, 9, 10]), 'bu'] = -0.5
+        signal_df.loc[signal_df.index.month.isin([8, 9, 10]), 'bu'] = -1
 
     if 'ru' in product_list:
         flag = signal_df.index.month.isin([3, 4, 5, 6]) | signal_df.index.day.isin(range(18, 26))
         signal_df.loc[flag, 'ru'] = -1.0
 
-    flag1 = signal_df.index.month.isin([1, 2])
-    flag2 = signal_df.index.month.isin([10, 11])
     for asset in ['lu', 'fu']:
         if asset in product_list:
-            signal_df.loc[flag1, asset] = 0.5
-            signal_df.loc[flag2, asset] = -0.5
+            signal_df.loc[signal_df.index.month.isin([1, 2]), asset] = 0.5
+            signal_df.loc[signal_df.index.month.isin([10, 11]), asset] = -0.5
 
     if 'pb' in product_list:
         signal_df.loc[signal_df.index.day.isin(range(17, 31)), 'pb'] = 1.0
+
+    if 'ss' in product_list:
+        signal_df.loc[signal_df.index.month.isin([7]), 'ss'] = 1.0
+        signal_df.loc[signal_df.index.month.isin([11]), 'ss'] = -1
+
+    if 'sn' in product_list:
+        signal_df.loc[signal_df.index.month.isin([12, 1, 2]), 'sn'] = 1.0
+
+    if 'TA' in product_list:
+        signal_df.loc[signal_df.index.month.isin([12, 1]), 'TA'] = 1.0
+        signal_df.loc[signal_df.index.month.isin([9, 10]), 'TA'] = -1.0
+
+    if 'sc' in product_list:
+        signal_df.loc[signal_df.index.month.isin([1, 6]), 'sc'] = 1.0
+        signal_df.loc[signal_df.index.month.isin([11]), 'sc'] = -1.0
+
+    if 'jd' in product_list:
+        signal_df.loc[signal_df.index.day.isin(range(24, 32)), 'jd'] = -1.0
+
+    if 'lh' in product_list:
+        signal_df.loc[signal_df.index.weekday.isin([0, 1, 2]), 'lh'] = -1.0
+
+    if 'CF' in product_list:
+        signal_df.loc[signal_df.index.month.isin([12, 1]), 'CF'] = 1.0
+
     ferrous_products = ['rb', 'hc', 'i']
     if set(ferrous_products) <= set(product_list):
         start_mth = 11
@@ -489,7 +509,9 @@ factors_by_func = {
         'args': {
             'now': datetime.datetime.now(),
             'product_list': [
-                'au', 'l', 'pp', 'v', 'MA', 'pb', 'rb', 'hc', 'i', 'SF', 'ru', 'lu', 'fu', 'bu',
+                'au', 'pb', 'sn', 'ss', 'rb', 'hc', 'i', 'SF',
+                'l', 'pp', 'ru', 'TA', 'lu', 'fu', 'bu', 'sc',
+                'jd', 'lh', 'CF', 'T', 'TF',
             ],
         },
     },

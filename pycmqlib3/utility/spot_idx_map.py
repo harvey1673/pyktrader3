@@ -43,25 +43,17 @@ index_map = {
     'G004849308': 'usdclp_xe',
     'G019711418': 'usdcnh_xe',
 
-    'L004387127': 'usdcny_rr25_3m',
-    'M020092912': 'fin_cond_idx_cn',
-    'L003297115': 'corpbond_yield_aa_1y',
-    'L002856618': 'schbill_yield_aa_1y',
-    'L019834710': 'stbill_yield_aa_1y',
-    'L004476676': 'banknotes_yield_aa_1y',
-
     'L001619493': 'dr007_cn',
-    'L004317616': 'fr007_cn',
-    'L004317619': 'fdr007_cn',
     'L004366599': 'usdcny_on',
     'L004366605': 'usdcny_1m',
     'L015211333': 'cnh_hibor_1m',
+    'M002816448': 'shibor_on',
+    'M002816449': 'shibor_1w',
     'M002816451': 'shibor_1m',
     'M002816452': 'shibor_3m',
     'M002816455': 'shibor_1y',
     'M002816576': 'r007_cn',
-    'L004349332': 'cn_govbond_yield_3m_sch',
-    'L004349335': 'cn_govbond_yield_1y_sch',
+    'M002816575': 'r001_cn',
     'L001618805': 'cn_govbond_yield_1y',
     'L001619213': 'cn_govbond_yield_2y',
     'L001618480': 'cn_govbond_yield_5y',
@@ -114,7 +106,7 @@ index_map = {
     "M002043809": 'pmi_cn_manu_imports',
     "M002043808": 'pmi_cn_manu_purchase',
     "M002043806": 'pmi_cn_manu_curr_order',
-    "M003721097": 'pmi_cn_manu_bus_exp',    
+    "M003721097": 'pmi_cn_manu_bus_exp',
     #"M002811186": 'pmi_caixin_manu_all',
     "M004088026": "epmi_cn_all",
     "M004088027": "epmi_cn_prod",
@@ -152,8 +144,8 @@ index_map = {
 
     'S002911091': 'pbf_cfd',
     'S002911136': 'pbf_qd',
-    'S004317116': 'nmf_qd',
-    'S002911094': 'nmf_cfd',
+    'S007746654': 'nmf_qd', # 'S004317116'
+    'S009067527': 'nmf_cfd', # 'S002911094'
     'S004210693': 'macf_cfd',
     'S004317118': 'macf_qd',
     'S004317120': 'iocj_qd',
@@ -426,13 +418,13 @@ index_map = {
     "S003138068": "coke_inv_ports_tj", # 20110121
     "S003138069": "coke_inv_ports_lyg", # 20110121
     "S003138070": "coke_inv_ports_rz", # 20110121
-    "S010338984": "coke_inv_ports", # 20211217    
+    "S010338984": "coke_inv_ports", # 20211217
     "S012116529": "ckc_inv_ports", # 20220107
     "S009341306": "ckc_inv_cokery", #20210115
     "S009341305": "coke_inv_cokery", #20210115
-    "S005653704": "coke_inv_230cokery", 
-    "S005653705": "ckc_inv_230cokery", 
-    "S009341250": "coke_inv_247mill", 
+    "S005653704": "coke_inv_230cokery",
+    "S005653705": "ckc_inv_230cokery",
+    "S009341250": "coke_inv_247mill",
     "S009341251": "ckc_inv_247mill",
     "S004039587": "ckc_inv_6ports",
     "S010308683": "ckc_inv_110washery",
@@ -834,17 +826,17 @@ index_map = {
     "S009621410": "al_rod_6063_procfee_sichuan",
     "S009621539": "al_rod_6063_procfee_gansu",
 
-    'S013735402': "sn_inv_social_all",
+    'S018696379': "sn_inv_social_all",
     'S005971281': 'cu_mine_inv_ports',
 #    "S006161499": "cu_inv_social_all",
     "S005118151": "cu_inv_social_dom",
     "S011214521": "cu_inv_bonded_gd",
     "S005118141": "cu_inv_bonded_sh",
-#    "S005363047": "al_inv_social_all", 
+#    "S005363047": "al_inv_social_all",
     "S009010885": "al_inv_social_all",
     #"S006161627": "zn_inv_social_3p",
     #"S006161628": "zn_inv_social_7p",
-    "S004425257": "zn_inv_social_all",    
+    "S004425257": "zn_inv_social_all",
     "S011334489": "zn_inv_smelter_finished",
     #"S006161636": "ni_inv_social_6p",
     "S011333399": "ni_inv27_plate_dom",
@@ -858,7 +850,7 @@ index_map = {
     'S004425326': 'alumina_inv_ports',
     'S011258021': 'bauxite_inv_ports_inv',
 
-    'S012937595': 'si_inv_social_all',
+    #'S012937595': 'si_inv_social_all',
     'S006563225': 'al_6063rod_inv_social',
     "S006161096": "ss_inv_social_all",
     "S006161093": "ss_inv_social_200",
@@ -884,7 +876,7 @@ index_map = {
     "G002856511": "jp_nk225_idx",
     "G002856507": "sp500_idx",
     "G002856508": "nasdaq_idx",
-    "G002856506": "dji_idx",    
+    "G002856506": "dji_idx",
     "M009042848": "sw_sector_idx_basemetal",
     "M009042858": "sw_sector_idx_prop",
     "M009042864": "sw_sector_idx_const",
@@ -906,6 +898,8 @@ index_map = {
 
     "S000025546": "au_td_sge",
     "S003057206": "ag_td_sge",
+    'S005068033': 'au_9999_sh',
+    'S005068036': 'ag_1_9999_sh',
     "S005068066": "ag_td_phbasis",
     "S002855119": "au_cme_warrant_all",
     "S003852895": "au_cme_warrant_reg",
@@ -924,8 +918,8 @@ index_map = {
     "S006955761": "au_etf_gold_holding",
     "S006955770": "au_etf_cef_holding",
     "S003715212": "ag_etf_slv_holding",
-    "S006955790": "ag_etf_cef_holding",    
-    "S006955786": "ag_etf_pslv_holding",     
+    "S006955790": "ag_etf_cef_holding",
+    "S006955786": "ag_etf_pslv_holding",
     "S006955782": "ag_etf_etpmag_holding",
     "S006955778": "ag_etf_phag_holding",
     "S006955772": "ag_etf_sivr_holding",
@@ -958,7 +952,7 @@ def adj_publish_time(spot_df):
     spot_df = data_wkday_adj(spot_df, col_list, shift_map=shift_map)
 
     col_list = [
-        #'io_removal_41ports', 'io_inv_31ports', 
+        #'io_removal_41ports', 'io_inv_31ports',
         'io_inv_45ports',
     ]
     shift_map = {0: -3, 1: -4, 2: -5, 3: 1, 4: 0, 5: -1, 6: -2}
@@ -1016,7 +1010,7 @@ def process_spot_df(spot_df, adjust_time=False):
 
     spot_dict['usgg10_be'] = spot_df['usgg10yr'] - spot_df['usggt10yr']
     spot_dict['usgg10_2_spd'] = spot_df['usgg10yr'] - spot_df['usgg2yr']
-    spot_dict['cgb_3m_1y_spd'] = spot_df['cn_govbond_yield_3m_sch'] - spot_df['cn_govbond_yield_1y_sch']
+    #spot_dict['cgb_3m_1y_spd'] = spot_df['cn_govbond_yield_3m_sch'] - spot_df['cn_govbond_yield_1y_sch']
     spot_dict['cgb_2_5_spd'] = spot_df['cn_govbond_yield_2y'] - spot_df['cn_govbond_yield_5y']
     spot_dict['cgb_1_2_spd'] = spot_df['cn_govbond_yield_1y'] - spot_df['cn_govbond_yield_2y']
     spot_dict['cgb_1_5_spd'] = spot_df['cn_govbond_yield_1y'] - spot_df['cn_govbond_yield_5y']
@@ -1030,12 +1024,6 @@ def process_spot_df(spot_df, adjust_time=False):
     spot_dict['cny_mid_dev2'] = spot_df['usdcny_spot2'] - spot_df['usdcny_mid']
     spot_dict['r_dr_7d_spd'] = spot_df['r007_cn'] - spot_df['dr007_cn']
     spot_dict['shibor_3m_1y_spd'] = spot_df['shibor_3m'] - spot_df['shibor_1y']
-
-    spot_dict['cs_corp_aa_1y'] = spot_df['corpbond_yield_aa_1y'] -spot_df['cn_govbond_yield_1y_sch']
-    spot_dict['cs_aa_1y'] = spot_df['corpbond_yield_aa_1y'] -spot_df['cn_govbond_yield_1y_sch']
-    spot_dict['cs_schbill_aa_1y'] = spot_df['schbill_yield_aa_1y'] -spot_df['cn_govbond_yield_1y_sch']
-    spot_dict['cs_stbill_aa_1y'] = spot_df['stbill_yield_aa_1y'] -spot_df['cn_govbond_yield_1y_sch']
-    spot_dict['cs_bknote_aa_1y'] = spot_df['banknotes_yield_aa_1y'] -spot_df['cn_govbond_yield_1y_sch']
 
     spot_dict['steel_inv_mill'] = spot_df['rebar_inv_mill'] + spot_df['wirerod_inv_mill'] + \
                                 spot_df['hrc_inv_mill'] + spot_df['crc_inv_mill'] #+ spot_df['plate_inv_mill']
@@ -1062,14 +1050,14 @@ def process_spot_df(spot_df, adjust_time=False):
     spot_dict['long_flat_sinv_chg_diff'] = spot_dict['long_social_inv'].dropna().diff() - spot_dict['flat_social_inv'].dropna().diff()
     spot_dict['long_flat_sinv_lratio'] = np.log(spot_dict['long_social_inv']/spot_dict['flat_social_inv'])
     spot_dict['rebar_sales_inv_ratio'] = spot_df['consteel_dsales_mysteel']/spot_df['rebar_inv_social'].ffill()
-    spot_dict['crc_hrc'] = spot_df['crc_sh'] - spot_df['hrc_sh']    
+    spot_dict['crc_hrc'] = spot_df['crc_sh'] - spot_df['hrc_sh']
     spot_dict['pipe_strip'] = spot_df['pipe_1.5x3.25'] - spot_df['strip_3.0x685']
     spot_dict['rebar_billet'] = spot_df['rebar_sh'] - spot_df['billet_ts']
     spot_dict['gi_billet'] = spot_df['gi_0.5_sh'] - spot_df['billet_ts']
     spot_dict['rb_hc_diff'] = spot_df['rebar_sh'] - spot_df['hrc_sh']
     spot_dict['rb_hc_steel_spd'] = spot_dict['rebar_billet'] - spot_dict['crc_hrc']
     spot_dict["coke_inv_3ports"] = spot_df[["coke_inv_ports_rz", "coke_inv_ports_tj", "coke_inv_ports_lyg"]].sum(axis=1, skipna=False).dropna()
-    
+
     port_fee = 25
     spot_dict['import_arb_pbf'] = vat_adj(spot_df['pbf_qd'] - port_fee)/spot_df['usdcnh_spot']/0.915 - spot_df['pbf_sb']
     spot_dict['import_arb_nmf'] = vat_adj(spot_df['nmf_qd'] - port_fee)/spot_df['usdcnh_spot']/0.917 - spot_df['nmf_sb']
@@ -1078,7 +1066,7 @@ def process_spot_df(spot_df, adjust_time=False):
     spot_dict['import_arb_ssf'] = vat_adj(spot_df['ssf_qd'] - port_fee)/spot_df['usdcnh_spot']/0.91 - spot_df['ssf_sb']
     spot_dict['import_arb_iocj'] = vat_adj(spot_df['iocj_qd'] - port_fee)/spot_df['usdcnh_spot']/0.915 - spot_df['iocj_sb']
     spot_dict['io_on_off_arb'] = vat_adj(spot_df['pbf_cfd'] - port_fee)/spot_df['usdcnh_spot']/0.915/61.5*62 - spot_df['plt62']
-    
+
     spot_dict['smsf_dmd_ratio'] = spot_df['sm_dmd_cn']/spot_df['sf_dmd_cn']
     spot_dict['smsf_dprod_ratio'] = spot_df['sm_dprod_cn']/spot_df['sf_dprod_cn']
     spot_dict['smsf_prod_ratio'] = spot_df['sm_prod_cn']/spot_df['sf_prod_cn']
@@ -1101,10 +1089,10 @@ def process_spot_df(spot_df, adjust_time=False):
     spot_dict['strip_hsec'] = spot_df['strip_3.0x685'] - spot_df['hsec_400x200']
     if ('coal_5500_sx_qhd' in spot_df.columns) and ('coal_5500_qhd' in spot_df.columns):
         spot_df.loc[:'2022-02-11', 'coal_5500_sx_qhd'] = spot_df.loc[:'2022-02-11', 'coal_5500_qhd']
-    
+
     spot_dict["cu_inv_combo"] = spot_df[["cu_inv_social_dom", "cu_inv_bonded_gd", "cu_inv_bonded_sh"]].dropna(how='all').ffill().sum(axis=1)
     spot_dict["ni_inv27_plate_all"] = spot_df[["ni_inv27_plate_dom", "ni_inv27_plate_bonded"]].dropna(how='all').ffill().sum(axis=1)
-    
+
     warrant_dict = {
         "cu": ["cu_inv_shfe_d"],
         "bc": ["bc_inv_ine_warrant"],
@@ -1178,8 +1166,8 @@ def process_spot_df(spot_df, adjust_time=False):
         ("sw_sector_idx_petchem", 'csi500_idx', 'petchem_sw_csi500'),
         ("sw_sector_idx_coal", 'csi500_idx', 'coal_sw_csi500'),
         ("sw_sector2_idx_glass", 'csi500_idx', 'glass_sw_csi500'),
-        ("sw_sector2_idx_infra", 'csi500_idx', 'infra_sw_csi500'),        
-        ("sw_sector2_idx_rubber", 'csi500_idx', 'rubber_sw_csi500'),        
+        ("sw_sector2_idx_infra", 'csi500_idx', 'infra_sw_csi500'),
+        ("sw_sector2_idx_rubber", 'csi500_idx', 'rubber_sw_csi500'),
     ]
     beta_win = 245
     for trade_asset, index_asset, key in asset_pairs:
