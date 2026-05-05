@@ -441,11 +441,11 @@ signal_store = {
                         ['shfe_arb', 'hysteresis', [0.9, 500, 0.1], '', 'pct_score', True, 'price', "pos", 240, [-2,2]]],
 
     'metal_pbc_ema': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'SA', 'v',
-                       'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'au', 'ag'],
-                      ['phycarry', 'ema', [10, 20], '', '', True, 'price', "", 120, [-2,2]]],
+                       'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'ao', 'au', 'ag'],
+                      ['phycarry', 'ema', [5, 10], '', '', True, 'price', "", 120, [-2,2]]],
     'metal_pbc_ema_xdemean': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'SA', 'v',
-                               'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'au', 'ag'],
-                              ['phycarry', 'ema', [10, 20], '', '', True, 'price', "", 120, [-2,2]]],
+                               'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'ao', 'au', 'ag'],
+                              ['phycarry', 'ema', [5, 10], '', '', True, 'price', "", 120, [-2,2]]],
     'metal_mom_hlrhys': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'SA', 'v',
                           'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'ao', 'si', 'lc', 'au', 'ag'],
                          ['metal_px', 'hysteresis', [0.7, 60, 0.1], '', 'hlratio', True, 'price', "ema1", 120, [-2,2]]],
@@ -754,25 +754,28 @@ feature_to_feature_key_mapping = {
     "exch_warrant": {},
     "etf_holdings": {},
     'metal_inv': {
-        'cu': "cu_inv_social_dom",
+        'cu': "cu_inv_social_dom", # 'cu_inv_shfe_d', #
         'al': 'al_inv_social_all',
         'zn': "zn_inv_social_all",
-        'ni': "ni_inv27_all",
-        'pb': 'pb_inv_social_all',
-        'sn': 'sn_inv_social_all',
+        'ni': 'ni_inv_shfe_d', # "ni_inv27_all", #, #
+        'pb': 'pb_inv_shfe_d', #'pb_inv_social_all',
+        'sn': 'sn_inv_shfe_d',
         'si': "si_inv_gfex_d",
-        'ao': 'bauxite_inv_az_ports',
+        'lc': "lc_inv_gfex_d",
+        'ps': "ps_inv_gfex_d",
+        'ao': 'ao_inv_shfe_d', #'bauxite_inv_az_ports',
         'ss': "ss_inv_social_300",
         'rb': 'rebar_inv_social',
         'hc': 'hrc_inv_social',
-        'j': "coke_inv_ports_tj",
-        'jm': "ckc_inv_110washery",
-        'v': "v_inv_social",
+        'j' : "coke_inv_ports_tj",
+        'jm': 'ckc_inv_ports', #"ckc_inv_cokery",
+        'v':  "v_inv_social",
         'i': 'io_inv_45ports',
-        'SM': 'sm_inv_mill',
+        'SM': 'sm_stockdays', #'sm_inv_mill', # #
         'SF': 'sf_inv_mill',
         'FG': "fg_inv_mill",
         'SA': 'sa_inv_mill_all',
+        'SH': 'sh_inv_mill_all',
     }
 }
 
@@ -790,7 +793,7 @@ commod_phycarry_dict= {
     "cu": "cu_smm1_spot",
     "al": "al_smm0_spot",
     "zn": "zn_smm0_spot",
-    "pb": "pb_smm1_spot",
+    "pb": "pb_994_shmet_east", #"pb_smm1_spot",
     "sn": "sn_smm1_spot",
     "ni": "ni_smm1_spot",
     "ss": "ss_304_gross_wuxi",
@@ -803,11 +806,11 @@ commod_phycarry_dict= {
     "jm": "ckc_outstock_ganqimaodu",
     "FG": "fg_5mm_shahe",
     "SM": "sm_65s17_tj",
-    "SF": "sf_72_neimeng",
+    "SF": "sf_72_ningxia",
      "v": "pvc_cac2_east",
     "SA": "sa_heavy_shahe",
-    "au": "au_td_sge",
-    "ag": "ag_td_sge",
+    "au": 'au_9999_sge_close',
+    "ag": 'ag_9999_sge_close',
     "MA": "ma_spot_jiangsu",
     "TA": "pta_east_spot",
     "eg": "eg_east_spot",
@@ -832,32 +835,32 @@ def get_funda_signal_from_store(spot_df, signal_name, price_df=None,
             asset_feature = feature_key_map[feature].get(asset, f'{asset}_{feature}')
         else:
             asset_feature = f'{asset}_{feature}'
-        if feature == 'metal_pbc':
-            if price_df is None:
-                print("ERROR: no future price is passed for metal_pbc")
-                return pd.Series()
-            if f'{asset}_phybasis' not in spot_df.columns:
-                data_dict = {}
-                data_dict[f'{asset}_c1'] = price_df[(asset+'c1', 'close')] / np.exp(price_df[(asset+'c1', 'shift')])
-                data_dict[f'{asset}_expiry'] = pd.to_datetime(price_df[(asset+'c1', 'expiry')])
-                if asset == 'i':
-                    data_dict['io_ctd_spot'] = io_ctd_basis(spot_df, price_df[('i'+'c1', 'expiry')])
-                else:
-                    data_dict[asset_feature] = spot_df[asset_feature].dropna()
-                data_dict['r007_cn'] = spot_df['r007_cn']
-                data_df = pd.DataFrame(data_dict).dropna(how='all')
-                data_df['date'] = pd.to_datetime(data_df.index)
-                data_df[f'{asset}_phybasis'] = (np.log(data_df[asset_feature]) - np.log(data_df[f'{asset}_c1'])) / \
-                                            (data_df[f'{asset}_expiry'] - data_df['date']).dt.days * 365 + data_df['r007_cn'].ffill().ewm(5).mean()/100
-                spot_df = pd.concat([spot_df, data_df[[f'{asset}_phybasis']]], axis=1)
-            asset_feature = f'{asset}_phybasis'
-        if feature == 'metal_px':
-            if price_df is None:
-                print("ERROR: no future price is passed for metal_pbc")
-                return pd.Series()
-            if f'{asset}_px' not in spot_df.columns:
-                spot_df = pd.cocnat([spot_df, price_df[(asset+'c1', 'close')].to_frame(f'{asset}_px')], axis=1)
-            asset_feature = f'{asset}_px'
+        # if feature == 'metal_pbc':
+        #     if price_df is None:
+        #         print("ERROR: no future price is passed for metal_pbc")
+        #         return pd.Series()
+        #     if f'{asset}_phybasis' not in spot_df.columns:
+        #         data_dict = {}
+        #         data_dict[f'{asset}_c1'] = price_df[(asset+'c1', 'close')] / np.exp(price_df[(asset+'c1', 'shift')])
+        #         data_dict[f'{asset}_expiry'] = pd.to_datetime(price_df[(asset+'c1', 'expiry')])
+        #         if asset == 'i':
+        #             data_dict['io_ctd_spot'] = io_ctd_basis(spot_df, price_df[('i'+'c1', 'expiry')])
+        #         else:
+        #             data_dict[asset_feature] = spot_df[asset_feature].dropna()
+        #         data_dict['r007_cn'] = spot_df['r007_cn']
+        #         data_df = pd.DataFrame(data_dict).dropna(how='all')
+        #         data_df['date'] = pd.to_datetime(data_df.index)
+        #         data_df[f'{asset}_phybasis'] = (np.log(data_df[asset_feature]) - np.log(data_df[f'{asset}_c1'])) / \
+        #                                     (data_df[f'{asset}_expiry'] - data_df['date']).dt.days * 365 + data_df['r007_cn'].ffill().ewm(5).mean()/100
+        #         spot_df = pd.concat([spot_df, data_df[[f'{asset}_phybasis']]], axis=1)
+        #     asset_feature = f'{asset}_phybasis'
+        # if feature == 'metal_px':
+        #     if price_df is None:
+        #         print("ERROR: no future price is passed for metal_px")
+        #         return pd.Series()
+        #     if f'{asset}_px' not in spot_df.columns:
+        #         spot_df = pd.cocnat([spot_df, price_df[(asset+'c1', 'close')].to_frame(f'{asset}_px')], axis=1)
+        #     asset_feature = f'{asset}_px'
         if feature in param_rng_by_feature_key:
             param_rng = param_rng_by_feature_key[feature].get(asset, param_rng)
         if feature in proc_func_by_feature_key:

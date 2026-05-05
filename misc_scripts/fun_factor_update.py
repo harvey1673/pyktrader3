@@ -132,8 +132,8 @@ factors_by_asset = {
     'base_phybasmom_1y_zs': ['cu', 'al', 'zn', 'ni', 'pb', 'sn'],
     'ferr_pinv_hlr_mt': ['j', 'jm', 'i', 'rb', 'hc'],
     'ferr_pinv_hlr_yr': ['j', 'jm', 'i', 'rb', 'hc'],
-    'metal_pbc_ema': ['cu', 'al', 'zn', 'ni', 'ss', 'sn', 'ao', #'si', 'SM', 'SF', 'pb',
-                      'rb', 'hc', 'i', 'j', 'jm', 'v', 'FG', 'SA', "au", "ag"],
+    'metal_pbc_ema': ['cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ao', 'ss', #'si',
+                      'rb', 'hc', 'i', 'jm', 'SM', 'SF', 'v', 'FG', 'SA', "au", "ag"],
     # 'metal_mom_hlrhys': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si', 'lc', 'ps', 'au', 'ag',
     #                      'rb', 'hc', 'i', 'j', 'jm', 'SM', 'SF', 'v', 'FG', 'SA', 'SH'],
     'mtlmom_st_hlr': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si', 'lc', 'ps', 'au', 'ag',
@@ -142,8 +142,10 @@ factors_by_asset = {
                       'rb', 'hc', 'i', 'j', 'jm', 'SM', 'SF', 'v', 'FG', 'SA', 'SH'],
     'mtlmom_regt_lt': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si', 'lc', 'ps', 'au', 'ag',
                       'rb', 'hc', 'i', 'j', 'jm', 'SM', 'SF', 'v', 'FG', 'SA', 'SH'],
-    'metal_inv_hlr': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si', 'rb', 'hc', 'i', 'j', 'jm', 'v', 'FG', 'SA'],
-    'metal_inv_lyoy_hlr': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si', 'rb', 'hc', 'i', 'j', 'jm', 'v', 'FG', 'SA'],
+    'metal_inv_hlr': ['cu', 'al', 'zn', 'ni', 'pb', 'sn', 'si', 'lc', 'ps', 'ao', 'ss',
+                      'rb', 'hc', 'i', 'j', 'jm', 'v', 'SM', 'SF', 'FG', 'SA', 'SH'],
+    'metal_inv_lyoy_hlr': ['cu', 'al', 'zn', 'ni', 'pb', 'sn', 'si', 'lc', 'ps', 'ao', 'ss',
+                      'rb', 'hc', 'i', 'j', 'jm', 'v', 'SM', 'SF', 'FG', 'SA', 'SH'],
     "exch_wnt_hlr": ["UR", "ru", 'si', 'lc', 'ao', 'ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
     "exch_wnt_yoy_hlr": ["UR", "ru", 'si', 'lc', 'ao', 'ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
     "exch_wnt_kdj": ["UR", "ru", 'si', 'lc', 'ao', 'ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
@@ -892,13 +894,15 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
             data_dict[f'{asset}_basmom60'] = data_dict[f'{asset}_basmom'].dropna().rolling(60).sum()
             data_dict[f'{asset}_basmom120'] = data_dict[f'{asset}_basmom'].dropna().rolling(120).sum()
         if asset in commod_phycarry_dict:
+            adder_dict = {"SF": 350, "SM": 190}
             asset_feature = commod_phycarry_dict[asset]
+            adder = adder_dict.get(asset, 0)
             tmp_df = pd.concat([spot_df[[asset_feature, 'r007_cn']].dropna(how='all'),
                                 (price_df[(asset+'c1', 'close')] / np.exp(price_df[(asset+'c1', 'shift')])).dropna().to_frame(f'{asset}_c1'),
                                 pd.to_datetime(price_df[(asset+'c1', 'expiry')]).dropna().to_frame(f'{asset}_expiry')], axis=1).ffill()
             tmp_df['date'] = pd.to_datetime(tmp_df.index)
             tmp_df['r007_cn'] = tmp_df['r007_cn'].ewm(5).mean()/100
-            data_dict[f'{asset}_phycarry'] = (np.log(tmp_df[asset_feature]) - np.log(tmp_df[f'{asset}_c1'])) / \
+            data_dict[f'{asset}_phycarry'] = (np.log(tmp_df[asset_feature]+adder) - np.log(tmp_df[f'{asset}_c1'])) / \
                                                 (tmp_df[f'{asset}_expiry'] - tmp_df['date']).dt.days * 365 + tmp_df['r007_cn']
     data_dict['hc_rb_diff'] = np.log(price_df[('hcc1', 'close')]) - np.log(price_df[('rbc1', 'close')])
     data_dict['rb_hc_basmom_diff'] = data_dict['rb_basmom'] - data_dict['hc_basmom']

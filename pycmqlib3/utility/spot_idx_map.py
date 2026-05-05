@@ -519,6 +519,7 @@ index_map = {
     "S009223764": "ss_inv_shfe_d",
     "S019735959": "si_inv_gfex_d",
     "S020098434": "lc_inv_gfex_d",
+    "S033367931": "ps_inv_gfex_d",
     "S022117012": "SH_inv_czce_warrant",
     "S022319791": "SH_inv_czce_unwarrant",
     "S003008076": "TA_inv_czce_warrant",
@@ -528,6 +529,8 @@ index_map = {
     "S005451340": "UR_inv_czce_warrant",
     "S005451410": "UR_inv_czce_unwarrant",
     "S005658949": "PF_inv_czce_warrant",
+    "S035614282": "PR_inv_czce_warrant",
+
     "S003787910": "l_inv_dce_warrant",
     "S003787913": "pp_inv_dce_warrant",
     "S003787915": "v_inv_dce_warrant",
@@ -754,6 +757,7 @@ index_map = {
     "S002865592": "al_smm0_spot",
     "S002865578": "zn_smm0_spot",
     "S002865583": "pb_smm1_spot",
+    'S005068208': 'pb_994_shmet_east',
     "S002865591": "pb_sec9997_spot",
     "S002865595": "pb_sec985_spot",
     "S002981539": "sn_smm1_spot",
@@ -897,9 +901,12 @@ index_map = {
     "M003588161": "zx_sector_idx_coal",
 
     "S000025546": "au_td_sge",
+    'S000025544': 'au_9999_sge_close',
     "S003057206": "ag_td_sge",
     'S005068033': 'au_9999_sh',
     'S005068036': 'ag_1_9999_sh',
+    'S004045178': 'ag_inv_sge',
+    'S004045185': 'ag_9999_sge_close',
     "S005068066": "ag_td_phbasis",
     "S002855119": "au_cme_warrant_all",
     "S003852895": "au_cme_warrant_reg",
@@ -967,6 +974,13 @@ def adj_publish_time(spot_df):
     ]
     shift_map = {0: -4, 1: -5, 2: -6, 3: 0, 4: -1, 5: -2, 6: -3}
     spot_df = data_wkday_adj(spot_df, col_list, shift_map=shift_map)
+
+    for col in ['sm_stockdays']:
+        if col in spot_df.columns:
+            ts = spot_df[col].dropna()
+            ts.index = ts.index - pd.Timedelta(days=7)
+            #ts.index = ts.index.map(lambda x: x + chn_bday)
+            spot_df[col] = ts
 
     for col in ['ppi_cn_mom', 'cpi_cn_mom']:
         if col in spot_df.columns:
