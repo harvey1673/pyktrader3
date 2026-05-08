@@ -10,18 +10,18 @@ from pycmqlib3.utility.misc import contract_expiry, inst2contmth, day_shift, \
     is_workday, CHN_Holidays
 
 All_MARKETS = [
-    'rb', 'hc', 'i', 'j', 'jm', 
+    'rb', 'hc', 'i', 'j', 'jm',
     'SM', 'SF', 'FG', 'SA', 'v', 'SH', 'ec',
-    'cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ss', 'ao', 'bc', 'ad', 
-    'si', 'ps', 'lc', 
-    'au', 'ag', 'pt', 'pd', 
-    'l', 'pp', 'TA', 'PX', 'PR', 'eg', 'eb', 'PL', 'bz', 
-    'sc', 'lu', 
+    'cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ss', 'ao', 'bc', 'ad',
+    'si', 'ps', 'lc',
+    'au', 'ag', 'pt', 'pd',
+    'l', 'pp', 'TA', 'PX', 'PR', 'eg', 'eb', 'PL', 'bz',
+    'sc', 'lu',
     'pg', 'PF', 'MA', 'fu', 'bu',
-    'ru', 'nr', 'br', 'sp', 'UR', 'lg', 'op', 
+    'ru', 'nr', 'br', 'sp', 'UR', 'lg', 'op',
     'm', 'RM', 'y', 'p', 'OI', 'a', 'b', 'c', 'cs',
-    'CF', 'CY', 'jd', 'lh', 'AP', 'CJ', 'PK', 'SR',    
-    'T', 'TF', 'TS', 'TL', 'IF', 'IH', 'IC', 'IM', 
+    'CF', 'CY', 'jd', 'lh', 'AP', 'CJ', 'PK', 'SR',
+    'T', 'TF', 'TS', 'TL', 'IF', 'IH', 'IC', 'IM',
 ]
 
 
@@ -78,7 +78,7 @@ def refresh_saved_fut_prices(
                 if ('a1505' not in curr_ddf.columns) or (len(curr_ddf) == 0):
                     curr_ddf = pd.DataFrame()
                     start_d = start_date
-                else:                    
+                else:
                     shift = curr_ddf['shift'].iloc[-1]
                     if shift != 0:
                         for col in ['open', 'high', 'low', 'close', 'settle'] + list(period_setup.keys()):
@@ -98,8 +98,11 @@ def refresh_saved_fut_prices(
             if len(ddf) == 0:
                 logging.warning("no new data")
                 continue
-            ddf['expiry'] = pd.to_datetime(ddf.apply(lambda x: contract_expiry(x['contract'], curr_dt=x['date']), axis=1))
-            ddf['contmth'] = ddf.apply(lambda x: inst2contmth(x['contract'], x['date']), axis=1)
+            unique_dcontracts = ddf['contract'].unique()
+            expiry_map = {c: contract_expiry(c, curr_dt=run_date) for c in unique_dcontracts}
+            contmth_map = {c: inst2contmth(c, run_date) for c in unique_dcontracts}
+            ddf['expiry'] = pd.to_datetime(ddf['contract'].map(expiry_map))
+            ddf['contmth'] = ddf['contract'].map(contmth_map)
             ddf = ddf.set_index('date')
             ddf.index = pd.to_datetime(ddf.index)
             if cont in min_dict:
@@ -127,9 +130,12 @@ def refresh_saved_fut_prices(
                                     shift_mode=2, roll_name='hot', freq='m5')
             if len(mdf) == 0:
                 continue
-            mdf['expiry'] = pd.to_datetime(mdf.apply(lambda x: contract_expiry(x['contract'], curr_dt=x['date']), axis=1))
             mdf['date'] = pd.to_datetime(mdf['date'])
-            mdf['contmth'] = mdf.apply(lambda x: inst2contmth(x['contract'], x['date']), axis=1)
+            unique_mcontracts = mdf['contract'].unique()
+            mexpiry_map = {c: contract_expiry(c, curr_dt=run_date) for c in unique_mcontracts}
+            mcontmth_map = {c: inst2contmth(c, run_date) for c in unique_mcontracts}
+            mdf['expiry'] = pd.to_datetime(mdf['contract'].map(mexpiry_map))
+            mdf['contmth'] = mdf['contract'].map(mcontmth_map)
             mdf = mdf.set_index('datetime')
             mdf.index = pd.to_datetime(mdf.index)
             if len(curr_mdf) > 0:
@@ -138,20 +144,20 @@ def refresh_saved_fut_prices(
                 if new_shift != 0:
                     for col in ['open', 'high', 'low', 'close']:
                         if col in curr_mdf.columns:
-                            curr_mdf.loc[:, col] = curr_mdf.loc[:, col]/np.exp(new_shift)
+                            curr_mdf.loc[:, col] = curr_mdf.loc[:, col] * np.exp(new_shift)
                     curr_mdf.loc[:, 'shift'] = curr_mdf.loc[:, 'shift'] + new_shift
                 mdf = mdf[mdf.index > cutoff]
             curr_mdf = pd.concat([curr_mdf, mdf])
             curr_mdf = curr_mdf[~curr_mdf.index.duplicated(keep='last')]
             min_dict[cont] = curr_mdf
 
-            df_list = []
             mdf = curr_mdf[(curr_mdf['date'] >= ddf.index[0]) & (curr_mdf['date'] <= ddf.index[-1])]
-            for px_name in period_setup:
-                twap = mdf[mdf['min_id'].isin(range(*period_setup[px_name]))][['date', 'close']].groupby('date').mean()
-                twap.columns = [px_name]
-                df_list.append(twap)
-            twap_df = pd.concat(df_list, axis=1)
+            min_ids = mdf['min_id'].values
+            twap_dict = {}
+            for px_name, (lo, hi) in period_setup.items():
+                mask = (min_ids >= lo) & (min_ids < hi)
+                twap_dict[px_name] = mdf.loc[mask, ['date', 'close']].groupby('date')['close'].mean()
+            twap_df = pd.DataFrame(twap_dict)
             twap_df.index = pd.to_datetime(twap_df.index)
             ddf = pd.concat([ddf, twap_df], axis=1)
 
@@ -161,7 +167,7 @@ def refresh_saved_fut_prices(
                 if new_shift != 0:
                     for col in list(['open', 'high', 'low', 'close', 'settle']) + list(twap_df.columns):
                         if col in curr_ddf.columns:
-                            curr_ddf[col] = curr_ddf[col]/np.exp(new_shift)
+                            curr_ddf[col] = curr_ddf[col] * np.exp(new_shift)
                     curr_ddf['shift'] = curr_ddf['shift'] + new_shift
                 ddf = ddf[ddf.index > cutoff]
             curr_ddf = pd.concat([curr_ddf, ddf])
@@ -173,8 +179,8 @@ def refresh_saved_fut_prices(
             df_dict['min_data'] = min_dict
             pickle.dump(df_dict, f)
     with open(data_file, 'wb') as f:
-        df_dict['job_marker'] = run_date         
-        pickle.dump(df_dict, f)            
+        df_dict['job_marker'] = run_date
+        pickle.dump(df_dict, f)
     return df_dict
 
 
