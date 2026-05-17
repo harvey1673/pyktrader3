@@ -440,6 +440,14 @@ signal_store = {
     'lmebase_long_2y': [['MCU', 'MAL', 'MZN', 'MPB', 'MNI'],
                         ['shfe_arb', 'hysteresis', [0.9, 500, 0.1], '', 'pct_score', True, 'price', "pos", 240, [-2,2]]],
 
+    # metals misc
+    "lc_sam_fob_mom": [['lc'], ["lc_bat_sam_fob", 'zscore', [60, 80, 2], '', '', True, 'price', "", 120, [-2,2]]],
+    "lc_mine_mom": [['lc'], ["lc_li2Omine_6pct_cif", 'zscore', [60, 80, 2], '', '', True, 'price', "", 120, [-2,2]]],
+    "lc_sam_asia_arb_qtl": [['lc'], ["lc_sam_asia_arb", 'qtl', [60, 100, 2], '', '', True, 'price', "", 120, [-2,2]]],
+    "SH_margin_mom": [['SH'], ['SH_margin_sd', 'qtl', [40, 80, 2], '', '', False, 'price', "", 120, [-2,2]]],
+    "SH_50_32_spd_mom": [['SH'], ['SH_50_32_spd', 'zscore', [20, 60, 2], '', '', True, 'price', "", 120, [-2,2]]],
+
+    # metal group
     'metal_pbc_ema': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'SA', 'v',
                        'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'ao', 'au', 'ag'],
                       ['phycarry', 'ema', [5, 10], '', '', True, 'price', "", 120, [-2,2]]],
@@ -798,7 +806,7 @@ commod_phycarry_dict= {
     "ni": "ni_smm1_spot",
     "ss": "ss_304_gross_wuxi",
     "ao": "alumina_spot_qd",
-    "si": "si_553_spot_smm",
+    "si": "si_ctd_spot",
     "rb": "rebar_sh",
     "hc": "hrc_sh",
     "i": "io_ctd_spot",

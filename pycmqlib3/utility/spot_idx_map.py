@@ -338,9 +338,14 @@ index_map = {
     "S004407062": "pr_east_spot",
     "S022010507": "pr_north_spot",
 
-    "S020459829": "sh_50_32_spd_sd",
-    "S004077496": "sh_32_sd_spot",
-    "S009630097": "sh_50_sd_spot",
+    #"S020459829": "sh_50_32_spd_sd",
+    #"S004077496": "sh_32_sd_spot",
+    #"S009630097": "sh_50_sd_spot",
+    "S004155300": "SH_32_spot_sdjl_shandong",
+    "S004155302": "SH_50_spot_sdjl_shandong",
+    "S020003119": "SH_margin_sd",
+    "S020003107": "SH_util_w",
+
     "S002825712": "pvc_cac2_north",
     "S002825715": "pvc_cac2_east",
     "S002825718": "pvc_cac2_south",
@@ -720,7 +725,6 @@ index_map = {
     'S009137295': 'ni_nis_cjb_spot',
     'S009200268': 'ni_nis_spot_gi',
     'S009273405': 'ni_nis_spot_battery',
-    'S009620789': 'ni_npi_10-15_sh',
     'S020207789': 'ni_mhp_34_ports',
 
     "S006157941": "cu_prem_bonded_warrant",
@@ -771,9 +775,16 @@ index_map = {
     "S019779625": "lc_ind_dom_cn_spot", # need to multiply 10000
     "S020190575": "lc_bat_dom_east_spot",
     "S020190572": "lc_ind_dom_east_spot",
-    "S020186608": "lc_mine_6pct_cif_cn", # in usd
-    "S010596542": "lioh_bat_coarse_spot", # need to multiply 10000
-    "S010596545": "lioh_bat_fine_spot", # need to multiply 10000
+    "S017498544": "lc_bat_dom_jiangxi",
+    "S020190581": "lc_bat_dom_sichuan_spot",
+    "S020190578": "lc_ind_dom_sichuan_spot",
+    "S005100607": "lc_li2Omine_6pct_cif",
+    "S017498571": "lc_bat_asia_cif",
+    "S017498574": "lc_bat_eu_cif",
+    "S017498565": "lc_bat_sam_fob",
+    "S012518267": "lc_util_mth",
+    # "S010596542": "lioh_bat_coarse_spot", # need to multiply 10000
+    # "S010596545": "lioh_bat_fine_spot", # need to multiply 10000
 
     'S003048722': 'cu_smm_phybasis',
     'S003048723': 'cu_flat_phybasis',
@@ -813,6 +824,12 @@ index_map = {
     "S009626791": "ni_scrap_spot_foshan",
     "S015202398": "cu_scrap1_diff_gd", # short history
     "S015202399": "cu_scrap1_diff_tj",
+    "S015202400": "cu_scrap1_fv_diff_gd",
+    "S015202401": "cu_scrap_import_margin",
+    "S015202402": "cu_import_margin_sh",
+    "S023828847": "cu_prem_cif_tw",
+    "S023828850": "cu_prem_cif_sea",
+
     "S004243370": "zn_scrap_sh_high",
     "S004243369": "zn_scrap_sh_low",
     "S004243249": "al_scrap_shredded_sh_low",
@@ -869,7 +886,19 @@ index_map = {
     "S004077728": "alumina_spot_qd",
     "S010596299": "alumina_spot_cnports",
     "S010596302": "alumina_aus_fob",
-    "S002865625": 'si_553_spot_smm',
+    "S023510418": "alumina_cfr_cn",
+    "S023510421": "alumina_fob_au",
+
+    #"S002865625": 'si_553_spot_smm',
+    'S006159069': 'si_553_nonoxy_east',
+    'S006159164': 'si_553_nonoxy_sichuan',
+    'S003014166': "si_553_nonoxy_kunming",
+    'S006159072': 'si_553_oxy_east',
+    'S006159146': 'si_553_oxy_kunming',
+    'S006159081': 'si_421_east',
+    'S005956443': 'si_421_sichuan',
+    'S006159154': 'si_421_kunming',
+    'T025173022': 'si_421_prem_gd',
 
     "M002845714": "csi300_idx",
     "M002845725": "csi500_idx",
@@ -1002,7 +1031,7 @@ def adj_publish_time(spot_df):
 def process_spot_df(spot_df, adjust_time=False):
     if adjust_time:
         spot_df = adj_publish_time(spot_df)
-    for col in ["lc_ind_dom_cn_spot", "lioh_bat_coarse_spot", "lioh_bat_fine_spot"]:
+    for col in ["lc_ind_dom_cn_spot"]:
         if col in spot_df.columns:
             spot_df[col] = spot_df[col] * 10000
 
@@ -1106,6 +1135,12 @@ def process_spot_df(spot_df, adjust_time=False):
 
     spot_dict["cu_inv_combo"] = spot_df[["cu_inv_social_dom", "cu_inv_bonded_gd", "cu_inv_bonded_sh"]].dropna(how='all').ffill().sum(axis=1)
     spot_dict["ni_inv27_plate_all"] = spot_df[["ni_inv27_plate_dom", "ni_inv27_plate_bonded"]].dropna(how='all').ffill().sum(axis=1)
+
+    if "lc_bat_asia_cif" in spot_df.columns and "lc_bat_sam_fob" in spot_df.columns:
+        spot_dict["lc_sam_asia_arb"] = spot_df["lc_bat_asia_cif"] - spot_df["lc_bat_sam_fob"]
+
+    if "SH_50_spot_sdjl_shandong" in spot_df.columns and "SH_32_spot_sdjl_shandong" in spot_df.columns:
+        spot_dict['SH_50_32_spd'] =spot_df["SH_50_spot_sdjl_shandong"]/0.5 - spot_df["SH_32_spot_sdjl_shandong"]/0.32
 
     warrant_dict = {
         "cu": ["cu_inv_shfe_d"],

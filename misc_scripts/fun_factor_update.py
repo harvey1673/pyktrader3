@@ -10,7 +10,7 @@ from pycmqlib3.strategy.signal_repo import get_funda_signal_from_store, BROAD_MK
 from pycmqlib3.utility.spot_idx_map import index_map, process_spot_df
 from pycmqlib3.utility.dbaccess import load_codes_from_edb, load_factor_data, load_int_stock_daily
 from pycmqlib3.utility import dataseries
-from pycmqlib3.utility.exch_ctd_func import io_ctd_basis
+from pycmqlib3.utility.exch_ctd_func import io_ctd_basis, si_ctd_basis
 from pycmqlib3.utility.backtest import sim_start_dict
 from pycmqlib3.utility.misc import day_shift, CHN_Holidays, prod2exch, is_workday, \
     nearby, contract_expiry, inst2contmth
@@ -54,6 +54,11 @@ single_factors = {
     'prop2hand_px_zs': ['rb', 'hc'],
     'coal_mom_st_hlr': ['SF', 'j', 'jm'],
     'coal_mom_yr_hlr': ['SF', 'j', 'jm'],
+    "lc_sam_fob_mom": ['lc'],
+    "lc_mine_mom": ['lc'],
+    "lc_sam_asia_arb_qtl": ['lc'],
+    "SH_50_32_spd_mom": ['SH'],
+    "SH_margin_mom": ['SH'],
 
     "al_alumina_qtl": ['al'],
     "al_alumina_yoy_qtl": ['al'],
@@ -132,7 +137,7 @@ factors_by_asset = {
     'base_phybasmom_1y_zs': ['cu', 'al', 'zn', 'ni', 'pb', 'sn'],
     'ferr_pinv_hlr_mt': ['j', 'jm', 'i', 'rb', 'hc'],
     'ferr_pinv_hlr_yr': ['j', 'jm', 'i', 'rb', 'hc'],
-    'metal_pbc_ema': ['cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ao', 'ss', #'si',
+    'metal_pbc_ema': ['cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ao', 'ss', 'si',
                       'rb', 'hc', 'i', 'jm', 'SM', 'SF', 'v', 'FG', 'SA', "au", "ag"],
     # 'metal_mom_hlrhys': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si', 'lc', 'ps', 'au', 'ag',
     #                      'rb', 'hc', 'i', 'j', 'jm', 'SM', 'SF', 'v', 'FG', 'SA', 'SH'],
@@ -849,6 +854,7 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
     cutoff_date = day_shift(day_shift(run_date, '1b', CHN_Holidays), '-1d')
     spot_df = get_fun_data(funda_start, run_date)
     spot_df['io_ctd_spot'] = io_ctd_basis(spot_df, price_df[('ic1', 'expiry')])
+    spot_df['si_ctd_spot'] = si_ctd_basis(spot_df, price_df[('sic1', 'expiry')])
     fact_config = {'roll_label': roll_name, 'freq': freq, 'serial_key': 0, 'serial_no': 0}
     vol_win = 20
     logging.info("updating price vol data ... ")

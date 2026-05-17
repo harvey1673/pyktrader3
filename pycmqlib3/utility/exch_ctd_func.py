@@ -114,3 +114,36 @@ def io_ctd_basis(spot_df, c1_expiries, brand_list=['pbf', 'iocj', 'macf', 'jmb',
         data_df[f'{brand_name}'] = data_df[spot_name]/(1-moisture/100) - data_df[f'{brand_name}_adj']
     data_df['ctd'] = data_df[[brand for brand in brand_list if brand not in skipped_list]].min(axis=1)
     return data_df['ctd']
+
+
+def si_ctd_basis(spot_df, expiry):
+    c1_expiries = expiry.dropna()
+    data_df = pd.DataFrame(index=c1_expiries.index)
+    data_df['expiry'] = pd.to_datetime(c1_expiries)
+    data_df['553'] = spot_df['si_553_nonoxy_sichuan']
+    data_df['421'] = spot_df['si_421_sichuan']
+    data_df['421_adj'] = data_df['421'] - 800
+    flag = data_df['expiry'] < pd.Timestamp('2024-12-01')
+    data_df.loc[flag, '421_adj'] = data_df.loc[flag, '421_adj'] - 1200
+    data_df['ctd'] = data_df[['553', '421_adj']].min(axis=1)
+    return data_df['ctd']
+
+
+def lc_ctd_basis(spot_df, expiry):
+    c1_expiries = expiry.dropna()
+    data_df = pd.DataFrame(index=c1_expiries.index)
+    data_df['expiry'] = pd.to_datetime(c1_expiries)
+    data_df['bat'] =  spot_df[["lc_bat_dom_sichuan_spot"]].min(axis=1)
+    data_df['ind'] = spot_df[["lc_ind_dom_sichuan_spot"]].min(axis=1) + 25000 # Qinghai +1000
+    data_df['ctd'] = data_df[['bat', 'ind']].min(axis=1)
+    return data_df['ctd']
+
+
+def SH_ctd_basis(spot_df, expiry):
+    c1_expiries = expiry.dropna()
+    data_df = pd.DataFrame(index=c1_expiries.index)
+    data_df['expiry'] = pd.to_datetime(c1_expiries)
+    data_df['32'] = spot_df["SH_32_spot_sdjl_shandong"].dropna() / 0.32
+    data_df['50'] = spot_df["SH_50_spot_sdjl_shandong"].dropna() / 0.5 - 150 # 80 before 2608
+    data_df['ctd'] = data_df[['32', '50']].min(axis=1)
+    return data_df['ctd']
