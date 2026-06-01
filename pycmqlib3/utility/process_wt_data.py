@@ -687,6 +687,8 @@ def combine_data_wt_store(src_folder, dst_folder, target_folder, curr_date,
                 print(f'{period}-{exch}-{file}')
                 cont = file.split('.')[0]
                 dst_df = dtHelper.read_dsb_bars(f'{dst_path}/{file}')
+                if dst_df is None:
+                    continue
                 dst_df = dst_df.to_df().rename(columns={'bartime': 'time',
                                                         'money': 'turnover',
                                                         'hold': 'open_interest',
@@ -723,8 +725,13 @@ def combine_data_wt_store(src_folder, dst_folder, target_folder, curr_date,
                 print(f'ticks-{exch}-{curr_date}-{file}')
                 cont = file.split('.')[0]
                 dst_df = dtHelper.read_dsb_ticks(f'{dst_path}/{file}')
+                if dst_df is None:
+                    continue
                 dst_df = dst_df.to_df()
-                src_df = dtHelper.read_dsb_ticks(f'{src_path}/{file}')
+                if pathlib.Path(f'{src_path}/{file}').is_file():
+                    src_df = dtHelper.read_dsb_ticks(f'{src_path}/{file}')
+                else:
+                    continue
                 if src_df:
                     src_df = src_df.to_df()
                     src_df = pd.concat([
