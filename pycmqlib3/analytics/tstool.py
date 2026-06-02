@@ -17,7 +17,7 @@ import lunardate
 from matplotlib import font_manager
 from .stats_test import test_mean_reverting, half_life
 from statsmodels.tsa.stattools import coint, adfuller
-from pycmqlib3.utility.misc import invert_dict, CHN_Holidays
+from pycmqlib3.utility.misc import invert_dict, CHN_Holidays, day_shift
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
 
@@ -1194,59 +1194,319 @@ def seasonal_helper(df_in, func, date_range=None, min_obs=0,
     return results
 
 
-def seasonal_score(signal_df, **kwargs):
-    def agg_func(sample_df):
-        return (sample_df.iloc[-1] - sample_df.mean())/sample_df.std()
-    df = seasonal_helper(df_in=signal_df, func=agg_func, **kwargs)
-    return pd.DataFrame(df).T.reindex_like(signal_df)
+# def seasonal_score(signal_df, **kwargs):
+#     def agg_func(sample_df):
+#         return (sample_df.iloc[-1] - sample_df.mean())/sample_df.std()
+#     df = seasonal_helper(df_in=signal_df, func=agg_func, **kwargs)
+#     return pd.DataFrame(df).T.reindex_like(signal_df)
 
 
 def seasonal_group_helper(df_in, func, score_cols, yr_col='label_yr', group_col='label_wk',
                           min_obs=0, backward=1, forward=1, split_zero=True, yr_shift=0,
                           rolling_years=100, **kwargs):
-    df_in = df_in.copy(deep=True)
-    if type(score_cols) == str:
+    # Use vectorized numeric arrays plus cached masks to avoid per-date
+    # DataFrame scans in the hot loop.
+    df_in = df_in.copy()
+    if isinstance(score_cols, str):
         score_cols = [score_cols]
-    results = {}
-    group_max = df_in[group_col].max()
-    group_min = df_in[group_col].min()
-    for t_date in df_in.index:
-        curr_yr = df_in.loc[t_date, yr_col]
-        curr_grp = df_in.loc[t_date, group_col]
-        mask = (df_in.index <= t_date) & (df_in[yr_col] >= curr_yr - rolling_years) & \
-               (df_in[yr_col] <= curr_yr - yr_shift)
-        grp_rng = []
-        for grp_id in range(curr_grp - backward, curr_grp + forward+1):
+
+    if len(df_in.index) == 0:
+        return {}
+
+    yr_values = pd.to_numeric(df_in[yr_col], errors='coerce').to_numpy()
+    grp_values = pd.to_numeric(df_in[group_col], errors='coerce').to_numpy()
+    score_df = df_in[score_cols].apply(pd.to_numeric, errors='coerce')
+
+    valid_yr_grp = np.isfinite(yr_values) & np.isfinite(grp_values)
+    if not valid_yr_grp.any():
+        return {}
+
+    grp_int = grp_values.astype(np.int64, copy=False)
+    grp_min = int(np.nanmin(grp_values))
+    grp_max = int(np.nanmax(grp_values))
+    grp_span = grp_max - grp_min + 1
+
+    unique_grps = np.unique(grp_int[valid_yr_grp])
+    grp_rng_cache = {}
+    grp_mask_cache = {}
+    for grp in unique_grps:
+        rng = []
+        for grp_id in range(int(grp) - backward, int(grp) + forward + 1):
             gid = grp_id
-            if gid < group_min:
-                gid += (group_max - group_min + 1)
-            elif gid > group_max:
-                gid -= (group_max - group_min + 1)
-            grp_rng.append(gid)
+            if gid < grp_min:
+                gid += grp_span
+            elif gid > grp_max:
+                gid -= grp_span
+            rng.append(gid)
         if split_zero:
-            if curr_grp >=0:
-                grp_rng = [gid for gid in grp_rng if gid >= 0]
+            if grp >= 0:
+                rng = [gid for gid in rng if gid >= 0]
             else:
-                grp_rng = [gid for gid in grp_rng if gid < 0]
-        mask = mask & (df_in[group_col].isin(grp_rng))
-        sample_period = df_in[mask]
-        if sample_period.empty or (min_obs is not None and len(sample_period) < min_obs):
+                rng = [gid for gid in rng if gid < 0]
+        grp_rng_cache[int(grp)] = np.array(rng, dtype=np.int64)
+        grp_mask_cache[int(grp)] = np.isin(grp_int, grp_rng_cache[int(grp)])
+
+    year_mask_cache = {}
+    base_idx_cache = {}
+    idx_values = df_in.index.to_numpy()
+    last_pos_by_idx = {}
+    for pos, idx_val in enumerate(idx_values):
+        last_pos_by_idx[idx_val] = pos
+
+    results = {}
+    n_rows = len(df_in.index)
+    for pos in range(n_rows):
+        if not valid_yr_grp[pos]:
             continue
-        results[t_date] = func(sample_period[score_cols], **kwargs)
+
+        curr_yr = int(yr_values[pos])
+        curr_grp = int(grp_int[pos])
+        if curr_grp not in grp_mask_cache:
+            continue
+
+        if curr_yr not in year_mask_cache:
+            year_mask_cache[curr_yr] = (
+                (yr_values >= curr_yr - rolling_years) &
+                (yr_values <= curr_yr - yr_shift)
+            )
+
+        cache_key = (curr_yr, curr_grp)
+        if cache_key not in base_idx_cache:
+            base_mask = year_mask_cache[curr_yr] & grp_mask_cache[curr_grp]
+            base_idx_cache[cache_key] = np.flatnonzero(base_mask)
+
+        t_date = idx_values[pos]
+        cutoff_pos = last_pos_by_idx[t_date]
+        candidate_idx = base_idx_cache[cache_key]
+        cutoff = np.searchsorted(candidate_idx, cutoff_pos, side='right')
+        sample_idx = candidate_idx[:cutoff]
+
+        if sample_idx.size == 0 or (
+            min_obs is not None and sample_idx.size < min_obs
+        ):
+            continue
+
+        sample_period = score_df.iloc[sample_idx]
+        results[t_date] = func(sample_period, **kwargs)
     return results
 
 
-def seasonal_group_score(signal_df, score_cols, **kwargs):
-    def agg_func(sample_df):
-        return (sample_df.iloc[-1] - sample_df.mean()) / sample_df.std()
-    df = seasonal_group_helper(df_in=signal_df, func=agg_func, score_cols=score_cols, **kwargs)
-    return pd.DataFrame(df).T
+def seasonal_group_score(signal_df, score_cols, score_method='zscore',
+                         signal_start=None, **kwargs):
+    """Compute seasonal group z-score with a NumPy-optimized fast path.
+
+        Supported score_method (full name and aliases):
+        - 'zscore' or 'zs': (last - mean) / std
+        - 'quantile' or 'qtl': convert descending rank to [-1, 1]
+            score = (N - rank_desc) / (N - 1) * 2 - 1
+        - 'range' or 'hlr': (last - low) / (high - low) * 2 - 1
+
+        The sample is chosen by the same neighborhood/year-window logic as
+        seasonal_group_helper.
+
+        Args:
+            signal_start: Optional tenor string (e.g. '10d', '5b', '3m', '1y').
+                If given, only rows from (end - signal_start) to end of
+                signal_df are scored.  The full history is still used as the
+                fitting sample so statistics are consistent.  Pass None (default)
+                to score the full history (backtest mode).
+    """
+    yr_col = kwargs.get('yr_col', 'label_yr')
+    group_col = kwargs.get('group_col', 'label_wk')
+    min_obs = kwargs.get('min_obs', 0)
+    backward = kwargs.get('backward', 1)
+    forward = kwargs.get('forward', 1)
+    split_zero = kwargs.get('split_zero', True)
+    yr_shift = kwargs.get('yr_shift', 0)
+    rolling_years = kwargs.get('rolling_years', 100)
+
+    if isinstance(score_cols, str):
+        score_cols = [score_cols]
+
+    score_method = str(score_method).lower()
+    method_aliases = {
+        'zscore': 'zscore',
+        'zs': 'zscore',
+        'quantile': 'quantile',
+        'qtl': 'quantile',
+        'range': 'range',
+        'hlr': 'range',
+    }
+    if score_method not in method_aliases:
+        raise ValueError(
+            "score_method must be one of ['zscore', 'zs', 'quantile', "
+            "'qtl', 'range', 'hlr']"
+        )
+    score_method = method_aliases[score_method]
+
+    if len(signal_df.index) == 0:
+        return pd.DataFrame(columns=score_cols, index=signal_df.index)
+
+    yr_values = pd.to_numeric(signal_df[yr_col], errors='coerce').to_numpy()
+    grp_values = pd.to_numeric(signal_df[group_col], errors='coerce').to_numpy()
+    score_values = signal_df[score_cols].apply(pd.to_numeric, errors='coerce') \
+        .to_numpy(dtype=float, copy=False)
+
+    valid_yr_grp = np.isfinite(yr_values) & np.isfinite(grp_values)
+    if not valid_yr_grp.any():
+        return pd.DataFrame(columns=score_cols, index=signal_df.index)
+
+    grp_int = grp_values.astype(np.int64, copy=False)
+    grp_min = int(np.nanmin(grp_values))
+    grp_max = int(np.nanmax(grp_values))
+    grp_span = grp_max - grp_min + 1
+
+    unique_grps = np.unique(grp_int[valid_yr_grp])
+    grp_mask_cache = {}
+    for grp in unique_grps:
+        rng = []
+        for grp_id in range(int(grp) - backward, int(grp) + forward + 1):
+            gid = grp_id
+            if gid < grp_min:
+                gid += grp_span
+            elif gid > grp_max:
+                gid -= grp_span
+            rng.append(gid)
+        if split_zero:
+            if grp >= 0:
+                rng = [gid for gid in rng if gid >= 0]
+            else:
+                rng = [gid for gid in rng if gid < 0]
+        grp_mask_cache[int(grp)] = np.isin(grp_int, np.asarray(rng, dtype=np.int64))
+
+    year_mask_cache = {}
+    base_idx_cache = {}
+    idx_values = signal_df.index.to_numpy()
+    last_pos_by_idx = {}
+    for pos, idx_val in enumerate(idx_values):
+        last_pos_by_idx[idx_val] = pos
+
+    # Determine which row positions to score.  The full signal_df is kept as
+    # the fitting sample so statistics are computed over the complete history;
+    # only the output rows are filtered via signal_start.
+    if signal_start is not None:
+        compute_end = signal_df.index[-1]
+        compute_start = day_shift(compute_end, '-'+signal_start)
+        idx_ts = signal_df.index
+        output_mask = (idx_ts >= compute_start) & (idx_ts <= compute_end)
+        output_positions: set = set(np.flatnonzero(output_mask).tolist())
+    else:
+        output_positions = None  # compute all rows
+
+    result_dict = {}
+    n_rows = len(signal_df.index)
+    for pos in range(n_rows):
+        if output_positions is not None and pos not in output_positions:
+            continue
+        if not valid_yr_grp[pos]:
+            continue
+
+        curr_yr = int(yr_values[pos])
+        curr_grp = int(grp_int[pos])
+        if curr_grp not in grp_mask_cache:
+            continue
+
+        if curr_yr not in year_mask_cache:
+            year_mask_cache[curr_yr] = (
+                (yr_values >= curr_yr - rolling_years)
+                & (yr_values <= curr_yr - yr_shift)
+            )
+
+        cache_key = (curr_yr, curr_grp)
+        if cache_key not in base_idx_cache:
+            base_mask = year_mask_cache[curr_yr] & grp_mask_cache[curr_grp]
+            base_idx_cache[cache_key] = np.flatnonzero(base_mask)
+
+        t_date = idx_values[pos]
+        cutoff_pos = last_pos_by_idx[t_date]
+        candidate_idx = base_idx_cache[cache_key]
+        cutoff = np.searchsorted(candidate_idx, cutoff_pos, side='right')
+        sample_idx = candidate_idx[:cutoff]
+
+        if sample_idx.size == 0 or (
+            min_obs is not None and sample_idx.size < min_obs
+        ):
+            continue
+
+        sample_vals = score_values[sample_idx, :]
+        last_vals = score_values[sample_idx[-1], :]
+        valid_mask = np.isfinite(sample_vals)
+        n_obs = valid_mask.sum(axis=0).astype(float)
+
+        with np.errstate(invalid='ignore', divide='ignore'):
+            if score_method == 'zscore':
+                # Avoid nanmean/nanstd warnings on empty or low-DOF columns.
+                sum_vals = np.where(valid_mask, sample_vals, 0.0).sum(axis=0)
+                mean_vals = np.full(sample_vals.shape[1], np.nan, dtype=float)
+                np.divide(sum_vals, n_obs, out=mean_vals, where=n_obs > 0)
+
+                centered = np.where(valid_mask, sample_vals - mean_vals, 0.0)
+                ss_vals = (centered ** 2).sum(axis=0)
+                denom = n_obs - 1.0
+                var_vals = np.full(sample_vals.shape[1], np.nan, dtype=float)
+                np.divide(ss_vals, denom, out=var_vals, where=denom > 0)
+                std_vals = np.sqrt(var_vals)
+                score = (last_vals - mean_vals) / std_vals
+            elif score_method == 'range':
+                low_vals = np.where(valid_mask, sample_vals, np.inf).min(axis=0)
+                high_vals = np.where(valid_mask, sample_vals, -np.inf).max(axis=0)
+                low_vals[n_obs == 0] = np.nan
+                high_vals[n_obs == 0] = np.nan
+                score = (last_vals - low_vals) / (high_vals - low_vals) * 2 - 1
+            else:  # score_method == 'quantile'
+                gt = ((sample_vals > last_vals) & valid_mask).sum(axis=0).astype(float)
+                eq = ((sample_vals == last_vals) & valid_mask).sum(axis=0).astype(float)
+                rank_desc = 1.0 + gt + (eq - 1.0) / 2.0
+                score = (n_obs - rank_desc) / (n_obs - 1.0) * 2.0 - 1.0
+                score[n_obs <= 1.0] = np.nan
+        score[~np.isfinite(score)] = np.nan
+        result_dict[t_date] = score
+
+    if len(result_dict) == 0:
+        out_index = (
+            signal_df.index[list(sorted(output_positions))]
+            if output_positions is not None
+            else signal_df.index
+        )
+        return pd.DataFrame(columns=score_cols, index=out_index)
+
+    result_df = pd.DataFrame.from_dict(result_dict, orient='index', columns=score_cols)
+    if output_positions is None:
+        # Reindex to full input index so callers always get aligned output.
+        result_df = result_df.reindex(signal_df.index)
+    return result_df
+
+
+def seasonal_score(signal_df, score_cols,
+                   score_method='zscore',
+                   season="cal",
+                   group_col='label_wk',
+                   win=2,
+                   min_obs=20,
+                   rolling_years=100,
+                   signal_start=None
+                   ):
+    if season == "lunar":
+        label_func = lunar_label
+    else:
+        label_func = calendar_label
+    signal_df = label_func(signal_df.copy())
+    seasonal_df = seasonal_group_score(signal_df,
+                                       score_cols=score_cols,
+                                       group_col=group_col,
+                                       min_obs=min_obs,
+                                       forward=win,
+                                       backward=win,
+                                       rolling_years=rolling_years,
+                                       score_method=score_method,
+                                       signal_start=signal_start)
+    return seasonal_df
 
 
 def calc_funda_signal(spot_df, feature, signal_func, param_rng,
                       proc_func='', chg_func='diff', bullish=True,
                       freq='price', signal_cap=[-2, 2], bdates=None,
-                      post_func='', vol_win=120, curr_date=None):
+                      post_func='', vol_win=120, curr_date=None, signal_start=None):
     feature_ts = spot_df[feature].dropna()
     start_date = feature_ts.index[0]
     end_date = feature_ts.index[-1]
@@ -1334,26 +1594,45 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
                 res = ema_moments(feature_ts.dropna(), span=n_days)
                 feature_ts = res['skew'] / np.sqrt(res['kurt']-1)
 
-    if signal_func == 'seasonal_score_w':
+    if signal_start is not None:
+        start_s = day_shift(end_date, f'-{signal_start}')
+    else:
+        start_s = start_date
+
+    if 'seasonal' in signal_func: # seasonal_lunar_wk_zs
+        str_split = signal_func.split('_')
+        season = str_split[1]
+        if season != 'lunar':
+            season = 'cal'
+        score_label = f"label_{str_split[2]}"
+
+        if len(str_split) > 3:
+            score_method = str_split[3]
+        else:
+            score_method = 'zscore'
+        win = param_rng[0]
+        rolling_years = param_rng[1]
+        if len(param_rng) > 2:
+            min_obs = param_rng[2]
+        else:
+            min_obs = 20
         signal_ts = seasonal_score(feature_ts.to_frame(),
-                                   backward=param_rng[0],
-                                   forward=param_rng[1],
-                                   rolling_years=param_rng[2],
-                                   min_obs=10)[feature]
-    elif signal_func == 'seasonal_score_d':
-        signal_ts = seasonal_score(feature_ts.to_frame(),
-                                   backward=param_rng[0],
-                                   forward=param_rng[1],
-                                   rolling_years=param_rng[2],
-                                   min_obs=40)[feature]
+                                   score_cols=feature,
+                                   season=season,
+                                   group_col=score_label,
+                                   score_method=score_method,
+                                   win=win,
+                                   rolling_years=rolling_years,
+                                   min_obs=min_obs,
+                                   signal_start=signal_start)[feature]
     elif signal_func == 'rng':
-        signal_ts = feature_ts.apply(lambda x: max(min(x-param_rng[0], param_rng[1]), -param_rng[1])/param_rng[2])
+        signal_ts = feature_ts[start_s:].apply(lambda x: max(min(x-param_rng[0], param_rng[1]), -param_rng[1])/param_rng[2])
     elif signal_func == 'dbl_th':
         if len(chg_func) > 0:
             signal_ts = eval(chg_func)(feature_ts, param_rng[1])
         else:
             signal_ts = feature_ts
-        signal_ts = signal_ts.apply(lambda x: np.sign(x) if abs(x) >= param_rng[0] else 0)
+        signal_ts = signal_ts[start_s:].apply(lambda x: np.sign(x) if abs(x) >= param_rng[0] else 0)
     elif signal_func == 'hysteresis':
         if len(chg_func) > 0:
             signal_ts = eval(chg_func)(feature_ts, param_rng[1])
@@ -1363,18 +1642,18 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
             use_sgn = (param_rng[3] > 0)
         else:
             use_sgn = True
-        signal_ts = signal_hysteresis(signal_ts, param_rng[0], param_rng[2], use_sgn=use_sgn)
+        signal_ts = signal_hysteresis(signal_ts[start_s:], param_rng[0], param_rng[2], use_sgn=use_sgn)
     elif len(signal_func) > 0:
         signal_ts = calc_conv_signal(feature_ts, signal_func=signal_func, param_rng=param_rng,
-                                     signal_cap=signal_cap, vol_win=vol_win)
+                                     signal_cap=signal_cap, vol_win=vol_win)[start_s:]
     else:
-        signal_ts = feature_ts
+        signal_ts = feature_ts[start_s:]
 
     if not bullish:
         signal_ts = -signal_ts
 
     if len(post_func) > 0:
-        signal_ts = signal_ts.reindex(index=cdates).ffill().reindex(index=bdates)
+        signal_ts = signal_ts.reindex(index=cdates).ffill().reindex(index=bdates)[start_s:]
         if '|' in post_func:
             post_func_list = post_func.split('|')
         else:

@@ -6,7 +6,7 @@ import pandas as pd
 from pandas.tseries.offsets import CustomBusinessDay
 import logging
 from pycmqlib3.utility import base
-from pycmqlib3.strategy.signal_repo import get_funda_signal_from_store, BROAD_MKTS, IND_MKTS, AGS_MKTS, commod_phycarry_dict
+from pycmqlib3.strategy.signal_repo import get_funda_signal_from_store, feature_to_feature_key_mapping, BROAD_MKTS, IND_MKTS, AGS_MKTS, commod_phycarry_dict
 from pycmqlib3.utility.spot_idx_map import index_map, process_spot_df
 from pycmqlib3.utility.dbaccess import load_codes_from_edb, load_factor_data, load_int_stock_daily
 from pycmqlib3.utility import dataseries
@@ -18,6 +18,8 @@ from pycmqlib3.analytics.tstool import *
 from misc_scripts.factor_data_update import update_factor_db, FactorDBBatchWriter
 from misc_scripts.seasonality_update import seasonal_cal_update
 
+# full history data for seasonality calculation
+PROD_FULL_HIST_TICKERS = list(feature_to_feature_key_mapping['metal_inv'].values())
 
 single_factors = {
     'hc_rb_diff_20': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'UR', 'v', 'ru', 'au', 'ag', 'cu', 'al', 'zn', 'sn', 'ss', 'ni', 'ao'],
@@ -122,19 +124,29 @@ factors_by_asset = {
     'bond_tf_lt_qtl': ['T', 'TF', 'TL'],
     'bond_carry_ma': ['T', 'TL'],
     'bond_tf_st_eds':  ['T', 'TF', 'TL'],
+
+    'base_tc_1y_zs': ['cu', 'pb', 'zn'],
+    'base_tc_2y_zs': ['cu', 'pb', 'sn'],
+    'base_cifprem_1m_zs': ['cu', 'al', 'zn', 'ni', 'pb'],
+    'base_cifprem_1y_zs': ['cu', 'al', 'zn', 'ni', 'pb'],
     'lme_base_ts_mds': ['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
     'lme_base_ts_hlr': ['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
     'lme_futbasis_ma': ['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
-    'base_inv_shfe_ma': ['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
-    'base_inv_lme_ma': ['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
-    'base_inv_exch_ma': ['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
     'base_phybas_carry_ma': ['cu', 'al', 'zn', 'ni', 'sn', 'pb'],
-    'base_inv_mds': ['cu', 'al', 'zn', 'ni', 'sn', 'pb', 'ss', 'si', 'ao'],
-    'base_tc_1y_zs': ['cu', 'pb', 'zn'],
-    'base_tc_2y_zs': ['cu', 'pb', 'sn'],
-    'base_cifprem_1y_zs': ['cu', 'al', 'zn', 'ni'],
     'base_phybasmom_1m_zs': ['cu', 'al', 'zn', 'ni', 'pb', 'sn'],
     'base_phybasmom_1y_zs': ['cu', 'al', 'zn', 'ni', 'pb', 'sn'],
+    'base_inv_shfe_hlr': ['cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ss', 'ao'],
+    'base_invchg_shfe_mad': ['cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ss', 'ao'],
+    'base_invchg_shfe_lunar_zs': ['cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ss', 'ao'],
+    'lme_inv_total_mad': ['cu', 'zn', 'ni'],
+    'lme_inv_total_cal_hlr': ['cu', 'zn', 'ni'],
+    'lme_cancel_ratio_mad': ['cu', 'al', 'zn'],
+    'lme_cancel_ratio_cal_qtl': ['cu', 'al', 'zn'],
+    #'base_inv_exch_ma': ['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
+    'base_sinv_hlr': ['cu', 'al', 'zn', 'ni', 'sn', 'pb', 'ss', 'ao'],
+    'base_sinv_lunar_hlr': ['cu', 'al', 'zn', 'ni', 'sn', 'pb', 'ss', 'ao'],
+    'base_sinvchg_lunar_hlr': ['cu', 'al', 'zn', 'ni', 'sn', 'pb', 'ss', 'ao'],
+
     'ferr_pinv_hlr_mt': ['j', 'jm', 'i', 'rb', 'hc'],
     'ferr_pinv_hlr_yr': ['j', 'jm', 'i', 'rb', 'hc'],
     'metal_pbc_ema': ['cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ao', 'ss', 'si',
@@ -147,9 +159,13 @@ factors_by_asset = {
                       'rb', 'hc', 'i', 'j', 'jm', 'SM', 'SF', 'v', 'FG', 'SA', 'SH'],
     'mtlmom_regt_lt': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si', 'lc', 'ps', 'au', 'ag',
                       'rb', 'hc', 'i', 'j', 'jm', 'SM', 'SF', 'v', 'FG', 'SA', 'SH'],
-    'metal_inv_hlr': ['cu', 'al', 'zn', 'ni', 'pb', 'sn', 'si', 'lc', 'ps', 'ao', 'ss',
+    'metal_inv_hlr': ['cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ao', 'ss', 'si', 'lc',
                       'rb', 'hc', 'i', 'j', 'jm', 'v', 'SM', 'SF', 'FG', 'SA', 'SH'],
-    'metal_inv_lyoy_hlr': ['cu', 'al', 'zn', 'ni', 'pb', 'sn', 'si', 'lc', 'ps', 'ao', 'ss',
+    'metal_inv_lyoy_ma': ['cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ao', 'ss', 'si', 'lc',
+                      'rb', 'hc', 'i', 'j', 'jm', 'v', 'SM', 'SF', 'FG', 'SA', 'SH'],
+    'metal_inv_seasonal_lunar': ['cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ao', 'ss', 'si', 'lc',
+                      'rb', 'hc', 'i', 'j', 'jm', 'v', 'SM', 'SF', 'FG', 'SA', 'SH'],
+    'metal_invchg_seasonal_lunar': ['cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ao', 'ss', 'si', 'lc',
                       'rb', 'hc', 'i', 'j', 'jm', 'v', 'SM', 'SF', 'FG', 'SA', 'SH'],
     "exch_wnt_hlr": ["UR", "ru", 'si', 'lc', 'ao', 'ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
     "exch_wnt_yoy_hlr": ["UR", "ru", 'si', 'lc', 'ao', 'ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
@@ -169,41 +185,27 @@ factors_by_spread = {
 }
 
 factors_by_spread2 = {
-    'rbhc_px_diff_mds': ['spd_rb_hc_c1'],
-    'rbhc_px_diff_lyoy_mds': ['spd_rb_hc_c1'],
-    'rbhc_phycarry_diff_zs': ['spd_rb_hc_c1'],
-    'rbhc_basmom_diff_hlr': ['spd_rb_hc_c1'],
-    'rbhc_steel_spd_mds': ['spd_rb_hc_c1'],
-    'rbhc_steel_spd_lyoy_mds': ['spd_rb_hc_c1'],
-    'rbhc_dmd_ratio_mds': ['spd_rb_hc_c1'],
-    'rbhc_dmd_ratio_lyoy_mds': ['spd_rb_hc_c1'],
-    'rbhc_sinv_chg_mds': ['spd_rb_hc_c1'],
-    'rbhc_sinv_chg_lyoy_mds': ['spd_rb_hc_c1'],
-    'rbhc_sinv_lratio_mds': ['spd_rb_hc_c1'],
-    'rbhc_sinv_lratio_lyoy_mds': ['spd_rb_hc_c1'],
-    'rbhc_rbsales_lyoy_zs': ['spd_rb_hc_c1'],
-    'rbhc_eaf_util_lyoy_mds': ['spd_rb_hc_c1'],
-    # 'rbhc_eaf_util_yoy_zs': ['spd_rb_hc_c1'],
+    'rbhc_px_diff_mds': ['spd_hc_rb_c1'],
+    'rbhc_px_diff_lyoy_mds': ['spd_hc_rb_c1'],
+    'rbhc_phycarry_diff_zs': ['spd_hc_rb_c1'],
+    'rbhc_basmom_diff_hlr': ['spd_hc_rb_c1'],
+    'rbhc_steel_spd_mds': ['spd_hc_rb_c1'],
+    'rbhc_steel_spd_lyoy_mds': ['spd_hc_rb_c1'],
+    'rbhc_dmd_ratio_mds': ['spd_hc_rb_c1'],
+    'rbhc_dmd_ratio_lyoy_mds': ['spd_hc_rb_c1'],
+    'rbhc_sinv_chg_mds': ['spd_hc_rb_c1'],
+    'rbhc_sinv_chg_lyoy_mds': ['spd_hc_rb_c1'],
+    'rbhc_sinv_lratio_mds': ['spd_hc_rb_c1'],
+    'rbhc_sinv_lratio_lyoy_mds': ['spd_hc_rb_c1'],
+    'rbhc_rbsales_lyoy_zs': ['spd_hc_rb_c1'],
+    'rbhc_eaf_util_lyoy_mds': ['spd_hc_rb_c1'],
 }
 
 factors_by_spread3 = {
-    # 'rbhc_px_diff_mds': [('rbc1=hcc1', 60)],
-    # 'rbhc_px_diff_lyoy_mds': [('rbc1=hcc1', 60)],
-    # 'rbhc_phycarry_diff_zs': [('rbc1=hcc1', 60)],
-    # 'rbhc_basmom_diff_hlr': [('rbc1=hcc1', 60)],
-    # 'rbhc_steel_spd_mds': [('rbc1=hcc1', 60)],
-    # 'rbhc_steel_spd_lyoy_mds': [('rbc1=hcc1', 60)],
-    # 'rbhc_dmd_ratio_mds': [('rbc1=hcc1', 60)],
-    # 'rbhc_dmd_ratio_lyoy_mds': [('rbc1=hcc1', 60)],
-    # 'rbhc_sinv_chg_mds': [('rbc1=hcc1', 60)],
-    # 'rbhc_sinv_chg_lyoy_mds': [('rbc1=hcc1', 60)],
-    # 'rbhc_sinv_lratio_mds': [('rbc1=hcc1', 60)],
-    # 'rbhc_sinv_lratio_lyoy_mds': [('rbc1=hcc1', 60)],
-    # 'rbhc_rbsales_lyoy_zs': [('rbc1=hcc1', 60)],
 }
 
 spread_config = {
-    'spd_rb_hc_c1': [[('rb', 1), ('hc', -1)], 20, '-30b', 1],
+    'spd_hc_rb_c1': [[('hc', 1), ('rb', -1)], 20, '-30b', 1],
 }
 
 factors_by_beta_neutral = {
@@ -221,6 +223,20 @@ factors_by_beta_neutral = {
     'auag_csi500_zs_st': [('au', 'ag', 1),],
     'smsf_coal_mom_st': [('SF', 'SM', 1), ('jm', 'i', 1), ('j', 'i', 1),],
     'smsf_coal_mom_yr': [('SF', 'SM', 1), ('jm', 'i', 1), ('j', 'i', 1),],
+    # 'rbhc_px_diff_mds': [('hc', 'rb', 1 )],
+    # 'rbhc_px_diff_lyoy_mds': [('hc', 'rb', 1 )],
+    # 'rbhc_phycarry_diff_zs': [('hc', 'rb', 1 )],
+    # 'rbhc_basmom_diff_hlr': [('hc', 'rb', 1 )],
+    # 'rbhc_steel_spd_mds': [('hc', 'rb', 1 )],
+    # 'rbhc_steel_spd_lyoy_mds': [('hc', 'rb', 1 )],
+    # 'rbhc_dmd_ratio_mds': [('hc', 'rb', 1 )],
+    # 'rbhc_dmd_ratio_lyoy_mds': [('hc', 'rb', 1 )],
+    # 'rbhc_sinv_chg_mds': [('hc', 'rb', 1 )],
+    # 'rbhc_sinv_chg_lyoy_mds': [('hc', 'rb', 1 )],
+    # 'rbhc_sinv_lratio_mds': [('hc', 'rb', 1 )],
+    # 'rbhc_sinv_lratio_lyoy_mds': [('hc', 'rb', 1 )],
+    # 'rbhc_rbsales_lyoy_zs': [('hc', 'rb', 1 )],
+    # 'rbhc_eaf_util_lyoy_mds': [('hc', 'rb', 1 )],
 }
 
 
@@ -680,14 +696,26 @@ factors_by_func = {
 }
 
 
-def get_fun_data(start_date, run_date):
+def get_fun_data(start_date, run_date, full_hist_tickers=PROD_FULL_HIST_TICKERS):
     run_date = pd.to_datetime(run_date)
     e_date = day_shift(run_date.date(), '5b', CHN_Holidays)
     cdate_rng = pd.date_range(start=start_date, end=e_date, freq='D', name='date')
-    data_df = load_codes_from_edb(index_map.keys(), source='ifind', column_name='index_code')
-    data_df = data_df.rename(columns=index_map)
-    spot_df = data_df.dropna(how='all').copy(deep=True)
-    spot_df = spot_df.reindex(index=cdate_rng)
+
+    rev_map = {v:k for k,v in index_map.items()}
+    if len(full_hist_tickers)>0:
+        index_codes = [rev_map[ticker] for ticker in full_hist_tickers if ticker in rev_map]
+        spot_df = load_codes_from_edb(index_codes, source='ifind', column_name='index_code')
+        spot_df = spot_df.rename(columns=index_map)
+        spot_df = spot_df.reindex(index=pd.date_range(start=spot_df.index.min(),
+                                                      end=e_date, freq='D', name='date'))
+    else:
+        spot_df = pd.DataFrame(index=cdate_rng)
+    index_codes = [ticker for ticker in index_map.keys() if index_map[ticker] not in spot_df.columns]
+    data_df = load_codes_from_edb(index_codes, source='ifind', column_name='index_code',
+                                  start_date=start_date)
+    data_df = data_df.rename(columns=index_map).dropna(how='all')
+    data_df = data_df.reindex(index=cdate_rng)
+    spot_df = pd.concat([spot_df, data_df], axis=1)
     spot_df = process_spot_df(spot_df, adjust_time=True)
 
     stock_df = load_int_stock_daily(["XOM.N", "BP.N", 'CVX.N', 'SU.N', 'EOG.N', 'APA.N',
@@ -804,9 +832,10 @@ def load_hist_fut_prices(markets, start_date, end_date,
 def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
     roll_name='hot'
     freq='d1'
+    signal_start = '60b'
     db_writer = FactorDBBatchWriter(dbtable='fut_fact_data', flavor=flavor, flush_rows=25000)
-    funda_start = day_shift(run_date, '-8y')
-    update_start = day_shift(run_date, '-120b', CHN_Holidays)
+    funda_start = day_shift(run_date, '-16y')
+    update_start = day_shift(run_date, '-' + signal_start, CHN_Holidays)
     markets = [
         'rb', 'hc', 'i', 'j', 'jm',
         'SM', 'SF', 'SA', 'FG', 'v', 'SH',
@@ -933,7 +962,8 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
             signal_ts = get_funda_signal_from_store(spot_df, factor_name,
                                                     price_df=price_df,
                                                     asset=asset,
-                                                    curr_date=run_date)
+                                                    curr_date=run_date,
+                                                    signal_start=signal_start)
             save_signal_to_db(asset, db_fact_name, signal_ts[update_start:],
                               run_date=cutoff_date, flavor=flavor,
                               db_writer=db_writer)
@@ -943,7 +973,8 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
         logging.info(f"calculating factor={factor_name}")
         signal_ts = get_funda_signal_from_store(spot_df, factor_name,
                                                 price_df=price_df,
-                                                curr_date=run_date)
+                                                curr_date=run_date,
+                                                signal_start=signal_start)
         for asset in single_factors[factor_name]:
             save_signal_to_db(asset, factor_name, signal_ts[update_start:],
                               run_date=cutoff_date, flavor=flavor,
@@ -965,7 +996,8 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
         logging.info(f"calculating factor={factor_name}")
         signal_ts = get_funda_signal_from_store(spot_df, factor_name,
                                                 price_df=price_df,
-                                                curr_date=run_date)
+                                                curr_date=run_date,
+                                                signal_start=signal_start)
         for asset, weight in factors_by_spread[factor_name]:
             save_signal_to_db(asset, factor_name, weight*signal_ts[update_start:],
                               run_date=cutoff_date, flavor=flavor,
@@ -975,7 +1007,8 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
         logging.info(f"calculating factor={factor_name}")
         signal_ts = get_funda_signal_from_store(spot_df, factor_name,
                                                 price_df=price_df,
-                                                curr_date=run_date)
+                                                curr_date=run_date,
+                                                signal_start=signal_start)
         for spd_name in factors_by_spread2[factor_name]:
             asset_list = spread_config[spd_name][0]
             vwin = spread_config[spd_name][1]
@@ -995,7 +1028,8 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
         logging.info(f"calculating factor={factor_name}")
         signal_ts = get_funda_signal_from_store(spot_df, factor_name,
                                                 price_df=price_df,
-                                                curr_date=run_date)
+                                                curr_date=run_date,
+                                                signal_start=signal_start)
         for spd_name, spd_win in factors_by_spread3[factor_name]:
             asset_pair = spd_name.split('=')
             asset1_ret = price_df[(asset_pair[0], 'close')].dropna().pct_change()
@@ -1046,7 +1080,8 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
         logging.info(f"calculating factor={factor_name}")
         signal_ts = get_funda_signal_from_store(spot_df, factor_name,
                                                 price_df=price_df,
-                                                curr_date=run_date)
+                                                curr_date=run_date,
+                                                signal_start=signal_start)
         signal_df = pd.DataFrame(index=signal_ts.index)
         signal_df['raw_sig'] = signal_ts
         asset_list = []

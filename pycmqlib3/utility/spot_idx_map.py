@@ -501,18 +501,18 @@ index_map = {
     #'S003018877': 'aa_lme_3m_15m_spd',
     #'S003018878': 'aa_lme_3m_27m_spd',
     "S002855118": "cu_inv_cme_total",
-    "S004303280": "cu_inv_lme_total",
+    "S000025728": "cu_inv_lme_total",
     "S002836856": "cu_inv_lme_cancelled",
-    "S004303370": "al_inv_lme_total",
-    "S004303408": "al_inv_lme_cancelled",
-    "S004303465": "pb_inv_lme_total",
-    "S004303491": "pb_inv_lme_cancelled",
-    "S004303530": "zn_inv_lme_total",
-    "S004303550": "zn_inv_lme_cancelled",
-    "S004303580": "sn_inv_lme_total",
-    "S004303592": "sn_inv_lme_cancelled",
-    "S004303610": "ni_inv_lme_total",
-    "S004303642": "ni_inv_lme_cancelled",
+    "S000025729": "al_inv_lme_total",
+    "S002836862": "al_inv_lme_cancelled",
+    "S000025731": "pb_inv_lme_total",
+    "S002836868": "pb_inv_lme_cancelled",
+    "S000025730": "zn_inv_lme_total",
+    "S002836874": "zn_inv_lme_cancelled",
+    "S000025732": "sn_inv_lme_total",
+    "S002836880": "sn_inv_lme_cancelled",
+    "S000025733": "ni_inv_lme_total",
+    "S002836886": "ni_inv_lme_cancelled",
     "S003164358": "cu_inv_shfe_d",
     "S003164360": "zn_inv_shfe_d",
     "S003164359": "al_inv_shfe_d",
@@ -1037,10 +1037,14 @@ def process_spot_df(spot_df, adjust_time=False):
 
     spot_dict = {}
     for asset in ['cu', 'al', 'zn', 'pb', 'ni', 'sn']:
-        spot_dict[f'{asset}_inv_exch_d'] = spot_df[
-            [f'{asset}_inv_shfe_d', f'{asset}_inv_lme_total']].sum(axis=1, skipna=False)
+        spot_dict[f'{asset}_lme_cancel_ratio'] = spot_df[f'{asset}_inv_lme_cancelled']/spot_df[f'{asset}_inv_lme_total']
         spot_dict[f'{asset}_lme_futbasis'] = np.log(1 + spot_df[f'{asset}_lme_0m_3m_spd'] /
                                                   spot_df[f'{asset}_lme_3m_close'])
+    # for asset in ['cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ao', 'ss', 'lc', 'si', 'ps']:
+    #     if f'{asset}_inv_shfe_d' in spot_df.columns:
+    #         spot_dict[f'{asset}_inv_exch_d'] = spot_df[f'{asset}_inv_shfe_d'].dropna()
+    #     elif f'{asset}_inv_gfex_d' in spot_df.columns:
+    #         spot_dict[f'{asset}_inv_exch_d'] = spot_df[f'{asset}_inv_gfex_d'].dropna()
 
     spot_dict['ppi_cpi_mom_spd'] = (spot_df['ppi_cn_mom'] - spot_df['cpi_cn_mom']).dropna()
     spot_dict['m1_m2_spd'] = (spot_df['m1_cn_yoy'] - spot_df['m2_cn_yoy']).dropna()
@@ -1133,7 +1137,8 @@ def process_spot_df(spot_df, adjust_time=False):
     if ('coal_5500_sx_qhd' in spot_df.columns) and ('coal_5500_qhd' in spot_df.columns):
         spot_df.loc[:'2022-02-11', 'coal_5500_sx_qhd'] = spot_df.loc[:'2022-02-11', 'coal_5500_qhd']
 
-    spot_dict["cu_inv_combo"] = spot_df[["cu_inv_social_dom", "cu_inv_bonded_gd", "cu_inv_bonded_sh"]].dropna(how='all').ffill().sum(axis=1)
+    spot_dict["cu_inv_combo"] = spot_df[
+        ['cu_inv_social_dom', "cu_inv_bonded_sh", "cu_inv_bonded_gd"]].dropna(subset=['cu_inv_social_dom']).fillna(0).sum(axis=1)
     spot_dict["ni_inv27_plate_all"] = spot_df[["ni_inv27_plate_dom", "ni_inv27_plate_bonded"]].dropna(how='all').ffill().sum(axis=1)
 
     if "lc_bat_asia_cif" in spot_df.columns and "lc_bat_sam_fob" in spot_df.columns:
