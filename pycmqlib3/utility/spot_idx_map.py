@@ -1040,11 +1040,15 @@ def process_spot_df(spot_df, adjust_time=False):
         spot_dict[f'{asset}_lme_cancel_ratio'] = spot_df[f'{asset}_inv_lme_cancelled']/spot_df[f'{asset}_inv_lme_total']
         spot_dict[f'{asset}_lme_futbasis'] = np.log(1 + spot_df[f'{asset}_lme_0m_3m_spd'] /
                                                   spot_df[f'{asset}_lme_3m_close'])
-    # for asset in ['cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ao', 'ss', 'lc', 'si', 'ps']:
-    #     if f'{asset}_inv_shfe_d' in spot_df.columns:
-    #         spot_dict[f'{asset}_inv_exch_d'] = spot_df[f'{asset}_inv_shfe_d'].dropna()
-    #     elif f'{asset}_inv_gfex_d' in spot_df.columns:
-    #         spot_dict[f'{asset}_inv_exch_d'] = spot_df[f'{asset}_inv_gfex_d'].dropna()
+
+    for asset in ['cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ao', 'ss', 'lc', 'si', 'ps']:
+        if f'{asset}_inv_lme_total' in spot_df.columns:
+            spot_dict[f'{asset}_inv_exch_total'] = \
+                spot_df[[f'{asset}_inv_lme_total', f'{asset}_inv_shfe_d']].dropna(how='all').ffill().sum(axis=1)
+        elif f'{asset}_inv_shfe_d' in spot_df.columns:
+            spot_dict[f'{asset}_inv_exch_d'] = spot_df[f'{asset}_inv_shfe_d'].dropna()
+        elif f'{asset}_inv_gfex_d' in spot_df.columns:
+            spot_dict[f'{asset}_inv_exch_d'] = spot_df[f'{asset}_inv_gfex_d'].dropna()
 
     spot_dict['ppi_cpi_mom_spd'] = (spot_df['ppi_cn_mom'] - spot_df['cpi_cn_mom']).dropna()
     spot_dict['m1_m2_spd'] = (spot_df['m1_cn_yoy'] - spot_df['m2_cn_yoy']).dropna()
