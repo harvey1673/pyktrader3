@@ -125,6 +125,7 @@ factors_by_asset = {
     'bond_carry_ma': ['T', 'TL'],
     'bond_tf_st_eds':  ['T', 'TF', 'TL'],
 
+    'base_inv_mds': ['cu', 'al', 'zn', 'ni', 'sn', 'pb', 'ss', 'si', 'ao'],
     'base_tc_1y_zs': ['cu', 'pb', 'zn'],
     'base_tc_2y_zs': ['cu', 'pb', 'sn'],
     'base_cifprem_1m_zs': ['cu', 'al', 'zn', 'ni', 'pb'],
@@ -466,8 +467,8 @@ def seasonal_custom_1(price_df, spot_df, product_list, now=datetime.datetime.now
     for asset in ['T', 'TF']:
         if asset in product_list:
             #signal_df.loc[signal_df.index.month.isin([1, 2, 3, 4, 5, 6, 7, 12]), asset] += 0.5
-            signal_df.loc[signal_df.index.day.isin(range(16, 32)), asset] += 0.5
-            signal_df.loc[signal_df.index.weekday.isin([1]), asset] += 0.5
+            signal_df.loc[signal_df.index.day.isin(range(16, 32)), asset] += 0.25
+            signal_df.loc[signal_df.index.weekday.isin([1]), asset] += 0.25
 
     if 'bu' in product_list:
         signal_df.loc[signal_df.index.month.isin([1, 12]), 'bu'] = 1.0

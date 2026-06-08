@@ -386,6 +386,11 @@ signal_store = {
                                    ['prem_bonded_warrant', 'zscore', [230, 250, 2], '', '', True, 'price', "", 120, [-2,2]]],
     'base_tc_1y_zs': [['cu', 'pb', 'zn'], ['base_tc', 'zscore', [230, 250, 2], '', '', False, 'price', "", 120, [-2,2]]],
     'base_tc_2y_zs': [['cu', 'pb', 'sn'], ['base_tc', 'zscore', [480, 500, 2], '', '', False, 'price', "", 120, [-2,2]]],
+
+    'base_inv_mds': [['cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ao', 'ss'],
+                     ['base_inv', 'ma_dff_sgn', [180, 240, 2], '', '', False, 'price', "sma1", 120, [-2,2]]],
+    'base_inv_mds_xdemean': [['cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ao', 'ss'],
+                             ['base_inv', 'ma_dff_sgn', [180, 240, 2], '', '', False, 'price', "sma1", 120, [-2,2]]],
     'base_sinv_hlr': [['cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ss', 'ao'],
                      ['base_inv', 'hlratio', [240, 260, 2], '', '', False, 'price', "", 120, [-2,2]]],
     'base_sinv_hlr_xdemean': [['cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ss', 'ao'],
