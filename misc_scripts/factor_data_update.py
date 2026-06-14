@@ -47,23 +47,26 @@ port_pos_config = {
     'PTSIM1_FACTPORT1_hot': {
         'pos_loc': 'C:/dev/pyktrader3/process/paper_sim1',
         'strat_list': [
-            ('PTSIM1_FACTPORT1.json',40000), #32000
-            ('PTSIM1_SEAZN.json', 36000), #34000
-            ('PTSIM1_EXCHWNT.json', 34000), #27000
-            ('PTSIM1_HRCRB.json', 34000), #27000
-            ('PTSIM1_LL.json', 34000), # 27000
+            ('PTSIM1_FACTPORT1.json',40000),
+            ('PTSIM1_SEAZN.json', 36000),
+            ('PTSIM1_EXCHWNT.json', 34000),
+            ('PTSIM1_HRCRB.json', 34000),
+            ('PTSIM1_LL.json', 34000),
             ('PTSIM1_LL2MR.json', 34000),
             ('PTSIM1_SPDTF.json', 34000),
             ('PTSIM1_MR1Y.json', 34000),
-            ('PTSIM1_CNMAC1.json', 13000), #13000
+            ('PTSIM1_CNMAC1.json', 13000),
             ('PTSIM1_CNMAC2.json', 15000),
-            ('PTSIM1_FUNFER.json', 45000), # 37000
-            ('PTSIM1_FERSPD.json', 100000), # 110000
-            ('PTSIM1_AUSPD.json', 80000),
-            ('PTSIM1_FUNBASE.json', 48000),
-            ('PTSIM1_FUNENE.json', 10000), # 7000
             ('PTSIM1_FUNMTL.json', 28000),
-            ('PTSIM1_BND1.json', 50000), #
+            ('PTSIM1_FUNBASE.json', 48000),
+            ('PTSIM1_FUNFER.json', 45000),
+            ('PTSIM1_RBHCSPD.json', 100000),
+            ('PTSIM1_SMSFSPD.json', 45000),
+            ('PTSIM1_AUSPD.json', 80000),
+            ('PTSIM1_EQMTL.json', 48000),
+            ('PTSIM1_FUNMIXMTL.json', 48000),
+            ('PTSIM1_FUNENE.json', 10000),
+            ('PTSIM1_BND1.json', 50000),
             ('PTSIM1_MANUEL_TRADING.csv', 1)
         ], },
 }

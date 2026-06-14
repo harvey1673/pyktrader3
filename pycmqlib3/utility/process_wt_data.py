@@ -643,6 +643,8 @@ def combine_bars_wt_store(src_folder, dst_folder, target_folder, cutoff=None):
             for file in file_list:
                 cont = file.split('.')[0]
                 dst_df = dtHelper.read_dsb_bars(f'{dst_path}/{file}')
+                if dst_df is None:
+                    continue
                 dst_df = dst_df.to_df().rename(columns={'bartime': 'time',
                                                         'money': 'turnover',
                                                         'hold': 'open_interest',
@@ -672,7 +674,7 @@ def combine_data_wt_store(src_folder, dst_folder, target_folder, curr_date,
                           exch_list=['INE'], periods=["day", "min1", "min5", "ticks"]):
     dtHelper = WtDataHelper()
     period_map = {'min1': 'm1', 'min5': 'm5', 'day': 'd'}
-    for period in ['min1', 'min5', 'day']:
+    for period in ['day', 'min1', 'min5']:
         if period not in periods:
             continue
         if period == 'day':
@@ -711,7 +713,7 @@ def combine_data_wt_store(src_folder, dst_folder, target_folder, curr_date,
                             dst_df[(dst_df['time'] >= time_range[0]) & (dst_df['time'] <= time_range[1])],
                             src_df[src_df['time'] > time_range[1]],
                         ])
-                    src_df['time'] = src_df['time'].astype('int64') - 199000000000
+                        src_df['time'] = src_df['time'].astype('int64') - 199000000000
                     save_bars_to_dsb(src_df, contract=cont, folder_loc=f'{target_folder}/{period}/{exch}',
                                      period=period_map[period])
     # update ticks
@@ -748,7 +750,7 @@ def combine_data_wt_store(src_folder, dst_folder, target_folder, curr_date,
                     save_ticks_to_dsb(src_df, tick_settings)
 
 
-def zip_wt_dir(path, filename, cutoff: datetime.date):
+def zip_wt_dir(path, filename, cutoff: datetime.date, include_ticks=True):
     """
     Zip selected files under `path` based on cutoff date.
 
@@ -799,7 +801,7 @@ def zip_wt_dir(path, filename, cutoff: datetime.date):
                         added_count += 1
 
                 # --- Case 3: ticks ---
-                elif base_folder == "ticks" and len(parts) >= 3:
+                elif base_folder == "ticks" and include_ticks and len(parts) >= 3:
                     # parts = ["ticks", exch, YYYYMMDD, ...]
                     date_folder = parts[2]
                     if ymd_pattern.match(date_folder):

@@ -216,18 +216,21 @@ index_map = {
     'S002837160': 'io_inv_47ports',
     'S005961196': 'io_inv_31ports_trade',
     'S010998475': 'io_inv_sb_ausbrl_7ports',
+    'S006574700': 'io_inv_sf_45ports',
 
     'S004226161': 'io_inv_imp_mill(64)',
     'S004226163': 'io_inv_dom_mill(64)',
     'S003817887': 'io_invdays_imp_mill(64)',
+    'S017639430': 'io_inv_imp_mill(247)',
 
     'S002837394': 'io_removal_47ports',
     'S005961326': 'io_removal_45ports',
     'S008618299': 'consteel_dsales_mysteel',
     'S005656437': 'consteel_dsales_banksteel',
+    'S004029055': 'rebar_enduse_sales_sh',
     'S005653695': 'bf_workrate_247',
-    'S005653695': 'bf_workrate_num',
-    'S005653695': 'bf_workrate_cap',
+    'S009122299': 'bf_workrate_num',
+    'S009122311': 'bf_workrate_cap',
 
     'S013050080': 'cement_mill_run_rate',
     'S013050004': 'cement_dispatch_rate',
@@ -434,7 +437,7 @@ index_map = {
     "S004039587": "ckc_inv_6ports",
     "S010308683": "ckc_inv_110washery",
     "S012116534": "coke_inv_4ports", # 20140801
-    "S006136000": "ckc_inv_all",
+    #"S006136000": "ckc_inv_all",
 
     'S005580634': 'rebar_inv_social',
     'S005580635': 'hrc_inv_social',
@@ -1037,13 +1040,14 @@ def process_spot_df(spot_df, adjust_time=False):
 
     spot_dict = {}
     for asset in ['cu', 'al', 'zn', 'pb', 'ni', 'sn']:
+        spot_dict[f'{asset}_inv_lme_wnt'] = spot_df[f'{asset}_inv_lme_total'] - spot_df[f'{asset}_inv_lme_cancelled']
         spot_dict[f'{asset}_lme_cancel_ratio'] = spot_df[f'{asset}_inv_lme_cancelled']/spot_df[f'{asset}_inv_lme_total']
         spot_dict[f'{asset}_lme_futbasis'] = np.log(1 + spot_df[f'{asset}_lme_0m_3m_spd'] /
                                                   spot_df[f'{asset}_lme_3m_close'])
 
     for asset in ['cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ao', 'ss', 'lc', 'si', 'ps']:
         if f'{asset}_inv_lme_total' in spot_df.columns:
-            spot_dict[f'{asset}_inv_exch_total'] = \
+            spot_dict[f'{asset}_inv_exch_d'] = \
                 spot_df[[f'{asset}_inv_lme_total', f'{asset}_inv_shfe_d']].dropna(how='all').ffill().sum(axis=1)
         elif f'{asset}_inv_shfe_d' in spot_df.columns:
             spot_dict[f'{asset}_inv_exch_d'] = spot_df[f'{asset}_inv_shfe_d'].dropna()
@@ -1107,6 +1111,7 @@ def process_spot_df(spot_df, adjust_time=False):
     spot_dict['gi_billet'] = spot_df['gi_0.5_sh'] - spot_df['billet_ts']
     spot_dict['rb_hc_diff'] = spot_df['rebar_sh'] - spot_df['hrc_sh']
     spot_dict['rb_hc_steel_spd'] = spot_dict['rebar_billet'] - spot_dict['crc_hrc']
+    spot_dict['pbf_iocj_ssf_spd'] = spot_df['pbf_qd'] - spot_df['iocj_qd'] * 0.4 - spot_df['ssf_qd'] * 0.6
     spot_dict["coke_inv_3ports"] = spot_df[["coke_inv_ports_rz", "coke_inv_ports_tj", "coke_inv_ports_lyg"]].sum(axis=1, skipna=False).dropna()
 
     port_fee = 25
