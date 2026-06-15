@@ -813,14 +813,15 @@ def zip_wt_dir(path, filename, cutoff: datetime.date, include_ticks=True):
     print(f"Zipping complete. Total files added: {added_count}")
 
 
-def update_wt_store(base_folder, update_folder, cutoff=None):
+def update_wt_store(base_folder, update_folder, cutoff=None, include_ticks=True):
     if isinstance(cutoff, datetime.date):
         cutoff = int(datetime.datetime.strftime(cutoff, '%Y%m%d'))
     combine_bars_wt_store(base_folder, update_folder, base_folder, cutoff=cutoff)
-    try:
-        shutil.copytree(update_folder + '/ticks/', base_folder + '/ticks/', dirs_exist_ok=True)
-    except FileNotFoundError:
-        pass
+    if include_ticks:
+        try:
+            shutil.copytree(update_folder + '/ticks/', base_folder + '/ticks/', dirs_exist_ok=True)
+        except FileNotFoundError:
+            pass
     try:
         shutil.copytree(update_folder + '/snapshot/', base_folder + '/snapshot/', dirs_exist_ok=True)
     except FileNotFoundError:
