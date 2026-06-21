@@ -325,6 +325,7 @@ index_map = {
     "S002835975": "pta_east_spot",
     "S004242352": "pta_100ppi_spot",
     "S012185571": "pta_east_spot2",
+    'S002863167': 'pta_cfr_cn',
     "S005402481": "px_100ppi_spot",
     "S002863173": "px_exw_east_spot",
     "S002835961": "px_taiwan_cfr_usd",
@@ -377,10 +378,12 @@ index_map = {
     "S019254411": "fg_margin_coal",
     "S019254412": "fg_margin_petcoke",
     "S017068418": "fg_margin_natgas",
+    "S024334444": "fg_margin_avg",
     "S019255501": "solarglass_dprod",
     "S019255498": "solarglass_util",
     "S017438009": "fg_dprod",
-    "S017438010": "fg_wprod",
+    "S005696261": "fg_util_adj",
+
     "S002959491": "sm_65s17_neimeng",
     "S002959498": "sm_65s17_tj",
     "S002959495": "sm_65s17_guangxi",
@@ -606,6 +609,16 @@ index_map = {
     'S019985011': 'PTA_inv_social_wk',
     'S009065246': 'PTA_inv_mill',
     'S003085584': 'PTA_invdays_mill',
+    'S009128523': 'PTA_margin_cn_d',
+    'S009128522': 'PTA_prodcost_cn_d',
+    'S020004695': 'PX_margin_cn_w',
+    'S020209589': 'PX_naph_spd_w',
+    'S020209590': 'PX_MX_spd_w',
+    'S002825872': 'naph_cfr_jp',
+    'S020210081': 'PX_util_kr',
+    'S019506839': 'MX_inv_east',
+    'S019506841': 'MX_inv_south',
+
     'S004788710': 'UR_inv_mill',
     'S004127496': 'UR_inv_social',
     'S004647718': 'compound_fertilizer_inv_social',
@@ -1155,6 +1168,10 @@ def process_spot_df(spot_df, adjust_time=False):
 
     if "SH_50_spot_sdjl_shandong" in spot_df.columns and "SH_32_spot_sdjl_shandong" in spot_df.columns:
         spot_dict['SH_50_32_spd'] =spot_df["SH_50_spot_sdjl_shandong"]/0.5 - spot_df["SH_32_spot_sdjl_shandong"]/0.32
+
+    spot_dict['MX_inv_combo'] = spot_df[['MX_inv_east', 'MX_inv_south']].dropna(how='all').ffill().sum(axis=1)
+    if "pta_cfr_cn" in spot_df.columns and "pta_east_spot" in spot_df.columns and "usdcnh_spot" in spot_df.columns:
+        spot_df['PTA_cfr_dom_ratio'] = np.log(spot_df['pta_cfr_cn']*spot_df['usdcnh_spot']/vat_adj(spot_df['pta_east_spot']))
 
     warrant_dict = {
         "cu": ["cu_inv_shfe_d"],

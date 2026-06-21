@@ -641,6 +641,22 @@ signal_store = {
     'auag_csi500_zs_st': [['au_ag'], ['csi500_idx', 'zscore', [20, 40, 2], '', '', False, '', 'ema5', 120, [-2,2]]],
     'auag_etf_mrev': [['au', 'ag'], ['etf_holdings', 'zscore', [480, 520, 2], '', '', False, '', 'ema3', 120, [-2,2]]], # dump
     'auag_etf_mrev_xdemean': [['au', 'ag'], ['etf_holdings', 'zscore', [480, 520, 2], '', '', False, '', 'ema3', 120, [-2,2]]],
+
+    # petchem
+    # PTA PX eg PF
+    'TA_margin_st_zs': [['TA', 'PX', 'PF'],
+                        ['PTA_margin_cn_d', 'zscore', [20, 40, 2], '', '', False, '', '', 120, [-2,2]]],
+    'TA_wnt_yoy_zs': [['TA'],
+                      ["TA_inv_czce_warrant", 'zscore', [720, 750, 2], 'cal_yoy_day', 'diff', False, 'price', '', 120, [-2,2]]],
+    'TA_arb_ma': [['TA'], # sr ~ 0.5
+                  ['PTA_cfr_dom_ratio', 'ma', [1, 2], 'ema3', '', True, 'price', '', 60, [-2,2]]],
+    'TA_ryieldmom_zs': [['TA'], ["TA_ryield", 'zscore', [240, 250, 2], 'df20', 'diff', True, 'price', '', 120, [-2,2]]],
+    'PX_margin_mds': [['PX', 'TA'], ['PX_margin_cn_w', 'ma_dff_sgn', [50, 55, 1], '', '', True, '', '', 120, [-2,2]]],
+    'MX_invchg_ma': [['TA', 'PX'], ['MX_inv_combo', 'ma', [1, 2, 1], 'df1', 'diff', False, '', '', 26, [-2,2]]],
+
+    'FG_margin_hlr_1y': [['SA'], ['fg_margin_avg', 'hlratio', [48, 56, 1], '', '', True, '', '', 120, [-2,2]]],
+    'FG_util_mom_st': [['FG'], ["fg_util_adj", 'hlratio', [8, 12, 1], '', '', True, '', '', 120, [-2,2]]],
+
     # 'cnyrr25_zsa': ('usdcny_rr25', 'zscore_adj', [10, 20, 2], 'ema10', 'pct_change', False, 'price'),
     #
     # 'vhsi_mds': ('vhsi', 'ma_dff_sgn', [10, 20, 2], '', 'pct_change', False, 'price'),

@@ -64,6 +64,15 @@ single_factors = {
     "SH_50_32_spd_mom": ['SH'],
     "SH_margin_mom": ['SH'],
 
+    "TA_margin_st_zs": ["TA", "PX"],
+    "TA_wnt_yoy_zs": ["TA"],
+    "TA_arb_ma": ["TA"],
+    "TA_ryieldmom_zs": ["TA"],
+    "PX_margin_mds": ["PX", "TA"],
+    "MX_invchg_ma": ["TA", "PX"],
+    'FG_margin_hlr_1y': ['SA'],
+    'FG_util_mom_st': ['FG'],
+
     "al_alumina_qtl": ['al'],
     "al_alumina_yoy_qtl": ['al'],
     "al_coal_qtl": ['al'],

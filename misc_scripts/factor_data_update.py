@@ -66,6 +66,7 @@ port_pos_config = {
             ('PTSIM1_EQMTL.json', 48000),
             ('PTSIM1_FUNMIXMTL.json', 48000),
             ('PTSIM1_FUNENE.json', 10000),
+            ('PTSIM1_PXTA.json', 20000),
             ('PTSIM1_BND1.json', 50000),
             ('PTSIM1_MANUEL_TRADING.csv', 1)
         ], },
