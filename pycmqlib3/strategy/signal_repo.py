@@ -110,10 +110,14 @@ signal_store = {
     'ioarb_spd_qtl_1y': [['rb_i', 'hc_i'],
                          ['io_on_off_arb', 'qtl', [240, 260, 2], 'ema1', '', False, 'price', 'sma1', 120, [-2,2]]],
 
-    'io_mix_arb_hys': [['i'],
+    'io_mix_arb_hys2y': [['i'],
                        ['pbf_iocj_ssf_spd', 'hlratio', [480, 500, 2], "",  "", False, "", "hys_0.5_0.5", 120, [-2,2]]],
-    'io_mix_arb_spd_hys': [['i_rb', 'i_hc'],
+    'io_mix_arb_spd_hys2y': [['i_rb', 'i_hc'],
                            ['pbf_iocj_ssf_spd', 'hlratio', [480, 500, 2], "",  "", False, "", "hys_0.5_0.5", 120, [-2,2]]],
+    'io_mix_arb_hys4y': [['i'],
+                       ['pbf_iocj_ssf_spd', 'hlratio', [960, 1000, 2], "",  "", False, "", "hys_0.5_0.5", 120, [-2,2]]],
+    'io_mix_arb_spd_hys4y': [['i_rb', 'i_hc'],
+                           ['pbf_iocj_ssf_spd', 'hlratio', [960, 1000, 2], "",  "", False, "", "hys_0.5_0.5", 120, [-2,2]]],
 
     'landsales_yoy_ma': [['rb', 'hc'], ['top100cities_land_supplied_area_res_all',
                                         'ma', [4, 8], 'lunar_yoy_day', 'diff', True, "", "", 52]],
@@ -171,10 +175,15 @@ signal_store = {
     'io_removal_spd_lunar_hlr': [['i_rb', 'i_hc'],
                         ['io_removal_45ports', 'seasonal_lunar_wk_hlr', [2, 5, 10], '', '', True, '', '', 120, [-2,2]]],
 
-    'io_inv_rmv_ratio_1y': [['i'],
-                            ['io_inv_removal_ratio_45p', 'hlratio', [48, 56], 'df1', 'pct_change', False, '', "", 120, [-2,2]]],
-    'io_inv_rmv_spd_hlr_1y': [['i_rb', 'i_hc'],
-                            ['io_inv_removal_ratio_45p', 'hlratio', [48, 56], '', '', False, '', "", 120, [-2,2]]],
+    'io_invr_chg_hlr': [['i'],
+                            ['io_inv_removal_ratio_45p', 'hlratio', [50, 55, 1], 'df1', 'pct_change', False, '', "", 120, [-2,2]]],
+    'io_invr_chg_spd_hlr': [['i_rb', 'i_hc'],
+                            ['io_inv_removal_ratio_45p', 'hlratio', [50, 55, 1], 'df1', 'pct_change', False, '', "", 120, [-2,2]]],
+
+    'io_invr_hlr_1y': [['i'],
+                            ['io_inv_removal_ratio_45p', 'hlratio', [50, 55, 1], '', '', False, '', "", 120, [-2,2]]],
+    'io_invr_spd_hlr_1y': [['i_rb', 'i_hc'],
+                            ['io_inv_removal_ratio_45p', 'hlratio', [50, 55, 1], '', '', False, '', "", 120, [-2,2]]],
 
     'io_millinv_lvl': [['i'],
                        ['io_inv_mill(64)', 'qtl', [20, 40, 2], '', '', True, 'price', 'sma1', 120, [-2,2]]],
@@ -245,10 +254,12 @@ signal_store = {
     'hrc_arb_ma': [['hc', 'rb'],
                    ['hrc_exp_sea_arb', 'ma', [1, 4, 1], '', '', True, '', "ema1", 120, [-2,2]]],
 
-    'steel_margin_lvl_fast': [['j', 'jm', 'SM', 'SF'],
+    'steel_margin_lvl_fast': [['i', 'j'],
                               ['margin_hrc_macf', 'hlratio', [20, 40, 2], '', '', True, 'price', "buf0.2", 120, [-2,2]]],
     'steel_margin_lvl_slow': [['SM', 'SF'],
                               ['margin_hrc_macf', 'hlratio', [240, 260, 2], '', '', True, 'price', "", 120, [-2,2]]],
+    'steel_margin_io_rev': [['i'],
+                            ['margin_hrc_macf', 'hlratio', [240, 260, 2], '', '', True, 'price', "hys_0.5_0.5|pos", 120, [-2,2]]],
     'mn_mine_mom': [['SM'],
                     ['mn_44_gabon_tj', 'zscore', [40, 60, 2], '', '', True, 'price', "", 120, [-2,2]]],
     'smsf_prodcost_mom': [['SM', 'SF'],
@@ -469,10 +480,10 @@ signal_store = {
     "SH_50_32_spd_mom": [['SH'], ['SH_50_32_spd', 'zscore', [20, 60, 2], '', '', True, 'price', "", 120, [-2,2]]],
 
     # metal group
-    'metal_pbc_ema': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'SA', 'v',
+    'metal_pbc_ema': [['i', 'rb', 'hc', 'jm', 'SM', 'SF', 'FG', 'SA', 'v', 'SH',
                        'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'ao', 'si', 'au', 'ag'],
                       ['phycarry', 'ema', [5, 10], '', '', True, 'price', "", 120, [-2,2]]],
-    'metal_pbc_ema_xdemean': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'SA', 'v',
+    'metal_pbc_ema_xdemean': [['i', 'rb', 'hc', 'jm', 'SM', 'SF', 'FG', 'SA', 'v', 'SH',
                                'cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ss', 'ao', 'si', 'au', 'ag'],
                               ['phycarry', 'ema', [5, 10], '', '', True, 'price', "", 120, [-2,2]]],
     'metal_mom_hlrhys': [['i', 'rb', 'hc', 'jm', 'j', 'SM', 'SF', 'FG', 'SA', 'v',
@@ -653,10 +664,32 @@ signal_store = {
     'TA_ryieldmom_zs': [['TA'], ["TA_ryield", 'zscore', [240, 250, 2], 'df20', 'diff', True, 'price', '', 120, [-2,2]]],
     'PX_margin_mds': [['PX', 'TA'], ['PX_margin_cn_w', 'ma_dff_sgn', [50, 55, 1], '', '', True, '', '', 120, [-2,2]]],
     'MX_invchg_ma': [['TA', 'PX'], ['MX_inv_combo', 'ma', [1, 2, 1], 'df1', 'diff', False, '', '', 26, [-2,2]]],
+    'TA_minv_hys': [['TA', 'eg', 'PF', 'PX'],
+                    ['PTA_invdays_mill', 'hlratio', [50, 55, 1], 'df1', 'diff', True, '', 'hys_0.5_0.5', 120, [-2,2]]],
+    'DTY_invdays_yoy_hlr': [['TA', 'PX', 'eg', 'PF'], ['DTY_invdays_mill', 'hlratio', [50, 55, 1], 'cal_yoy_day', 'diff', False, '', '', 120, [-2,2]]],
+    'FDY_invdays_lyoy_hlr': [['TA', 'PX', 'eg', 'PF'], ['FDY_invdays_mill', 'hlratio', [50, 55, 1], 'lunar_yoy_day', 'diff', False, '', '', 120, [-2,2]]],
+    'POY_invdays_hlr': [['TA', 'PX', 'eg', 'PF'], ['POY_invdays_mill', 'hlratio', [50, 55, 1], '', '', False, '', '', 120, [-2,2]]],
+    'eg_invchg_ma': [['eg'],
+                     ['eg_inv_port_east', 'ma', [1, 2, 1], 'df1', 'diff', False, '', '', 52, [-2,2]]],
+    'eg_invchg_lunar_hlr': [['eg'],
+                            ['eg_inv_port_east', 'seasonal_lunar_wk_hlr', [2, 5, 10], 'df1', 'diff', False, '', '', 52, [-2,2]]],
+    'ru_invchg_cal_zs': [['ru'],
+                        ['ru_inv_shfe_all', 'seasonal_cal_wk_zs', [2, 5, 10], 'df1', 'diff', False, '', '', 52, [-2,2]]],
+    'nr_invchg_ma': [['nr', 'ru'],
+                     ['nr_inv_shfe_all', 'ma', [1, 2, 1], 'df1', 'diff', False, '', '', 26, [-2,2]]],
+    'nr_inv_rev_hlr': [['br'],
+                     ['nr_inv_shfe_all', 'hlratio', [50, 55, 1], '', '', True, '', '', 26, [-2,2]]],
+
+    'fu_inv_sgp_yoy_hlr': [['fu-sc'],
+                           ['fu_inv_sing', 'hlratio', [50, 55, 1], 'cal_yoy_day', 'diff', False, '', '', 120, [-2,2]]],
 
     'FG_margin_hlr_1y': [['SA'], ['fg_margin_avg', 'hlratio', [48, 56, 1], '', '', True, '', '', 120, [-2,2]]],
     'FG_util_mom_st': [['FG'], ["fg_util_adj", 'hlratio', [8, 12, 1], '', '', True, '', '', 120, [-2,2]]],
 
+    'eb_pinv_east_cal_hlr': [['eb'],
+                             ['eb_inv_port_east_trader', 'seasonal_cal_wk_hlr', [2, 4, 10], '', '', False, '', '', 120, [-2,2]]],
+    'eb_pinvchg_east_cal_hlr': [['eb'],
+                             ['eb_inv_port_east_trader', 'seasonal_cal_wk_hlr', [2, 4, 10], 'df1', 'diff', False, '', '', 120, [-2,2]]],
     # 'cnyrr25_zsa': ('usdcny_rr25', 'zscore_adj', [10, 20, 2], 'ema10', 'pct_change', False, 'price'),
     #
     # 'vhsi_mds': ('vhsi', 'ma_dff_sgn', [10, 20, 2], '', 'pct_change', False, 'price'),
@@ -853,6 +886,11 @@ feature_to_feature_key_mapping = {
         'FG': "fg_inv_mill",
         'SA': 'sa_inv_mill_all',
         'SH': 'sh_inv_mill_all',
+    },
+    'sinv': {
+        'v':  "v_inv_social",
+        'eb': 'eb_inv_port_east_trader',
+
     }
 }
 
@@ -884,7 +922,8 @@ commod_phycarry_dict= {
     "FG": "fg_5mm_shahe",
     "SM": "sm_65s17_tj",
     "SF": "sf_72_ningxia",
-     "v": "pvc_cac2_east",
+    "v": "pvc_cac2_east",
+    "SH": "SH_ctd_spot",
     "SA": "sa_heavy_shahe",
     "au": 'au_9999_sge_close',
     "ag": 'ag_9999_sge_close',

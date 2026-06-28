@@ -618,6 +618,11 @@ index_map = {
     'S020210081': 'PX_util_kr',
     'S019506839': 'MX_inv_east',
     'S019506841': 'MX_inv_south',
+    'S003085590': 'DTY_invdays_mill',
+    'S003085589': 'FDY_invdays_mill',
+    'S003085588': 'POY_invdays_mill',
+    'S005616301': 'weaviing_dnstream_invdays_mill',
+    'S019732993': 'pe_inv_social',
 
     'S004788710': 'UR_inv_mill',
     'S004127496': 'UR_inv_social',
@@ -632,21 +637,12 @@ index_map = {
     'S004383001': 'eg_inv_port_east',
     'S017643268': 'pe_inv_mill',
     'S011319581': 'pe_pipe_invdays',
-    'S005439479': 'pe_coal_inv_wow_pct',
-    'S005439480': 'pe_coal_ldpe_inv_wow_pct',
-    'S005439481': 'pe_coal_hdpe_inv_wow_pct',
-    'S005439482': 'pe_coal_lldpe_inv_wow_pct',
-    'S005439484': 'pe_coaloil_ldpe_inv_wow_pct',
-    'S005439485': 'pe_coaloil_hdpe_inv_wow_pct',
-    'S005439486': 'pe_coaloil_lldpe_inv_wow_pct',
     'S011319572': 'wovenplastics_invdays_raw_mill_sm',
     'S011319574': 'wovenplastics_inv_finished_mill_lg',
     'S011319499': 'BOPP_invdays_raw',
     'S011319502': 'CPP_invdays_finished',
     'S011319504': 'pp_nonwoven_inv_finished',
-    'S005439538': 'pp_inv_wow_pct',
-    'S005439520': 'pp_inv_2oil_wow_pct',
-    'S005439523': 'pp_inv_oth_wow_pct',
+
     'S004494138': 'bu_inv_social',
     'S004494153': 'bu_inv_mill',
     'S004494149': 'bu_inv_mill_shandong',
@@ -1171,7 +1167,7 @@ def process_spot_df(spot_df, adjust_time=False):
 
     spot_dict['MX_inv_combo'] = spot_df[['MX_inv_east', 'MX_inv_south']].dropna(how='all').ffill().sum(axis=1)
     if "pta_cfr_cn" in spot_df.columns and "pta_east_spot" in spot_df.columns and "usdcnh_spot" in spot_df.columns:
-        spot_df['PTA_cfr_dom_ratio'] = np.log(spot_df['pta_cfr_cn']*spot_df['usdcnh_spot']/vat_adj(spot_df['pta_east_spot']))
+        spot_dict['PTA_cfr_dom_ratio'] = np.log(spot_df['pta_cfr_cn']*spot_df['usdcnh_spot']/vat_adj(spot_df['pta_east_spot']))
 
     warrant_dict = {
         "cu": ["cu_inv_shfe_d"],

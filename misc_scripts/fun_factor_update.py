@@ -10,7 +10,7 @@ from pycmqlib3.strategy.signal_repo import get_funda_signal_from_store, feature_
 from pycmqlib3.utility.spot_idx_map import index_map, process_spot_df
 from pycmqlib3.utility.dbaccess import load_codes_from_edb, load_factor_data, load_int_stock_daily
 from pycmqlib3.utility import dataseries
-from pycmqlib3.utility.exch_ctd_func import io_ctd_basis, si_ctd_basis
+from pycmqlib3.utility.exch_ctd_func import *
 from pycmqlib3.utility.backtest import sim_start_dict
 from pycmqlib3.utility.misc import day_shift, CHN_Holidays, prod2exch, is_workday, \
     nearby, contract_expiry, inst2contmth
@@ -23,19 +23,23 @@ PROD_FULL_HIST_TICKERS = list(feature_to_feature_key_mapping['metal_inv'].values
 
 single_factors = {
     'hc_rb_diff_20': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'UR', 'v', 'ru', 'au', 'ag', 'cu', 'al', 'zn', 'sn', 'ss', 'ni', 'ao'],
-    'steel_margin_lvl_fast': ['i', 'j', 'jm', 'SF', 'SM'],
+    'steel_margin_lvl_fast': ['i', 'j'],
     'steel_margin_lvl_slow': ['SF', 'SM'],
+    'steel_margin_io_rev': ['i'],
     'strip_hsec_lvl_mid': ['rb', 'hc', 'i', 'j', 'jm'],
     'io_removal_lvl': ['i'],
     'io_removal_lyoy': ['i'],
     'io_removal_lunar_hlr': ['i'],
-    'io_mix_arb_hys': ['i'],
+    'io_mix_arb_hys2y': ['i'],
+    'io_mix_arb_hys4y': ['i'],
     'nmf_yoy_qtl': ['i'],
     'macf_yoy_qtl': ['i'],
     'io_millinv_lyoy': ['hc', 'i'],
     'io_invdays_lvl': ['hc', 'i'],
     'io_invdays_lyoy': ['hc', 'i'],
-    'io_inv_rmv_ratio_1y': ['i'],
+    #'io_inv_rmv_ratio_1y': ['i'],
+    'io_invr_chg_hlr': ['i'],
+    'io_invr_hlr_1y': ['i'],
     'ioarb_px_hlr': ['rb', 'hc', 'i'],
     'ioarb_px_hlrhys': ['rb', 'hc', 'i'],
     'nmf_arb_hlr': ['rb', 'hc', 'i'],
@@ -162,7 +166,7 @@ factors_by_asset = {
     'ferr_pinv_hlr_mt': ['j', 'jm', 'i', 'rb', 'hc'],
     'ferr_pinv_hlr_yr': ['j', 'jm', 'i', 'rb', 'hc'],
     'metal_pbc_ema': ['cu', 'al', 'zn', 'ni', 'pb', 'sn', 'ao', 'ss', 'si',
-                      'rb', 'hc', 'i', 'jm', 'SM', 'SF', 'v', 'FG', 'SA', "au", "ag"],
+                      'rb', 'hc', 'i', 'jm', 'SM', 'SF', 'v', 'FG', 'SA', 'SH', "au", "ag"],
     # 'metal_mom_hlrhys': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si', 'lc', 'ps', 'au', 'ag',
     #                      'rb', 'hc', 'i', 'j', 'jm', 'SM', 'SF', 'v', 'FG', 'SA', 'SH'],
     'mtlmom_st_hlr': ['cu', 'al', 'zn', 'pb', 'ni', 'ss', 'sn', 'ao', 'si', 'lc', 'ps', 'au', 'ag',
@@ -227,8 +231,11 @@ factors_by_beta_neutral = {
     'steel_sinv_spd2_hlr_3m': [('i', 'rb', 1), ('i', 'hc', 1)],
     'io_pinv45_lvl_hlr': [('rb', 'i', 1), ('hc', 'i', 1)],
     'io_removal_spd_lunar_hlr': [('i', 'rb', 1), ('i', 'hc', 1)],
-    'io_inv_rmv_spd_hlr_1y': [('i', 'rb', 1), ('i', 'hc', 1)],
-    'io_mix_arb_spd_hys': [('i', 'rb', 1), ('i', 'hc', 1)],
+    #'io_inv_rmv_spd_hlr_1y': [('i', 'rb', 1), ('i', 'hc', 1)],
+    'io_invr_chg_spd_hlr': [('i', 'rb', 1), ('i', 'hc', 1)],
+    'io_invr_spd_hlr_1y': [('i', 'rb', 1), ('i', 'hc', 1)],
+    'io_mix_arb_spd_hys2y': [('i', 'rb', 1), ('i', 'hc', 1)],
+    'io_mix_arb_spd_hys4y': [('i', 'rb', 1), ('i', 'hc', 1)],
     'ckc_pinv_spd_hlr': [('jm', 'rb', 1), ('jm', 'hc', 1)],
     'ioarb_spd_qtl_1y': [('rb', 'i', 1), ('hc', 'i', 1)],
     'nmf_arb_spd_zs': [('rb', 'i', 1), ('hc', 'i', 1)],
@@ -899,6 +906,8 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
     spot_df = get_fun_data(funda_start, run_date)
     spot_df['io_ctd_spot'] = io_ctd_basis(spot_df, price_df[('ic1', 'expiry')])
     spot_df['si_ctd_spot'] = si_ctd_basis(spot_df, price_df[('sic1', 'expiry')])
+    spot_df['SH_ctd_spot'] = SH_ctd_basis(spot_df, price_df[('SHc1', 'expiry')])
+    spot_df['lc_ctd_spot'] = lc_ctd_basis(spot_df, price_df[('lcc1', 'expiry')])
     fact_config = {'roll_label': roll_name, 'freq': freq, 'serial_key': 0, 'serial_no': 0}
     vol_win = 20
     logging.info("updating price vol data ... ")
