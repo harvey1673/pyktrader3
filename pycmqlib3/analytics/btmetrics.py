@@ -326,17 +326,41 @@ class MetricsBase(object):
 
     def _calculate_pnl_stats(self, holdings, shift=0, use_log_returns=False, tenors=True, perf_metrics=['sharpe']):
         asset_pnl = self._lagged_asset_pnl(holdings=holdings, shift=shift)
-        portfolio_pnl = self._lagged_portfolio_pnl(holdings=holdings, shift=shift)
+        return self.calculate_pnl_stats_from_pnl(
+            asset_pnl,
+            holdings=self.holdings,
+            use_log_returns=use_log_returns,
+            tenors=tenors,
+            perf_metrics=perf_metrics,
+        )
+
+    def calculate_pnl_stats_from_pnl(self, asset_pnl, holdings=None,
+                                      use_log_returns=False, tenors=True,
+                                      perf_metrics=['sharpe']):
+        """Calculate standard btmetrics output from precomputed asset PNL.
+
+        This is useful when execution-price slippage or portfolio-level cost
+        netting has already been applied and recomputing PNL from returns would
+        lose those effects.  Metric definitions are identical to
+        :meth:`calculate_pnl_stats`.
+        """
+        if holdings is None:
+            holdings = self.holdings
+        asset_pnl = asset_pnl.copy()
+        holdings = holdings.reindex(
+            index=asset_pnl.index, columns=asset_pnl.columns
+        ).fillna(0.0)
+        portfolio_pnl = asset_pnl.sum(axis=1, skipna=True)
         if 'm' in self.freq:
             asset_pnl = asset_pnl.resample('D').sum()
             portfolio_pnl = portfolio_pnl.resample('D').sum()
             pnl_per_trade = 100 * 100 * asset_pnl.mean(axis=0) / \
-                            self.holdings.diff().abs().resample("D").sum().mean()
-            turnover = 100 * self.holdings.diff().abs().resample("D").sum().mean() / \
-                       self.holdings.abs().resample("D").mean().mean()
+                            holdings.diff().abs().resample("D").sum().mean()
+            turnover = 100 * holdings.diff().abs().resample("D").sum().mean() / \
+                       holdings.abs().resample("D").mean().mean()
         else:
-            pnl_per_trade = 100 * 100 * asset_pnl.mean(axis=0) / self.holdings.diff().abs().mean()
-            turnover = 100 * self.holdings.diff().abs().mean() / self.holdings.abs().mean()
+            pnl_per_trade = 100 * 100 * asset_pnl.mean(axis=0) / holdings.diff().abs().mean()
+            turnover = 100 * holdings.diff().abs().mean() / holdings.abs().mean()
         asset_sharpe_stats = asset_pnl.apply(lambda x: self._calculate_sharpe(x, tenors=tenors), axis=0)
         pnl_stats = {
             'asset_pnl': asset_pnl,

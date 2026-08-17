@@ -24,6 +24,42 @@ from plotly.subplots import make_subplots
 font = font_manager.FontProperties(fname='C:\\windows\\fonts\\simsun.ttc')
 PNL_BDAYS = 244
 
+def rolling_skew(
+    ts: pd.Series,
+    lookback: int = 240,
+    skew_type: str = "normal",
+) -> pd.Series:
+    """Calculate rolling normal, Pearson, or Bowley skew."""
+    if not isinstance(lookback, int) or lookback < 1:
+        raise ValueError("lookback must be a positive integer.")
+
+    skew_type = skew_type.lower()
+    if skew_type not in {"normal", "pearson", "bowley"}:
+        raise ValueError(
+            "skew_type must be 'normal', 'pearson', or 'bowley'."
+        )
+
+    clean_ts = ts.dropna()
+    rolling = clean_ts.rolling(window=lookback, min_periods=lookback)
+
+    if skew_type == "normal":
+        skew = rolling.skew()
+    elif skew_type == "pearson":
+        mean = rolling.mean()
+        median = rolling.median()
+        std = rolling.std().replace(0, np.nan)
+        skew = -3.0 * (mean - median) / std
+    else:  # bowley
+        q90 = rolling.quantile(0.90)
+        q50 = rolling.quantile(0.50)
+        q10 = rolling.quantile(0.10)
+        spread = (q90 - q10).replace(0, np.nan)
+        skew = -((q90 - q50) - (q50 - q10)) / spread
+
+    skew = skew.reindex(ts.index)
+    skew.name = f"{skew_type}_skew_{lookback}"
+    return skew
+
 
 def compute_corr(x, y, method='spearman'):
     if len(x) < 10 or len(y) < 10:

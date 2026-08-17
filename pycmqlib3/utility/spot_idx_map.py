@@ -114,9 +114,9 @@ index_map = {
     "M004302214": "epmi_cn_exports",
     "M004302216": "epmi_cn_inv",
     "M004302217": "epmi_cn_purchase",
-    "S009065264": "cement_idx_cn",
-    "S009065254": "cement_idx_cj",
-    "S012691163": "concrete_idx_cn",
+    # "S009065264": "cement_idx_cn",
+    # "S009065254": "cement_idx_cj",
+    # "S012691163": "concrete_idx_cn",
     "S004543083": "prop_2ndhand_px_idx",
 
     # ferrous
@@ -383,6 +383,7 @@ index_map = {
     "S019255498": "solarglass_util",
     "S017438009": "fg_dprod",
     "S005696261": "fg_util_adj",
+    'S005696264': 'fg_util_w',
 
     "S002959491": "sm_65s17_neimeng",
     "S002959498": "sm_65s17_tj",
@@ -468,16 +469,17 @@ index_map = {
     'S005953326': 'steelproducts_prod_cisa',
     'S005953322': 'pigiron_prod_cisa',
     'S006154238': 'eaf_util_87mills',
-    'S006154248': 'eaf_util_all',
+    'S005656440': 'eaf_util_all',  # changed from S006154248
     'S006154226': 'eaf_prodcost_east',
     'S021277623': 'scrap_use_mill_eaf',
     'S021374817': 'scrap_use_mill_all',
     'S021277629': 'scrap_ratio_mill_all',
     'S021374832': 'scrap_inv_mill_all',
     'S021277634': 'scrap_inv_mill_eaf',
-    'S021182444': 'scrap_use_300mill',
-    'S021182443': 'scrap_arr_300mill',
-    'S021182446': 'scrap_invdays_300mill',
+    # 'S021182444': 'scrap_use_300mill',
+    # 'S021182443': 'scrap_arr_300mill',
+    # 'S021182446': 'scrap_invdays_300mill',
+
     # base
     'S005808359': 'cu_lme_3m_close',
     'S005808360': 'al_lme_3m_close',
@@ -623,6 +625,8 @@ index_map = {
     'S003085588': 'POY_invdays_mill',
     'S005616301': 'weaviing_dnstream_invdays_mill',
     'S019732993': 'pe_inv_social',
+    'S020602643': 'ru_half_steel_tire_invdays_sd',
+    'S020602996': 'ru_all_steel_tire_invdays_sd',
 
     'S004788710': 'UR_inv_mill',
     'S004127496': 'UR_inv_social',
@@ -642,6 +646,11 @@ index_map = {
     'S011319499': 'BOPP_invdays_raw',
     'S011319502': 'CPP_invdays_finished',
     'S011319504': 'pp_nonwoven_inv_finished',
+    'S004392973': 'polyolefin_inv',
+    'S019732994': 'pe_inv_traders',
+    'S011319336': 'ru_inv_bonded_traders_qd',
+    'S011319345': 'br_inv_social',
+    'S020559734': 'br_inv_traders',
 
     'S004494138': 'bu_inv_social',
     'S004494153': 'bu_inv_mill',
