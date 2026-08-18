@@ -20,16 +20,20 @@ from statsmodels.tsa.stattools import coint, adfuller
 from pycmqlib3.utility.misc import invert_dict, CHN_Holidays, day_shift
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
+from typing import Literal
 
 font = font_manager.FontProperties(fname='C:\\windows\\fonts\\simsun.ttc')
 PNL_BDAYS = 244
 
+SkewType = Literal["normal", "pearson", "bowley"]
+
 def rolling_skew(
     ts: pd.Series,
     lookback: int = 240,
-    skew_type: str = "normal",
+    skew_type: SkewType = "normal",
+    kurtosis_adjusted: bool = False,
 ) -> pd.Series:
-    """Calculate rolling normal, Pearson, or Bowley skew."""
+    """Calculate rolling skew with positive values indicating right skew."""
     if not isinstance(lookback, int) or lookback < 1:
         raise ValueError("lookback must be a positive integer.")
 
@@ -40,25 +44,58 @@ def rolling_skew(
         )
 
     clean_ts = ts.dropna()
-    rolling = clean_ts.rolling(window=lookback, min_periods=lookback)
+    rolling = clean_ts.rolling(lookback, min_periods=lookback)
 
     if skew_type == "normal":
         skew = rolling.skew()
+
     elif skew_type == "pearson":
         mean = rolling.mean()
         median = rolling.median()
         std = rolling.std().replace(0, np.nan)
-        skew = -3.0 * (mean - median) / std
+
+        skew = 3.0 * (mean - median) / std
+
     else:  # bowley
         q90 = rolling.quantile(0.90)
         q50 = rolling.quantile(0.50)
         q10 = rolling.quantile(0.10)
+
         spread = (q90 - q10).replace(0, np.nan)
-        skew = -((q90 - q50) - (q50 - q10)) / spread
+        skew = (q90 + q10 - 2.0 * q50) / spread
+
+    if kurtosis_adjusted:
+        raw_kurtosis = (rolling.kurt() + 3.0).clip(lower=0)
+        denominator = np.sqrt(raw_kurtosis).replace(0, np.nan)
+        skew = (skew / denominator).clip(-1.0, 1.0)
 
     skew = skew.reindex(ts.index)
     skew.name = f"{skew_type}_skew_{lookback}"
+
     return skew
+
+
+def rolling_curvature(
+    ts: pd.Series,
+    lookback: int = 240,
+) -> pd.Series:
+    """Negative price curvature normalized by rolling price volatility."""
+    if lookback < 3:
+        raise ValueError("lookback must be at least 3.")
+    ts = ts.dropna()
+    block = lookback // 3
+
+    recent = ts.rolling(block, min_periods=block).mean()
+    middle = recent.shift(block)
+    old = recent.shift(2 * block)
+    volatility = (
+        ts.rolling(lookback, min_periods=lookback)
+        .std()
+        .replace(0, np.nan)
+    )
+    curvature = -(recent + old - 2.0 * middle) / volatility
+    curvature.name = f"curvature_{lookback}"
+    return curvature
 
 
 def compute_corr(x, y, method='spearman'):
