@@ -48,6 +48,7 @@ port_pos_config = {
         'pos_loc': 'C:/dev/pyktrader3/process/paper_sim1',
         'strat_list': [
             ('PTSIM1_FACTPORT1.json',40000),
+            ('PTSIM1_BSKEW.json',4000),
             ('PTSIM1_SEAZN.json', 36000),
             ('PTSIM1_EXCHWNT.json', 34000),
             ('PTSIM1_HRCRB.json', 34000),

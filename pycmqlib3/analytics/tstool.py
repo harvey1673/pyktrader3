@@ -20,17 +20,14 @@ from statsmodels.tsa.stattools import coint, adfuller
 from pycmqlib3.utility.misc import invert_dict, CHN_Holidays, day_shift
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
-from typing import Literal
 
 font = font_manager.FontProperties(fname='C:\\windows\\fonts\\simsun.ttc')
 PNL_BDAYS = 244
 
-SkewType = Literal["normal", "pearson", "bowley"]
-
 def rolling_skew(
     ts: pd.Series,
     lookback: int = 240,
-    skew_type: SkewType = "normal",
+    skew_type: str = "normal",
     kurtosis_adjusted: bool = False,
 ) -> pd.Series:
     """Calculate rolling skew with positive values indicating right skew."""
@@ -75,7 +72,7 @@ def rolling_skew(
     return skew
 
 
-def rolling_curvature(
+def rolling_blk_convexity(
     ts: pd.Series,
     lookback: int = 240,
 ) -> pd.Series:
@@ -93,7 +90,7 @@ def rolling_curvature(
         .std()
         .replace(0, np.nan)
     )
-    curvature = -(recent + old - 2.0 * middle) / volatility
+    curvature = (recent + old - 2.0 * middle) / volatility
     curvature.name = f"curvature_{lookback}"
     return curvature
 
@@ -846,9 +843,6 @@ def plot_df_on_2ax(df, left_on=[], right_on=[], left_style='-', right_style=':')
     plt.show()
 
 
-
-
-
 def lunar_label(df: pd.DataFrame, copy=True):
     def find_nearest_cny(d):
         curr_yr = int(d.year)
@@ -1199,7 +1193,6 @@ def sector_neutralize(df_in: pd.DataFrame,
 
     # number of assets per sector (aligned by column name)
     sector_counts = sector_map.value_counts()
-
 
     # scale assets before computing sector statistics
     if sector_scale_pow != 0.0:
@@ -1666,6 +1659,21 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
                 n_days = int(pfunc[5:])
                 res = ema_moments(feature_ts.dropna(), span=n_days)
                 feature_ts = res['skew'] / np.sqrt(res['kurt']-1)
+            elif 'skew' in pfunc:
+                str_split = pfunc.split('_')
+                skew_type = str_split[1]
+                n_win = int(str_split[2])
+                if skew_type == 'normal':
+                    kurt_adj = True
+                else:
+                    kurt_adj = False
+                feature_ts = rolling_skew(feature_ts.dropna(),
+                                          lookback=n_win,
+                                          skew_type=skew_type,
+                                          kurtosis_adjusted=kurt_adj)
+            elif 'bconvex' in pfunc:
+                n_win = int(pfunc[8:])
+                feature_ts = rolling_blk_convexity(feature_ts.dropna(), lookback=n_win)
 
     if signal_start is not None:
         start_s = day_shift(end_date, f'-{signal_start}')
@@ -1718,9 +1726,17 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
         signal_ts = signal_hysteresis(signal_ts[start_s:], param_rng[0], param_rng[2], use_sgn=use_sgn)
     elif len(signal_func) > 0:
         signal_ts = calc_conv_signal(feature_ts, signal_func=signal_func, param_rng=param_rng,
-                                     signal_cap=signal_cap, vol_win=vol_win)[start_s:]
+                                     signal_cap=signal_cap, vol_win=vol_win)
+        if len(signal_ts) > 0:
+            signal_ts = signal_ts[start_s:]
+        else:
+            print(f"Warning: signal_ts is empty for {feature} with signal_func={signal_func}")
     else:
-        signal_ts = feature_ts[start_s:]
+        if len(feature_ts) > 0:
+            signal_ts = feature_ts[start_s:]
+        else:
+            print(f"Warning: feature_ts is empty for {feature} with signal_func={signal_func}")
+            signal_ts = pd.Series(dtype=float)
 
     if not bullish:
         signal_ts = -signal_ts
