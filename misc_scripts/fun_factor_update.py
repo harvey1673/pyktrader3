@@ -17,12 +17,14 @@ from pycmqlib3.utility.misc import day_shift, CHN_Holidays, prod2exch, is_workda
 from pycmqlib3.analytics.tstool import *
 from misc_scripts.factor_data_update import update_factor_db, FactorDBBatchWriter
 from misc_scripts.seasonality_update import seasonal_cal_update
+from pycmqlib3.utility.email_tool import send_html_by_smtp
+from pycmqlib3.utility.sec_bits import EMAIL_QQ, LOCAL_PC_NAME, NOTIFIERS
 
 # full history data for seasonality calculation
 PROD_FULL_HIST_TICKERS = list(feature_to_feature_key_mapping['metal_inv'].values())
 
 single_factors = {
-    'hc_rb_diff_20': ['rb', 'hc', 'i', 'j', 'jm', 'FG', 'UR', 'v', 'ru', 'au', 'ag', 'cu', 'al', 'zn', 'sn', 'ss', 'ni', 'ao'],
+    'hc_rb_diff_20': ['rb', 'hc', 'i', 'j', 'jm', 'au', 'ag', 'cu', 'al', 'zn', 'sn', 'ss', 'ni', 'pb', 'y', 'OI', 'p', 'm', 'RM'],
     'steel_margin_lvl_fast': ['i', 'j'],
     'steel_margin_lvl_slow': ['SF', 'SM'],
     'steel_margin_io_rev': ['i'],
@@ -44,7 +46,7 @@ single_factors = {
     'io_invdays_lyoy': ['hc', 'i'],
     'ioarb_px_hlr': ['rb', 'hc'],
     'nmf_arb_hlr': ['rb', 'hc'],
-    'macf_arb_hlr': ['rb', 'hc'],
+    'jmb_arb_hlr': ['rb', 'hc'],
     'billet_inv_hlr_lt': ['rb', 'hc', 'i'],
     'billet_inv_lyoy_hlr_lt': ['rb', 'hc', 'i'],
     'steel_sinv_lyoy_zs': ['rb', 'hc', 'i', 'FG', 'v'],
@@ -872,7 +874,113 @@ def load_hist_fut_prices(markets, start_date, end_date,
     return df
 
 
-def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
+def find_recent_close_price_nans(price_df, run_date, lookback_days=5):
+    """Return missing close-price locations in the latest trading-date rows.
+
+    ``price_df`` normally has ``(product, field)`` MultiIndex columns. The
+    check is limited to rows on or before ``run_date`` and uses the last
+    ``lookback_days`` available dates, rather than calendar days.
+    """
+    if not isinstance(price_df, pd.DataFrame):
+        raise TypeError("price_df must be a pandas DataFrame")
+    if lookback_days <= 0:
+        raise ValueError("lookback_days must be positive")
+    if price_df.empty:
+        raise ValueError("price_df is empty")
+
+    if isinstance(price_df.columns, pd.MultiIndex):
+        if 'field' in price_df.columns.names:
+            field_level = price_df.columns.names.index('field')
+        else:
+            candidate_levels = [
+                level
+                for level in range(price_df.columns.nlevels)
+                if 'close' in set(price_df.columns.get_level_values(level))
+            ]
+            if len(candidate_levels) != 1:
+                raise ValueError("Unable to identify the close-price column level")
+            field_level = candidate_levels[0]
+        if 'close' not in set(price_df.columns.get_level_values(field_level)):
+            raise ValueError("price_df has no close-price columns")
+        close_df = price_df.xs('close', axis=1, level=field_level)
+    else:
+        close_columns = [column for column in price_df.columns if column == 'close']
+        if not close_columns:
+            raise ValueError("price_df has no close-price columns")
+        close_df = price_df.loc[:, close_columns]
+
+    close_df = close_df.copy()
+    close_df.index = pd.to_datetime(close_df.index)
+    close_df = close_df.sort_index()
+    close_df = close_df.loc[close_df.index.normalize() <= pd.Timestamp(run_date)]
+    recent_close = close_df.tail(lookback_days)
+    if recent_close.empty:
+        raise ValueError(f"price_df has no rows on or before {run_date}")
+
+    missing_rows = []
+    missing_mask = recent_close.isna()
+    for date_value, row in missing_mask.iterrows():
+        for product in row.index[row.to_numpy()]:
+            missing_rows.append(
+                {
+                    'date': pd.Timestamp(date_value),
+                    'product': str(product),
+                }
+            )
+    return pd.DataFrame(missing_rows, columns=['date', 'product'])
+
+
+def check_recent_close_prices(
+        price_df, run_date, lookback_days=5, email_notify=True):
+    """Check recent closes and email an alarm when any values are NaN."""
+    missing = find_recent_close_price_nans(
+        price_df,
+        run_date=run_date,
+        lookback_days=lookback_days,
+    )
+    if missing.empty:
+        logging.info(
+            "recent close-price check passed for the last %s trading dates",
+            lookback_days,
+        )
+        return missing
+
+    missing = missing.copy()
+    missing['date'] = pd.to_datetime(missing['date']).dt.strftime('%Y-%m-%d')
+    logging.error(
+        "recent close-price check found %s NaN values:\n%s",
+        len(missing),
+        missing.to_string(index=False),
+    )
+    if email_notify:
+        date_summary = (
+            missing.groupby('date')['product']
+            .agg(lambda values: ', '.join(sorted(values)))
+            .reset_index(name='products_with_nan_close')
+        )
+        subject = (
+            f"{LOCAL_PC_NAME} futures close price NaN alarm"
+            f"<{pd.Timestamp(run_date).strftime('%Y.%m.%d')}>"
+        )
+        html = (
+            "<html><head></head><body>"
+            f"<p>Found <strong>{len(missing)}</strong> missing close-price "
+            f"observations within the latest {lookback_days} available "
+            "trading dates on or before the factor update date.</p>"
+            "<p>Missing products by date:</p>"
+            f"{date_summary.to_html(index=False, escape=True)}"
+            "<p>Detailed missing observations:</p>"
+            f"{missing.to_html(index=False, escape=True)}"
+            "</body></html>"
+        )
+        sent = send_html_by_smtp(EMAIL_QQ, NOTIFIERS, subject, html)
+        if not sent:
+            logging.error("failed to send the close-price NaN alarm email")
+    return missing
+
+
+def update_db_factor(run_date=datetime.date.today(), flavor='mysql',
+                     close_check_days=5, email_notify=True):
     roll_name='hot'
     freq='d1'
     signal_start = '60b'
@@ -921,6 +1029,13 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql'):
                     spd_list.append((leg1_df[field]*asset_list[0][1] + leg2_df[field]*asset_list[1][1]).to_frame((spd_name, field)))
             price_df = pd.concat(spd_list, axis=1)
         price_df.to_parquet(f"C:/dev/data/fut_eod_%s.parquet" % run_date.strftime("%Y%m%d"))
+
+    check_recent_close_prices(
+        price_df,
+        run_date=run_date,
+        lookback_days=close_check_days,
+        email_notify=email_notify,
+    )
 
     logging.info("loading fundamental data ... ")
     cutoff_date = day_shift(day_shift(run_date, '1b', CHN_Holidays), '-1d')

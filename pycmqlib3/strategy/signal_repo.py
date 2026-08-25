@@ -118,9 +118,9 @@ signal_store = {
     'macf_spd_qtl': [['rb_i', "hc_i"], ["macf_prem", 'qtl', [40, 80, 2], "", "", False, "", "ema1", 120, [-2,2]]],
     'macf_spd2_qtl': [['i_rb', "i_hc"], ["macf_prem", 'qtl', [10, 30, 2], "", "", True, "", "ema3", 120, [-2,2]]],
 
-    'nmf_arb_hlr': [['rb', 'hc', 'i', 'j', 'jm'], # macf jmb
+    'nmf_arb_hlr': [['rb', 'hc'], # macf jmb
                     ['import_arb_nmf', 'hlratio', [40, 60, 2], 'ema5', '', False, 'price', 'ema1', 120, [-2,2]]],
-    'macf_arb_hlr': [['rb', 'hc', 'i', 'j', 'jm'], # macf jmb
+    'jmb_arb_hlr': [['rb', 'hc'], # macf jmb
                     ['import_arb_jmb', 'hlratio', [40, 60, 2], 'ema5', '', False, 'price', 'ema1', 120, [-2,2]]],
     'nmf_arb_spd_hlr': [['rb_i', 'hc_i'], # macf jmb
                        ['import_arb_nmf', 'hlratio', [40, 60, 2], 'ema5', '', False, 'price', 'ema1', 120, [-2,2]]],
@@ -314,8 +314,8 @@ signal_store = {
                            ['strip_hsec', 'qtl', [60, 80, 2], '', '', True, 'price', "sma1", 120, [-2,2]]],
     'macf_cfd_lvl_mid': [['i'],
                          ['macf_cfd', 'qtl', [40, 82, 2], '', '', True, 'price', "sma1", 120, [-2,2]]],
-    'hc_rb_diff_20': [['rb', 'hc', 'i', 'j', 'jm', 'FG', 'v', 'au', 'ag', 'cu', 'al', 'zn', 'sn', 'ss', 'ni'],
-                      ['hc_rb_diff', 'zscore', [20, 40, 2], '', '', True, 'price', "buf0.15", 120, [-2,2]]],
+    'hc_rb_diff_20': [['rb', 'hc', 'i', 'j', 'jm', 'au', 'ag', 'cu', 'al', 'zn', 'sn', 'ss', 'ni', 'pb', 'y', 'OI', 'p', 'm', 'RM'],
+                      ['hc_rb_diff', 'zscore_adj', [20, 30, 2], '', '', True, 'price', "buf0.15", 120, [-2,2]]],
 
     'rbhc_px_diff_mds': [['spd_hc_rb_c1', 'hc_rb'],
                      ['rb_hc_diff', 'ma_dff_sgn', [5, 10, 1], 'ema1', '', False, '', "", 120, [-2,2]]],
@@ -429,6 +429,10 @@ signal_store = {
                            ['prem_bonded_warrant', 'zscore', [230, 250, 2], '', '', True, 'price', "", 120, [-2,2]]],
     'base_cifprem_1y_zs_xdemean': [['cu', 'al', 'zn', 'ni', 'pb'],
                                    ['prem_bonded_warrant', 'zscore', [230, 250, 2], '', '', True, 'price', "", 120, [-2,2]]],
+    'base_cifprem_2y_zs': [['cu', 'al', 'zn', 'ni', 'pb'],
+                           ['prem_bonded_warrant', 'zscore', [480, 500, 2], '', '', True, 'price', "", 120, [-2,2]]],
+    'base_cifprem_2y_zs_xdemean': [['cu', 'al', 'zn', 'ni', 'pb'],
+                                   ['prem_bonded_warrant', 'zscore', [480, 500, 2], '', '', True, 'price', "", 120, [-2,2]]],
     'base_tc_1y_zs': [['cu', 'pb', 'zn'], ['base_tc', 'zscore', [230, 250, 2], '', '', False, 'price', "", 120, [-2,2]]],
     'base_tc_2y_zs': [['cu', 'pb', 'sn'], ['base_tc', 'zscore', [480, 500, 2], '', '', False, 'price', "", 120, [-2,2]]],
 
