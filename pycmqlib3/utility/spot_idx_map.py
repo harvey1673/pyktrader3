@@ -982,6 +982,48 @@ index_map = {
     "S006955772": "ag_etf_sivr_holding",
 }
 
+mysteel_index_map = {
+    'ID00408152': 'ni_ore_1.6_php_cif',
+    'ID00408155': 'ni_ore_1.8_others_cif',
+    'ID01037437': 'pbf_import_profit',
+    'ID01168763': 'cu_sinv_cn_d',
+    'ID01200757': 'cu_sinv_bonded_cn_d',
+    'ID01245758': 'ps_util_cn_mth',
+    'ID01349545': 'lc_margin_cn_w',
+    'ID01490913': 'ni_sinv_27_cn',
+    'ID01532024': 'npi_import_profit_id_cn',
+    'ID01718576': 'jm_inv_523mines',
+    'ID01718581': 'jm_dprod_523mines',
+    'ID01718582': 'jm_raw_inv_523mines',
+    'ID01719869': 'jm_auction_rate_cn_d',
+    'ID01720310': 'jm_listed_cn_d',
+    'ID01736015': 'lc_inv_sale_cn_w',
+    'ID01835359': 'lc_margin_conc',
+    'ID01835361': 'lc_margin_lepi',
+    'ID01998696': 'ps_util_15mill_mth',
+    'ID02026458': 'ps_n_dense_prodcost_w',
+    'ID02032074': 'ps_inv_cn_w',
+    'ID02069031': 'jm_inv_314washery',
+    'ID02069937': 'lc_mine_inv_trader_w',
+    'ID02215004': 'lc_margin_carbonation',
+    'ID02424817': 'cu_mkt_senti_idx_w',
+    'RE00024794': 'jmb_import_profit',
+    'RE00024799': 'macf_import_profit',
+    'RE00024806': 'jm_import_throughput_gantimaodu',
+    'ID00188314': 'ao_inv_ports_cn_w',  # 氧化铝_港口库存_中国周
+    'ID00188315': 'pb_ingot_sinv_cn_d',  # 铅锭_现货库存日
+    'ID01167269': 'pb_sec_reflector_profit',  # 再生铅_反射炉_利润日
+    'ID01167270': 'pb_sec_oxygen_blow_profit',  # 再生铅_富氧侧吹炉_利润日
+    'ID01167591': 'pb_sec_raw_inv_cn_w',  # 再生铅_原材料_库存周
+    'ID01167594': 'pb_sec_fg_inv_cn_w',  # 再生铅_成品库存周
+    'ID01517441': 'sn_sinv_cn_w',  # 锡锭_库存_中国周
+    'ID01721655': 'ao_minv_cn_ex_xj',  # 氧化铝_厂内库存_中国除新疆周
+    'ID01721691': 'ao_minv_cn',  # 氧化铝_厂内库存_中国_电解铝厂周
+    'ID01721692': 'ao_inv_in_transit_cn',  # 氧化铝_站台_在途库存_中国周
+    'ID01721697': 'ao_inv_total_cn',  # 氧化铝_库存_中国周
+
+}
+
 
 def data_wkday_adj(data_df, col_list, shift_map={0: -4, 1: -5, 2: 1, 3: 0, 4: -1, 5: -2, 6: -3}):
     col_list = [col for col in col_list if col in data_df.columns]

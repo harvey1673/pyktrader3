@@ -3,6 +3,7 @@ from pycmqlib3.analytics.tstool import *
 from pycmqlib3.analytics.btmetrics import simple_cost
 from pycmqlib3.utility.misc import CHN_Holidays, day_shift
 from pycmqlib3.utility.exch_ctd_func import *
+from pycmqlib3.strategy.feature_config import METAL_INV_FEATURES
 
 BROAD_MKTS = [
     'rb', 'hc', 'i', 'j', 'jm',
@@ -457,6 +458,10 @@ signal_store = {
                          ['inv_shfe_d', 'hlratio', [240, 260, 2], '', '', False, '', "", 240, [-2,2]]],
     'base_inv_shfe_hlr_xdemean': [['cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ao', 'ss'],
                                  ['inv_shfe_d', 'hlratio', [240, 260, 2], '', '', False, '', "", 240, [-2,2]]],
+    'base_inv_shfe_cal_hlr': [['cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ao', 'ss'],
+                         ['inv_shfe_d', 'seasonal_cal_wk_hlr', [2, 5, 30], '', '', False, '', "", 240, [-2,2]]],
+    'base_inv_shfe_cal_hlr_xdemean': [['cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ao', 'ss'],
+                                 ['inv_shfe_d', 'seasonal_cal_wk_hlr', [2, 5, 30], '', '', False, '', "buf0.2", 240, [-2,2]]],
     'base_invchg_shfe_mad': [['cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ao', 'ss'],
                          ['inv_shfe_d', 'mad', [1, 2, 1], 'df1|ema1', 'pct_change', False, '', "buf0.2", 240, [-2,2]]],
     'base_invchg_shfe_mad_xdemean': [['cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ao', 'ss'],
@@ -465,10 +470,12 @@ signal_store = {
                          ['inv_shfe_d', 'seasonal_lunar_wk_qtl', [2, 5, 30], 'df1|ema1', 'pct_change', False, '', "buf0.2", 240, [-2,2]]],
     'base_invchg_shfe_lunar_qtl_xdemean': [['cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ao', 'ss'],
                                  ['inv_shfe_d', 'seasonal_lunar_wk_qtl', [2, 5, 30], 'df1|ema1', 'pct_change', False, '', "buf0.2", 240, [-2,2]]],
-    'base_inv_exch_ma': [['cu', 'zn', 'pb', 'ni', 'sn', 'al', 'ao', 'ss'],
-                         ['inv_exch_d', 'mad', [1, 2, 1], 'df1|ema1', 'pct_change', False, '', "buf0.2", 240, [-2,2]]],
-    'base_inv_exch_ma_xdemean': [['cu', 'zn', 'pb', 'ni', 'sn', 'al', 'ao', 'ss'],
-                                 ['inv_exch_d', 'mad', [1, 2, 1], 'df1|ema1', 'pct_change', False, '', "buf0.2", 240, [-2,2]]],
+    'base_invchg_shfe_cal_hlr': [['cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ao', 'ss'],
+                         ['inv_shfe_d', 'seasonal_cal_wk_hlr', [2, 5, 30], 'df1|ema1', 'pct_change', False, '', "buf0.1", 240, [-2,2]]],
+    # 'base_inv_exch_ma': [['cu', 'zn', 'pb', 'ni', 'sn', 'al', 'ao', 'ss'],
+    #                      ['inv_exch_d', 'mad', [1, 2, 1], 'df1|ema1', 'pct_change', False, '', "buf0.2", 240, [-2,2]]],
+    # 'base_inv_exch_ma_xdemean': [['cu', 'zn', 'pb', 'ni', 'sn', 'al', 'ao', 'ss'],
+    #                              ['inv_exch_d', 'mad', [1, 2, 1], 'df1|ema1', 'pct_change', False, '', "buf0.2", 240, [-2,2]]],
 
     'lme_inv_wnt_mad': [['cu', 'zn', 'ni', 'sn', 'al'],
                          ['inv_lme_wnt', 'mad', [1, 2, 1], 'df1|ema1', 'pct_change', False, 'price', "buf0.2", 240, [-2,2]]],
@@ -896,30 +903,7 @@ feature_to_feature_key_mapping = {
     'inv_exch_d': {},
     "exch_warrant": {},
     "etf_holdings": {},
-    'metal_inv': {
-        'cu': 'cu_inv_shfe_d', #"cu_inv_social_dom", # #
-        'al': 'al_inv_social_all',
-        'zn': "zn_inv_social_all",
-        'ni': 'ni_inv_shfe_d', # "ni_inv27_all", #, #
-        'pb': 'pb_inv_shfe_d', #'pb_inv_social_all',
-        'sn': 'sn_inv_shfe_d',
-        'si': "si_inv_gfex_d",
-        'lc': "lc_inv_gfex_d",
-        'ps': "ps_inv_gfex_d",
-        'ao': 'ao_inv_shfe_d', #'bauxite_inv_az_ports',
-        'ss': "ss_inv_social_300",
-        'rb': 'rebar_inv_social',
-        'hc': 'hrc_inv_social',
-        'j' : "coke_inv_ports_tj",
-        'jm': 'ckc_inv_ports', #"ckc_inv_cokery",
-        'v':  "v_inv_social",
-        'i': 'io_inv_45ports',
-        'SM': 'sm_stockdays', #'sm_inv_mill', # #
-        'SF': 'sf_inv_mill',
-        'FG': "fg_inv_mill",
-        'SA': 'sa_inv_mill_all',
-        'SH': 'sh_inv_mill_all',
-    },
+    'metal_inv': dict(METAL_INV_FEATURES),
     'sinv': {
         'v':  "v_inv_social",
         'eb': 'eb_inv_port_east_trader',

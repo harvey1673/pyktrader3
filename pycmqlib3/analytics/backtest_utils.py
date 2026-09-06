@@ -1,12 +1,10 @@
 import numpy as np
 import pandas as pd
 import pycmqlib3.analytics.data_handler as dh
+from pycmqlib3.analytics import tstool
 from pycmqlib3.utility import misc
 from pycmqlib3.analytics.btmetrics import *
 from pycmqlib3.analytics.tstool import *
-from pycmqlib3.utility import dataseries
-from misc_scripts.fun_factor_update import get_fun_data, load_hist_fut_prices
-from pycmqlib3.strategy.signal_repo import *
 
 
 def get_asset_vols(df, product_list, vol_win, vol_type='atr'):
@@ -300,45 +298,4 @@ def get_beta_neutral_returns(df, asset_pairs):
     return beta_ret_dict, betas_dict
 
 
-def load_fun_data(tday=datetime.date.today()):
-    tday = pd.to_datetime(tday)
-    try:
-        spot_df = pd.read_parquet("C:/dev/data/spot_df_%s.parquet" % tday.strftime("%Y%m%d"))
-    except:
-        spot_df = get_fun_data(start_date=datetime.date(2000, 1, 1), run_date=tday)
-        try:
-            spot_df.to_parquet("C:/dev/data/spot_df_%s.parquet" % tday.strftime("%Y%m%d"))
-            print("spot_df data saved")
-        except:
-            print("spot_df save error")
-    return spot_df
-
-
-def load_cnc_fut(tday=datetime.date.today(), type='cnc'):
-    tday = pd.to_datetime(tday)
-    try:
-        df = pd.read_parquet(f"C:/dev/data/{type}_fut_df_%s.parquet" % tday.strftime("%Y%m%d"))
-    except:
-        commod_mkts = [
-            'rb', 'hc', 'i', 'j', 'jm', 'FG', 'SM', 'SF', 'SA', 'ru', 'nr',
-            'cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ss', 'si', 'ao', 'bc',
-            'l', 'pp', 'v', 'TA', 'sc', 'lu', 'eb', 'eg', 'pg', 'PF', 'MA', 'fu', 'bu',
-            'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'CF', 'jd', 'lh', 'b', 'CY', 'cs',
-            'AP', 'CJ', 'UR', 'PK', 'SR', 'T', 'TF'
-        ]        
-        df, error_list = load_hist_fut_prices(
-            start_date=datetime.date(2011, 1, 1),
-            end_date=tday,
-            roll_name=type,
-            markets=commod_mkts,
-            freq='d',
-            shift_mode=2
-            )
-        print(error_list)
-        try:
-            df.to_parquet(f"C:/dev/data/{type}_fut_df_%s.parquet" % tday.strftime("%Y%m%d"))
-            print(f"{type}_fut_df data saved")
-        except:
-            print(f"{type}_fut_df save error")
-    return df
 
