@@ -6,7 +6,7 @@ import pyautogui
 import win32com.client
 import win32gui
 import win32con
-from pycmqlib3.utility.sec_bits import LOCAL_NUTSTORE_FOLDER, IFIND_XL_HOTKEYS
+from pycmqlib3.utility.sec_bits import LOCAL_NUTSTORE_FOLDER, IFIND_XL_HOTKEYS, MYSTEEL_XL_HOTKEYS
 from pycmqlib3.utility.dbaccess import write_edb_by_xl_sheet, write_stock_data_by_xl, write_fut_roll_daily_by_xl
 
 
@@ -55,6 +55,40 @@ def update_ifind_xlsheet(filename='C:/Users/harvey/Nutstore/1/Nutstore/ifind_dat
     xl.Quit()
 
 
+def update_mysteel_xlsheet(
+        filename=f'{LOCAL_NUTSTORE_FOLDER}/mysteel_metal.xlsx',
+        wait_time=40):
+    """Refresh a Mysteel workbook once using its Excel add-in hotkeys."""
+    file_name = os.path.basename(filename)
+    xl = win32com.client.DispatchEx("Excel.Application")
+    wb = None
+    try:
+        for open_wb in xl.Workbooks:
+            print(open_wb.Name)
+            if open_wb.Name == file_name:
+                print(f"Closing open file: {file_name}")
+                open_wb.Close(SaveChanges=True)
+
+        wb = xl.Workbooks.open(filename)
+        xl.Visible = True
+        wb.Activate()
+        win32gui.ShowWindow(xl.Hwnd, win32con.SW_RESTORE)
+        win32gui.EnableWindow(xl.Hwnd, True)
+        win32gui.SetForegroundWindow(xl.Hwnd)
+        pyautogui.typewrite(MYSTEEL_XL_HOTKEYS, interval=0.5)
+        time.sleep(wait_time)
+        wb.Close(SaveChanges=1)
+        wb = None
+    finally:
+        if wb is not None:
+            try:
+                wb.Close(SaveChanges=1)
+            except Exception:
+                pass
+        time.sleep(3)
+        xl.Quit()
+
+
 def update_data_from_xl(data_folder=LOCAL_NUTSTORE_FOLDER,
                         lookback=1000,
                         full_hist=False,
@@ -66,6 +100,8 @@ def update_data_from_xl(data_folder=LOCAL_NUTSTORE_FOLDER,
     file_setup = {
         # ('ifind_data.xlsx', 'hist'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
         #                                 'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
+        ('mysteel_metal.xlsx', 'data'): {'header': [0, 1, 2, 3], 'skiprows': [0, 3, 6, 7, 8, 9],
+                                          'source': 'mysteel', 'reorder': [0, 3, 1, 2], 'drop_zero': False},
         ('ifind_data.xlsx', 'ferrous_w'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 6, 7, 8],
                                         'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
         ('ifind_data.xlsx', 'base_w'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 6, 7, 8],
@@ -115,6 +151,7 @@ if __name__ == "__main__":
     else:
         cmd = args[0]
     if cmd in ['refresh_all', 'refresh', 'all']:
+        update_mysteel_xlsheet(filename=f'{data_folder}/mysteel_metal.xlsx', wait_time=40)
         if (now.time() > datetime.time(18, 0, 0)) or (cmd in ['refresh_all']):
             update_ifind_xlsheet(filename=f'{data_folder}/ifind_data.xlsx', wait_time=40, excluded=['hist'])
             update_ifind_xlsheet(filename=f'{data_folder}/ifind_wkly.xlsx', wait_time=40, excluded=[])

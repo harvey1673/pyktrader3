@@ -7,7 +7,9 @@ import pickle
 import gc
 from pycmqlib3.utility import dataseries
 from pycmqlib3.utility.misc import contract_expiry, inst2contmth, day_shift, \
-    is_workday, CHN_Holidays
+    is_workday, CHN_Holidays, nearby
+from pycmqlib3.utility.backtest import sim_start_dict
+from misc_scripts.update_fun_data import get_fun_data
 
 All_MARKETS = [
     'rb', 'hc', 'i', 'j', 'jm',
@@ -23,6 +25,130 @@ All_MARKETS = [
     'CF', 'CY', 'jd', 'lh', 'AP', 'CJ', 'PK', 'SR',
     'T', 'TF', 'TS', 'TL', 'IF', 'IH', 'IC', 'IM',
 ]
+
+
+def load_hist_fut_prices(markets, start_date, end_date,
+                         shift_mode=2, roll_name='hot', nb_cont=1, freq='d1'):
+    """Load continuous futures history into a product/field column frame."""
+    fields = [
+        'contract', 'open', 'high', 'low', 'close', 'volume',
+        'openInterest', 'diff_oi', 'expiry', 'mth', 'shift'
+    ]
+    data_df = pd.DataFrame()
+    for prodcode in markets:
+        for nb in range(nb_cont):
+            normalized_freq = freq[0]
+            if roll_name == 'CAL_30b':
+                roll = '-30b'
+                if prodcode in ["IF", "IC", "IH", "IM"]:
+                    roll = '0b'
+                elif prodcode in ['cu', 'al', 'zn', 'pb', 'sn', 'ss', 'lu']:
+                    roll = '-25b'
+                elif prodcode in ['ni', 'jd', 'lh', 'eg']:
+                    roll = '-35b'
+                elif prodcode in ['v', 'MA', 'rb', 'hc']:
+                    roll = '-28b'
+                elif prodcode in ['sc', 'eb', 'T', 'TF', 'TS', 'TL']:
+                    roll = '-20b'
+                elif prodcode in ['au', 'ag']:
+                    roll = '-15b'
+                sdate = max(start_date, sim_start_dict.get(prodcode, start_date))
+                xdf = nearby(
+                    prodcode,
+                    nb + 1,
+                    start_date=sdate,
+                    end_date=end_date,
+                    shift_mode=shift_mode,
+                    freq=normalized_freq,
+                    roll_rule=roll,
+                ).reset_index()
+            else:
+                xdf = dataseries.nearby(
+                    prodcode,
+                    nb + 1,
+                    start_date=start_date,
+                    end_date=end_date,
+                    shift_mode=shift_mode,
+                    freq=normalized_freq,
+                    roll_name=roll_name,
+                )
+            xdf['expiry'] = pd.to_datetime(
+                xdf.apply(
+                    lambda row: contract_expiry(
+                        row['contract'], curr_dt=row['date']
+                    ),
+                    axis=1,
+                )
+            )
+            xdf['contmth'] = xdf.apply(
+                lambda row: inst2contmth(row['contract'], row['date']), axis=1
+            )
+            xdf['mth'] = xdf['contmth'].apply(
+                lambda value: value // 100 * 12 + value % 100
+            )
+            xdf['product'] = f"{prodcode}c{nb + 1}"
+            data_df = pd.concat([data_df, xdf])
+    index_col = 'datetime' if 'm' in normalized_freq else 'date'
+    df = pd.pivot_table(
+        data_df.reset_index(),
+        index=index_col,
+        columns='product',
+        values=fields,
+        aggfunc='last',
+    )
+    df = df.reorder_levels([1, 0], axis=1).sort_index(axis=1)
+    df.columns.rename(['product', 'field'], inplace=True)
+    df.index = pd.to_datetime(df.index)
+    return df
+
+
+def load_fun_data(tday=datetime.date.today()):
+    """Load a cached fundamental frame or rebuild and cache it."""
+    tday = pd.to_datetime(tday)
+    cache_path = f"C:/dev/data/spot_df_{tday.strftime('%Y%m%d')}.parquet"
+    try:
+        return pd.read_parquet(cache_path)
+    except Exception:
+        spot_df = get_fun_data(
+            start_date=datetime.date(2000, 1, 1),
+            run_date=tday,
+        )
+        try:
+            spot_df.to_parquet(cache_path)
+            print("spot_df data saved")
+        except Exception:
+            print("spot_df save error")
+        return spot_df
+
+
+def load_cnc_fut(tday=datetime.date.today(), type='cnc'):
+    """Load a cached continuous-futures frame or rebuild and cache it."""
+    tday = pd.to_datetime(tday)
+    cache_path = f"C:/dev/data/{type}_fut_df_{tday.strftime('%Y%m%d')}.parquet"
+    try:
+        return pd.read_parquet(cache_path)
+    except Exception:
+        commod_mkts = [
+            'rb', 'hc', 'i', 'j', 'jm', 'FG', 'SM', 'SF', 'SA', 'ru', 'nr',
+            'cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ss', 'si', 'ao', 'bc',
+            'l', 'pp', 'v', 'TA', 'sc', 'lu', 'eb', 'eg', 'pg', 'PF', 'MA',
+            'fu', 'bu', 'm', 'RM', 'y', 'p', 'OI', 'a', 'c', 'CF', 'jd',
+            'lh', 'b', 'CY', 'cs', 'AP', 'CJ', 'UR', 'PK', 'SR', 'T', 'TF'
+        ]
+        df = load_hist_fut_prices(
+            start_date=datetime.date(2011, 1, 1),
+            end_date=tday,
+            roll_name=type,
+            markets=commod_mkts,
+            freq='d',
+            shift_mode=2,
+        )
+        try:
+            df.to_parquet(cache_path)
+            print(f"{type}_fut_df data saved")
+        except Exception:
+            print(f"{type}_fut_df save error")
+        return df
 
 
 def refresh_saved_fut_prices(

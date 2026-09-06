@@ -6,22 +6,18 @@ import pandas as pd
 from pandas.tseries.offsets import CustomBusinessDay
 import logging
 from pycmqlib3.utility import base
-from pycmqlib3.strategy.signal_repo import get_funda_signal_from_store, feature_to_feature_key_mapping, BROAD_MKTS, IND_MKTS, AGS_MKTS, commod_phycarry_dict
-from pycmqlib3.utility.spot_idx_map import index_map, process_spot_df
-from pycmqlib3.utility.dbaccess import load_codes_from_edb, load_factor_data, load_int_stock_daily
+from pycmqlib3.strategy.signal_repo import get_funda_signal_from_store, BROAD_MKTS, IND_MKTS, AGS_MKTS, commod_phycarry_dict
+from pycmqlib3.utility.dbaccess import load_factor_data
 from pycmqlib3.utility import dataseries
 from pycmqlib3.utility.exch_ctd_func import *
-from pycmqlib3.utility.backtest import sim_start_dict
-from pycmqlib3.utility.misc import day_shift, CHN_Holidays, prod2exch, is_workday, \
-    nearby, contract_expiry, inst2contmth
+from pycmqlib3.utility.sec_bits import EMAIL_NOTIFY
+from pycmqlib3.utility.misc import day_shift, CHN_Holidays, prod2exch, is_workday
 from pycmqlib3.analytics.tstool import *
 from misc_scripts.factor_data_update import update_factor_db, FactorDBBatchWriter
 from misc_scripts.seasonality_update import seasonal_cal_update
-from pycmqlib3.utility.email_tool import send_html_by_smtp
-from pycmqlib3.utility.sec_bits import EMAIL_QQ, LOCAL_PC_NAME, NOTIFIERS
-
-# full history data for seasonality calculation
-PROD_FULL_HIST_TICKERS = list(feature_to_feature_key_mapping['metal_inv'].values())
+from misc_scripts.update_fun_data import get_fun_data
+from misc_scripts.update_fut_prices import load_hist_fut_prices
+from misc_scripts.close_price_check import check_recent_close_prices
 
 single_factors = {
     'hc_rb_diff_20': ['rb', 'hc', 'i', 'j', 'jm', 'au', 'ag', 'cu', 'al', 'zn', 'sn', 'ss', 'ni', 'pb', 'y', 'OI', 'p', 'm', 'RM'],
@@ -741,68 +737,6 @@ factors_by_func = {
 }
 
 
-def get_fun_data(start_date, run_date, full_hist_tickers=PROD_FULL_HIST_TICKERS):
-    run_date = pd.to_datetime(run_date)
-    e_date = day_shift(run_date.date(), '5b', CHN_Holidays)
-    cdate_rng = pd.date_range(start=start_date, end=e_date, freq='D', name='date')
-
-    rev_map = {v:k for k,v in index_map.items()}
-    if len(full_hist_tickers)>0:
-        index_codes = [rev_map[ticker] for ticker in full_hist_tickers if ticker in rev_map]
-        spot_df = load_codes_from_edb(index_codes, source='ifind', column_name='index_code')
-        spot_df = spot_df.rename(columns=index_map)
-        spot_df = spot_df.reindex(index=pd.date_range(start=spot_df.index.min(),
-                                                      end=e_date, freq='D', name='date'))
-    else:
-        spot_df = pd.DataFrame(index=cdate_rng)
-    index_codes = [ticker for ticker in index_map.keys() if index_map[ticker] not in spot_df.columns]
-    data_df = load_codes_from_edb(index_codes, source='ifind', column_name='index_code',
-                                  start_date=start_date)
-    data_df = data_df.rename(columns=index_map).dropna(how='all')
-    data_df = data_df.reindex(index=cdate_rng)
-    spot_df = pd.concat([spot_df, data_df], axis=1)
-    spot_df = process_spot_df(spot_df, adjust_time=True)
-
-    stock_df = load_int_stock_daily(["XOM.N", "BP.N", 'CVX.N', 'SU.N', 'EOG.N', 'APA.N',
-                                     'COP.N', 'VLO.N', 'PSX.N', 'MPC.N', 'PBF.N',
-                                     "SPY.P", "GDX.P", "USO.P", "GLD.P"])
-    stock_pct_chg = stock_df.loc[:, stock_df.columns.get_level_values(1)=='close'].droplevel(level=[1], axis=1).pct_change()
-    spot_dict = {}
-    spot_dict["us_oil_prod_etf_perf"] = (1 + stock_pct_chg[['VLO.N', 'PSX.N', 'MPC.N', 'PBF.N']].mean(axis=1)).cumprod()
-    for nb in [2, 3, 4]:
-        fef_nb = nearby('FEF', n=nb,
-                        start_date=max(start_date, datetime.date(2016, 7, 1)),
-                        end_date=run_date.date(),
-                        roll_rule='-2b', roll_col='settle',
-                        freq='d', shift_mode=2)
-        fef_nb.index = pd.to_datetime(fef_nb.index)
-        fef_nb.loc[fef_nb['settle'] <= 0, 'settle'] = np.nan
-        fef_nb.loc[fef_nb['close'] <= 0, 'close'] = np.nan
-        fef_nb['fe_viu'] = spot_df['viu_fe']
-        spot_dict[f'FEFc{nb-1}'] = fef_nb['settle']
-        spot_dict[f'FEFc{nb-1}_close'] = fef_nb['close']
-        spot_dict[f'FEFc{nb-1}_shift'] = fef_nb['shift']
-        fef_nb['viu_fe'] = spot_df['viu_fe'].ffill()
-        adj_flag = (fef_nb.index>=pd.Timestamp("2025-09-01")) & (fef_nb['contract'].apply(lambda cont: int(cont[-4:-2])>=26))
-        fef_nb['cont_adj'] = 0.0
-        fef_nb.loc[adj_flag, 'cont_adj'] = fef_nb['viu_fe']*1.4
-        spot_dict[f'FEFc{nb-1}_pxadj'] = fef_nb['cont_adj']
-
-    spot_dict['FEF_c1_c2_ratio'] = (spot_dict['FEFc1']/np.exp(spot_dict['FEFc1_shift']) + spot_dict['FEFc1_pxadj']) \
-        / (spot_dict['FEFc2']/np.exp(spot_dict['FEFc2_shift'])+ spot_dict['FEFc2_pxadj'])
-    spot_dict['FEF_c123fly_ratio'] = (spot_dict['FEFc1']/np.exp(spot_dict['FEFc1_shift']) + spot_dict['FEFc1_pxadj']) \
-        * (spot_dict['FEFc3'] / np.exp(spot_dict['FEFc3_shift']) + spot_dict['FEFc3_pxadj']) \
-        / ((spot_dict['FEFc2'] / np.exp(spot_dict['FEFc2_shift']) + spot_dict['FEFc2_pxadj'])**2)
-    spot_dict['FEF_ryield'] = (np.log(spot_dict['FEFc1'] / np.exp(spot_dict['FEFc1_shift']) + spot_dict['FEFc1_pxadj']) -
-                             np.log(spot_dict['FEFc2'] / np.exp(spot_dict['FEFc2_shift']) + spot_dict['FEFc2_pxadj'])) * 12
-    spot_dict['FEF_basmom'] = np.log(1 + spot_dict['FEFc1'].dropna().pct_change()) - \
-                            np.log(1 + spot_dict['FEFc2'].dropna().pct_change())
-    spot_dict['FEF_basmom10'] = spot_dict['FEF_basmom'].dropna().rolling(10).sum()
-    spot_dict['FEF_basmom5'] = spot_dict['FEF_basmom'].dropna().rolling(5).sum()
-    spot_df = pd.concat([spot_df, pd.DataFrame(spot_dict)], axis=1)
-    return spot_df
-
-
 def save_signal_to_db(asset, factor_name, signal_ts, run_date,
                       roll_label='hot', freq='d1', flavor='mysql', db_writer=None):
     fact_config = {'roll_label': roll_label, 'freq': freq,
@@ -821,166 +755,8 @@ def save_signal_to_db(asset, factor_name, signal_ts, run_date,
                      db_writer=db_writer)
 
 
-def load_hist_fut_prices(markets, start_date, end_date,
-                         shift_mode=2, roll_name='hot', nb_cont=1, freq='d1'):
-    fields = ['contract', 'open', 'high', 'low', 'close', 'volume', 'openInterest', 'diff_oi', 'expiry', 'mth', 'shift']
-    data_df = pd.DataFrame()
-    for prodcode in markets:
-        for nb in range(nb_cont):
-            freq = freq[0]
-            if roll_name == 'CAL_30b':
-                roll = '-30b'
-                if prodcode in ["IF", "IC", "IH", "IM"]:
-                    roll = '0b'
-                elif prodcode in ['cu', 'al', 'zn', 'pb', 'sn', 'ss', 'lu']:
-                    roll = '-25b'
-                elif prodcode in ['ni', 'jd', 'lh', 'eg',]:
-                    roll = '-35b'
-                elif prodcode in ['v', 'MA', 'rb', 'hc']:
-                    roll = '-28b'
-                elif prodcode in ['sc', 'eb', 'T', 'TF', 'TS', 'TL']:
-                    roll = '-20b'
-                elif prodcode in ['au', 'ag']:
-                    roll = '-15b'
-                sdate = max(start_date, sim_start_dict.get(prodcode, start_date))
-                xdf = nearby(prodcode, nb+1,
-                                    start_date=sdate,
-                                    end_date=end_date,
-                                    shift_mode=shift_mode,
-                                    freq=freq,
-                                    roll_rule=roll).reset_index()
-            else:
-                xdf = dataseries.nearby(prodcode,
-                                        nb + 1,
-                                        start_date=start_date,
-                                        end_date=end_date,
-                                        shift_mode=shift_mode,
-                                        freq=freq,
-                                        roll_name=roll_name)
-            xdf['expiry'] = pd.to_datetime(xdf.apply(lambda x: contract_expiry(x['contract'], curr_dt=x['date']), axis=1))
-            xdf['contmth'] = xdf.apply(lambda x: inst2contmth(x['contract'], x['date']), axis=1)
-            xdf['mth'] = xdf['contmth'].apply(lambda x: x // 100 * 12 + x % 100)
-            xdf['product'] = f"{prodcode}c{nb + 1}"
-            data_df = pd.concat([data_df, xdf])
-    if 'm' in freq:
-        index_col = 'datetime'
-    else:
-        index_col = 'date'
-    df = pd.pivot_table(data_df.reset_index(), index=index_col, columns='product', values=list(fields),
-                        aggfunc='last')
-    df = df.reorder_levels([1, 0], axis=1).sort_index(axis=1)
-    df.columns.rename(['product', 'field'], inplace=True)
-    df.index = pd.to_datetime(df.index)
-    return df
-
-
-def find_recent_close_price_nans(price_df, run_date, lookback_days=5):
-    """Return missing close-price locations in the latest trading-date rows.
-
-    ``price_df`` normally has ``(product, field)`` MultiIndex columns. The
-    check is limited to rows on or before ``run_date`` and uses the last
-    ``lookback_days`` available dates, rather than calendar days.
-    """
-    if not isinstance(price_df, pd.DataFrame):
-        raise TypeError("price_df must be a pandas DataFrame")
-    if lookback_days <= 0:
-        raise ValueError("lookback_days must be positive")
-    if price_df.empty:
-        raise ValueError("price_df is empty")
-
-    if isinstance(price_df.columns, pd.MultiIndex):
-        if 'field' in price_df.columns.names:
-            field_level = price_df.columns.names.index('field')
-        else:
-            candidate_levels = [
-                level
-                for level in range(price_df.columns.nlevels)
-                if 'close' in set(price_df.columns.get_level_values(level))
-            ]
-            if len(candidate_levels) != 1:
-                raise ValueError("Unable to identify the close-price column level")
-            field_level = candidate_levels[0]
-        if 'close' not in set(price_df.columns.get_level_values(field_level)):
-            raise ValueError("price_df has no close-price columns")
-        close_df = price_df.xs('close', axis=1, level=field_level)
-    else:
-        close_columns = [column for column in price_df.columns if column == 'close']
-        if not close_columns:
-            raise ValueError("price_df has no close-price columns")
-        close_df = price_df.loc[:, close_columns]
-
-    close_df = close_df.copy()
-    close_df.index = pd.to_datetime(close_df.index)
-    close_df = close_df.sort_index()
-    close_df = close_df.loc[close_df.index.normalize() <= pd.Timestamp(run_date)]
-    recent_close = close_df.tail(lookback_days)
-    if recent_close.empty:
-        raise ValueError(f"price_df has no rows on or before {run_date}")
-
-    missing_rows = []
-    missing_mask = recent_close.isna()
-    for date_value, row in missing_mask.iterrows():
-        for product in row.index[row.to_numpy()]:
-            missing_rows.append(
-                {
-                    'date': pd.Timestamp(date_value),
-                    'product': str(product),
-                }
-            )
-    return pd.DataFrame(missing_rows, columns=['date', 'product'])
-
-
-def check_recent_close_prices(
-        price_df, run_date, lookback_days=5, email_notify=True):
-    """Check recent closes and email an alarm when any values are NaN."""
-    missing = find_recent_close_price_nans(
-        price_df,
-        run_date=run_date,
-        lookback_days=lookback_days,
-    )
-    if missing.empty:
-        logging.info(
-            "recent close-price check passed for the last %s trading dates",
-            lookback_days,
-        )
-        return missing
-
-    missing = missing.copy()
-    missing['date'] = pd.to_datetime(missing['date']).dt.strftime('%Y-%m-%d')
-    logging.error(
-        "recent close-price check found %s NaN values:\n%s",
-        len(missing),
-        missing.to_string(index=False),
-    )
-    if email_notify:
-        date_summary = (
-            missing.groupby('date')['product']
-            .agg(lambda values: ', '.join(sorted(values)))
-            .reset_index(name='products_with_nan_close')
-        )
-        subject = (
-            f"{LOCAL_PC_NAME} futures close price NaN alarm"
-            f"<{pd.Timestamp(run_date).strftime('%Y.%m.%d')}>"
-        )
-        html = (
-            "<html><head></head><body>"
-            f"<p>Found <strong>{len(missing)}</strong> missing close-price "
-            f"observations within the latest {lookback_days} available "
-            "trading dates on or before the factor update date.</p>"
-            "<p>Missing products by date:</p>"
-            f"{date_summary.to_html(index=False, escape=True)}"
-            "<p>Detailed missing observations:</p>"
-            f"{missing.to_html(index=False, escape=True)}"
-            "</body></html>"
-        )
-        sent = send_html_by_smtp(EMAIL_QQ, NOTIFIERS, subject, html)
-        if not sent:
-            logging.error("failed to send the close-price NaN alarm email")
-    return missing
-
-
 def update_db_factor(run_date=datetime.date.today(), flavor='mysql',
-                     close_check_days=5, email_notify=True):
+                     close_check_days=10):
     roll_name='hot'
     freq='d1'
     signal_start = '60b'
@@ -1034,7 +810,7 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql',
         price_df,
         run_date=run_date,
         lookback_days=close_check_days,
-        email_notify=email_notify,
+        email_notify=EMAIL_NOTIFY,
     )
 
     logging.info("loading fundamental data ... ")

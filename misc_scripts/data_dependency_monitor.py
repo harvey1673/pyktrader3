@@ -1110,14 +1110,33 @@ def _build_email_html(
     html += pd.DataFrame([stats]).to_html(index=False)
 
     stale_df = (
-        fdf.loc[fdf["age_days"] >= 3, ["spot_id", "alias", "last_date", "age_days"]]
+        fdf.loc[
+            fdf["age_days"] >= 3,
+            [
+                "spot_id",
+                "alias",
+                "last_date",
+                "prev_date",
+                "last_value",
+                "prev_value",
+                "age_days",
+            ],
+        ]
         .sort_values("age_days", ascending=False)
-        .head(30)
+        .head(50)
         .copy()
     )
     if len(stale_df) > 0:
         stale_df["last_date"] = stale_df["last_date"].dt.strftime("%Y-%m-%d")
-        html += "<br>Top stale series (age >= 3d):<br>"
+        stale_df["prev_date"] = stale_df["prev_date"].dt.strftime("%Y-%m-%d")
+        stale_df["date_gap_days"] = (
+            pd.to_datetime(stale_df["last_date"], errors="coerce")
+            - pd.to_datetime(stale_df["prev_date"], errors="coerce")
+        ).dt.days
+        stale_df["value_change"] = pd.to_numeric(
+            stale_df["last_value"], errors="coerce"
+        ) - pd.to_numeric(stale_df["prev_value"], errors="coerce")
+        html += "<br>Top stale series (age >= 3d) with last/previous values:<br>"
         html += stale_df.to_html(index=False)
 
     html += "</p></body></html>"

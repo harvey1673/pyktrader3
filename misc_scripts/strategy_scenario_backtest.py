@@ -1460,7 +1460,7 @@ def build_generated_historical_provider(
         single_factors,
         spread_config,
     )
-    from pycmqlib3.analytics.backtest_utils import load_fun_data
+    from misc_scripts.update_fut_prices import load_fun_data
     from pycmqlib3.strategy.signal_repo import (
         commod_phycarry_dict,
         get_funda_signal_from_store,
