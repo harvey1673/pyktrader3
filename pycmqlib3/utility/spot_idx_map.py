@@ -983,9 +983,12 @@ index_map = {
 }
 
 mysteel_index_map = {
-    'ID00408152': 'ni_ore_1.6_php_cif',
+    'ID00408153': 'ni_ore_1.5_php_cif', # '红土镍矿_1_5pctni_15_25pctfe_33_35pct含水_菲律宾产_cif汇总价格日'
     'ID00408155': 'ni_ore_1.8_others_cif',
     'ID01037437': 'pbf_import_profit',
+    'RE00024794': 'jmb_import_profit',
+    'RE00024799': 'macf_import_profit',
+    'RE00024787': 'nmf_import_profit', #'纽曼粉_即期合约_现货落地利润日',
     'ID01168763': 'cu_sinv_cn_d',
     'ID01200757': 'cu_sinv_bonded_cn_d',
     'ID01245758': 'ps_util_cn_mth',
@@ -1007,9 +1010,18 @@ mysteel_index_map = {
     'ID02069937': 'lc_mine_inv_trader_w',
     'ID02215004': 'lc_margin_carbonation',
     'ID02424817': 'cu_mkt_senti_idx_w',
-    'RE00024794': 'jmb_import_profit',
-    'RE00024799': 'macf_import_profit',
     'RE00024806': 'jm_import_throughput_gantimaodu',
+    'ID00184174': 'coke_senti_124cokery',  # '焦炭_124家独立焦化厂_市场情绪指数周'
+    'ID00184175': 'coke_senti_31mills',  # '焦炭_31家钢铁企业_市场情绪指数周'
+    'ID00184176': 'coke_senti_38mines',  # '焦炭_市场情绪指数_38家煤矿企业周'
+    'ID00184178': 'coke_senti_12traders',  # '焦炭_市场情绪指数_12家贸易商周'
+    'ID00184490': 'ckc_senti_31mill',  # '焦煤_31家钢铁企业_市场情绪指数周'
+    'ID00184492': 'ckc_senti_38mines',  # '焦煤_38家煤矿企业_市场情绪指数周'
+    'ID00184494': 'ckc_senti_14traders',  # '焦煤_14家贸易商_市场情绪指数周'
+    'ID00184497': 'ckc_senti_150cokery',  # '焦煤_150家独立焦化厂_市场情绪指数周'
+    'ID01011788': 'ckc_senti_10washery',  # '焦煤_样本洗煤厂10家_市场情绪指数周'
+    'ID01109378': 'coke_dprod_247mill', # '焦炭_247家钢铁企业_日均产量_中国周',
+    'ID00187978': 'coke_dprod_230cokery',  # '焦炭_230家独立焦化厂_日均产量_中国周',
     'ID00188314': 'ao_inv_ports_cn_w',  # 氧化铝_港口库存_中国周
     'ID00188315': 'pb_ingot_sinv_cn_d',  # 铅锭_现货库存日
     'ID01167269': 'pb_sec_reflector_profit',  # 再生铅_反射炉_利润日
@@ -1021,7 +1033,6 @@ mysteel_index_map = {
     'ID01721691': 'ao_minv_cn',  # 氧化铝_厂内库存_中国_电解铝厂周
     'ID01721692': 'ao_inv_in_transit_cn',  # 氧化铝_站台_在途库存_中国周
     'ID01721697': 'ao_inv_total_cn',  # 氧化铝_库存_中国周
-
 }
 
 
@@ -1173,7 +1184,8 @@ def process_spot_df(spot_df, adjust_time=False):
     spot_dict['rb_hc_steel_spd'] = spot_dict['rebar_billet'] - spot_dict['crc_hrc']
     spot_dict['pbf_iocj_ssf_spd'] = spot_df['pbf_qd'] - spot_df['iocj_qd'] * 0.4 - spot_df['ssf_qd'] * 0.6
     spot_dict["coke_inv_3ports"] = spot_df[["coke_inv_ports_rz", "coke_inv_ports_tj", "coke_inv_ports_lyg"]].sum(axis=1, skipna=False).dropna()
-
+    if 'coke_dprod_230cokery' in spot_df.columns and 'coke_dprod_247mill' in spot_df.columns:
+        spot_dict['coke_dprod_total'] = spot_df['coke_dprod_230cokery'] + spot_df['coke_dprod_247mill']
     port_fee = 25
     spot_dict['import_arb_pbf'] = vat_adj(spot_df['pbf_qd'] - port_fee)/spot_df['usdcnh_spot']/0.915 - spot_df['pbf_sb']
     spot_dict['import_arb_nmf'] = vat_adj(spot_df['nmf_qd'] - port_fee)/spot_df['usdcnh_spot']/0.917 - spot_df['nmf_sb']

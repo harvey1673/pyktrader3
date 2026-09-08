@@ -3,10 +3,10 @@
 This script inspects:
 - signal definitions in pycmqlib3.strategy.signal_repo
 - routing in misc_scripts.fun_factor_update.factors_by_asset
-- index alias mapping in pycmqlib3.utility.spot_idx_map.index_map
+- iFind and MySteel alias mappings in pycmqlib3.utility.spot_idx_map
 
 It produces a report that links each signal to required spot_df data fields and,
-where possible, to upstream index codes in index_map.
+where possible, to source-qualified upstream IDs (ifind:CODE or mysteel:CODE).
 """
 
 from __future__ import annotations
@@ -47,7 +47,7 @@ from pycmqlib3.utility.dbaccess import load_codes_from_edb
 from pycmqlib3.utility.email_tool import send_html_by_smtp
 from pycmqlib3.utility.exch_ctd_func import io_brand_dict, io_ctd_basis, si_ctd_basis
 from pycmqlib3.utility.sec_bits import EMAIL_NOTIFY, EMAIL_QQ, LOCAL_PC_NAME, NOTIFIERS
-from pycmqlib3.utility.spot_idx_map import index_map, process_spot_df
+from pycmqlib3.utility.spot_idx_map import index_map, mysteel_index_map, process_spot_df
 
 
 IGNORED_PRICE_FEATURES: Set[str] = {
@@ -596,7 +596,7 @@ def build_spot_df_column_universe() -> Set[str]:
     - per-asset additions in update_db_factor (px/drng/logret/colr/ryield/basmom*/phycarry)
     - hardcoded spread additions from update_db_factor
     """
-    base_cols: Set[str] = set(index_map.values())
+    base_cols: Set[str] = set(effective_source_index_map().values())
     cols: Set[str] = set(base_cols)
     update_spot_map = build_update_db_factor_formula_dependency_map()
     cols.update(derive_process_spot_df_columns(base_cols))
@@ -629,6 +629,19 @@ def build_spot_df_column_universe() -> Set[str]:
 
     cols.update({"hc_rb_diff", "rb_hc_basmom_diff", "rb_hc_phycarry_diff"})
     return cols
+
+
+def effective_source_index_map() -> Dict[str, str]:
+    """Return source-qualified IDs, with MySteel owning shared aliases.
+
+    Qualified keys keep identical provider IDs distinct throughout the reports.
+    """
+    mysteel_aliases = set(mysteel_index_map.values())
+    return {
+        **{f"ifind:{code}": alias for code, alias in index_map.items()
+           if alias not in mysteel_aliases},
+        **{f"mysteel:{code}": alias for code, alias in mysteel_index_map.items()},
+    }
 
 
 def invert_index_map(index_mapping: Dict[str, str]) -> Dict[str, List[str]]:
@@ -779,7 +792,7 @@ def build_dependency_rows(
     selected = [s for s in signal_names if s in signal_store]
 
     spot_df_cols = build_spot_df_column_universe()
-    alias_to_codes = invert_index_map(index_map)
+    alias_to_codes = invert_index_map(effective_source_index_map())
     process_formula_deps = build_process_spot_formula_dependency_map()
     ctd_formula_deps = build_ctd_basis_formula_dependency_map()
     update_formula_deps = build_update_db_factor_formula_dependency_map()
@@ -881,22 +894,20 @@ def build_dependency_rows(
 def collect_production_index_codes(
     rows: Iterable[Dict[str, Any]],
 ) -> Dict[str, str]:
-    """Return {index_code: alias} for codes referenced in dependency rows.
+    """Return {source:index_code: alias} for referenced provider IDs.
 
     Only rows with resolved index_codes (in_spot_df == 'yes' or the
     code is directly found in index_map) are included.  Transitive
     codes are included as well so upstream data can also be monitored.
     """
-    code_to_alias: Dict[str, str] = {v: k for k, v in index_map.items()}
-    # Build alias -> [codes] once.
-    alias_to_codes = invert_index_map(index_map)
+    source_map = effective_source_index_map()
     result: Dict[str, str] = {}
     for row in rows:
         for field in ("index_codes", "transitive_index_codes"):
             for code in row.get(field, "").split("|"):
                 code = code.strip()
-                if code and code in index_map:
-                    result[code] = index_map[code]
+                if code and code in source_map:
+                    result[code] = source_map[code]
     return result
 
 
@@ -916,27 +927,33 @@ def generate_data_freshness_report(
     - prev_value   : value on prev_date
 
     Args:
-        index_codes: Mapping of {index_code: alias} to query.
+        index_codes: Mapping of {source:index_code: alias} to query.
         output_csv:  Destination CSV file path.
-        source:      EDB source list (defaults to ['ifind']).
+        source:      EDB source list (defaults to ['ifind', 'mysteel']).
     """
     if source is None:
-        source = ["ifind"]
+        source = ["ifind", "mysteel"]
 
     code_list = sorted(index_codes.keys())
     if not code_list:
         print("No index codes to report on.")
         return
 
-    try:
+    # Query each provider separately: EDB pivots do not retain the source.
+    pivots = []
+    selected_codes = []
+    for provider in source:
+        provider_codes = [key for key in code_list if key.startswith(provider + ":")]
+        if not provider_codes:
+            continue
+        raw_codes = [key.split(":", 1)[1] for key in provider_codes]
         pivot = load_codes_from_edb(
-            code_list,
-            source=source,
-            column_name="index_code",
+            raw_codes, source=provider, column_name="index_code"
         )
-    except Exception as exc:
-        print(f"Error loading EDB data: {exc}")
-        return
+        pivots.append(pivot.rename(columns={code: f"{provider}:{code}" for code in raw_codes}))
+        selected_codes.extend(provider_codes)
+    code_list = sorted(selected_codes)
+    pivot = pd.concat(pivots, axis=1) if pivots else pd.DataFrame()
 
     records: List[Dict[str, Any]] = []
     for code in code_list:
@@ -944,7 +961,8 @@ def generate_data_freshness_report(
         if code not in pivot.columns:
             records.append(
                 {
-                    "spot_id": code,
+                    "source": code.split(":", 1)[0],
+                    "spot_id": code.split(":", 1)[1],
                     "alias": alias,
                     "last_date": "",
                     "last_value": "",
@@ -959,7 +977,8 @@ def generate_data_freshness_report(
         if len(series) == 0:
             records.append(
                 {
-                    "spot_id": code,
+                    "source": code.split(":", 1)[0],
+                    "spot_id": code.split(":", 1)[1],
                     "alias": alias,
                     "last_date": "",
                     "last_value": "",
@@ -980,7 +999,8 @@ def generate_data_freshness_report(
 
         records.append(
             {
-                "spot_id": code,
+                "source": code.split(":", 1)[0],
+                    "spot_id": code.split(":", 1)[1],
                 "alias": alias,
                 "last_date": last_date,
                 "last_value": last_value,
@@ -992,6 +1012,7 @@ def generate_data_freshness_report(
 
     output_csv.parent.mkdir(parents=True, exist_ok=True)
     fieldnames = [
+        "source",
         "spot_id",
         "alias",
         "last_date",
@@ -1113,7 +1134,8 @@ def _build_email_html(
         fdf.loc[
             fdf["age_days"] >= 3,
             [
-                "spot_id",
+                "source",
+        "spot_id",
                 "alias",
                 "last_date",
                 "prev_date",
@@ -1210,9 +1232,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--edb-source",
         nargs="+",
-        default=["ifind"],
+        default=["ifind", "mysteel"],
         metavar="SOURCE",
-        help="EDB source(s) to query (default: ifind).",
+        help="EDB source(s) to query (default: ifind mysteel).",
     )
     parser.add_argument(
         "--email-notify",

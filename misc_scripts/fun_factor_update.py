@@ -35,6 +35,10 @@ single_factors = {
     #'io_inv_rmv_ratio_1y': ['i'],
     'io_mix_arb_hys2y': ['i'],
     'io_mix_arb_hys4y': ['i'],
+    'ckc_auction_rate_qtl': ['jm', 'j'],
+    'coke_senti_cokery_qtl': ['jm', 'j'],
+    'coke_senti_mine_qtl': ['jm', 'j'],
+    'coke_senti_trader_qtl': ['jm', 'j'],
     'nmf_yoy_qtl': ['i'],
     'macf_yoy_qtl': ['i'],
     'io_millinv_lyoy': ['hc', 'i'],
@@ -264,6 +268,8 @@ factors_by_beta_neutral = {
     'auag_csi500_zs_st': [('au', 'ag', 1),],
     'coal_mom_spd_st': [('SF', 'SM', 1), ('jm', 'i', 1), ('j', 'i', 1),],
     'coal_mom_spd_yr': [('SF', 'SM', 1), ('jm', 'i', 1), ('j', 'i', 1),],
+    'coke_dprod_lt_hlr': [('j', 'jm', 1)],
+    'coke_dprod_st_qtl': [('j', 'jm', 1)],
     # 'rbhc_px_diff_mds': [('hc', 'rb', 1 )],
     # 'rbhc_px_diff_lyoy_mds': [('hc', 'rb', 1 )],
     # 'rbhc_phycarry_diff_zs': [('hc', 'rb', 1 )],
@@ -984,8 +990,9 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql',
 
     logging.info("updating factor for beta neutral ratio ...")
     beta_win = 244
-    asset_pairs = [('rb', 'i'), ('hc', 'i'), ('i', 'rb'), ('i', 'hc'), ('j', 'i'), ('jm', 'i'), ('jm', 'rb'), ('jm', 'hc'),
-                   ('au', 'ag'), ('au', 'cu'), ('au', 'rb'), ('SF', 'SM')]
+    asset_pairs = [('rb', 'i'), ('hc', 'i'), ('i', 'rb'), ('i', 'hc'),
+                   ('j', 'i'), ('j', 'jm'), ('jm', 'i'), ('jm', 'rb'), ('jm', 'hc'),
+                   ('au', 'ag'), ('au', 'cu'), ('au', 'rb'), ('SF', 'SM'), ('SM', 'SF')]
     beta_dict = {}
     for trade_asset, index_asset in asset_pairs:
         key = '_'.join([trade_asset, index_asset, 'beta'])
