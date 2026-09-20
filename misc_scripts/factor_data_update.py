@@ -275,13 +275,13 @@ def update_port_position(run_date=datetime.date.today()):
             if np.isnan(target_pos[prodcode]):
                 target_pos[prodcode] = 0
                 continue
-            if prodcode in ['lc', 'ps']:
+            if prodcode in ['ps']:
                 target_pos[prodcode] = int((target_pos[prodcode] / 5 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 5
-            elif prodcode in ['MA']:
-                target_pos[prodcode] = int((target_pos[prodcode] / 4 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 4
+            # elif prodcode in ['MA']:
+            #     target_pos[prodcode] = int((target_pos[prodcode] / 4 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 4
             elif prodcode in ['eb', 'eg', 'pg', 'l', 'v', 'pp']:
                 target_pos[prodcode] = int((target_pos[prodcode] / 8 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 8
-            elif prodcode in ['AP', 'PX']:
+            elif prodcode in ['lc', ]:
                 target_pos[prodcode] = int((target_pos[prodcode] / 2 + (0.5 if target_pos[prodcode] > 0 else -0.5))) * 2
             else:
                 target_pos[prodcode] = int(target_pos[prodcode] + (0.5 if target_pos[prodcode] > 0 else -0.5))
