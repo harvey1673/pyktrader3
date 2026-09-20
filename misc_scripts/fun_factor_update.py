@@ -258,6 +258,8 @@ factors_by_beta_neutral = {
     'io_mix_arb_spd_hys4y': [('i', 'rb', 1), ('i', 'hc', 1)],
     'ckc_pinv_spd_hlr': [('jm', 'rb', 1), ('jm', 'hc', 1)],
     'rbsales_spd_lunar_qtl': [('rb', 'i', 1)],
+    'stl_dmd_spd_lunar_zs': [('rb', 'i', 1), ('hc', 'i', 1)],
+    'stl_dmd_spd_cal_zs': [('rb', 'i', 1), ('hc', 'i', 1)],
     'fef_c1_c2_ratio_spd_qtl': [('rb', 'i', 1), ('hc', 'i', 1)],
     'fef_basmom_spd_qtl': [('rb', 'i', 1), ('hc', 'i', 1)],
     'fef_basmom5_spd_qtl': [('rb', 'i', 1), ('hc', 'i', 1), ('j', 'i', 1)],
