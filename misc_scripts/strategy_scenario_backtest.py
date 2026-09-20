@@ -52,7 +52,19 @@ DEFAULT_SHEET_NAME = "signal_weights"
 BUSINESS_DAYS_PER_YEAR = 244
 DEFAULT_COST_RATE = 2e-4
 BOND_COST_RATE = 0.6e-4
-DEFAULT_PNL_TENORS = ("3m", "6m", "1y", "2y", "3y", "4y", "5y", "7y", "9y", "10y")
+DEFAULT_PNL_TENORS = (
+    "1m",
+    "3m",
+    "6m",
+    "1y",
+    "2y",
+    "3y",
+    "4y",
+    "5y",
+    "7y",
+    "9y",
+    "10y",
+)
 
 
 @dataclass(frozen=True)
@@ -124,6 +136,9 @@ class PortfolioResult:
     gross_exposure: pd.DataFrame
     signal_pnl: pd.DataFrame
     signal_asset_pnl: Mapping[str, pd.DataFrame]
+    signal_holdings: Mapping[str, pd.DataFrame] = field(default_factory=dict)
+    signal_trade_volume: Mapping[str, pd.DataFrame] = field(default_factory=dict)
+    signal_gross_exposure: Mapping[str, pd.DataFrame] = field(default_factory=dict)
 
     @property
     def portfolio_pnl(self) -> pd.Series:
@@ -291,23 +306,21 @@ def load_excel_weight_scenarios(
             template.strategy_file.lower(),
             Path(template.strategy_file).stem.lower(),
         }
-        for row_number in range(2, worksheet.max_row + 1):
-            strategy_value = worksheet.cell(row_number, headers["strategy"]).value
+        for row_number, row in enumerate(
+            worksheet.iter_rows(min_row=2, values_only=True), start=2
+        ):
+            strategy_value = row[headers["strategy"] - 1]
             if strategy_value is None:
                 continue
             strategy_name = str(strategy_value).strip().lower()
             if strategy_name not in accepted_names:
                 continue
             matched_rows += 1
-            factor_value = worksheet.cell(row_number, headers["factor_name"]).value
-            signal_value = worksheet.cell(row_number, headers["signal_name"]).value
-            type_value = worksheet.cell(row_number, headers["type"]).value
-            current_weight_value = worksheet.cell(
-                row_number, headers["curr_weight"]
-            ).value
-            proposed_weight_value = worksheet.cell(
-                row_number, headers["new_weight"]
-            ).value
+            factor_value = row[headers["factor_name"] - 1]
+            signal_value = row[headers["signal_name"] - 1]
+            type_value = row[headers["type"] - 1]
+            current_weight_value = row[headers["curr_weight"] - 1]
+            proposed_weight_value = row[headers["new_weight"] - 1]
             if factor_value is None or not str(factor_value).strip():
                 raise ValueError(f"Row {row_number}: factor_name must not be blank")
             factor_name = str(factor_value).strip()
@@ -728,6 +741,13 @@ def compose_portfolio(
             path.gross_asset_pnl.reindex(index=index, columns=all_assets).fillna(0.0)
             * scale
         )
+    signal_trade_volume = {
+        name: holdings.diff().abs().fillna(0.0)
+        for name, holdings in weighted_holdings.items()
+    }
+    signal_gross_exposure = {
+        name: holdings.abs() for name, holdings in weighted_holdings.items()
+    }
 
     gross_asset_pnl = sum(weighted_gross_pnl.values())
     aggregate_holdings = sum(weighted_holdings.values())
@@ -741,7 +761,7 @@ def compose_portfolio(
         gross_exposure = pd.DataFrame(0.0, index=index, columns=all_assets)
         for factor_name, holdings in weighted_holdings.items():
             path = paths[factor_name]
-            trades = holdings.diff().abs().fillna(0.0)
+            trades = signal_trade_volume[factor_name]
             rates = path.cost_rates.reindex(all_assets).fillna(DEFAULT_COST_RATE)
             signal_costs[factor_name] = trades.multiply(rates * cost_multiplier)
             trade_volume = trade_volume.add(trades, fill_value=0.0)
@@ -772,9 +792,7 @@ def compose_portfolio(
                 rates.loc[asset] = next(iter(observed), DEFAULT_COST_RATE)
             bucket_cost = bucket_trades.multiply(rates * cost_multiplier)
 
-            individual_trades = {
-                name: weighted_holdings[name].diff().abs().fillna(0.0) for name in names
-            }
+            individual_trades = {name: signal_trade_volume[name] for name in names}
             allocation_base = sum(individual_trades.values()).replace(0.0, np.nan)
             for name in names:
                 allocation = individual_trades[name].div(allocation_base)
@@ -811,6 +829,9 @@ def compose_portfolio(
         gross_exposure=gross_exposure,
         signal_pnl=signal_pnl,
         signal_asset_pnl=signal_asset_pnl,
+        signal_holdings=weighted_holdings,
+        signal_trade_volume=signal_trade_volume,
+        signal_gross_exposure=signal_gross_exposure,
     )
 
 
@@ -1272,6 +1293,68 @@ def _load_saved_daily_futures(as_of: dt.date) -> pd.DataFrame:
     return pd.read_parquet(eligible[0])
 
 
+def _append_spread_contract_prices(
+    futures: pd.DataFrame,
+    specs: Sequence[SignalSpec],
+    strategy_assets: Sequence[str],
+    *,
+    factors_by_spread2: Mapping[str, Sequence[str]],
+    spread_config: Mapping[str, Any],
+    end_date: dt.date,
+    price_loader: Callable[..., pd.DataFrame] | None = None,
+) -> pd.DataFrame:
+    """Add the additive back-adjusted spread legs used by the prod notebook."""
+
+    requirements: dict[tuple[str, int, str], None] = {}
+    allowed_assets = set(strategy_assets)
+    for spec in specs:
+        for spread_name in factors_by_spread2.get(spec.name, ()):
+            legs, _vol_window, roll_rule, contract_number = spread_config[spread_name]
+            if not all(asset in allowed_assets for asset, _weight in legs):
+                continue
+            for asset, _weight in legs:
+                requirements[(asset, int(contract_number), str(roll_rule))] = None
+    if not requirements:
+        return futures
+
+    if price_loader is None:
+        from pycmqlib3.utility.dataseries import nearby_wt
+
+        price_loader = nearby_wt
+
+    output = futures.copy()
+    history_start = max(
+        dt.date(2015, 1, 1), pd.Timestamp(output.index.min()).date()
+    )
+    additions: list[pd.DataFrame] = []
+    for asset, contract_number, roll_rule in requirements:
+        continuous = f"{asset}d{contract_number}"
+        column = (continuous, "close")
+        if column in output.columns:
+            continue
+        frame = price_loader(
+            asset,
+            n=contract_number,
+            start_date=history_start,
+            end_date=end_date,
+            roll_rule=roll_rule,
+            freq="d",
+            shift_mode=1,
+        )
+        if frame is None or frame.empty or "close" not in frame.columns:
+            raise ValueError(
+                f"Unable to build additive back-adjusted spread price '{continuous}' "
+                f"through {end_date}"
+            )
+        addition = frame.loc[:, ["close"]].copy()
+        addition.index = pd.to_datetime(addition.index)
+        addition.columns = pd.MultiIndex.from_tuples([column])
+        additions.append(addition)
+    if additions:
+        output = pd.concat([output, *additions], axis=1).sort_index()
+    return output
+
+
 def build_production_factor_provider(
     scenarios: Sequence[StrategyScenario],
     *,
@@ -1431,6 +1514,7 @@ def build_generated_historical_provider(
     default_cost_rate: float = DEFAULT_COST_RATE,
     price_loader: Callable[[dt.date], pd.DataFrame] | None = None,
     fundamental_loader: Callable[[dt.date], pd.DataFrame] | None = None,
+    spread_price_loader: Callable[..., pd.DataFrame] | None = None,
     metrics_class: type | None = None,
 ) -> FactorFrameSignalProvider:
     """Generate configured signals from historical spot and futures data.
@@ -1493,6 +1577,24 @@ def build_generated_historical_provider(
     futures.index = pd.to_datetime(futures.index)
     futures = futures.loc[: pd.Timestamp(end_date)]
 
+    specs = [
+        spec
+        for scenario in scenarios
+        for spec in scenario.signals.values()
+        if spec.weight != 0.0
+    ]
+    if not specs:
+        raise ValueError("Scenarios contain no non-zero signals")
+    futures = _append_spread_contract_prices(
+        futures,
+        specs,
+        assets,
+        factors_by_spread2=factors_by_spread2,
+        spread_config=spread_config,
+        end_date=end_date,
+        price_loader=spread_price_loader,
+    )
+
     spot_df = fundamental_loader(as_of)
     if spot_df is None or spot_df.empty:
         raise ValueError(f"Historical spot_df is unavailable as of {as_of}")
@@ -1517,15 +1619,6 @@ def build_generated_historical_provider(
         assets,
         commod_phycarry_dict=commod_phycarry_dict,
     )
-    specs = [
-        spec
-        for scenario in scenarios
-        for spec in scenario.signals.values()
-        if spec.weight != 0.0
-    ]
-    if not specs:
-        raise ValueError("Scenarios contain no non-zero signals")
-
     vol_window = int(reference.config.get("vol_win", 20))
     generator = HistoricalSignalGenerator(
         futures,
@@ -1612,28 +1705,42 @@ def trim_comparison_start(
 ) -> ScenarioComparison:
     """Recompute a comparison after excluding the provider warm-up period."""
 
-    cutoff = pd.Timestamp(start_date)
-
-    def trim(result: PortfolioResult) -> PortfolioResult:
-        return replace(
-            result,
-            gross_asset_pnl=result.gross_asset_pnl.loc[cutoff:],
-            costs_by_asset=result.costs_by_asset.loc[cutoff:],
-            net_asset_pnl=result.net_asset_pnl.loc[cutoff:],
-            aggregate_holdings=result.aggregate_holdings.loc[cutoff:],
-            trade_volume=result.trade_volume.loc[cutoff:],
-            gross_exposure=result.gross_exposure.loc[cutoff:],
-            signal_pnl=result.signal_pnl.loc[cutoff:],
-            signal_asset_pnl={
-                name: frame.loc[cutoff:]
-                for name, frame in result.signal_asset_pnl.items()
-            },
-        )
-
     return compare_portfolios(
-        trim(comparison.baseline),
-        trim(comparison.proposed),
+        trim_portfolio_start(comparison.baseline, start_date),
+        trim_portfolio_start(comparison.proposed, start_date),
         pnl_tenors=comparison.current_btmetrics.tenors,
+    )
+
+
+def trim_portfolio_start(
+    result: PortfolioResult, start_date: str | dt.date | pd.Timestamp
+) -> PortfolioResult:
+    """Exclude provider warm-up rows from one portfolio result."""
+
+    cutoff = pd.Timestamp(start_date)
+    return replace(
+        result,
+        gross_asset_pnl=result.gross_asset_pnl.loc[cutoff:],
+        costs_by_asset=result.costs_by_asset.loc[cutoff:],
+        net_asset_pnl=result.net_asset_pnl.loc[cutoff:],
+        aggregate_holdings=result.aggregate_holdings.loc[cutoff:],
+        trade_volume=result.trade_volume.loc[cutoff:],
+        gross_exposure=result.gross_exposure.loc[cutoff:],
+        signal_pnl=result.signal_pnl.loc[cutoff:],
+        signal_asset_pnl={
+            name: frame.loc[cutoff:] for name, frame in result.signal_asset_pnl.items()
+        },
+        signal_holdings={
+            name: frame.loc[cutoff:] for name, frame in result.signal_holdings.items()
+        },
+        signal_trade_volume={
+            name: frame.loc[cutoff:]
+            for name, frame in result.signal_trade_volume.items()
+        },
+        signal_gross_exposure={
+            name: frame.loc[cutoff:]
+            for name, frame in result.signal_gross_exposure.items()
+        },
     )
 
 

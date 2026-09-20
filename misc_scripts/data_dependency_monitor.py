@@ -32,6 +32,8 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from misc_scripts.fun_factor_update import (
     factors_by_asset,
+    factors_by_func,
+    factors_by_spread3,
     factors_by_beta_neutral,
     factors_by_spread,
     factors_by_spread2,
@@ -343,8 +345,9 @@ def build_function_spot_df_dependency_set(
             elif isinstance(stmt, ast.Expr):
                 _collect_spot_df_subscripts(stmt.value, env, deps)
 
-    env = dict(env_seed or {})
+    env = {}
     _bind_function_default_args(fn_node, env)
+    env.update(env_seed or {})
     walk(fn_node.body, env)
     return deps
 
@@ -743,28 +746,24 @@ def get_process_spot_formula_deps(required_key: str) -> List[str]:
     return []
 
 
-def get_production_signal_list() -> List[str]:
-    """Return the default production signal list.
+def production_signal_routes() -> Dict[str, Dict[str, Any]]:
+    """Use the same routing registries as the production factor updater."""
+    return {
+        "single_factors": single_factors,
+        "factors_by_asset": factors_by_asset,
+        "factors_by_spread": factors_by_spread,
+        "factors_by_spread2": factors_by_spread2,
+        "factors_by_spread3": factors_by_spread3,
+        "factors_by_beta_neutral": factors_by_beta_neutral,
+        "factors_by_func": factors_by_func,
+    }
 
-    Includes keys from single_factors, factors_by_asset,
-    factors_by_spread, factors_by_spread2, and
-    factors_by_beta_neutral.
-    """
-    names: List[str] = (
-        list(single_factors.keys())
-        + list(factors_by_asset.keys())
-        + list(factors_by_spread.keys())
-        + list(factors_by_spread2.keys())
-        + list(factors_by_beta_neutral.keys())
-    )
-    # Deduplicate while preserving order.
-    seen: Set[str] = set()
-    result: List[str] = []
-    for name in names:
-        if name not in seen:
-            seen.add(name)
-            result.append(name)
-    return result
+
+def get_production_signal_list() -> List[str]:
+    """Return every currently configured production signal, once."""
+    return list(dict.fromkeys(
+        name for registry in production_signal_routes().values() for name in registry
+    ))
 
 
 def build_dependency_rows(
@@ -776,20 +775,12 @@ def build_dependency_rows(
         signal_names: Signals to include. Defaults to the full
             production signal list (single_factors +
             factors_by_asset + factors_by_spread +
-            factors_by_spread2 + factors_by_beta_neutral).
+            factors_by_spread2 + factors_by_spread3 + factors_by_beta_neutral + factors_by_func).
     """
     if signal_names is None:
         signal_names = get_production_signal_list()
 
-    unknown = sorted(s for s in signal_names if s not in signal_store)
-    if unknown:
-        print(
-            f"Warning: {len(unknown)} signal(s) not found in "
-            f"signal_store and will be skipped: {unknown[:5]}"
-            + ("..." if len(unknown) > 5 else "")
-        )
-
-    selected = [s for s in signal_names if s in signal_store]
+    selected = list(dict.fromkeys(signal_names))
 
     spot_df_cols = build_spot_df_column_universe()
     alias_to_codes = invert_index_map(effective_source_index_map())
@@ -799,9 +790,37 @@ def build_dependency_rows(
 
     rows: List[Dict[str, Any]] = []
     for signal_name in selected:
-        required_keys, transitive_keys, feature_name, is_factor_by_asset = (
-            extract_required_keys_for_signal(signal_name)
-        )
+        route = "|".join(
+            name for name, registry in production_signal_routes().items()
+            if signal_name in registry
+        ) or "unrouted"
+        if signal_name in factors_by_func:
+            config = factors_by_func[signal_name]
+            required_keys = build_function_spot_df_dependency_set(
+                config["func"], env_seed=dict(config.get("args", {}))
+            )
+            if not required_keys:
+                rows.append({
+                    "signal": signal_name, "feature": config["func"].__name__,
+                    "route": route, "required_key": "", "transitive_key": "",
+                    "in_spot_df": "function_requires_review", "index_codes": "",
+                    "transitive_index_codes": "",
+                    "notes": "No direct spot_df keys extracted; price/calendar inputs and helper calls are not verified by this monitor.",
+                })
+                continue
+            transitive_keys, feature_name, is_factor_by_asset = set(), config["func"].__name__, False
+        elif signal_name not in signal_store:
+            rows.append({
+                "signal": signal_name, "feature": "", "route": route,
+                "required_key": "", "transitive_key": "",
+                "in_spot_df": "missing_recipe", "index_codes": "",
+                "transitive_index_codes": "", "notes": "Production signal is missing from signal_store.",
+            })
+            continue
+        else:
+            required_keys, transitive_keys, feature_name, is_factor_by_asset = (
+                extract_required_keys_for_signal(signal_name)
+            )
 
         if feature_name == "metal_px" or (
             is_factor_by_asset and feature_name in IGNORED_PRICE_FEATURES
@@ -810,7 +829,7 @@ def build_dependency_rows(
                 {
                     "signal": signal_name,
                     "feature": feature_name,
-                    "route": "factors_by_asset" if is_factor_by_asset else "non_factors_by_asset",
+                    "route": route,
                     "required_key": "",
                     "transitive_key": "",
                     "in_spot_df": "ignored_price_feature",
@@ -825,7 +844,7 @@ def build_dependency_rows(
                 {
                     "signal": signal_name,
                     "feature": feature_name,
-                    "route": "factors_by_asset" if is_factor_by_asset else "non_factors_by_asset",
+                    "route": route,
                     "required_key": "",
                     "transitive_key": "",
                     "in_spot_df": "temporarily_excluded",
@@ -841,7 +860,7 @@ def build_dependency_rows(
                 {
                     "signal": signal_name,
                     "feature": feature_name,
-                    "route": "factors_by_asset" if is_factor_by_asset else "non_factors_by_asset",
+                    "route": route,
                     "required_key": "",
                     "transitive_key": "",
                     "in_spot_df": "no_required_key",
@@ -853,7 +872,7 @@ def build_dependency_rows(
 
         for req_key in sorted(required_keys):
             idx_codes = alias_to_codes.get(req_key, [])
-            related_transitive: List[str] = []
+            related_transitive: List[str] = list(transitive_keys)
 
             # process_spot_df formula tracing for derived fields
             related_transitive.extend(get_process_spot_formula_deps(req_key))
@@ -878,7 +897,7 @@ def build_dependency_rows(
                 {
                     "signal": signal_name,
                     "feature": feature_name,
-                    "route": "factors_by_asset" if is_factor_by_asset else "non_factors_by_asset",
+                    "route": route,
                     "required_key": req_key,
                     "transitive_key": "|".join(related_transitive),
                     "in_spot_df": "yes" if req_key in spot_df_cols else "no",
@@ -1057,6 +1076,8 @@ def summarize_rows(rows: Iterable[Dict[str, Any]]) -> Dict[str, Any]:
 
     return {
         "signal_count": len(unique_signals),
+        "missing_recipe_count": sum(row["in_spot_df"] == "missing_recipe" for row in rows_list),
+        "function_review_count": sum(row["in_spot_df"] == "function_requires_review" for row in rows_list),
         "dependency_rows": len(active_rows),
         "unresolved_rows": len(unresolved),
         "unresolved_without_index_code": len(unresolved_with_no_index),
@@ -1211,7 +1232,7 @@ def parse_args() -> argparse.Namespace:
             "Signals to include in the dependency map. "
             "Defaults to all production signals "
             "(single_factors + factors_by_asset + factors_by_spread "
-            "+ factors_by_spread2 + factors_by_beta_neutral)."
+            "+ factors_by_spread2 + factors_by_spread3 + factors_by_beta_neutral + factors_by_func)."
         ),
     )
     parser.add_argument(

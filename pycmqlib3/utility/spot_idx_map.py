@@ -983,45 +983,23 @@ index_map = {
 }
 
 mysteel_index_map = {
-    'ID00408153': 'ni_ore_1.5_php_cif', # '红土镍矿_1_5pctni_15_25pctfe_33_35pct含水_菲律宾产_cif汇总价格日'
-    'ID00408155': 'ni_ore_1.8_others_cif',
-    'ID01037437': 'pbf_import_profit',
-    'RE00024794': 'jmb_import_profit',
-    'RE00024799': 'macf_import_profit',
-    'RE00024787': 'nmf_import_profit', #'纽曼粉_即期合约_现货落地利润日',
     'ID01168763': 'cu_sinv_cn_d',
     'ID01200757': 'cu_sinv_bonded_cn_d',
+    'ID02424817': 'cu_mkt_senti_idx_w',
     'ID01245758': 'ps_util_cn_mth',
     'ID01349545': 'lc_margin_cn_w',
-    'ID01490913': 'ni_sinv_27_cn',
-    'ID01532024': 'npi_import_profit_id_cn',
-    'ID01718576': 'jm_inv_523mines',
-    'ID01718581': 'jm_dprod_523mines',
-    'ID01718582': 'jm_raw_inv_523mines',
-    'ID01719869': 'jm_auction_rate_cn_d',
-    'ID01720310': 'jm_listed_cn_d',
     'ID01736015': 'lc_inv_sale_cn_w',
     'ID01835359': 'lc_margin_conc',
     'ID01835361': 'lc_margin_lepi',
     'ID01998696': 'ps_util_15mill_mth',
     'ID02026458': 'ps_n_dense_prodcost_w',
     'ID02032074': 'ps_inv_cn_w',
-    'ID02069031': 'jm_inv_314washery',
     'ID02069937': 'lc_mine_inv_trader_w',
     'ID02215004': 'lc_margin_carbonation',
-    'ID02424817': 'cu_mkt_senti_idx_w',
-    'RE00024806': 'jm_import_throughput_gantimaodu',
-    'ID00184174': 'coke_senti_124cokery',  # '焦炭_124家独立焦化厂_市场情绪指数周'
-    'ID00184175': 'coke_senti_31mills',  # '焦炭_31家钢铁企业_市场情绪指数周'
-    'ID00184176': 'coke_senti_38mines',  # '焦炭_市场情绪指数_38家煤矿企业周'
-    'ID00184178': 'coke_senti_12traders',  # '焦炭_市场情绪指数_12家贸易商周'
-    'ID00184490': 'ckc_senti_31mill',  # '焦煤_31家钢铁企业_市场情绪指数周'
-    'ID00184492': 'ckc_senti_38mines',  # '焦煤_38家煤矿企业_市场情绪指数周'
-    'ID00184494': 'ckc_senti_14traders',  # '焦煤_14家贸易商_市场情绪指数周'
-    'ID00184497': 'ckc_senti_150cokery',  # '焦煤_150家独立焦化厂_市场情绪指数周'
-    'ID01011788': 'ckc_senti_10washery',  # '焦煤_样本洗煤厂10家_市场情绪指数周'
-    'ID01109378': 'coke_dprod_247mill', # '焦炭_247家钢铁企业_日均产量_中国周',
-    'ID00187978': 'coke_dprod_230cokery',  # '焦炭_230家独立焦化厂_日均产量_中国周',
+    'ID01490913': 'ni_sinv_27_cn',
+    'ID01532024': 'npi_import_profit_id_cn',
+    'ID00408153': 'ni_ore_1.5_php_cif', # '红土镍矿_1_5pctni_15_25pctfe_33_35pct含水_菲律宾产_cif汇总价格日'
+    'ID00408155': 'ni_ore_1.8_others_cif',
     'ID00188314': 'ao_inv_ports_cn_w',  # 氧化铝_港口库存_中国周
     'ID00188315': 'pb_ingot_sinv_cn_d',  # 铅锭_现货库存日
     'ID01167269': 'pb_sec_reflector_profit',  # 再生铅_反射炉_利润日
@@ -1033,6 +1011,31 @@ mysteel_index_map = {
     'ID01721691': 'ao_minv_cn',  # 氧化铝_厂内库存_中国_电解铝厂周
     'ID01721692': 'ao_inv_in_transit_cn',  # 氧化铝_站台_在途库存_中国周
     'ID01721697': 'ao_inv_total_cn',  # 氧化铝_库存_中国周
+
+    'ID01002311': 'io_invdays_mill(247)', # '铁矿_进口_库存消费比_247家钢铁企业周',
+    'ID00186001': 'io_invdays_mill(64)', #'铁矿_进口_平均可用天数_64家钢厂周',
+    'ID01037437': 'pbf_import_profit',
+    'RE00024794': 'jmb_import_profit',
+    'RE00024799': 'macf_import_profit',
+    'RE00024787': 'nmf_import_profit', #'纽曼粉_即期合约_现货落地利润日',
+    'ID01718576': 'jm_inv_523mines',
+    'ID01718581': 'jm_dprod_523mines',
+    'ID01718582': 'jm_raw_inv_523mines',
+    'ID01719869': 'jm_auction_rate_cn_d',
+    'ID01720310': 'jm_listed_cn_d',
+    'RE00024806': 'jm_import_throughput_gantimaodu',
+    'ID02069031': 'jm_inv_314washery',
+    'ID00184174': 'coke_senti_124cokery',  # '焦炭_124家独立焦化厂_市场情绪指数周'
+    'ID00184175': 'coke_senti_31mills',  # '焦炭_31家钢铁企业_市场情绪指数周'
+    'ID00184176': 'coke_senti_38mines',  # '焦炭_市场情绪指数_38家煤矿企业周'
+    'ID00184178': 'coke_senti_12traders',  # '焦炭_市场情绪指数_12家贸易商周'
+    'ID00184490': 'ckc_senti_31mill',  # '焦煤_31家钢铁企业_市场情绪指数周'
+    'ID00184492': 'ckc_senti_38mines',  # '焦煤_38家煤矿企业_市场情绪指数周'
+    'ID00184494': 'ckc_senti_14traders',  # '焦煤_14家贸易商_市场情绪指数周'
+    'ID00184497': 'ckc_senti_150cokery',  # '焦煤_150家独立焦化厂_市场情绪指数周'
+    'ID01011788': 'ckc_senti_10washery',  # '焦煤_样本洗煤厂10家_市场情绪指数周'
+    'ID01109378': 'coke_dprod_247mill', # '焦炭_247家钢铁企业_日均产量_中国周',
+    'ID00187978': 'coke_dprod_230cokery',  # '焦炭_230家独立焦化厂_日均产量_中国周',
 }
 
 

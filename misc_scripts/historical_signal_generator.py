@@ -215,10 +215,18 @@ class HistoricalSignalGenerator:
         signal: pd.Series,
         pairs: Sequence[tuple[str, str, float]],
     ) -> pd.DataFrame:
-        output = pd.DataFrame(0.0, index=signal.index, columns=self.assets)
-        for trade_asset, index_asset, weight in pairs:
-            if trade_asset not in output or index_asset not in output:
-                continue
+        selected_pairs = [
+            (trade_asset, index_asset, weight)
+            for trade_asset, index_asset, weight in pairs
+            if trade_asset in self.assets and index_asset in self.assets
+        ]
+        selected_assets = [
+            asset
+            for asset in self.assets
+            if any(asset in pair[:2] for pair in selected_pairs)
+        ]
+        output = pd.DataFrame(0.0, index=signal.index, columns=selected_assets)
+        for trade_asset, index_asset, weight in selected_pairs:
             returns = pd.concat(
                 [
                     self._asset_close(trade_asset).pct_change().rename("trade"),
@@ -296,13 +304,16 @@ class HistoricalSignalGenerator:
                 )
             elif route == "factors_by_spread":
                 signal = self._signal_series(recipe_name)
-                frame = pd.DataFrame(
-                    {
-                        asset: signal * float(weight)
-                        for asset, weight in self.routes[route][spec.name]
-                        if asset in self.assets
-                    }
-                )
+                configured = self.routes[route][spec.name]
+                if all(asset in self.assets for asset, _weight in configured):
+                    frame = pd.DataFrame(
+                        {
+                            asset: signal * float(weight)
+                            for asset, weight in configured
+                        }
+                    )
+                else:
+                    frame = pd.DataFrame(index=signal.index)
             elif route == "factors_by_beta_neutral":
                 signal = self._signal_series(recipe_name)
                 frame = self._beta_neutral_frame(signal, self.routes[route][spec.name])
@@ -312,41 +323,48 @@ class HistoricalSignalGenerator:
                 legs, vol_window, _roll_label, contract_number = self.spread_config[
                     spread_name
                 ]
-                frame = pd.DataFrame(
-                    {
-                        asset: signal * float(weight)
+                if all(asset in self.assets for asset, _weight in legs):
+                    frame = pd.DataFrame(
+                        {asset: signal * float(weight) for asset, weight in legs}
+                    )
+                    postfix = f"d{int(contract_number)}"
+                    traded = pd.DataFrame(
+                        {
+                            asset: self._asset_close(asset, postfix=postfix)
+                            for asset in frame.columns
+                        }
+                    )
+                    spread_price = sum(
+                        self._asset_close(asset, postfix=postfix) * float(weight)
                         for asset, weight in legs
-                        if asset in self.assets
+                    )
+                    spread_vol = spread_price.diff().rolling(int(vol_window)).std()
+                    volatility_overrides[factor_key] = pd.DataFrame(
+                        {asset: spread_vol for asset in frame.columns}
+                    )
+                    traded_price_overrides[factor_key] = traded
+                    pnl_modes[factor_key] = "px"
+                    execution_overrides[self.execution_name(spec)] = {
+                        "win": "close",
+                        "lag": 1,
                     }
-                )
-                postfix = f"d{int(contract_number)}"
-                traded = pd.DataFrame(
-                    {
-                        asset: self._asset_close(asset, postfix=postfix)
-                        for asset in frame.columns
-                    }
-                )
-                spread_price = sum(
-                    self._asset_close(asset, postfix=postfix) * float(weight)
-                    for asset, weight in legs
-                )
-                spread_vol = spread_price.diff().rolling(int(vol_window)).std()
-                volatility_overrides[factor_key] = pd.DataFrame(
-                    {asset: spread_vol for asset in frame.columns}
-                )
-                traded_price_overrides[factor_key] = traded
-                pnl_modes[factor_key] = "px"
-                execution_overrides[self.execution_name(spec)] = {
-                    "win": "close",
-                    "lag": 1,
-                }
+                else:
+                    frame = pd.DataFrame(index=signal.index)
             else:  # pragma: no cover - resolve_route owns the exhaustive list
                 raise AssertionError(route)
 
+            # A signal name may be shared by several strategy JSON files.  Its
+            # registry can therefore describe a wider universe than the one
+            # strategy being tested.  Keep only this strategy's products.
+            allowed_columns = [
+                asset for asset in self.assets if asset in frame.columns
+            ]
+            frame = frame.loc[:, allowed_columns]
             if frame.empty or len(frame.columns) == 0:
                 raise ValueError(
-                    f"Signal '{spec.name}' resolved through {route} but generated no "
-                    "assets in the strategy universe"
+                    f"Signal '{spec.name}' resolved through {route} but has no "
+                    "allowable underlying products in strategy universe "
+                    f"{self.assets}"
                 )
             frame = frame.sort_index()
             frame.index = pd.to_datetime(frame.index)
