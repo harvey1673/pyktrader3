@@ -239,6 +239,7 @@ def generate_strategy_json_from_excel(
     signal set used by the scenario backtest. Existing factors preserve all
     fields other than ``name``, ``type`` and ``weight``; new factors receive
     :data:`NEW_FACTOR_DEFAULTS`. JSON ``weight`` comes from ``new_weight``.
+    Rows with ``new_weight`` equal to zero are omitted from the generated JSON.
 
     When ``output_json`` is omitted, the file is written beside the workbook
     as ``<source_stem>_proposed.json``.
@@ -273,6 +274,8 @@ def generate_strategy_json_from_excel(
         worksheet = workbook[sheet_name]
         headers = _normalized_headers(worksheet)
         proposed_repo: Dict[str, Any] = {}
+        seen: set[str] = set()
+        matched_rows = 0
 
         for row_number in range(2, worksheet.max_row + 1):
             strategy_value = worksheet.cell(
@@ -282,17 +285,27 @@ def generate_strategy_json_from_excel(
                 continue
             if str(strategy_value).strip().lower() not in accepted_names:
                 continue
+            matched_rows += 1
 
             factor_name = _required_text(
                 worksheet.cell(row_number, headers["factor_name"]).value,
                 "factor_name",
                 row_number,
             )
-            if factor_name in proposed_repo:
+            if factor_name in seen:
                 raise ValueError(
                     f"Row {row_number}: duplicate factor '{factor_name}' for "
                     f"{strategy_path.name}"
                 )
+            seen.add(factor_name)
+            signal_weight = _weight(
+                worksheet.cell(row_number, headers["new_weight"]).value,
+                row_number,
+                "new_weight",
+            )
+            if signal_weight == 0.0:
+                continue
+
             signal_name = _required_text(
                 worksheet.cell(row_number, headers["signal_name"]).value,
                 "signal_name",
@@ -303,12 +316,6 @@ def generate_strategy_json_from_excel(
                 "type",
                 row_number,
             )
-            signal_weight = _weight(
-                worksheet.cell(row_number, headers["new_weight"]).value,
-                row_number,
-                "new_weight",
-            )
-
             if factor_name in source_repo:
                 source_signal = source_repo[factor_name]
                 if not isinstance(source_signal, dict):
@@ -334,7 +341,7 @@ def generate_strategy_json_from_excel(
     finally:
         workbook.close()
 
-    if not proposed_repo:
+    if matched_rows == 0:
         raise ValueError(
             f"No rows found for strategy '{strategy_path.name}' in {excel_path}"
         )

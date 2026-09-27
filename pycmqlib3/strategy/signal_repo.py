@@ -462,17 +462,17 @@ signal_store = {
     'lme_futbasis_ma_xdemean': [['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
                                 ['lme_futbasis', 'ma', [1, 2, 1], 'df1|ema1', 'diff', True, '', "buf0.5", 120, [-2,2]]],
     'base_phybas_carry_ma': [['cu', 'al', 'zn', 'ni', 'sn'],
-                             ['base_phybas', 'ma', [1, 2], 'sma2', '', True, 'price', "", 120, [-2,2]]],
+                             ['base_phybas', 'ma', [1, 2], '', '', True, 'price', "", 120, [-2,2]]],
     'base_phybas_carry_ma_xdemean': [['cu', 'al', 'zn', 'ni', 'sn'],
-                                     ['base_phybas', 'ma', [1, 2], 'sma2', '', True, 'price', "", 120, [-2,2]]],
+                                     ['base_phybas', 'ma', [1, 2], '', '', True, 'price', "", 120, [-2,2]]],
     'base_phybasmom_1m_zs': [['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
-                             ['base_phybas', 'zscore', [20, 30], 'sma2', '', True, 'price', "", 120, [-2,2]]],
+                             ['base_phybas', 'zscore', [20, 30], '', '', True, 'price', "", 120, [-2,2]]],
     'base_phybasmom_1m_zs_xdemean': [['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
-                                     ['base_phybas', 'zscore', [20, 30], 'sma2', '', True, 'price', "", 120, [-2,2]]],
+                                     ['base_phybas', 'zscore', [20, 30], '', '', True, 'price', "", 120, [-2,2]]],
     'base_phybasmom_1y_zs': [['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
-                             ['base_phybas', 'zscore', [230, 250, 2], 'sma2', '', True, 'price', "", 120, [-2,2]]],
+                             ['base_phybas', 'zscore', [230, 250, 2], '', '', True, 'price', "", 120, [-2,2]]],
     'base_phybasmom_1y_zs_xdemean': [['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
-                                     ['base_phybas', 'zscore', [230, 250, 2], 'sma2', '', True, 'price', "", 120, [-2,2]]],
+                                     ['base_phybas', 'zscore', [230, 250, 2], '', '', True, 'price', "", 120, [-2,2]]],
     'base_cifprem_1m_zs': [['cu', 'al', 'zn', 'ni', 'pb'],
                            ['prem_bonded_warrant', 'zscore_adj', [20, 30, 2], '', '', True, 'price', "", 120, [-2,2]]],
     'base_cifprem_1y_zs': [['cu', 'al', 'zn', 'ni', 'pb'],
@@ -486,9 +486,9 @@ signal_store = {
     'base_tc_1y_zs': [['cu', 'pb', 'zn'], ['base_tc', 'zscore', [230, 250, 2], '', '', False, 'price', "", 120, [-2,2]]],
     'base_tc_2y_zs': [['cu', 'pb', 'sn'], ['base_tc', 'zscore', [480, 500, 2], '', '', False, 'price', "", 120, [-2,2]]],
 
-    'base_inv_mds': [['cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ao', 'ss'],
+    'base_sinv_mds': [['cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ao', 'ss'],
                      ['base_inv', 'ma_dff_sgn', [180, 240, 2], '', '', False, 'price', "sma1", 120, [-2,2]]],
-    'base_inv_mds_xdemean': [['cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ao', 'ss'],
+    'base_sinv_mds_xdemean': [['cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ao', 'ss'],
                              ['base_inv', 'ma_dff_sgn', [180, 240, 2], '', '', False, 'price', "sma1", 120, [-2,2]]],
     'base_sinv_hlr': [['cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ss', 'ao'],
                      ['base_inv', 'hlratio', [240, 260, 2], '', '', False, 'price', "", 120, [-2,2]]],
@@ -963,9 +963,13 @@ feature_to_feature_key_mapping = {
 param_rng_by_feature_key = {}
 
 proc_func_by_feature_key = {
-    'base_phybas_carry': {
+    'base_phybas': {
         'cu': 'sma20',
-        'al': 'sma20'
+        'al': 'sma20',
+        'zn': '',
+        'pb': '',
+        'ni': '',
+        'sn': '',
     }
 }
 
@@ -1021,7 +1025,7 @@ def get_funda_signal_from_store(spot_df, signal_name, price_df=None,
         if feature in param_rng_by_feature_key:
             param_rng = param_rng_by_feature_key[feature].get(asset, param_rng)
         if feature in proc_func_by_feature_key:
-            proc_func = param_rng_by_feature_key[feature].get(asset, proc_func)
+            proc_func = proc_func_by_feature_key[feature].get(asset, proc_func)
         feature = asset_feature
     signal_ts = calc_funda_signal(spot_df, feature, signal_func, param_rng,
                                   proc_func=proc_func, chg_func=chg_func,

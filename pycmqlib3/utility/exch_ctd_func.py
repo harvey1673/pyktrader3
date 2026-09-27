@@ -147,3 +147,5 @@ def SH_ctd_basis(spot_df, expiry):
     data_df['50'] = spot_df["SH_50_spot_sdjl_shandong"].dropna() / 0.5 - 150 # 80 before 2608
     data_df['ctd'] = data_df[['32', '50']].min(axis=1)
     return data_df['ctd']
+
+

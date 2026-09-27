@@ -20,7 +20,6 @@ from misc_scripts.update_fut_prices import load_hist_fut_prices
 from misc_scripts.close_price_check import check_recent_close_prices
 
 single_factors = {
-    'hc_rb_diff_20': ['rb', 'hc', 'i', 'j', 'jm', 'au', 'ag', 'cu', 'al', 'zn', 'sn', 'ss', 'ni', 'pb', 'y', 'OI', 'p', 'm', 'RM'],
     'steel_margin_lvl_fast': ['i', 'j'],
     'steel_margin_lvl_slow': ['SF', 'SM'],
     'steel_margin_io_rev': ['i'],
@@ -104,6 +103,7 @@ single_factors = {
     "glass_etf_mom_dbth_zs": ["FG"],
     "us_oil_prod_etf_mom": ['sc', 'bu', 'TA'],
 
+    'hc_rb_diff_20': ['rb', 'hc', 'i', 'j', 'jm', 'au', 'ag', 'cu', 'al', 'zn', 'sn', 'ss', 'ni', 'pb', 'y', 'OI', 'p', 'm', 'RM'],
     'shibor1m_qtl': ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'ag', 'l', 'pp', 'v', 'TA', 'eg', 'MA'],
     'r007_lt_zs': ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'ag', 'l', 'pp', 'v', 'TA', 'eg', 'MA'],
     "MCU3_zs": ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'l', 'pp', 'v', 'TA', 'eg', 'MA'],
@@ -163,6 +163,7 @@ factors_by_asset = {
     'base_tc_2y_zs': ['cu', 'pb', 'sn'],
     'base_cifprem_1m_zs': ['cu', 'al', 'zn', 'ni', 'pb'],
     'base_cifprem_1y_zs': ['cu', 'al', 'zn', 'ni', 'pb'],
+    'base_cifprem_2y_zs': ['cu', 'al', 'zn', 'ni', 'pb'],
     'lme_base_ts_mds': ['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
     'lme_base_ts_hlr': ['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
     'lme_futbasis_ma': ['cu', 'al', 'zn', 'pb', 'ni', 'sn'],
@@ -170,6 +171,7 @@ factors_by_asset = {
     'base_phybasmom_1m_zs': ['cu', 'al', 'zn', 'ni', 'pb', 'sn'],
     'base_phybasmom_1y_zs': ['cu', 'al', 'zn', 'ni', 'pb', 'sn'],
     'base_inv_shfe_hlr': ['cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ss', 'ao'],
+    'base_inv_shfe_cal_hlr': ['cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ss', 'ao'],
     'base_invchg_shfe_mad': ['cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ss', 'ao'],
     'base_invchg_shfe_lunar_qtl': ['cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ss', 'ao'],
     'lme_inv_wnt_mad': ['cu', 'zn', 'ni', 'al', 'sn'],
@@ -204,7 +206,6 @@ factors_by_asset = {
                       'rb', 'hc', 'i', 'j', 'jm', 'v', 'SM', 'SF', 'FG', 'SA', 'SH'],
     "exch_wnt_hlr": ["UR", "ru", 'si', 'lc', 'ao', 'ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
     "exch_wnt_yoy_hlr": ["UR", "ru", 'si', 'lc', 'ao', 'ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
-    "exch_wnt_kdj": ["UR", "ru", 'si', 'lc', 'ao', 'ss', 'SA', 'FG', 'l', 'pp', 'v', 'TA', 'MA', 'eg', 'bu', 'fu', 'a', 'c', 'CF'],
     'auag_etf_mrev': ["au", "ag"],
     'smsf_prodcost_mom': ["SM", "SF"],
 }

@@ -139,6 +139,8 @@ class PortfolioResult:
     signal_holdings: Mapping[str, pd.DataFrame] = field(default_factory=dict)
     signal_trade_volume: Mapping[str, pd.DataFrame] = field(default_factory=dict)
     signal_gross_exposure: Mapping[str, pd.DataFrame] = field(default_factory=dict)
+    unit_signal_pnl: pd.DataFrame = field(default_factory=pd.DataFrame)
+    unit_signal_asset_pnl: Mapping[str, pd.DataFrame] = field(default_factory=dict)
 
     @property
     def portfolio_pnl(self) -> pd.Series:
@@ -710,6 +712,7 @@ def compose_portfolio(
     *,
     cost_mode: str = "netted",
     cost_multiplier: float = 1.0,
+    include_zero_weight_signals: bool = False,
 ) -> PortfolioResult:
     """Backtest and aggregate a complete strategy scenario."""
 
@@ -719,11 +722,18 @@ def compose_portfolio(
     if cost_multiplier < 0:
         raise ValueError("cost_multiplier must not be negative")
 
-    paths: Dict[str, SignalBacktestResult] = {}
+    all_paths: Dict[str, SignalBacktestResult] = {}
     for factor_name, spec in scenario.signals.items():
-        if spec.weight == 0.0:
+        if spec.weight == 0.0 and not include_zero_weight_signals:
             continue
-        paths[factor_name] = _validated_path(provider.backtest(spec), factor_name)
+        all_paths[factor_name] = _validated_path(
+            provider.backtest(spec), factor_name
+        )
+    paths = {
+        factor_name: path
+        for factor_name, path in all_paths.items()
+        if scenario.signals[factor_name].weight != 0.0
+    }
     if not paths:
         raise ValueError(f"Scenario '{scenario.name}' has no non-zero signals")
 
@@ -817,6 +827,24 @@ def compose_portfolio(
         )
         for factor_name in paths
     }
+    unit_signal_asset_pnl = {}
+    for factor_name, path in all_paths.items():
+        holdings = path.holdings.fillna(0.0)
+        gross_pnl = path.gross_asset_pnl.reindex_like(holdings).fillna(0.0)
+        rates = path.cost_rates.reindex(holdings.columns).fillna(DEFAULT_COST_RATE)
+        costs = holdings.diff().abs().fillna(0.0).multiply(
+            rates * cost_multiplier
+        )
+        unit_signal_asset_pnl[factor_name] = gross_pnl.subtract(
+            costs, fill_value=0.0
+        )
+    unit_signal_pnl = pd.concat(
+        {
+            factor_name: pnl.sum(axis=1)
+            for factor_name, pnl in unit_signal_asset_pnl.items()
+        },
+        axis=1,
+    ).fillna(0.0)
     return PortfolioResult(
         scenario=scenario,
         cost_mode=cost_mode,
@@ -832,6 +860,8 @@ def compose_portfolio(
         signal_holdings=weighted_holdings,
         signal_trade_volume=signal_trade_volume,
         signal_gross_exposure=signal_gross_exposure,
+        unit_signal_pnl=unit_signal_pnl,
+        unit_signal_asset_pnl=unit_signal_asset_pnl,
     )
 
 
@@ -1202,18 +1232,21 @@ def run_strategy_comparison(
     cost_mode: str = "netted",
     cost_multiplier: float = 1.0,
     pnl_tenors: Sequence[str] = DEFAULT_PNL_TENORS,
+    include_zero_weight_signals: bool = True,
 ) -> ScenarioComparison:
     current_result = compose_portfolio(
         baseline,
         provider,
         cost_mode=cost_mode,
         cost_multiplier=cost_multiplier,
+        include_zero_weight_signals=include_zero_weight_signals,
     )
     proposed_result = compose_portfolio(
         proposed,
         provider,
         cost_mode=cost_mode,
         cost_multiplier=cost_multiplier,
+        include_zero_weight_signals=include_zero_weight_signals,
     )
     return compare_portfolios(
         current_result, proposed_result, pnl_tenors=pnl_tenors
@@ -1363,6 +1396,7 @@ def build_production_factor_provider(
     as_of: dt.date | None = None,
     holding_lag: int = 2,
     default_cost_rate: float = DEFAULT_COST_RATE,
+    include_zero_weight_signals: bool = False,
 ) -> FactorFrameSignalProvider:
     """Load factor DB data and saved continuous prices for scenario backtests.
 
@@ -1393,7 +1427,7 @@ def build_production_factor_provider(
             spec.name
             for scenario in scenarios
             for spec in scenario.signals.values()
-            if spec.weight != 0.0
+            if include_zero_weight_signals or spec.weight != 0.0
         }
     )
     warmup_start = start_date - dt.timedelta(days=730)
@@ -1463,7 +1497,7 @@ def build_production_factor_provider(
         _execution_signal_name(spec)
         for scenario in scenarios
         for spec in scenario.signals.values()
-        if spec.weight != 0.0
+        if include_zero_weight_signals or spec.weight != 0.0
     }
     required_windows = {
         str(signal_execution_config.get(name, {"win": "n305"})["win"])
@@ -1516,6 +1550,7 @@ def build_generated_historical_provider(
     fundamental_loader: Callable[[dt.date], pd.DataFrame] | None = None,
     spread_price_loader: Callable[..., pd.DataFrame] | None = None,
     metrics_class: type | None = None,
+    include_zero_weight_signals: bool = False,
 ) -> FactorFrameSignalProvider:
     """Generate configured signals from historical spot and futures data.
 
@@ -1581,10 +1616,10 @@ def build_generated_historical_provider(
         spec
         for scenario in scenarios
         for spec in scenario.signals.values()
-        if spec.weight != 0.0
+        if include_zero_weight_signals or spec.weight != 0.0
     ]
     if not specs:
-        raise ValueError("Scenarios contain no non-zero signals")
+        raise ValueError("Scenarios contain no signals")
     futures = _append_spread_contract_prices(
         futures,
         specs,
@@ -1741,6 +1776,11 @@ def trim_portfolio_start(
             name: frame.loc[cutoff:]
             for name, frame in result.signal_gross_exposure.items()
         },
+        unit_signal_pnl=result.unit_signal_pnl.loc[cutoff:],
+        unit_signal_asset_pnl={
+            name: frame.loc[cutoff:]
+            for name, frame in result.unit_signal_asset_pnl.items()
+        },
     )
 
 
@@ -1866,14 +1906,26 @@ def write_comparison_excel(
     _write_dataframe_sheet(
         workbook,
         "Current Signal PNL",
-        comparison.baseline.signal_pnl,
+        comparison.baseline.unit_signal_pnl,
         table_name="CurrentSignalPnl",
     )
     _write_dataframe_sheet(
         workbook,
         "Proposed Signal PNL",
-        comparison.proposed.signal_pnl,
+        comparison.proposed.unit_signal_pnl,
         table_name="ProposedSignalPnl",
+    )
+    _write_dataframe_sheet(
+        workbook,
+        "Current Signal Contribution",
+        comparison.baseline.signal_pnl,
+        table_name="CurrentSignalContribution",
+    )
+    _write_dataframe_sheet(
+        workbook,
+        "Proposed Signal Contribution",
+        comparison.proposed.signal_pnl,
+        table_name="ProposedSignalContribution",
     )
     _write_dataframe_sheet(
         workbook,
@@ -2026,6 +2078,22 @@ def write_comparison_excel(
     workbook.save(excel_path)
     workbook.close()
     return excel_path.resolve()
+
+
+def write_unit_signal_pnl_csv(
+    comparison: ScenarioComparison,
+    csv_path: str | Path,
+) -> Path:
+    """Write proposed-universe signal PNL before weights and pos_scaler."""
+
+    output = comparison.proposed.unit_signal_pnl.copy().sort_index()
+    if output.empty:
+        raise ValueError("No unit-weight signal PNL is available")
+    output.index.name = "date"
+    csv_path = Path(csv_path)
+    csv_path.parent.mkdir(parents=True, exist_ok=True)
+    output.to_csv(csv_path)
+    return csv_path.resolve()
 
 
 def _format_report_value(metric: str, value: Any, *, signed: bool = False) -> str:
@@ -3096,6 +3164,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         end_date=args.end_date,
         as_of=args.as_of,
         holding_lag=args.holding_lag,
+        include_zero_weight_signals=True,
     )
     comparison = run_strategy_comparison(
         baseline,
@@ -3107,11 +3176,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     comparison = trim_comparison_start(comparison, args.start_date)
     output = write_comparison_excel(comparison, args.output_excel)
+    signal_pnl_output = write_unit_signal_pnl_csv(
+        comparison,
+        args.output_excel.with_name(f"{args.output_excel.stem}_signal_pnl.csv"),
+    )
     html_output = write_comparison_html(
         comparison,
         args.output_html or args.output_excel.with_suffix(".html"),
     )
     print(f"Wrote strategy comparison to {output}")
+    print(f"Wrote unit-weight signal PNL to {signal_pnl_output}")
     print(f"Wrote portfolio HTML report to {html_output}")
     return 0
 

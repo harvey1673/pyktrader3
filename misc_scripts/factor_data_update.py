@@ -74,6 +74,36 @@ port_pos_config = {
         ], },
 }
 
+
+def sync_port_pos_scalers(port_name=None, settings_dir=None):
+    """Copy scalers from port_pos_config to strategy JSON files."""
+    if port_name is not None and port_name not in port_pos_config:
+        raise ValueError(f'Unknown portfolio: {port_name}')
+
+    ports = [port_name] if port_name else port_pos_config.keys()
+    pending = []
+    for name in ports:
+        port = port_pos_config[name]
+        target_dir = settings_dir or f"{port['pos_loc']}/settings"
+        for strat_file, pos_scaler in port['strat_list']:
+            if not strat_file.lower().endswith('.json'):
+                continue
+            filename = f'{target_dir}/{strat_file}'
+            with open(filename, 'r') as fp:
+                strat_data = json.load(fp)
+            config = strat_data.get('config')
+            if not isinstance(config, dict) or 'pos_scaler' not in config:
+                raise ValueError(f'Missing config.pos_scaler in {filename}')
+            if config['pos_scaler'] != pos_scaler:
+                config['pos_scaler'] = pos_scaler
+                pending.append((filename, strat_data))
+
+    for filename, strat_data in pending:
+        with open(filename, 'w') as fp:
+            json.dump(strat_data, fp, indent=4)
+    return [filename for filename, _ in pending]
+
+
 pos_chg_notification = ['PTSIM1_FACTPORT1_hot',]
 
 

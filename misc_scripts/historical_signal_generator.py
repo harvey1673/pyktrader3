@@ -79,9 +79,9 @@ def prepare_historical_feature_data(
                     + pd.to_numeric(prices[c2_shift], errors="coerce")
                 ) / days * 365.0 + funding
 
-        feature = commod_phycarry_dict.get(asset)
         expiry_col = (f"{asset}c1", "expiry")
         shift_col = (f"{asset}c1", "shift")
+        feature = commod_phycarry_dict.get(asset)
         if (
             feature
             and feature in output.columns
