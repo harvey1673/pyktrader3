@@ -158,7 +158,6 @@ factors_by_asset = {
     'bond_carry_ma': ['T', 'TL'],
     'bond_tf_st_eds':  ['T', 'TF', 'TL'],
 
-    'base_inv_mds': ['cu', 'al', 'zn', 'ni', 'sn', 'pb', 'ss', 'ao'],
     'base_tc_1y_zs': ['cu', 'pb', 'zn'],
     'base_tc_2y_zs': ['cu', 'pb', 'sn'],
     'base_cifprem_1m_zs': ['cu', 'al', 'zn', 'ni', 'pb'],

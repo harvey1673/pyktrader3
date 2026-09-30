@@ -1,5 +1,6 @@
 import sys
 import json
+from pathlib import Path
 import copy
 import logging
 import csv
@@ -43,36 +44,11 @@ sim_start_dict = {'c': datetime.date(2011, 1, 1), 'm': datetime.date(2011, 1, 1)
 
 field_list = ['open', 'high', 'low', 'close', 'volume', 'openInterest', 'contract', 'shift']
 
-port_pos_config = {
-    'PTSIM1_FACTPORT1_hot': {
-        'pos_loc': 'C:/dev/pyktrader3/process/paper_sim1',
-        'strat_list': [
-            ('PTSIM1_FACTPORT1.json',40000),
-            ('PTSIM1_BSKEW.json', 7000),
-            ('PTSIM1_SEAZN.json', 36000),
-            ('PTSIM1_EXCHWNT.json', 34000),
-            ('PTSIM1_HRCRB.json', 34000),
-            ('PTSIM1_LL.json', 34000),
-            ('PTSIM1_LL2MR.json', 34000),
-            ('PTSIM1_SPDTF.json', 34000),
-            ('PTSIM1_MR1Y.json', 34000),
-            ('PTSIM1_CNMAC1.json', 13000),
-            #('PTSIM1_CNMAC2.json', 15000),
-            ('PTSIM1_FUNMTL.json', 30000),
-            ('PTSIM1_FUNBASE.json', 45000), #48000
-            ('PTSIM1_FUNFER.json', 42000), # 45000
-            ('PTSIM1_RBHCSPD.json', 80000), #100000
-            ('PTSIM1_SMSFSPD.json', 50000), # 50000
-            ('PTSIM1_FGSASPD.json', 25000),
-            ('PTSIM1_AUSPD.json', 80000),
-            ('PTSIM1_EQMTL.json', 48000),
-            ('PTSIM1_FUNMIXMTL.json', 50000),
-            ('PTSIM1_FUNENE.json', 10000),
-            ('PTSIM1_PXTA.json', 30000),
-            ('PTSIM1_BND1.json', 50000),
-            ('PTSIM1_MANUEL_TRADING.csv', 1)
-        ], },
-}
+with (Path(__file__).resolve().parents[1] / "process" / "port_pos_config.json").open(encoding="utf-8") as _config_file:
+    port_pos_config = json.load(_config_file)
+for _port in port_pos_config.values():
+    _port["strat_list"] = [tuple(entry) for entry in _port["strat_list"]]
+del _config_file
 
 
 def sync_port_pos_scalers(port_name=None, settings_dir=None):

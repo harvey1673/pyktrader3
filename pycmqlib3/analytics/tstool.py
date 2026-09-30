@@ -1644,6 +1644,11 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
                 feature_ts = feature_ts.ewm(n_days).mean()
             elif 'csum' == pfunc:
                 feature_ts = feature_ts.cumsum()
+            elif 'nsum' in pfunc and '_' in pfunc:
+                str_split = pfunc.split('_')
+                win_sum = int(str_split[1])
+                win_vol = int(str_split[2])
+                feature_ts = feature_ts.rolling(win_sum).sum()/(feature_ts.rolling(win_vol).std() * np.sqrt(win_sum))
             elif 'flr' == pfunc:
                 feature_ts = feature_ts.apply(lambda x: max(x - param_rng[0], 0) / param_rng[1])
             elif 'sum' in pfunc:

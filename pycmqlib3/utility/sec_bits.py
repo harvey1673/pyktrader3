@@ -1,68 +1,29 @@
 import platform
+import json
+from pathlib import Path
 
-LOCAL_PC_NAME = 'LAPTOP-ROG'
-EMAIL_NOTIFY = False
-HOT_UPDATE_NUTSHARE = False
-NOTIFIERS = ['harveywu@hotmail.com']
-PROXY_CREDENTIALS = {'user': 'xxxxxx', 'passwd': 'xxxxxxx'}
-skype_user = {'user': 'wei.x.wu', 'pwd': 'HW@9619252y'}
-LOCAL_NUTSTORE_FOLDER = 'C:/Users/harvey/Nutstore/1/Nutstore'
-IFIND_XL_HOTKEYS = ['alt', 'y', '3', 'y', 'h', 'enter']
-MYSTEEL_XL_HOTKEYS = ['alt', 'y', '2', 'y', '6']
+with (Path(__file__).resolve().parents[2] / "process" / "sec_bits.json").open(encoding="utf-8") as _config_file:
+    _settings = json.load(_config_file)
 
-ifind_user = {
-    'user': 'vip5351',
-    'pwd': 'HW9619252y',
-}
-dbconfig = {
-    'user': 'harvey',
-    'password':'9619252y',
-    'host':'localhost',
-    'database': 'blueshale',
-}
+LOCAL_PC_NAME = _settings['LOCAL_PC_NAME']
+EMAIL_NOTIFY = _settings['EMAIL_NOTIFY']
+HOT_UPDATE_NUTSHARE = _settings['HOT_UPDATE_NUTSHARE']
+NOTIFIERS = _settings['NOTIFIERS']
+PROXY_CREDENTIALS = _settings['PROXY_CREDENTIALS']
+skype_user = _settings['skype_user']
+LOCAL_NUTSTORE_FOLDER = _settings['LOCAL_NUTSTORE_FOLDER']
+IFIND_XL_HOTKEYS = _settings['IFIND_XL_HOTKEYS']
+MYSTEEL_XL_HOTKEYS = _settings['MYSTEEL_XL_HOTKEYS']
+ifind_user = _settings['ifind_user']
+dbconfig = _settings['dbconfig']
+misc_dbconfig = _settings['misc_dbconfig']
+hist_dbconfig = _settings['hist_dbconfig']
+bktest_dbconfig = _settings['bktest_dbconfig']
+EMAIL_HOTMAIL = _settings['EMAIL_HOTMAIL']
+EMAIL_ALIYUN = _settings['EMAIL_ALIYUN']
+EMAIL_QQ = _settings['EMAIL_QQ']
 
-misc_dbconfig = {
-    'user': 'harvey',
-    'password':'9619252y',
-    'host':'localhost',
-    'database': 'blueshale',
-}
-
-hist_dbconfig = {
-    'user': 'harvey',
-    'password': '9619252y',
-    'host': 'localhost',
-    'database': 'hist_data',
-}
-
-bktest_dbconfig = {
-    'user': 'harvey',
-    'password': '9619252y',
-    'host': 'localhost',
-    'database': 'bktest_db',
-}
-
-EMAIL_HOTMAIL = {
-    'host': 'smtp-mail.outlook.com',
-    'port': 587,
-    'user': 'harveywu@outlook.com',
-    'passwd': 'HW@9619252y',
-}
-
-EMAIL_ALIYUN = {
-    'host': 'smtp.aliyun.com',
-    'port': 25,
-    'user': 'harvey_wwu@aliyun.com',
-    'passwd': 'HW@9619252y',
-}
-
-
-EMAIL_QQ = {
-    'host': 'smtp.qq.com',
-    'port': 465,
-    'user': 'harvey_wwu@qq.com',
-    'passwd': 'jmvkusyrenxjbebf',
-}
+del _settings, _config_file
 
 
 def get_prod_folder():

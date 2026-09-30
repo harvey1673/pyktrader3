@@ -1,0 +1,190 @@
+{
+  "surface": "report",
+  "manifest": {
+    "version": 1,
+    "surface": "report",
+    "title": "China Futures CTD Survey: J, JM, SS, SM/SF and Petrochemical Roadmap",
+    "description": "Historical delivery-adjustment regimes, likely cheapest-to-deliver candidates, and implementation readiness as of 25 August 2026.",
+    "generatedAt": "2026-08-25T00:00:00+08:00",
+    "blocks": [
+      {
+        "id": "title",
+        "type": "markdown",
+        "body": "# China Futures CTD Survey: J, JM, SS, SM/SF and Petrochemical Roadmap"
+      },
+      {
+        "id": "summary",
+        "type": "markdown",
+        "body": "## Technical summary\n\nThe five priority contracts split into three modeling patterns. **J and JM are quality-and-location models with contract-expiry regime changes**; JM also gains a brand overlay from JM2601. **SS is a brand-eligibility and thickness/edge model**, with a premium change on 20 July 2026. **SM and SF are primarily location-basis models**: the deliverable grade is fixed and there is no ordinary quality alternative, so their CTD ranking is driven by regional spot prices, freight, and delivery-point premiums.\n\nThe recommended implementation order is **SM/SF first, then J, then SS, then JM**. The local ticker map already has useful regional series for SM/SF and J. JM is blocked by a missing Mongolian No. 5 and Shanxi grade panel; SS lacks brand and thickness metadata.\n\nUse contract expiry, not observation date, to select an exchange rule. A generic normalized futures-equivalent value is:\n\n`equivalent = cash_price_on_delivery_basis - exchange_quality_adj - exchange_brand_adj - exchange_location_adj + basis_conversion_costs`\n\nwhere basis conversion covers freight, loading/unloading, tax, FX, moisture-weight conversion, storage/finance, and quote-basis differences. If the exchange settles delivery at `futures_price + adjustment`, subtract that adjustment from the comparable delivered cash value."
+      },
+      {
+        "id": "coverage-chart-block",
+        "type": "chart",
+        "chartId": "coverage-chart",
+        "layout": "full"
+      },
+      {
+        "id": "coverage-note",
+        "type": "markdown",
+        "body": "The chart counts distinct locally mapped candidate series, not guaranteed deliverable grades. It exposes the main research bottleneck: JM has only one Australian Jingtang-port quote, while the market commonly discusses Mongolian No. 5 and Shanxi grades as marginal deliverables."
+      },
+      {
+        "id": "priority-table-block",
+        "type": "table",
+        "tableId": "priority-table",
+        "layout": "full"
+      },
+      {
+        "id": "j-rules",
+        "type": "markdown",
+        "body": "## Priority market findings\n\n### J — coke (DCE)\n\n**Rule regimes.** Before J2201, use the older F/DCE J001-2011 regime. J2201 through J2603 uses F/DCE J001-2021. J2604 onward uses F/DCE J003-2024. The J003 change preserves the 2021 ash, sulfur, strength, size and moisture structure but adds equilibrium moisture `Mf <= 1.0%`; `Mf > 1.0%` receives **-110 yuan/t**. The exchange announcement and current factsheet identify the J2201 and J2604 contract boundaries ([DCE factsheet](https://www.dce.com.cn/dce/file/2026-01-15/17684624156122c9a882b9ae6dcbb289019bc092f6fc1681.pdf), [J003 amendment](https://www.cjfco.com.cn/ueditor/jsp/upload/file/20250328/1743143292092043647.pdf)).\n\nUnder J001-2021/J003-2024 the standard core is A=13.0%, S=0.70%, M40>=80%, M10<=7.5%, CRI in (25,30], CSR in [60,65), V<=1.7%. Adjustments include: ash +3 yuan/t per 0.1 point below 13.0 in the 12.5-13.0 band and -5 above 13.0 to 13.5; sulfur +3 per 0.01 below 0.70 in the 0.65-0.70 band and -5 above 0.70 to 0.75; CSR>=65 and CRI<=25 adds 50; weak reactivity/strength can deduct 40; weak M40/M10 can deduct 30; oversize 25-40mm share above 32% deducts 15 per percentage point. Full moisture is weight-deducted. The detailed table is in the [2025 DCE delivery manual](https://www.glqh.com/u/cms/www/202507/30110346mtf5.pdf).\n\n**Likely CTD panel.** Broker cost sheets compare Rizhao wet-quench, Jinzhong wet-quench and Lvliang dry-quench coke ([daily delivery-cost report](https://notice.10jqka.com.cn/api/original/da65b360283ebd9d.pdf)). In the local map, `coke_sub_a_rz` is closest to the J001/J003 standard (A13/S0.7/CSR60/Mt7). `coke_tj` is a higher-quality Tianjin-port quote, while regional `coke_*_xb` and provincial averages expand the candidate panel. J003 makes wet-quench equilibrium moisture a new economic discriminator.\n\n**Implementation caution.** `spot_idx_map.py` assigns ticker `S004369291` twice; Python keeps the later alias, so `coke_tj` is currently overwritten by `coke_sub_a_tj`. Fix this map defect before relying on the alias."
+      },
+      {
+        "id": "jm-rules",
+        "type": "markdown",
+        "body": "### JM — coking coal (DCE)\n\nJM has the most regime risk. Before JM2304, use F/DCE JM001-2018. JM2304 onward uses F/DCE JM003-2022: standard A=10.5%, S=1.30%, V=16-26%, G>=75 inbound/>65 outbound, Y>=10mm and CSR in [60,65). Its main adjustments are A>10.5 to 11.0: -30; A<=10.0: +30; S>1.30 to 1.60: -5 per 0.01; S 0.70-1.30: +2.5 per 0.01; V 26-28: -50; CSR>=65: +80. Moisture above 8% is weight-adjusted ([JM delivery manual](https://www.glqh.com/u/cms/www/202507/30110306fm3q.pdf)).\n\nLocation is contract-specific: from JM2304, Shanxi is zero and specified ports are +170 yuan/t; Xingtai/Handan become +70 from JM2406. From JM2601, four named brands carry premiums: Pingmei Main Coking No.1 +225, Shanjiao Rizhao No.1 +80, Xiangjiao No.1 +100 and Kaijia No.1 +175 ([brand-delivery announcement](https://www.investor.org.cn/information_release/news_release_from_authorities/qhjysfb/202501/t20250115_823389.shtml)). JM2701 onward uses F/DCE JM004-2025: the standard CSR floor becomes 65, CSR 60-65 is -50, and sulfur slopes narrow to +1.5 below 1.30 and -2.5 above 1.30 ([JM004 rule](https://www.yhqh.com.cn/upload/cn/file/2025-12/col16/1766397928916.pdf)).\n\n**Likely CTD panel.** Market reports repeatedly compare Mongolian No. 5, Shanxi mid-sulfur main coking coal, Shanxi low-sulfur coal and premium Australian hard coking coal. Under JM003, Mongolian No. 5 has often been modeled as CTD ([rule-impact discussion](https://finance.eastmoney.com/a/202601193623709836.html)). The local map contains only an Australian main-coking quote at Jingtang port. That is insufficient for a robust minimum; add Mongolian No. 5 at Ganqimaodu/Tangshan and at least two Shanxi quality buckets before production use."
+      },
+      {
+        "id": "ss-rules",
+        "type": "markdown",
+        "body": "### SS — stainless steel (SHFE)\n\nThe deliverable is registered-brand 304 austenitic cold-rolled coil meeting GB/T 3280-2015 06Cr19Ni10 or JIS G4305 SUS304 ([SHFE product rules](https://www.shfe.com.cn/regulation/exchangerules/productrules/202512/t20251231_829965.html)). The standard format is 2.0mm x 1219mm, 2B, trimmed edge; permitted thicknesses, 1000/1500mm widths and mill edge are alternatives ([SHFE manual](https://www.shfe.com.cn/content/2019-SS/manual.pdf)).\n\nFrom launch through 19 July 2026: 0.5-0.7mm +400 yuan/t; 0.8-1.0mm +200; 1.2-3.0mm zero; mill edge -170; trimmed edge zero; brand premium zero. From 20 July 2026 the 0.7mm premium becomes +300, with the other settings unchanged ([SHFE notice](https://www.shfe.com.cn/products/futures/metal/ferrousandpreciousmetal/ss_f/attach/201909/t20190918_795033.html)).\n\n**Likely CTD panel.** Rank lower-priced registered brands in Wuxi/Foshan by thickness and edge; recent market quotes commonly separate Delong/Northern Gulf from Hongwang/Yongjin. The local `ss_304_gross_wuxi` series is 304/2B mill-edge coil, and `ss_304_wuxi_phybasis` is a market basis series. Neither records brand or thickness, so it cannot distinguish the +400/+300/+200 thickness schedules or test registered eligibility. Treat it as a screening proxy only."
+      },
+      {
+        "id": "sm-sf-rules",
+        "type": "markdown",
+        "body": "### SM and SF — ferroalloys (CZCE)\n\nCurrent SM is FeMn65Si17 under GB/T 4008-2024: Mn>=65%, Si>=17%, C<=1.8%, P<=0.25%, S<=0.04%, size 10-60mm. Current SF is PG FeSi72Al2.5 under GB/T 2272-2020: Si>=72% with specified C/S/P/Al limits and size 10-60mm. There is no ordinary alternative-grade premium in either current rule ([SM rules](https://www.czce.com.cn/cn/content_file/flfg/zcjywgz/pzxz/2026/1/6766f6603fcb423da02ea7ff54c6f706.pdf), [SF rules](https://www.czce.com.cn/cn/content_file/flfg/zcjywgz/pzxz/2026/1/2c614450dc974dfcbd4e3c08473cffd9.pdf)). SF's 2021 standard-name migration and SM's 2026 national-standard migration did not create a normal quality-adjustment ladder.\n\nThe economic adjustment is location. For SF2411/SM2411 onward, key consumer-area schedules include Tianjin SF 0 / SM -190; Handan 0 / -120; Anyang +10 / -100; Jiangsu +110 / 0; Hubei +80 / -30 ([CZCE adjustment notice](https://www.ghlsqh.com.cn/company/news/show-22559.html)). Producer-area schedules include SF Zhongwei -350, and SM Shizuishan -360, Ulanqab -400, Qinzhou -350, with Rizhao/Yingkou schedules in the [CZCE producer-area expansion](https://www.czce.com.cn/cn/rootfiles/2022/10/14/1655825346982784-1655825347001972.pdf). Future contract changes are already announced: SF2707 changes Zhongwei to -280; SM2711 changes Qinzhou to -250, Ulanqab to -290 and Shizuishan to -340 ([2026 notice](https://www.btqh.com/index.php?a=show&c=index&catid=26&id=18075&m=content)).\n\n**Likely CTD panel.** Broker reports usually headline Tianjin 6517 and Tianjin 72, but CTD must compare producer regions after freight and the negative location adjustment. The local series are well aligned: SM has Tianjin, Inner Mongolia, Guangxi, Gansu and a national 6517 average; SF has Ningxia, Inner Mongolia, Gansu and national 72/75 averages. Add direct delivery-point/freight mappings, then these are the fastest two functions to make production-grade."
+      },
+      {
+        "id": "petchem-intro",
+        "type": "markdown",
+        "body": "## Petrochemical and rubber roadmap\n\nThe next-stage contracts should not share one generic adjustment function. The key distinction is whether CTD is driven by an exchange premium, registered-brand eligibility, delivery geography, or an imported-cost conversion."
+      },
+      {
+        "id": "petchem-table-block",
+        "type": "table",
+        "tableId": "petchem-table",
+        "layout": "full"
+      },
+      {
+        "id": "petchem-notes",
+        "type": "markdown",
+        "body": "Selected anchors: DCE introduced brand delivery for L/PP from L/PP2104 with initially zero brand differentials ([exchange report](https://www.cs.com.cn/zzqh2020/202004/t20200421_6048374.html)); L has a qualified substitute at -20 yuan/t ([business-rule digest](https://www.shinnytech.com/articles/business-rules/products/dce.l)). PX uses an exchange grade plus warehouse/factory-pickup location schedules ([PX rules](https://www.shinnytech.com/articles/business-rules/products/czce.px)). UR currently has a qualified substitute at -20 and gains a large-granule +20 alternative for specified northeastern delivery from UR2703 ([UR change](https://finance.sina.com.cn/money/bond/2026-01-16/doc-inhhpfkr5367779.shtml)). SC, FU and LU require tax/FX/import or bunker basis conversions; SC additionally has named crude-grade differentials ([INE delivery rules](https://www.shfe.cn/regulation/ineregulation/businessmethods/delivery/202606/t20260626_832297.html)). RU has registered-brand and regional adjustments; NR is origin/brand/grade-heavy and now includes TSR10 at -400 versus TSR20 ([NR list](https://www.shfe.com.cn/products/futures/energyandchemical/nr_f/attach/202412/P020260601763317743470.pdf))."
+      },
+      {
+        "id": "implementation",
+        "type": "markdown",
+        "body": "## Implementation blueprint\n\n1. Parse the futures month into a comparable integer such as `202604`; never switch regimes on the current date.\n2. Maintain immutable rule tables keyed by contract boundary, with separate quality, brand and location components. Overlay rules only where the exchange does so (for example JM2601 brand premiums over JM003 quality/location).\n3. Store candidate metadata beside each price series: quote location, incoterm (ex-factory/warehouse/port), tax status, currency, brand, grade, thickness/edge or other specification, and whether the brand/warehouse is exchange-approved for that contract.\n4. Convert each quote to delivery-location cash basis, apply moisture/weight and unit conversions, then subtract exchange adjustments. Take the minimum only across eligible candidates.\n5. Return an audit record, not just a scalar: selected candidate, raw price, all conversions, quality/brand/location adjustments, rule version, eligibility flags and rejected-candidate reasons.\n\nSuggested interfaces:\n\n`rule = get_rule(product, contract_month)`\n\n`equiv = normalize_candidate(candidate_quote, rule, delivery_point, asof)`\n\n`ctd = min(equiv for candidate in candidates if equiv.eligible)`\n\nRegression tests should pin every boundary contract (J2201, J2604, JM2304, JM2406, JM2601, JM2701, SS rule effective date, SF2411/SM2411, SF2707, SM2711) and every discontinuous premium breakpoint."
+      },
+      {
+        "id": "limitations",
+        "type": "markdown",
+        "body": "## Limitations and decisions still needed\n\nThis is a market survey, not a complete legal-rule transcription. Exchange PDFs and mirrored broker manuals should be archived before coding; delivery-location lists, factory-pickup guidance, registered brands and warehouse status can change without changing the headline grade standard. Some broker pages are mirrors rather than the exchange's current HTML. Historical warehouse fees, transport quotes and tax/FX conventions are not yet assembled.\n\nThe local ticker inventory counts aliases and inspected Excel headers, but an alias is not proof of exchange deliverability. `index_map_full.py` is broad and auto-generated; `spot_idx_map.py` is curated but contains at least one duplicate-key overwrite. For SS and most polymer/rubber contracts, brand/spec metadata must be added outside the time-series value itself.\n\n### Recommended next steps\n\n- Implement and test `SM_ctd_basis` and `SF_ctd_basis` first, including the 2411 and announced 2707/2711 location regimes.\n- Build J with J001-2011, J001-2021 and J003-2024, starting from Rizhao sub-A and regional candidate quotes.\n- Enrich SS with brand x thickness x edge quotes before treating the result as CTD.\n- Add Mongolian No. 5 and Shanxi main-coking series before implementing JM beyond a rule calculator.\n- For the second wave, start with products whose local quotes already match the contract basis reasonably well: EB, EG, MA, TA and BU. Treat SC, FU/LU and NR as dedicated imported-cost/origin projects.\n\nTwo design choices should be settled before production: whether `*_ctd_basis` should include only exchange-published adjustments or the full delivered-cost stack, and the earliest contract month that the historical backtest must support."
+      }
+    ],
+    "charts": [
+      {
+        "id": "coverage-chart",
+        "title": "Mapped local candidate spot series by priority contract",
+        "subtitle": "Distinct tickers found in spot_idx_map.py and inspected source headers",
+        "showDescription": true,
+        "dataset": "candidate_coverage",
+        "type": "bar",
+        "family": "bar",
+        "unit": "series",
+        "encodings": {
+          "x": { "field": "contract", "label": "Contract" },
+          "y": { "field": "series_count", "label": "Mapped candidate series", "format": "number", "unit": "series" },
+          "tooltip": [
+            { "field": "examples", "label": "Examples" },
+            { "field": "data_gap", "label": "Main gap" }
+          ]
+        },
+        "sourceId": "local-map"
+      }
+    ],
+    "tables": [
+      {
+        "id": "priority-table",
+        "title": "Priority contract readiness",
+        "dataset": "priority_summary",
+        "columns": [
+          { "field": "contract", "label": "Contract" },
+          { "field": "rule_model", "label": "Adjustment model" },
+          { "field": "likely_candidates", "label": "Likely CTD candidates" },
+          { "field": "local_inputs", "label": "Best local inputs" },
+          { "field": "readiness", "label": "Readiness" }
+        ],
+        "sourceId": "local-map"
+      },
+      {
+        "id": "petchem-table",
+        "title": "Petrochemical and rubber CTD research matrix",
+        "dataset": "petchem_roadmap",
+        "columns": [
+          { "field": "group", "label": "Exchange / contracts" },
+          { "field": "main_driver", "label": "Main CTD driver" },
+          { "field": "local_coverage", "label": "Local data coverage" },
+          { "field": "priority", "label": "Research priority" }
+        ],
+        "sourceId": "local-map"
+      }
+    ],
+    "sources": [
+      { "id": "local-map", "label": "Local ticker maps and source workbook headers", "path": "tests/index_map_full.py; pycmqlib3/utility/spot_idx_map.py; ifind_daily.xlsx", "query": { "engine": "SQLite", "sql": "WITH candidate_coverage(contract, series_count) AS (VALUES ('J', 9), ('JM', 1), ('SS', 2), ('SM', 5), ('SF', 5)) SELECT contract, series_count FROM candidate_coverage", "description": "Reproduces the reviewed distinct-ticker counts after read-only inspection of curated aliases and exact Excel series descriptions.", "tables_used": ["tests/index_map_full.py", "pycmqlib3/utility/spot_idx_map.py", "ifind_daily.xlsx"] } },
+      { "id": "dce-j", "label": "DCE coke rules and delivery manual", "href": "https://www.glqh.com/u/cms/www/202507/30110346mtf5.pdf" },
+      { "id": "dce-jm", "label": "DCE coking-coal rules and delivery manual", "href": "https://www.glqh.com/u/cms/www/202507/30110306fm3q.pdf" },
+      { "id": "shfe-ss", "label": "SHFE stainless-steel product rules", "href": "https://www.shfe.com.cn/regulation/exchangerules/productrules/202512/t20251231_829965.html" },
+      { "id": "czce-sm", "label": "CZCE silicon-manganese rules", "href": "https://www.czce.com.cn/cn/content_file/flfg/zcjywgz/pzxz/2026/1/6766f6603fcb423da02ea7ff54c6f706.pdf" },
+      { "id": "czce-sf", "label": "CZCE ferrosilicon rules", "href": "https://www.czce.com.cn/cn/content_file/flfg/zcjywgz/pzxz/2026/1/2c614450dc974dfcbd4e3c08473cffd9.pdf" },
+      { "id": "ine-sc", "label": "INE crude-oil delivery rules", "href": "https://www.shfe.cn/regulation/ineregulation/businessmethods/delivery/202606/t20260626_832297.html" },
+      { "id": "shfe-nr", "label": "INE TSR20 registered delivery list", "href": "https://www.shfe.com.cn/products/futures/energyandchemical/nr_f/attach/202412/P020260601763317743470.pdf" }
+    ]
+  },
+  "snapshot": {
+    "version": 1,
+    "status": "ready",
+    "generatedAt": "2026-08-25T00:00:00+08:00",
+    "datasets": {
+      "candidate_coverage": [
+          { "contract": "J", "series_count": 9, "examples": "Rizhao/Tianjin ports; Tangshan, Shanghai, Changzhi, Xuzhou; provincial averages", "data_gap": "Candidate quality attributes are mostly static text, not time-varying assays" },
+          { "contract": "JM", "series_count": 1, "examples": "Australian main coking coal, Jingtang warehouse", "data_gap": "Missing Mongolian No. 5 and Shanxi quality buckets" },
+          { "contract": "SS", "series_count": 2, "examples": "Wuxi 304/2B mill-edge coil and physical basis", "data_gap": "Missing brand and thickness" },
+          { "contract": "SM", "series_count": 5, "examples": "Tianjin, Inner Mongolia, Guangxi, Gansu, national 6517", "data_gap": "Need delivery-point freight and Ningxia/Rizhao/Yingkou coverage" },
+          { "contract": "SF", "series_count": 5, "examples": "Ningxia, Inner Mongolia, Gansu, national 72 and 75", "data_gap": "Need Tianjin/consumer-area direct quotes and freight" }
+      ],
+      "priority_summary": [
+          { "contract": "J / DCE", "rule_model": "Quality + moisture/weight + location; 3 main regimes", "likely_candidates": "Rizhao/Jinzhong wet-quench; Lvliang dry-quench; port vs factory", "local_inputs": "9 coke series; Rizhao sub-A is closest standard proxy", "readiness": "Medium-high after alias fix and freight table" },
+          { "contract": "JM / DCE", "rule_model": "Quality + moisture + location + brand overlay; 4 boundaries", "likely_candidates": "Mongolian No. 5; Shanxi mid/low sulfur; premium Australian", "local_inputs": "1 Australian Jingtang-port series", "readiness": "Low: candidate panel missing" },
+          { "contract": "SS / SHFE", "rule_model": "Registered brand + thickness + edge; premium change 2026-07-20", "likely_candidates": "Lowest registered 304/2B brand by Wuxi/Foshan spec", "local_inputs": "2 Wuxi aggregate series", "readiness": "Medium-low: no brand/thickness" },
+          { "contract": "SM / CZCE", "rule_model": "Fixed grade; location premium + freight", "likely_candidates": "Tianjin vs Inner Mongolia/Ningxia/Guangxi producer regions", "local_inputs": "5 regional/national 6517 series", "readiness": "High for first implementation" },
+          { "contract": "SF / CZCE", "rule_model": "Fixed grade; location premium + freight", "likely_candidates": "Tianjin/consumer areas vs Ningxia/Inner Mongolia/Gansu", "local_inputs": "5 regional/national 72/75 series", "readiness": "High for first implementation" }
+      ],
+      "petchem_roadmap": [
+          { "group": "DCE L / PP", "main_driver": "Registered-brand eligibility; L qualified substitute -20; location/fees", "local_coverage": "L strong regional 7042 panel; PP moderate", "priority": "Wave 2" },
+          { "group": "DCE V", "main_driver": "Brand/process/spec plus geography", "local_coverage": "Strong carbide vs ethylene and regional panel", "priority": "Wave 2, separate process model" },
+          { "group": "DCE EG / EB", "main_driver": "Standard quality, tank/warehouse geography and quote basis", "local_coverage": "Strong East/North/South/import quotes", "priority": "Early wave 2" },
+          { "group": "CZCE TA", "main_driver": "Registered/immune brand plus warehouse/factory pickup", "local_coverage": "Strong East and import spot", "priority": "Early wave 2" },
+          { "group": "CZCE PX", "main_driver": "Grade + delivery location; import FX/tax/freight conversion", "local_coverage": "East ex-works and Taiwan/Korea USD quotes", "priority": "Wave 2-3" },
+          { "group": "CZCE MA", "main_driver": "Location/factory pickup; grade and tax basis", "local_coverage": "Strong Zhejiang/Jiangsu/Shandong/Inner Mongolia", "priority": "Early wave 2" },
+          { "group": "CZCE UR", "main_driver": "Grade alternatives, dynamic location groups and freight", "local_coverage": "Strong Henan/North/Shandong panel", "priority": "Wave 2-3" },
+          { "group": "INE SC", "main_driver": "Named crude-grade differentials + FX/tax/import freight", "local_coverage": "Excellent Oman/ESPO/Dubai and premium inputs", "priority": "Dedicated high-complexity project" },
+          { "group": "SHFE FU / INE LU", "main_driver": "Fuel grade + Singapore/import tax/FX/freight/storage", "local_coverage": "Strong Singapore and China regional inputs", "priority": "Dedicated high-complexity project" },
+          { "group": "SHFE BU", "main_driver": "Registered brand/grade/location and factory pickup", "local_coverage": "Good Shandong/North/East heavy asphalt", "priority": "Early wave 2" },
+          { "group": "SHFE RU", "main_driver": "Registered SCR WF brand + regional adjustments", "local_coverage": "Good Kunming/Zhejiang/Jiangsu SCR WF", "priority": "Wave 2" },
+          { "group": "INE NR", "main_driver": "Origin/brand/grade; TSR10 -400 alternative; cross-border rules", "local_coverage": "Weak: inventory/warrant data, little deliverable spot", "priority": "Dedicated data-build project" },
+          { "group": "SHFE BR", "main_driver": "Registered BR9000 brand + warehouse/factory pickup", "local_coverage": "Weak deliverable brand-level spot", "priority": "Data enrichment first" }
+      ]
+    },
+    "accessIssues": []
+  },
+  "sources": [
+    { "id": "local-map", "label": "Local ticker maps and source workbook headers", "path": "tests/index_map_full.py; pycmqlib3/utility/spot_idx_map.py; ifind_daily.xlsx", "query": { "engine": "SQLite", "sql": "WITH candidate_coverage(contract, series_count) AS (VALUES ('J', 9), ('JM', 1), ('SS', 2), ('SM', 5), ('SF', 5)) SELECT contract, series_count FROM candidate_coverage", "description": "Reproduces the reviewed distinct-ticker counts after read-only inspection of curated aliases and exact Excel series descriptions.", "tables_used": ["tests/index_map_full.py", "pycmqlib3/utility/spot_idx_map.py", "ifind_daily.xlsx"] } },
+    { "id": "dce-j", "label": "DCE coke rules and delivery manual", "href": "https://www.glqh.com/u/cms/www/202507/30110346mtf5.pdf" },
+    { "id": "dce-jm", "label": "DCE coking-coal rules and delivery manual", "href": "https://www.glqh.com/u/cms/www/202507/30110306fm3q.pdf" },
+    { "id": "shfe-ss", "label": "SHFE stainless-steel product rules", "href": "https://www.shfe.com.cn/regulation/exchangerules/productrules/202512/t20251231_829965.html" },
+    { "id": "czce-sm", "label": "CZCE silicon-manganese rules", "href": "https://www.czce.com.cn/cn/content_file/flfg/zcjywgz/pzxz/2026/1/6766f6603fcb423da02ea7ff54c6f706.pdf" },
+    { "id": "czce-sf", "label": "CZCE ferrosilicon rules", "href": "https://www.czce.com.cn/cn/content_file/flfg/zcjywgz/pzxz/2026/1/2c614450dc974dfcbd4e3c08473cffd9.pdf" },
+    { "id": "ine-sc", "label": "INE crude-oil delivery rules", "href": "https://www.shfe.cn/regulation/ineregulation/businessmethods/delivery/202606/t20260626_832297.html" },
+    { "id": "shfe-nr", "label": "INE TSR20 registered delivery list", "href": "https://www.shfe.com.cn/products/futures/energyandchemical/nr_f/attach/202412/P020260601763317743470.pdf" }
+  ]
+}

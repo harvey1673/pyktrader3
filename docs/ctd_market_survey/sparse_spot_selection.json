@@ -1,0 +1,50 @@
+{
+  "as_of": "2026-09-22",
+  "objective": "Capture major physical-carry effects with a small representative spot basket; do not maximize delivery precision.",
+  "history_start": "2016-01-01",
+  "core_series_count": 6,
+  "optional_series_count": 2,
+  "production_mapping_changed": false,
+  "products": {
+    "j": {
+      "core": ["coke_sub_a_rz"],
+      "optional": ["coke_sub_a_tj"],
+      "method": "Single representative adjusted spot; Tianjin is an early-history/overlap comparator, not an unadjusted splice.",
+      "retain": ["J2201 dry-basis transition", "J2604 equilibrium-moisture adjustment", "legacy quality conversion"],
+      "assumptions": ["quoted standard assay represents the cash benchmark", "document one port-loading-cost convention", "missing Mf is not silently zero"],
+      "data_gap": "Rizhao starts 2018-01-02; early Tianjin conversion needs an explicit representative-assay assumption."
+    },
+    "jm": {
+      "core": ["ckc_a10v24s08_lvliang", "ckc_stock_ganqimaodu"],
+      "optional": [],
+      "method": "Compare domestic and Mongolian washed-coal normalized proxies; optional minimum with winner recorded. Use domestic only when Mongolia is unavailable.",
+      "retain": ["JM1907/JM2304/JM2701 quality regimes", "moisture convention", "representative transport and delivery-location basis"],
+      "assumptions": ["Xiaoyi header assay treated as representative, not daily measurement", "Mongolia assay and transport are declared scenarios", "no automatic substitution with the newer Ganqimaodu ticker"],
+      "data_gap": "Mongolian washed-coal series has a 495-calendar-day observation gap in 2016-2017."
+    },
+    "ss": {
+      "core": ["ss_304_gross_wuxi"],
+      "optional": [],
+      "method": "Single mill-edge cash benchmark plus 170 yuan/t for futures-equivalent edge normalization.",
+      "retain": ["mill-edge discount", "listing boundary 2019-09-25"],
+      "assumptions": ["representative 2.0mm 304/2B coil unless provider confirms another thickness", "tax and weight conventions comparable", "no brand-specific minimum"],
+      "data_gap": "No SS futures carry before listing."
+    },
+    "SM": {
+      "core": ["sm_65s17_tj"],
+      "optional": [],
+      "method": "Single Tianjin benchmark plus 0 before SM1911, 150 through SM2410, 190 from SM2411.",
+      "retain": ["contract-dependent Tianjin adjustment"],
+      "assumptions": ["representative delivery-grade 6517", "Tianjin quote represents a comparable pickup basis"],
+      "data_gap": "No major early-history gap found; do not apply the legacy +190 twice."
+    },
+    "SF": {
+      "core": ["sf_72_shmet"],
+      "optional": ["sf_72_ningxia"],
+      "method": "Continuous national 72 benchmark; separate Ningxia-plus-basis sensitivity comparison from July 2019.",
+      "retain": ["producer versus consumer location basis"],
+      "assumptions": ["national quote is representative rather than deliverable at one location", "do not assign the Zhongwei premium to a national average", "any constant freight approximation is labelled a model assumption"],
+      "data_gap": "Ningxia quote begins 2019-07-15; national series covers 2016."
+    }
+  }
+}

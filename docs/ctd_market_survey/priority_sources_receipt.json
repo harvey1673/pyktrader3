@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "items": [
+    {
+      "id": "sparse-spot-inputs",
+      "title": "Coverage of the six core spot inputs",
+      "queries": [
+        {
+          "id": "local-workbook-profile",
+          "source": {
+            "label": "iFinD workbook snapshots",
+            "filters": [
+              "Observation dates: 2016-01-01 through 2026-09-22",
+              "Cached finite numeric values only"
+            ],
+            "caveats": [
+              "Historical values are current snapshots, not point-in-time vintages.",
+              "Price gaps are retained. These are raw benchmark inputs, not normalized CTD prices.",
+              "Maximum gap measures calendar days between observations, not missed trading sessions."
+            ]
+          },
+          "columns": [
+            {
+              "field": "product",
+              "label": "Market"
+            },
+            {
+              "field": "alias",
+              "label": "Spot input"
+            },
+            {
+              "field": "first",
+              "label": "First observation"
+            },
+            {
+              "field": "last",
+              "label": "Last observation"
+            },
+            {
+              "field": "observations",
+              "label": "Observations"
+            },
+            {
+              "field": "max_gap_calendar_days",
+              "label": "Largest gap (calendar days)"
+            }
+          ],
+          "rows": [
+            {
+              "product": "J",
+              "alias": "coke_sub_a_rz",
+              "first": "2018-01-02",
+              "last": "2026-09-21",
+              "observations": 2177,
+              "max_gap_calendar_days": 11
+            },
+            {
+              "product": "JM",
+              "alias": "ckc_a10v24s08_lvliang",
+              "first": "2016-01-04",
+              "last": "2026-09-21",
+              "observations": 2673,
+              "max_gap_calendar_days": 11
+            },
+            {
+              "product": "JM",
+              "alias": "ckc_stock_ganqimaodu",
+              "first": "2016-01-04",
+              "last": "2026-09-21",
+              "observations": 2334,
+              "max_gap_calendar_days": 495
+            },
+            {
+              "product": "SF",
+              "alias": "sf_72_shmet",
+              "first": "2016-01-04",
+              "last": "2026-09-21",
+              "observations": 2597,
+              "max_gap_calendar_days": 12
+            },
+            {
+              "product": "SM",
+              "alias": "sm_65s17_tj",
+              "first": "2016-01-04",
+              "last": "2026-09-21",
+              "observations": 2671,
+              "max_gap_calendar_days": 11
+            },
+            {
+              "product": "SS",
+              "alias": "ss_304_gross_wuxi",
+              "first": "2019-07-01",
+              "last": "2026-09-21",
+              "observations": 1757,
+              "max_gap_calendar_days": 11
+            }
+          ],
+          "reportingPeriod": "2016-01-01 through 2026-09-22",
+          "preview": {
+            "kind": "partial",
+            "note": "Six selected core series from the 32-series profile.",
+            "totalRows": 32
+          },
+          "methods": [
+            {
+              "language": "python",
+              "code": "conflicts = obs.groupby(['code', 'date']).value.nunique()\nassert not (conflicts > 1).any()\nunique = obs.drop_duplicates(['code', 'date'])\n# Per code: sort dates; report min/max, observation count and maximum date difference."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

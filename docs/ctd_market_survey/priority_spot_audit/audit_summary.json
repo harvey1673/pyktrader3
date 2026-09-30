@@ -1,0 +1,75 @@
+{
+  "source_directory": "C:\\Users\\harve\\Nutstore\\1\\Nutstore",
+  "start_date": "2016-01-01",
+  "as_of": "2026-09-22",
+  "extraction": "read_only cached numeric values; no refresh or forward-fill",
+  "coverage_denominator": "dated worksheet rows, not trading days",
+  "scanned": [
+    {
+      "file": "ifind_daily_full.xlsx",
+      "sheet": "ferrous_d",
+      "worksheet_rows": 6244,
+      "dated_rows_since_2016": 3354,
+      "selected_columns": 23
+    },
+    {
+      "file": "ifind_daily_full.xlsx",
+      "sheet": "base_d",
+      "worksheet_rows": 15197,
+      "dated_rows_since_2016": 2837,
+      "selected_columns": 3
+    },
+    {
+      "file": "ifind_daily.xlsx",
+      "sheet": "ferrous_d",
+      "worksheet_rows": 1828,
+      "dated_rows_since_2016": 1819,
+      "selected_columns": 23
+    },
+    {
+      "file": "ifind_daily.xlsx",
+      "sheet": "base_d",
+      "worksheet_rows": 1348,
+      "dated_rows_since_2016": 1339,
+      "selected_columns": 3
+    },
+    {
+      "file": "ifind_data.xlsx",
+      "sheet": "hist",
+      "worksheet_rows": 1289,
+      "dated_rows_since_2016": 0,
+      "selected_columns": 0
+    },
+    {
+      "file": "ifind_data.xlsx",
+      "sheet": "const_d",
+      "worksheet_rows": 5927,
+      "dated_rows_since_2016": 3342,
+      "selected_columns": 1
+    },
+    {
+      "file": "ifind_data.xlsx",
+      "sheet": "base_d2",
+      "worksheet_rows": 4543,
+      "dated_rows_since_2016": 2676,
+      "selected_columns": 3
+    },
+    {
+      "file": "ifind_data.xlsx",
+      "sheet": "ferrous_w",
+      "worksheet_rows": 2684,
+      "dated_rows_since_2016": 2039,
+      "selected_columns": 2
+    },
+    {
+      "file": "mysteel_metal.xlsx",
+      "sheet": "data",
+      "worksheet_rows": 4601,
+      "dated_rows_since_2016": 3376,
+      "selected_columns": 0
+    }
+  ],
+  "inventory_rows": 58,
+  "observation_rows": 102942,
+  "conflicting_code_dates": 0
+}

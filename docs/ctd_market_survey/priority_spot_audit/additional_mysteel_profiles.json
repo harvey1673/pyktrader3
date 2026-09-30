@@ -1,0 +1,212 @@
+[
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "mysteel prices",
+    "column": "N",
+    "date_column": "M",
+    "metadata": [
+      "冶金焦：准一级：A13，S0.7，MT7，CSR60，M7：汇总价格：日照港（日）",
+      "停-???:???:A13,S0.7,MT7,CSR60,M7:????:???(?)",
+      "日",
+      "None"
+    ],
+    "count": 1584,
+    "first": "2016-01-04",
+    "last": "2022-04-29"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "mysteel prices",
+    "column": "AF",
+    "date_column": "AE",
+    "metadata": [
+      "主焦煤：A10.5，S1.3，G75：现货价：柳林（日）",
+      "停-???:A10.5,S1.3,G75:???:??(?)",
+      "日",
+      "出厂承兑含税"
+    ],
+    "count": 970,
+    "first": "2018-01-15",
+    "last": "2022-02-08"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "mysteel prices",
+    "column": "DT",
+    "date_column": "DR",
+    "metadata": [
+      "冷轧不锈板卷：304/2B：2mm：汇总价格：无锡（日）",
+      "??????:304/2B:2mm:????:??(?)",
+      "None",
+      "None"
+    ],
+    "count": 0,
+    "first": null,
+    "last": null
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "mysteel prices",
+    "column": "EE",
+    "date_column": "ED",
+    "metadata": [
+      "焦煤：低硫：A10，V18，S0.4，G70，Y10，MT7：乡宁产：出厂价：临汾：毛则渠（日）",
+      "??:??:A10,V18,S0.4,G70,Y10,MT7:???:???:??:???(?)",
+      "日",
+      "预付款现汇含税自提；炼焦精煤；2025-2-6日之前为A≤10，V≤18，S≤0.4，G≥65，Y≥11，MT≤10；2024-7-12日之前为A＜9.9，V＜18.13，S＜0.36，G＞65，Y＞11.5，MT＜7.9；2023-2-28日之前为主焦煤、A＜9.9，V＜18，S＜0.36，G＞65，Y＞11，MT＜8；2022-6-4日之前为A＜10，V＜18，S＜0.4，G＞70，Y＞10，MT＜7"
+    ],
+    "count": 2162,
+    "first": "2018-01-02",
+    "last": "2026-09-01"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "mysteel prices",
+    "column": "EN",
+    "date_column": "EM",
+    "metadata": [
+      "冶金焦：准一级：A13，S0.72，MT0，CSR60，CRI30：出厂价：日照：浩宇能源（日）",
+      "???:???:A13,S0.72,MT0,CSR60,CRI30:???:??:????(?)",
+      "日",
+      "现金含税（干基）；2022-1-20日之前为A＜13，S＜0.7，MT＜0，CSR＞60"
+    ],
+    "count": 2174,
+    "first": "2017-12-21",
+    "last": "2026-09-01"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "mysteel prices",
+    "column": "FT",
+    "date_column": "FS",
+    "metadata": [
+      "冶金焦：准一级：A13，S0.7，MT7，CSR60，M7：平仓价格指数：日照港（日）",
+      "???:???:A13,S0.7,MT7,CSR60,M7:??????:???(?)",
+      "日",
+      "港口现货价格、湿吨、承兑含税\n"
+    ],
+    "count": 2331,
+    "first": "2017-05-23",
+    "last": "2026-09-01"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "mysteel prices",
+    "column": "FU",
+    "date_column": "FS",
+    "metadata": [
+      "冶金焦：准一级：A13，S0.7，MT7，CSR60：出库价格指数：日照港（日）",
+      "???:???:A13,S0.7,MT7,CSR60:??????:???(?)",
+      "日",
+      "港口现货价格、湿吨、含税、现金、出库价"
+    ],
+    "count": 1806,
+    "first": "2019-06-12",
+    "last": "2026-09-01"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "mysteel prices",
+    "column": "N",
+    "date_column": "M",
+    "metadata": [
+      "冶金焦：准一级：A13，S0.7，MT7，CSR60，M7：汇总价格：日照港（日）",
+      "停-???:???:A13,S0.7,MT7,CSR60,M7:????:???(?)",
+      "日",
+      "None"
+    ],
+    "count": 1584,
+    "first": "2016-01-04",
+    "last": "2022-04-29"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "mysteel prices",
+    "column": "AF",
+    "date_column": "AE",
+    "metadata": [
+      "主焦煤：A10.5，S1.3，G75：现货价：柳林（日）",
+      "停-???:A10.5,S1.3,G75:???:??(?)",
+      "日",
+      "出厂承兑含税"
+    ],
+    "count": 970,
+    "first": "2018-01-15",
+    "last": "2022-02-08"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "mysteel prices",
+    "column": "DT",
+    "date_column": "DR",
+    "metadata": [
+      "冷轧不锈板卷：304/2B：2mm：汇总价格：无锡（日）",
+      "??????:304/2B:2mm:????:??(?)",
+      "None",
+      "None"
+    ],
+    "count": 0,
+    "first": null,
+    "last": null
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "mysteel prices",
+    "column": "EE",
+    "date_column": "ED",
+    "metadata": [
+      "焦煤：低硫：A10，V18，S0.4，G70，Y10，MT7：乡宁产：出厂价：临汾：毛则渠（日）",
+      "??:??:A10,V18,S0.4,G70,Y10,MT7:???:???:??:???(?)",
+      "日",
+      "2023-2-28日之前为主焦煤、A＜9.9，V＜18，S＜0.36，G＞65，Y＞11，MT＜8；2022-6-4日之前为A＜10，V＜18，S＜0.4，G＞70，Y＞10，MT＜7；预付现汇含税自提"
+    ],
+    "count": 1298,
+    "first": "2018-01-02",
+    "last": "2023-03-15"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "mysteel prices",
+    "column": "EN",
+    "date_column": "EM",
+    "metadata": [
+      "冶金焦：准一级：A13，S0.72，MT0，CSR60，CRI30：出厂价：日照：浩宇能源（日）",
+      "???:???:A13,S0.72,MT0,CSR60,CRI30:???:??:????(?)",
+      "日",
+      "2022-1-20日之前为A＜13，S＜0.7，MT＜0，CSR＞60；现金含税（干基）"
+    ],
+    "count": 1304,
+    "first": "2017-12-21",
+    "last": "2023-03-15"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "mysteel prices",
+    "column": "FT",
+    "date_column": "FS",
+    "metadata": [
+      "冶金焦：准一级：A13，S0.7，MT7，CSR60，M7：平仓价格指数：日照港（日）",
+      "???:???:A13,S0.7,MT7,CSR60,M7:??????:???(?)",
+      "日",
+      "港口现货价格、湿吨、承兑含税\n"
+    ],
+    "count": 1459,
+    "first": "2017-05-23",
+    "last": "2023-03-15"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "mysteel prices",
+    "column": "FU",
+    "date_column": "FS",
+    "metadata": [
+      "冶金焦：准一级：A13，S0.7，MT7，CSR60：出库价格指数：日照港（日）",
+      "???:???:A13,S0.7,MT7,CSR60:??????:???(?)",
+      "日",
+      "湿吨、含税、现金、出库价"
+    ],
+    "count": 942,
+    "first": "2019-06-12",
+    "last": "2023-03-15"
+  }
+]

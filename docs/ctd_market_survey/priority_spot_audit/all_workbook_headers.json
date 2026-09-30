@@ -1,0 +1,1376 @@
+[
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "ferrous_d",
+    "column": "B",
+    "metadata": "中国 | 主流价:焦炭:山东地区 | 日 | 元/吨 | S004238793 | 20120113 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "ferrous_d",
+    "column": "C",
+    "metadata": "中国 | 主流价:焦炭:河南地区 | 日 | 元/吨 | S004238796 | 20120113 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "ferrous_d",
+    "column": "D",
+    "metadata": "中国 | 主流价:焦炭:河北地区 | 日 | 元/吨 | S004238790 | 20120113 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "ferrous_d",
+    "column": "P",
+    "metadata": "中国 | 天津港:平仓价格(含税):准一级冶金焦(A<12.5,S<0.7,CSR>60,Mt8):山西 | 日 | 元/吨 | S003276468 | 20110614 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "ferrous_d",
+    "column": "Q",
+    "metadata": "中国 | 天津港:平仓价格:准一级冶金焦(A<13%,S<0.70%,Mt<7%,CSR>60):山西 | 日 | 元/吨 | S004369292 | 20160104 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "ferrous_d",
+    "column": "R",
+    "metadata": "中国 | 天津港:平仓价格:准一级冶金焦(A<12.5%,S<0.7%,M25>90%,M10<7.5%,Mt<7%,CSR>62):山西 | 日 | 元/吨 | S004369291 | 20160104 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "ferrous_d",
+    "column": "AB",
+    "metadata": "中国 | 市场价:硅锰:FeMn65Si17:天津 | 日 | 元/吨 | S002959498 | 20081120 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "ferrous_d",
+    "column": "AC",
+    "metadata": "中国 | 市场价:硅锰:FeMn65Si17:内蒙 | 日 | 元/吨 | S002959491 | 20070423 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "ferrous_d",
+    "column": "AD",
+    "metadata": "中国 | 市场价:硅锰:FeMn65Si17:甘肃 | 日 | 元/吨 | S002959499 | 20100402 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "ferrous_d",
+    "column": "AX",
+    "metadata": "库提含税价:炼焦煤:主焦(蒙古):甘其毛都 | 日 | 元/吨 | S009785426 | 20210930 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "ferrous_d",
+    "column": "AY",
+    "metadata": "京唐港:库提价(含税):澳大利亚:主焦煤 | 日 | 元/吨 | S002858879 | 20090713 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "ferrous_d",
+    "column": "BJ",
+    "metadata": "中国 | 硅铁:现货生产成本:宁夏 | 日 | 元/吨 | S017659509 | 20230106 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "ferrous_d",
+    "column": "BK",
+    "metadata": "中国 | 硅铁:现货生产成本:内蒙古 | 日 | 元/吨 | S017659510 | 20230106 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "ferrous_d",
+    "column": "BL",
+    "metadata": "中国 | 硅铁:利润率:宁夏 | 日 | % | S017659519 | 20230106 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "ferrous_d",
+    "column": "BM",
+    "metadata": "中国 | 硅铁:利润率:内蒙古 | 日 | % | S017659520 | 20230106 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "ferrous_d",
+    "column": "BN",
+    "metadata": "中国 | 硅铁:开工率:当周值 | 周 | % | S008082266 | 20190726 : 20260918 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "ferrous_d",
+    "column": "BO",
+    "metadata": "中国 | 硅锰:现货生产成本:宁夏 | 日 | 元/吨 | S017658896 | 20230103 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "ferrous_d",
+    "column": "BP",
+    "metadata": "中国 | 硅锰:现货生产成本:内蒙古 | 日 | 元/吨 | S017658895 | 20230103 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "ferrous_d",
+    "column": "BQ",
+    "metadata": "中国 | 硅锰:利润率:南方大区 | 日 | % | S017658906 | 20230103 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "ferrous_d",
+    "column": "BR",
+    "metadata": "中国 | 硅锰:利润率:北方大区 | 日 | % | S017658905 | 20230103 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "ferrous_d",
+    "column": "BS",
+    "metadata": "中国 | 甘其毛都:库提价:蒙古:焦煤精煤 | 日 | 元/吨 | S004085268 | 20150818 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "ferrous_d",
+    "column": "BX",
+    "metadata": "中国 | 到厂含税价:准一级焦炭:唐山 | 日 | 元/吨 | S008061203 | 20110919 : 20260921 | 西本新干线"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "ferrous_d",
+    "column": "BY",
+    "metadata": "中国 | 到厂含税价:准一级焦炭:上海 | 日 | 元/吨 | S008061232 | 20110914 : 20260921 | 西本新干线"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "ferrous_d",
+    "column": "CD",
+    "metadata": "中国 | 出厂价(含税):焦炭:二级冶金焦:分区域:华中 | 日 | 元/吨 | S004129785 | 20151008 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "ferrous_d",
+    "column": "CE",
+    "metadata": "中国 | 出厂价(含税):焦炭:二级冶金焦:分区域:华东 | 日 | 元/吨 | S004129784 | 20151008 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "ferrous_d",
+    "column": "CF",
+    "metadata": "中国 | 出厂价(含税):焦炭:二级冶金焦:分区域:华北 | 日 | 元/吨 | S004129783 | 20151008 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "ferrous_d",
+    "column": "CH",
+    "metadata": "出厂价(含税):硅铁:72:宁夏 | 日 | 元/吨 | S004789784 | 20190715 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "ferrous_d",
+    "column": "CI",
+    "metadata": "出厂价(含税):硅铁:72:内蒙 | 日 | 元/吨 | S004789790 | 20190715 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "ferrous_d",
+    "column": "CJ",
+    "metadata": "出厂价(含税):硅铁:72:甘肃 | 日 | 元/吨 | S004789786 | 20190715 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "ferrous_d",
+    "column": "CM",
+    "metadata": "中国 | 出厂含税价:准一级焦炭:长治 | 日 | 元/吨 | S008061213 | 20110916 : 20260921 | 西本新干线"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "ferrous_d",
+    "column": "CN",
+    "metadata": "中国 | 出厂含税价:准一级焦炭:徐州 | 日 | 元/吨 | S008061234 | 20110916 : 20260921 | 西本新干线"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "base_d",
+    "column": "AQ",
+    "metadata": "中国 | 现货升贴水:A00铝锭(Al99.70):上海有色 | 日 | 元/吨 | S003048727 | 20130319 : 20260921 | 上海有色"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "base_d",
+    "column": "AR",
+    "metadata": "中国 | 现货升贴水:湿法铜(Cu_Ag>=99.95%):上海有色 | 日 | 元/吨 | S003048725 | 20130319 : 20260921 | 上海有色"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "base_d",
+    "column": "AS",
+    "metadata": "中国 | 现货升贴水:升水铜(Cu_Ag>=99.95%):上海有色 | 日 | 元/吨 | S003048724 | 20130319 : 20260921 | 上海有色"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "base_d",
+    "column": "AT",
+    "metadata": "中国 | 现货升贴水:平水铜(Cu_Ag>=99.95%):上海有色 | 日 | 元/吨 | S003048723 | 20130319 : 20260921 | 上海有色"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "base_d",
+    "column": "AU",
+    "metadata": "中国 | 现货升贴水:贵溪铜(Cu_Ag>=99.95%):上海有色 | 日 | 元/吨 | S003048726 | 20130319 : 20260921 | 上海有色"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "base_d",
+    "column": "AW",
+    "metadata": "中国 | 现货升贴水:1#电解铜(Cu_Ag>=99.95%):上海有色 | 日 | 元/吨 | S003048722 | 20110503 : 20260921 | 上海有色"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "base_d",
+    "column": "BJ",
+    "metadata": "现货价:304/No.1卷:无锡 | 日 | 元/吨 | S004785207 | 20190701 : 20260921 | 上海有色"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "base_d",
+    "column": "BK",
+    "metadata": "现货价:304/2B卷:切边:无锡 | 日 | 元/吨 | S004785206 | 20190701 : 20260921 | 上海有色"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "base_d",
+    "column": "BL",
+    "metadata": "现货价:304/2B卷:毛边:无锡 | 日 | 元/吨 | S004785205 | 20190701 : 20260921 | 上海有色"
+  },
+  {
+    "workbook": "ifind_daily.xlsx",
+    "sheet": "base_d",
+    "column": "CB",
+    "metadata": "中国 | 市场价:废不锈钢:304:无锡 | 日 | 元/吨 | S002959172 | 20110428 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "ferrous_d",
+    "column": "B",
+    "metadata": "中国 | 主流价:焦炭:山东地区 | 日 | 元/吨 | S004238793 | 20120113 : 20260618 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "ferrous_d",
+    "column": "C",
+    "metadata": "中国 | 主流价:焦炭:河南地区 | 日 | 元/吨 | S004238796 | 20120113 : 20260618 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "ferrous_d",
+    "column": "D",
+    "metadata": "中国 | 主流价:焦炭:河北地区 | 日 | 元/吨 | S004238790 | 20120113 : 20260618 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "ferrous_d",
+    "column": "P",
+    "metadata": "中国 | 天津港:平仓价格(含税):准一级冶金焦(A<12.5,S<0.7,CSR>60,Mt8):山西 | 日 | 元/吨 | S003276468 | 20110614 : 20260618 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "ferrous_d",
+    "column": "Q",
+    "metadata": "中国 | 天津港:平仓价格:准一级冶金焦(A<13%,S<0.70%,Mt<7%,CSR>60):山西 | 日 | 元/吨 | S004369292 | 20160104 : 20260617 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "ferrous_d",
+    "column": "R",
+    "metadata": "中国 | 天津港:平仓价格:准一级冶金焦(A<12.5%,S<0.7%,M25>90%,M10<7.5%,Mt<7%,CSR>62):山西 | 日 | 元/吨 | S004369291 | 20160104 : 20260617 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "ferrous_d",
+    "column": "AB",
+    "metadata": "中国 | 市场价:硅锰:FeMn65Si17:天津 | 日 | 元/吨 | S002959498 | 20081120 : 20260618 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "ferrous_d",
+    "column": "AC",
+    "metadata": "中国 | 市场价:硅锰:FeMn65Si17:内蒙 | 日 | 元/吨 | S002959491 | 20070423 : 20260618 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "ferrous_d",
+    "column": "AD",
+    "metadata": "中国 | 市场价:硅锰:FeMn65Si17:甘肃 | 日 | 元/吨 | S002959499 | 20100402 : 20260618 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "ferrous_d",
+    "column": "AX",
+    "metadata": "库提含税价:炼焦煤:主焦(蒙古):甘其毛都 | 日 | 元/吨 | S009785426 | 20210930 : 20260618 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "ferrous_d",
+    "column": "AY",
+    "metadata": "京唐港:库提价(含税):澳大利亚:主焦煤 | 日 | 元/吨 | S002858879 | 20090713 : 20260618 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "ferrous_d",
+    "column": "BJ",
+    "metadata": "中国 | 硅铁:现货生产成本:宁夏 | 日 | 元/吨 | S017659509 | 20230106 : 20260618 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "ferrous_d",
+    "column": "BK",
+    "metadata": "中国 | 硅铁:现货生产成本:内蒙古 | 日 | 元/吨 | S017659510 | 20230106 : 20260618 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "ferrous_d",
+    "column": "BL",
+    "metadata": "中国 | 硅铁:利润率:宁夏 | 日 | % | S017659519 | 20230106 : 20260618 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "ferrous_d",
+    "column": "BM",
+    "metadata": "中国 | 硅铁:利润率:内蒙古 | 日 | % | S017659520 | 20230106 : 20260618 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "ferrous_d",
+    "column": "BN",
+    "metadata": "中国 | 硅铁:开工率:当周值 | 周 | % | S008082266 | 20190726 : 20260612 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "ferrous_d",
+    "column": "BO",
+    "metadata": "中国 | 硅锰:现货生产成本:宁夏 | 日 | 元/吨 | S017658896 | 20230103 : 20260618 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "ferrous_d",
+    "column": "BP",
+    "metadata": "中国 | 硅锰:现货生产成本:内蒙古 | 日 | 元/吨 | S017658895 | 20230103 : 20260618 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "ferrous_d",
+    "column": "BQ",
+    "metadata": "中国 | 硅锰:利润率:南方大区 | 日 | % | S017658906 | 20230103 : 20260618 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "ferrous_d",
+    "column": "BR",
+    "metadata": "中国 | 硅锰:利润率:北方大区 | 日 | % | S017658905 | 20230103 : 20260618 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "ferrous_d",
+    "column": "BS",
+    "metadata": "中国 | 甘其毛都:库提价:蒙古:焦煤精煤 | 日 | 元/吨 | S004085268 | 20150818 : 20260618 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "ferrous_d",
+    "column": "BX",
+    "metadata": "中国 | 到厂含税价:准一级焦炭:唐山 | 日 | 元/吨 | S008061203 | 20110919 : 20260618 | 西本新干线"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "ferrous_d",
+    "column": "BY",
+    "metadata": "中国 | 到厂含税价:准一级焦炭:上海 | 日 | 元/吨 | S008061232 | 20110914 : 20260618 | 西本新干线"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "ferrous_d",
+    "column": "CD",
+    "metadata": "中国 | 出厂价(含税):焦炭:二级冶金焦:分区域:华中 | 日 | 元/吨 | S004129785 | 20151008 : 20260618 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "ferrous_d",
+    "column": "CE",
+    "metadata": "中国 | 出厂价(含税):焦炭:二级冶金焦:分区域:华东 | 日 | 元/吨 | S004129784 | 20151008 : 20260618 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "ferrous_d",
+    "column": "CF",
+    "metadata": "中国 | 出厂价(含税):焦炭:二级冶金焦:分区域:华北 | 日 | 元/吨 | S004129783 | 20151008 : 20260618 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "ferrous_d",
+    "column": "CH",
+    "metadata": "出厂价(含税):硅铁:72:宁夏 | 日 | 元/吨 | S004789784 | 20190715 : 20260618 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "ferrous_d",
+    "column": "CI",
+    "metadata": "出厂价(含税):硅铁:72:内蒙 | 日 | 元/吨 | S004789790 | 20190715 : 20260618 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "ferrous_d",
+    "column": "CJ",
+    "metadata": "出厂价(含税):硅铁:72:甘肃 | 日 | 元/吨 | S004789786 | 20190715 : 20260618 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "ferrous_d",
+    "column": "CM",
+    "metadata": "中国 | 出厂含税价:准一级焦炭:长治 | 日 | 元/吨 | S008061213 | 20110916 : 20260618 | 西本新干线"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "ferrous_d",
+    "column": "CN",
+    "metadata": "中国 | 出厂含税价:准一级焦炭:徐州 | 日 | 元/吨 | S008061234 | 20110916 : 20260618 | 西本新干线"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "base_d",
+    "column": "AQ",
+    "metadata": "中国 | 现货升贴水:A00铝锭(Al99.70):上海有色 | 日 | 元/吨 | S003048727 | 20130319 : 20260626 | 上海有色"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "base_d",
+    "column": "AR",
+    "metadata": "中国 | 现货升贴水:湿法铜(Cu_Ag>=99.95%):上海有色 | 日 | 元/吨 | S003048725 | 20130319 : 20260626 | 上海有色"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "base_d",
+    "column": "AS",
+    "metadata": "中国 | 现货升贴水:升水铜(Cu_Ag>=99.95%):上海有色 | 日 | 元/吨 | S003048724 | 20130319 : 20260626 | 上海有色"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "base_d",
+    "column": "AT",
+    "metadata": "中国 | 现货升贴水:平水铜(Cu_Ag>=99.95%):上海有色 | 日 | 元/吨 | S003048723 | 20130319 : 20260626 | 上海有色"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "base_d",
+    "column": "AU",
+    "metadata": "中国 | 现货升贴水:贵溪铜(Cu_Ag>=99.95%):上海有色 | 日 | 元/吨 | S003048726 | 20130319 : 20260626 | 上海有色"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "base_d",
+    "column": "AW",
+    "metadata": "中国 | 现货升贴水:1#电解铜(Cu_Ag>=99.95%):上海有色 | 日 | 元/吨 | S003048722 | 20110503 : 20260626 | 上海有色"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "base_d",
+    "column": "BJ",
+    "metadata": "现货价:304/No.1卷:无锡 | 日 | 元/吨 | S004785207 | 20190701 : 20260626 | 上海有色"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "base_d",
+    "column": "BK",
+    "metadata": "现货价:304/2B卷:切边:无锡 | 日 | 元/吨 | S004785206 | 20190701 : 20260626 | 上海有色"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "base_d",
+    "column": "BL",
+    "metadata": "现货价:304/2B卷:毛边:无锡 | 日 | 元/吨 | S004785205 | 20190701 : 20260626 | 上海有色"
+  },
+  {
+    "workbook": "ifind_daily_full.xlsx",
+    "sheet": "base_d",
+    "column": "CB",
+    "metadata": "中国 | 市场价:废不锈钢:304:无锡 | 日 | 元/吨 | S002959172 | 20110428 : 20260626 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "const_d",
+    "column": "B",
+    "metadata": "中国 | 日照港:平仓价格(含税):准一级冶金焦(A13,S0.7,CSR60,MT7):日照 | 日 | 元/吨 | S004425298 | 20180102 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "const_d",
+    "column": "C",
+    "metadata": "中国 | 港口均价:平仓价格(含税):一级冶金焦(A12.5,S0.65,CSR65,MT7) | 日 | 元/吨 | S004425304 | 20180102 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "const_d",
+    "column": "D",
+    "metadata": "中国 | 平仓含税价:准一级冶金焦:A13,S0.7,CSR60,MT7,沫7:青岛港:山西产 | 日 | 元/吨 | S006574742 | 20190902 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "warrant_d",
+    "column": "D",
+    "metadata": "中国 | 仓单数量:菜粕 | 日 | 张 | S003278148 | 20130412 : 20260921 | 郑州商品交易所"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "warrant_d",
+    "column": "J",
+    "metadata": "中国 | 仓单数量:硅铁 | 日 | 张 | S005476311 | 20141118 : 20260921 | 郑州商品交易所"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "warrant_d",
+    "column": "O",
+    "metadata": "中国 | 仓单数量:锰硅 | 日 | 张 | S005476312 | 20141118 : 20260921 | 郑州商品交易所"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "warrant_d",
+    "column": "Y",
+    "metadata": "中国 | 有效仓单预报:菜粕:小计 | 日 | 张 | S003278185 | 20130412 : 20260921 | 郑州商品交易所"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "warrant_d",
+    "column": "AJ",
+    "metadata": "中国 | 有效预报:硅铁 | 日 | 张 | S005476313 | 20141118 : 20260921 | 郑州商品交易所"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "warrant_d",
+    "column": "AL",
+    "metadata": "中国 | 有效预报:锰硅 | 日 | 张 | S005476314 | 20141118 : 20260921 | 郑州商品交易所"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "warrant_d",
+    "column": "BZ",
+    "metadata": "中国 | 仓单数量:焦煤 | 日 | 手 | S005476604 | 20130912 : 20260921 | 大连商品交易所"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "warrant_d",
+    "column": "CA",
+    "metadata": "中国 | 仓单数量:焦炭 | 日 | 手 | S005476603 | 20110824 : 20260921 | 大连商品交易所"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "base_d2",
+    "column": "P",
+    "metadata": "中国 | 平均价:硅锰合金(6517):全国 | 日 | 元/吨 | S005068112 | 20150901 : 20260921 | 国金金属网"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "base_d2",
+    "column": "Q",
+    "metadata": "中国 | 平均价:硅铁(72):全国 | 日 | 元/吨 | S005068030 | 20150901 : 20260921 | 国金金属网"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "base_d2",
+    "column": "R",
+    "metadata": "中国 | 平均价:硅铁(75):全国 | 日 | 元/吨 | S005068027 | 20150901 : 20260921 | 国金金属网"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "base_d2",
+    "column": "AN",
+    "metadata": "中国 | 平均价:无氧铜丝(3mm):全国 | 日 | 元/吨 | S005068304 | 20150901 : 20260921 | 国金金属网"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "base_d2",
+    "column": "BR",
+    "metadata": "中国 | 平均价:碳酸锂(99.2%工业级) | 日 | 万元/吨 | S019779625 | 20230420 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "R",
+    "metadata": "中国 | 硅锰:产量:当周值 | 周 | 吨 | S008082273 | 20190816 : 20260918 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "S",
+    "metadata": "中国 | 硅锰:开工率:当周值 | 周 | % | S008082270 | 20190726 : 20260918 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "T",
+    "metadata": "中国 | 硅锰:库存:全国:当周值 | 日 | 吨 | S008618440 | 20200424 : 20260918 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "U",
+    "metadata": "中国 | 硅锰:日均产量:当周值 | 周 | 吨 | S008082271 | 20190726 : 20260918 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "V",
+    "metadata": "中国 | 硅锰:需求量:当周值 | 周 | 吨 | S008082272 | 20190816 : 20260918 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "W",
+    "metadata": "中国 | 硅铁:产量:当周值 | 周 | 吨 | S008082269 | 20200626 : 20260918 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "X",
+    "metadata": "中国 | 硅铁:开工率:当周值 | 周 | % | S008082266 | 20190726 : 20260918 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "Y",
+    "metadata": "中国 | 硅铁:库存:全国:当周值 | 日 | 万吨 | S008618447 | 20200410 : 20260918 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "Z",
+    "metadata": "中国 | 硅铁:日均产量:当周值 | 周 | 吨 | S008082267 | 20190726 : 20260918 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "AA",
+    "metadata": "中国 | 硅铁:需求量:当周值 | 周 | 吨 | S008082268 | 20200626 : 20260918 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "AL",
+    "metadata": "中国 | 库存:焦煤:合计 | 周 | 万吨 | S012116529 | 20220107 : 20260918 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "AM",
+    "metadata": "中国 | 库存:焦炭:独立焦化厂(样本数230家):期末值 | 周 | 万吨 | S005653704 | 20171229 : 20260918 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "AN",
+    "metadata": "中国 | 库存:焦炭:钢厂(247家) | 周 | 万吨 | S009341250 | 20210115 : 20260918 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "AO",
+    "metadata": "中国 | 库存:焦炭:合计 | 周 | 万吨 | S010338984 | 20211217 : 20260918 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "AP",
+    "metadata": "中国 | 库存:焦炭:连云港 | 周 | 万吨 | S003138069 | 20110121 : 20260918 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "AQ",
+    "metadata": "中国 | 库存:焦炭:日照港 | 周 | 万吨 | S003138070 | 20110408 : 20260918 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "AR",
+    "metadata": "中国 | 库存:焦炭:四港 | 周 | 万吨 | S012116534 | 20140801 : 20260918 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "AS",
+    "metadata": "中国 | 库存:焦炭:天津港 | 周 | 万吨 | S003138068 | 20110121 : 20260918 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "AT",
+    "metadata": "中国 | 库存:焦炭:统计独立焦企全样本 | 周 | 万吨 | S009341305 | 20210115 : 20260918 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "AU",
+    "metadata": "中国 | 库存:炼焦煤:独立焦化厂(样本数230家):期末值 | 周 | 万吨 | S005653705 | 20171229 : 20260918 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "AV",
+    "metadata": "中国 | 库存:炼焦煤:钢厂(247家) | 周 | 万吨 | S009341251 | 20210115 : 20260918 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "AW",
+    "metadata": "中国 | 库存:炼焦煤:六港合计:当周值 | 周 | 万吨 | S004039587 | 20131122 : 20260918 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "BB",
+    "metadata": "中国 | 库存天数:硅锰:全国:期末值 | 月 | 天 | S008618451 | 20181031 : 20260930 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "CO",
+    "metadata": "中国 | 总库存:炼焦煤:统计独立焦企全样本 | 周 | 万吨 | S009341306 | 20210115 : 20260918 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "CX",
+    "metadata": "中国 | 市场价:螺纹钢:上海 | 周 | 美元/吨 | S019823047 | 20230922 : 20260918 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "CY",
+    "metadata": "进口价:螺纹钢:东南亚 | 周 | 美元/吨 | S019823046 | 20230922 : 20260918 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "DJ",
+    "metadata": "中国 | 采购数量:硅锰:河钢 | 月 | 吨 | S019294887 | 20200630 : 20260930 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "DK",
+    "metadata": "中国 | 采购数量:硅铁:河钢 | 月 | 吨 | S019294886 | 20200531 : 20260930 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "DL",
+    "metadata": "中国 | 采购价:硅锰:河钢 | 月 | 元/吨 | S019294885 | 20200630 : 20260930 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "DM",
+    "metadata": "中国 | 采购价:硅铁:河钢 | 月 | 元/吨 | S019294884 | 20200531 : 20260930 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "DN",
+    "metadata": "中国 | 电价:甘肃:硅锰硅铁 | 周 | 元/千瓦时 | S019988718 | 20230307 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "DO",
+    "metadata": "中国 | 电价:青海:硅锰硅铁 | 周 | 元/千瓦时 | S019988719 | 20230307 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "DP",
+    "metadata": "中国 | 电价:宁夏:硅锰硅铁 | 周 | 元/千瓦时 | S019988720 | 20230307 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "DQ",
+    "metadata": "中国 | 电价:内蒙古:硅锰硅铁 | 周 | 元/千瓦时 | S019988722 | 20230307 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "DR",
+    "metadata": "中国 | 电价:云南:硅锰硅铁 | 周 | 元/千瓦时 | S019988726 | 20230307 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "ferrous_w",
+    "column": "DS",
+    "metadata": "中国 | 电价:广西:硅锰硅铁 | 周 | 元/千瓦时 | S019988727 | 20230307 : 20260921 | 同花顺金融"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "base_w",
+    "column": "L",
+    "metadata": "中国 | 上海有色:库存:电解铝:总计 | 日 | 万吨 | S005363047 | 20180125 : 20250317 | 上海有色"
+  },
+  {
+    "workbook": "ifind_data.xlsx",
+    "sheet": "petchem_w",
+    "column": "R",
+    "metadata": "中国 | 开工率:涤纶短纤:全国 | 周 | % | S003560514 | 20130408 : 20260917 | 同花顺金融"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "mysteel prices",
+    "column": "N",
+    "metadata": "冶金焦：准一级：A13，S0.7，MT7，CSR60，M7：汇总价格：日照港（日） | 停-???:???:A13,S0.7,MT7,CSR60,M7:????:???(?) | 日"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "mysteel prices",
+    "column": "AF",
+    "metadata": "主焦煤：A10.5，S1.3，G75：现货价：柳林（日） | 停-???:A10.5,S1.3,G75:???:??(?) | 日 | 出厂承兑含税"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "mysteel prices",
+    "column": "BL",
+    "metadata": "DCE：焦炭：05合约：收盘价（日） | DCE:??:05??:???(?) | 日 | 焦炭期货合约中品种为冶金焦炭"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "mysteel prices",
+    "column": "BM",
+    "metadata": "DCE：焦炭：09合约：收盘价（日） | DCE:??:09??:???(?) | 日 | 焦炭期货合约中品种为冶金焦炭"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "mysteel prices",
+    "column": "BN",
+    "metadata": "DCE：焦炭：01合约：收盘价（日） | DCE:??:01??:???(?) | 日 | 焦炭期货合约中品种为冶金焦炭"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "mysteel prices",
+    "column": "BO",
+    "metadata": "DCE：焦煤：05合约：收盘价（日） | DCE:??:05??:???(?) | 日"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "mysteel prices",
+    "column": "BP",
+    "metadata": "DCE：焦煤：09合约：收盘价（日） | DCE:??:09??:???(?) | 日"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "mysteel prices",
+    "column": "BQ",
+    "metadata": "DCE：焦煤：01合约：收盘价（日） | DCE:??:01??:???(?) | 日"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "mysteel prices",
+    "column": "DT",
+    "metadata": "冷轧不锈板卷：304/2B：2mm：汇总价格：无锡（日） | ??????:304/2B:2mm:????:??(?)"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "mysteel prices",
+    "column": "EA",
+    "metadata": "废不锈钢：304：汇总价格：无锡（日） | ????:304:????:??(?) | 日 | 不含税"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "mysteel prices",
+    "column": "EE",
+    "metadata": "焦煤：低硫：A10，V18，S0.4，G70，Y10，MT7：乡宁产：出厂价：临汾：毛则渠（日） | ??:??:A10,V18,S0.4,G70,Y10,MT7:???:???:??:???(?) | 日 | 预付款现汇含税自提；炼焦精煤；2025-2-6日之前为A≤10，V≤18，S≤0.4，G≥65，Y≥11，MT≤10；2024-7-12日之前为A＜9.9，V＜18.13，S＜0.36，G＞65，Y＞11.5，MT＜7.9；2023-2-28日之前为主焦煤、A＜9.9，V＜18，S＜0.36，G＞65，Y＞11，MT＜8；2022-6-4日之前为A＜10，V＜18，S＜0.4，G＞70，Y＞10，MT＜7"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "mysteel prices",
+    "column": "EN",
+    "metadata": "冶金焦：准一级：A13，S0.72，MT0，CSR60，CRI30：出厂价：日照：浩宇能源（日） | ???:???:A13,S0.72,MT0,CSR60,CRI30:???:??:????(?) | 日 | 现金含税（干基）；2022-1-20日之前为A＜13，S＜0.7，MT＜0，CSR＞60"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "mysteel prices",
+    "column": "FT",
+    "metadata": "冶金焦：准一级：A13，S0.7，MT7，CSR60，M7：平仓价格指数：日照港（日） | ???:???:A13,S0.7,MT7,CSR60,M7:??????:???(?) | 日 | 港口现货价格、湿吨、承兑含税\n"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "mysteel prices",
+    "column": "FU",
+    "metadata": "冶金焦：准一级：A13，S0.7，MT7，CSR60：出库价格指数：日照港（日） | ???:???:A13,S0.7,MT7,CSR60:??????:???(?) | 日 | 港口现货价格、湿吨、含税、现金、出库价"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "non-ferrous data weekly",
+    "column": "B",
+    "metadata": "锌锭现货库存：地区合计（日） | 锌锭现货库存：地区合计（日） | 万吨 | 我的有色网 | YS_0000304007 | 日 | 2014-05-19～2022-12-06 | 每周一和周四发布；2020年6月11日以前为每周一、周五发布"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "non-ferrous data weekly",
+    "column": "C",
+    "metadata": "锌锭现货库存：上海（日） | 锌锭现货库存：上海（日） | 万吨 | 我的有色网 | YS_0000304008 | 日 | 2014-05-19～2022-12-06 | 每周一和周四发布；2020年6月11日以前为每周一、周五发布"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "non-ferrous data weekly",
+    "column": "D",
+    "metadata": "锌锭现货库存：广东（日） | 锌锭现货库存：广东（日） | 万吨 | 我的有色网 | YS_0000304009 | 日 | 2014-05-19～2022-12-06 | 每周一和周四发布；2020年6月11日以前为每周一、周五发布；2016-01-25前，为佛山市场"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "non-ferrous data weekly",
+    "column": "E",
+    "metadata": "锌锭现货库存：天津（日） | 锌锭现货库存：天津（日） | 万吨 | 我的有色网 | YS_0000304010 | 日 | 2014-05-19～2022-12-06 | 每周一和周四发布；2020年6月11日以前为每周一、周五发布"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "M",
+    "metadata": "进口铁矿石港口总库存：31个港口同口径总计（周） | 进口铁矿石港口总库存：31个港口同口径总计（周） | 万吨 | 我的钢铁网 | ST_0000030449 | 周 | 2007-01-12～2022-12-02 | 此数据为31个港口库存总计"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "CY",
+    "metadata": "焦炭库存：港口合计（周） | 焦炭库存：港口合计（周） | 万吨 | 我的钢铁网 | CM_0000903985 | 周 | 2014-08-01～2022-12-02"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "CZ",
+    "metadata": "钢厂焦炭库存（110家）（周） | 钢厂焦炭库存（110家）（周） | 万吨 | 我的钢铁网 | CO_0001624653 | 周 | 2011-07-08～2022-12-02 | 2017-01-13前，数据根据原50家样本产能换算"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "DA",
+    "metadata": "独立焦化厂焦炭库存（100家）：全国（周） | 停-独立焦化厂焦炭库存（100家）：全国（周） | 万吨 | 我的钢铁网 | CO_0001717679 | 周 | 2011-07-08～2022-01-07"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "HA",
+    "metadata": "230家独立焦化厂：焦炭：日均产量：中国（周） | 230??????:??:????:??(?) | 周 | 样本主要统计冶金焦"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "HB",
+    "metadata": "焦炭：247家钢厂：日均产量：中国（周） | ??:247???:????:??(?) | 周 | 样本覆盖了全国绝大部分区域的钢厂及自有焦化钢厂；2020年及之前数据由原有样本换算得来"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "HC",
+    "metadata": "焦炭：全样本：独立焦化企业：日均产量：中国（周） | ??:???:??????:????:??(?) | 周 | 2020年及之前数据由原有样本换算得来"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "HD",
+    "metadata": "100家独立焦化厂：焦炭：库存：中国（周） | 100??????:??:??:??(?)"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "HE",
+    "metadata": "110家钢铁企业：焦炭：库存（周） | 110?????:??:??(?)"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "HF",
+    "metadata": "230家独立焦化厂：焦炭：库存：中国（周） | 230??????:??:??:??(?) | 周 | 样本主要统计冶金焦"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "HG",
+    "metadata": "焦炭：247家钢厂样本焦化厂：库存：中国（周） | ??:247????????:??:??(?) | 周 | 统计周期：周四；247家钢厂样本占总的焦炭产能95%，覆盖了全国绝大部分区域的钢厂及自有焦化钢厂，不包含在途货量及港口库存；钢厂外购焦炭+钢厂自产焦炭；2020年及之前数据由原有样本换算得来"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "HH",
+    "metadata": "焦炭：全样本：独立焦化企业：库存：中国（周） | ??:???:??????:??:??(?) | 周 | 统计周期：周四；独立焦企产能约占全国独立焦企产能100%左右，不包含在途货量及港口库存；2020年及之前数据由原有样本换算得来"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "HI",
+    "metadata": "焦炭：港口库存合计：中国（周） | ??:??????:??(?) | 周"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "HK",
+    "metadata": "炼焦煤：进口：港口库存合计（周） | ???:??:??????(?) | 周 | 统计周期：周四；不包含在途货量；2013-11-22日起，增加了青岛港、防城港；2016-03-18起，由于无货/缺货，防城港库存数据停发，从总数据中剔除。"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "HL",
+    "metadata": "100家独立焦化厂：炼焦煤：库存：中国（周） | 100??????:???:??:??(?)"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "HM",
+    "metadata": "110家钢铁企业：炼焦煤：库存：中国（周） | 110?????:???:??:??(?)"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "HN",
+    "metadata": "230家独立焦化厂：炼焦煤：库存合计（周） | 230??????:???:????(?) | 周 | 样本占全国独立焦企总产能80%左右"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "HO",
+    "metadata": "炼焦煤：247家钢厂样本焦化厂：库存：中国（周） | ???:247????????:??:??(?) | 周 | 样本覆盖了全国绝大部分区域的钢厂及自有焦化钢厂；2020年及之前数据由原有样本换算得来"
+  },
+  {
+    "workbook": "mysteel data (base ferrous).xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "HP",
+    "metadata": "炼焦煤：矿山库存：中国（周） | ???:????:??(?)"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "mysteel prices",
+    "column": "N",
+    "metadata": "冶金焦：准一级：A13，S0.7，MT7，CSR60，M7：汇总价格：日照港（日） | 停-???:???:A13,S0.7,MT7,CSR60,M7:????:???(?) | 日"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "mysteel prices",
+    "column": "AF",
+    "metadata": "主焦煤：A10.5，S1.3，G75：现货价：柳林（日） | 停-???:A10.5,S1.3,G75:???:??(?) | 日 | 出厂承兑含税"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "mysteel prices",
+    "column": "BL",
+    "metadata": "DCE：焦炭：05合约：收盘价（日） | DCE:??:05??:???(?) | 日 | 焦炭期货合约中品种为冶金焦炭"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "mysteel prices",
+    "column": "BM",
+    "metadata": "DCE：焦炭：09合约：收盘价（日） | DCE:??:09??:???(?) | 日 | 焦炭期货合约中品种为冶金焦炭"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "mysteel prices",
+    "column": "BN",
+    "metadata": "DCE：焦炭：01合约：收盘价（日） | DCE:??:01??:???(?) | 日 | 焦炭期货合约中品种为冶金焦炭"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "mysteel prices",
+    "column": "BO",
+    "metadata": "DCE：焦煤：05合约：收盘价（日） | DCE:??:05??:???(?) | 日"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "mysteel prices",
+    "column": "BP",
+    "metadata": "DCE：焦煤：09合约：收盘价（日） | DCE:??:09??:???(?) | 日"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "mysteel prices",
+    "column": "BQ",
+    "metadata": "DCE：焦煤：01合约：收盘价（日） | DCE:??:01??:???(?) | 日"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "mysteel prices",
+    "column": "DT",
+    "metadata": "冷轧不锈板卷：304/2B：2mm：汇总价格：无锡（日） | ??????:304/2B:2mm:????:??(?)"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "mysteel prices",
+    "column": "EA",
+    "metadata": "废不锈钢：304：汇总价格：无锡（日） | ????:304:????:??(?) | 日"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "mysteel prices",
+    "column": "EE",
+    "metadata": "焦煤：低硫：A10，V18，S0.4，G70，Y10，MT7：乡宁产：出厂价：临汾：毛则渠（日） | ??:??:A10,V18,S0.4,G70,Y10,MT7:???:???:??:???(?) | 日 | 2023-2-28日之前为主焦煤、A＜9.9，V＜18，S＜0.36，G＞65，Y＞11，MT＜8；2022-6-4日之前为A＜10，V＜18，S＜0.4，G＞70，Y＞10，MT＜7；预付现汇含税自提"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "mysteel prices",
+    "column": "EN",
+    "metadata": "冶金焦：准一级：A13，S0.72，MT0，CSR60，CRI30：出厂价：日照：浩宇能源（日） | ???:???:A13,S0.72,MT0,CSR60,CRI30:???:??:????(?) | 日 | 2022-1-20日之前为A＜13，S＜0.7，MT＜0，CSR＞60；现金含税（干基）"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "mysteel prices",
+    "column": "FT",
+    "metadata": "冶金焦：准一级：A13，S0.7，MT7，CSR60，M7：平仓价格指数：日照港（日） | ???:???:A13,S0.7,MT7,CSR60,M7:??????:???(?) | 日 | 港口现货价格、湿吨、承兑含税\n"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "mysteel prices",
+    "column": "FU",
+    "metadata": "冶金焦：准一级：A13，S0.7，MT7，CSR60：出库价格指数：日照港（日） | ???:???:A13,S0.7,MT7,CSR60:??????:???(?) | 日 | 湿吨、含税、现金、出库价"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "non-ferrous data weekly",
+    "column": "B",
+    "metadata": "锌锭现货库存：地区合计（日） | 锌锭现货库存：地区合计（日） | 万吨 | 我的有色网 | YS_0000304007 | 日 | 2014-05-19～2022-12-06 | 每周一和周四发布；2020年6月11日以前为每周一、周五发布"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "non-ferrous data weekly",
+    "column": "C",
+    "metadata": "锌锭现货库存：上海（日） | 锌锭现货库存：上海（日） | 万吨 | 我的有色网 | YS_0000304008 | 日 | 2014-05-19～2022-12-06 | 每周一和周四发布；2020年6月11日以前为每周一、周五发布"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "non-ferrous data weekly",
+    "column": "D",
+    "metadata": "锌锭现货库存：广东（日） | 锌锭现货库存：广东（日） | 万吨 | 我的有色网 | YS_0000304009 | 日 | 2014-05-19～2022-12-06 | 每周一和周四发布；2020年6月11日以前为每周一、周五发布；2016-01-25前，为佛山市场"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "non-ferrous data weekly",
+    "column": "E",
+    "metadata": "锌锭现货库存：天津（日） | 锌锭现货库存：天津（日） | 万吨 | 我的有色网 | YS_0000304010 | 日 | 2014-05-19～2022-12-06 | 每周一和周四发布；2020年6月11日以前为每周一、周五发布"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "M",
+    "metadata": "进口铁矿石港口总库存：31个港口同口径总计（周） | 进口铁矿石港口总库存：31个港口同口径总计（周） | 万吨 | 我的钢铁网 | ST_0000030449 | 周 | 2007-01-12～2022-12-02 | 此数据为31个港口库存总计"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "CY",
+    "metadata": "焦炭库存：港口合计（周） | 焦炭库存：港口合计（周） | 万吨 | 我的钢铁网 | CM_0000903985 | 周 | 2014-08-01～2022-12-02"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "CZ",
+    "metadata": "钢厂焦炭库存（110家）（周） | 钢厂焦炭库存（110家）（周） | 万吨 | 我的钢铁网 | CO_0001624653 | 周 | 2011-07-08～2022-12-02 | 2017-01-13前，数据根据原50家样本产能换算"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "DA",
+    "metadata": "独立焦化厂焦炭库存（100家）：全国（周） | 停-独立焦化厂焦炭库存（100家）：全国（周） | 万吨 | 我的钢铁网 | CO_0001717679 | 周 | 2011-07-08～2022-01-07"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "HA",
+    "metadata": "230家独立焦化厂：焦炭：日均产量：中国（周） | 230??????:??:????:??(?) | 周"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "HB",
+    "metadata": "焦炭：247家钢厂：日均产量：中国（周） | ??:247???:????:??(?) | 周 | 样本覆盖了全国绝大部分区域的钢厂及自有焦化钢厂；2020年及之前数据由原有样本换算得来"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "HC",
+    "metadata": "焦炭：全样本：独立焦化企业：日均产量：中国（周） | ??:???:??????:????:??(?) | 周 | 2020年及之前数据由原有样本换算得来"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "HD",
+    "metadata": "100家独立焦化厂：焦炭：库存：中国（周） | 100??????:??:??:??(?)"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "HE",
+    "metadata": "110家钢铁企业：焦炭：库存（周） | 110?????:??:??(?)"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "HF",
+    "metadata": "230家独立焦化厂：焦炭：库存：中国（周） | 230??????:??:??:??(?) | 周"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "HG",
+    "metadata": "焦炭：247家钢厂样本焦化厂：库存：中国（周） | ??:247????????:??:??(?) | 周 | 样本覆盖了全国绝大部分区域的钢厂及自有焦化钢厂；钢厂外购焦炭+钢厂自产焦炭；2020年及之前数据由原有样本换算得来"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "HH",
+    "metadata": "焦炭：全样本：独立焦化企业：库存：中国（周） | ??:???:??????:??:??(?) | 周 | 2020年及之前数据由原有样本换算得来"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "HI",
+    "metadata": "焦炭：港口库存合计：中国（周） | ??:??????:??(?) | 周"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "HK",
+    "metadata": "炼焦煤：进口：港口库存合计（周） | ???:??:??????(?) | 周 | 2013-11-22起，增加了青岛港、防城港"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "HL",
+    "metadata": "100家独立焦化厂：炼焦煤：库存：中国（周） | 100??????:???:??:??(?)"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "HM",
+    "metadata": "110家钢铁企业：炼焦煤：库存：中国（周） | 110?????:???:??:??(?)"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "HN",
+    "metadata": "230家独立焦化厂：炼焦煤：库存合计（周） | 230??????:???:????(?) | 周"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "HO",
+    "metadata": "炼焦煤：247家钢厂样本焦化厂：库存：中国（周） | ???:247????????:??:??(?) | 周 | 样本覆盖了全国绝大部分区域的钢厂及自有焦化钢厂；2020年及之前数据由原有样本换算得来"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "ferrous data weekly",
+    "column": "HP",
+    "metadata": "炼焦煤：矿山库存：中国（周） | ???:????:??(?) | 周"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "monthly data ferrous",
+    "column": "BD",
+    "metadata": "焦炭及半焦炭：进口数量合计：贸易方式（月） | ??????:??????:????(?) | 月"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "monthly data ferrous",
+    "column": "BE",
+    "metadata": "焦炭及半焦炭：出口数量合计：贸易方式（月） | ??????:??????:????(?) | 月"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "monthly data ferrous",
+    "column": "BF",
+    "metadata": "炼焦煤：出口数量合计：贸易方式（月） | ???:??????:????(?) | 月"
+  },
+  {
+    "workbook": "mysteel data.xlsx",
+    "sheet": "monthly data ferrous",
+    "column": "BG",
+    "metadata": "炼焦煤：进口数量合计：贸易方式（月） | ???:??????:????(?) | 月"
+  },
+  {
+    "workbook": "mysteel_metal.xlsx",
+    "sheet": "data",
+    "column": "B",
+    "metadata": "焦炭：124家独立焦化厂：市场情绪指数（周） | 点 | 我的钢铁网 | ID00184174 | 周 | 2016-09-23～2026-09-18 | 样本企业包括：焦化厂、钢厂、贸易商、期货公司、投资公司"
+  },
+  {
+    "workbook": "mysteel_metal.xlsx",
+    "sheet": "data",
+    "column": "C",
+    "metadata": "焦炭：31家钢铁企业：市场情绪指数（周） | 点 | 我的钢铁网 | ID00184175 | 周 | 2016-09-23～2026-09-18"
+  },
+  {
+    "workbook": "mysteel_metal.xlsx",
+    "sheet": "data",
+    "column": "D",
+    "metadata": "焦炭：市场情绪指数：38家煤矿企业（周） | 点 | 我的钢铁网 | ID00184176 | 周 | 2016-09-23～2026-09-18 | 样本企业包括：投资公司、期货公司、贸易商"
+  },
+  {
+    "workbook": "mysteel_metal.xlsx",
+    "sheet": "data",
+    "column": "E",
+    "metadata": "焦炭：市场情绪指数：12家贸易商（周） | 点 | 我的钢铁网 | ID00184178 | 周 | 2016-09-23～2026-09-18"
+  },
+  {
+    "workbook": "mysteel_metal.xlsx",
+    "sheet": "data",
+    "column": "F",
+    "metadata": "焦煤：31家钢铁企业：市场情绪指数（周） | 点 | 我的钢铁网 | ID00184490 | 周 | 2016-09-23～2026-09-18"
+  },
+  {
+    "workbook": "mysteel_metal.xlsx",
+    "sheet": "data",
+    "column": "G",
+    "metadata": "焦煤：38家煤矿企业：市场情绪指数（周） | 点 | 我的钢铁网 | ID00184492 | 周 | 2016-09-23～2026-09-18"
+  },
+  {
+    "workbook": "mysteel_metal.xlsx",
+    "sheet": "data",
+    "column": "H",
+    "metadata": "焦煤：14家贸易商：市场情绪指数（周） | 点 | 我的钢铁网 | ID00184494 | 周 | 2016-09-23～2026-09-18"
+  },
+  {
+    "workbook": "mysteel_metal.xlsx",
+    "sheet": "data",
+    "column": "I",
+    "metadata": "焦煤：150家独立焦化厂：市场情绪指数（周） | 点 | 我的钢铁网 | ID00184497 | 周 | 2016-09-23～2026-09-18 | 样本企业包括：煤矿、焦化厂、钢厂、贸易商、期货公司、投资公司"
+  },
+  {
+    "workbook": "mysteel_metal.xlsx",
+    "sheet": "data",
+    "column": "J",
+    "metadata": "焦炭：230家独立焦化厂：日均产量：中国（周） | 万吨 | 我的钢铁网 | ID00187978 | 周 | 2017-12-29～2026-09-18 | 样本主要统计冶金焦"
+  },
+  {
+    "workbook": "mysteel_metal.xlsx",
+    "sheet": "data",
+    "column": "O",
+    "metadata": "焦煤：样本洗煤厂（10家）：市场情绪指数（周） | 点 | 我的钢铁网 | ID01011788 | 周 | 2020-01-17～2026-09-18"
+  },
+  {
+    "workbook": "mysteel_metal.xlsx",
+    "sheet": "data",
+    "column": "Q",
+    "metadata": "焦炭：247家钢铁企业：日均产量：中国（周） | 万吨 | 我的钢铁网 | ID01109378 | 周 | 2018-01-05～2026-09-18 | 样本覆盖了全国绝大部分区域的钢厂及自有焦化钢厂；2020年及之前数据由原有样本换算得来"
+  },
+  {
+    "workbook": "mysteel_metal.xlsx",
+    "sheet": "data",
+    "column": "AC",
+    "metadata": "精煤：523家样本矿山：库存（周） | 万吨 | 我的钢铁网 | ID01718576 | 周 | 2021-01-08～2026-09-18 | 统计周期：周三；样本涉及产能约8.2亿吨。占全国炼焦煤矿山总产能约64%。"
+  },
+  {
+    "workbook": "mysteel_metal.xlsx",
+    "sheet": "data",
+    "column": "AD",
+    "metadata": "精煤：523家样本矿山：日均产量（周） | 万吨 | 我的钢铁网 | ID01718581 | 周 | 2021-01-08～2026-09-18 | 占全国炼焦煤矿山64%；统计上周四至本周三期间7天的焦精煤平均日产量"
+  },
+  {
+    "workbook": "mysteel_metal.xlsx",
+    "sheet": "data",
+    "column": "AF",
+    "metadata": "焦煤：竞拍成交率（日） | 百分比 | 我的钢铁网 | ID01719869 | 日 | 2022-03-15～2026-09-21"
+  },
+  {
+    "workbook": "mysteel_metal.xlsx",
+    "sheet": "data",
+    "column": "AG",
+    "metadata": "焦煤：挂牌量（日） | 万吨 | 我的钢铁网 | ID01720310 | 日 | 2022-03-15～2026-09-21"
+  }
+]

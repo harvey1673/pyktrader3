@@ -1,0 +1,8 @@
+{
+  "unique_tickers": 32,
+  "unique_code_dates": 72641,
+  "conflicting_numeric_overlaps": 0,
+  "panel_series": 13,
+  "sparse_panel_series": 8,
+  "panel_semantics": "Raw quoted prices; no quality/freight conversion, filling, CTD minimum or futures join."
+}
