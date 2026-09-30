@@ -75,7 +75,7 @@ class CMQRiskEngine(object):
         output = {'book_risks': self.book_risks, 'deal_risks': self.deal_risks, 'inst_risks': self.inst_risks}
         if filename != None:
             with open(filename, 'w') as outfile:
-                json.dump(output, outfile)
+                json.dump(output, outfile, indent=4)
                 return True
         else:
             return json.dumps(output)

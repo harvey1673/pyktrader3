@@ -698,8 +698,6 @@ class Agent(MktDataMixin):
         for name in self.gateways:
             gateway = self.gateways[name]
             gateway.close()
-            gateway.mdApi = None
-            gateway.tdApi = None
         
 
 if __name__=="__main__":

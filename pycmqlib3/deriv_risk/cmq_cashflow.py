@@ -3,6 +3,7 @@ from repoze.lru import lru_cache
 import numpy as np
 from scipy.optimize import brentq as solver
 import copy
+import QuantLib as ql
 from . cmq_utils import *  
 from . cmq_rate_index import *  
 
@@ -13,7 +14,7 @@ class LegFactory:
         pass
 
     def __init__(self, frequency, calendar, daycount, index_fac,                                 
-                 dayroll=DayRoll.ModifiedFollowing,
+                 dayroll=ql.DayRoll.ModifiedFollowing,
                  endmonth=False,
                  spotlag='2D', 
                  paylag='0D', 
@@ -26,15 +27,15 @@ class LegFactory:
                  rate_leverage=1.0,
                  **kwargs):
         #super(LegFactory, self).__init__(**kwargs)
-        self.frequency = Period(frequency) 
+        self.frequency = ql.Period(frequency) 
         self.calendar = calendar
         self.daycount = daycount 
         self.index_fac = index_fac
                       
         self.dayroll = dayroll
         self.endmonth = endmonth
-        self.spotlag = Period(spotlag)                     
-        self.paylag = Period(paylag)         
+        self.spotlag = ql.Period(spotlag)                     
+        self.paylag = ql.Period(paylag)         
         self.rollrule = rollrule  
               
         self.notl_base = notl_base
@@ -64,7 +65,7 @@ class LegFactory:
                 yield stuff
 
     def roll_date(self, start, period):
-        if isinstance(period, Period):
+        if isinstance(period, ql.Period):
             date = self.calendar.advance(start, period, self.dayroll, self.endmonth)
         elif period == 'spot':
             date = self.calendar.advance(start, self.spotlag, self.dayroll)
@@ -74,7 +75,7 @@ class LegFactory:
             date = self.calendar.advance(start, self.paylag, self.dayroll)
         else:
             raise BaseException('invalid date rolling ...')   
-        return Date.convert(date)
+        return ql.Date.convert(date)
 
     def schedule(self, tradedate=None, expiry=None, start=None, tenor=None):
         """
@@ -88,13 +89,13 @@ class LegFactory:
             if 'expiry' is Period: fixdate = tradedate (+) expiry
         """     
         # determine effdate
-        if isinstance(expiry, Period): # effdate = tradedate (+) expiry (+) spotlag
+        if isinstance(expiry, ql.Period): # effdate = tradedate (+) expiry (+) spotlag
             effdate = self.roll_date(self.roll_date(tradedate, expiry), 'spot')
-        elif isinstance(expiry, Date): # effdate = expiry (+) spotlag
+        elif isinstance(expiry, ql.Date): # effdate = expiry (+) spotlag
             effdate = self.roll_date(expiry, 'spot')
-        elif isinstance(start, Period): # effdate = tradedate (+) spotlag (+) start = spotdate (+) start
+        elif isinstance(start, ql.Period): # effdate = tradedate (+) spotlag (+) start = spotdate (+) start
             effdate = self.roll_date(self.roll_date(tradedate, 'spot'), start)
-        elif isinstance(start, Date): # effdate = start
+        elif isinstance(start, ql.Date): # effdate = start
             effdate = start
         else: # expiry/start both are NONE => spot swap; effdate = trade (+) spotlag
             effdate = self.roll_date(tradedate, 'spot') # by default: dayroll=Following, EoM=False
@@ -106,9 +107,9 @@ class LegFactory:
             return [effdate, self.roll_date(effdate, tenor)]
         else: # products with multiple cashflows
             def n_months(p):
-                if p.units() == Period.Units.Months:
+                if p.units() == ql.Period.Units.Months:
                     return p.length()
-                elif p.units() == Period.Units.Years:
+                elif p.units() == ql.Period.Units.Years:
                     return p.length() * 12
                 else:
                     raise BaseException('invalid tenor period ...') 
@@ -120,7 +121,7 @@ class LegFactory:
                 accr_end_months = list(range(nm_index, nm_tenor, nm_index)) + [nm_tenor]
             else:
                 raise BaseException('invalid schedule rolling rule ...') 
-            return [effdate] + [self.roll_date(effdate, Period(n, Period.Units.Months)) for n in accr_end_months]
+            return [effdate] + [self.roll_date(effdate, ql.Period(n, ql.Period.Units.Months)) for n in accr_end_months]
 
     def create(self, tradedate=None, expiry=None, start=None, tenor=None):
         """
@@ -184,7 +185,7 @@ class LegFactory:
             self.matdate = cp[-1].accr_end 
 
             # create numpy.arrays for caching purpose
-            self.np_paydates = HashableArray([p.paydate.t for p in self.cp])
+            self.np_paydates = ql.HashableArray([p.paydate.t for p in self.cp])
             self.np_acovs = np.array([p.accr_cov for p in self.cp])        
             self.np_effnotl = self.np_acovs * np.array([p.notional for p in self.cp])
 
@@ -238,7 +239,7 @@ class LegFactory:
             cutoff = 'present':            |-------|--------------|--------------|
             cutoff = 'following':                  |--------------|--------------| 
             """      
-            if enddate is None: enddate = Date.maxDate()
+            if enddate is None: enddate = ql.Date.maxDate()
             assert self.effdate <= cutdate <= self.matdate
             assert cutdate < enddate
 
@@ -251,14 +252,14 @@ class LegFactory:
                 cp = cp[1:] # remove the leading period
                 if not cp: return None
             elif cutoff == 'present':
-                if PRINT and cutdate != cp[0].accr_start: 
+                if cutdate != cp[0].accr_start: 
                     print('warning: leg cut to present and cutdate %s does not follow payment schedule' % cutdate)
                 period = copy.copy(cp[0]) # make a shadow copy to leave the original period intact
                 period.fixdate = self.factory.roll_date(cutdate, '-spot')
                 period.accr_start = cutdate
                 period.accr_cov = self.factory.daycount.yearFraction(period.accr_start, period.accr_end)              
-                if isinstance(period.index, FloatIndexFactory.Index): # create a chopped Libor, e.g. for calibration swaptions
-                    period.index = FloatIndexFactory().create(period) 
+                if isinstance(period.index, ql.FloatIndexFactory.Index): # create a chopped Libor, e.g. for calibration swaptions
+                    period.index = ql.FloatIndexFactory().create(period) 
                 cp[0] = period
             else:
                 raise BaseException('invalid cutoff spec. ...')
@@ -284,14 +285,14 @@ class LegFactory:
 
 class ExerciseSchedule:
     def __init__(self, frequency, calendar,
-                 dayroll=DayRoll.ModifiedFollowing, endmonth=True, spotlag='2D', 
+                 dayroll=ql.DayRoll.ModifiedFollowing, endmonth=True, spotlag='2D', 
                  paylag='0D', rollrule=LegFactory.RollingRule.Backward):
-        self.factory = LegFactory(frequency, calendar, None, FixedIndexFactory(None), dayroll=dayroll, 
+        self.factory = LegFactory(frequency, calendar, None, ql.FixedIndexFactory(None), dayroll=dayroll, 
                                   endmonth=endmonth, spotlag=spotlag, paylag=paylag, rollrule=rollrule)
     
     def dates(self, tradedate, start, end):
-        start = Period(start)
-        end = Period(end)
+        start = ql.Period(start)
+        end = ql.Period(end)
         short = self.factory.schedule(tradedate=tradedate, tenor=start)
         long = self.factory.schedule(tradedate=tradedate, tenor=end)
         return short[-1:] + [d for d in int if d not in short]

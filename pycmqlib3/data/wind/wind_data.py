@@ -60,8 +60,8 @@ def save_hist_data(start_date, end_date, index_list = [], product_codes = [], sp
 
     for prodcode in product_codes:
         cont_mth, exch = prod_main_cont_exch(prodcode)
-        cont_list, _ = contract_range(prodcode, exch, cont_mth, start_date, end_date)
-        exp_dates = [contract_expiry(cont) for cont in cont_list]
+        cont_list, ten_list = contract_range(prodcode, exch, cont_mth, start_date, end_date)
+        exp_dates = [contract_expiry(cont, curr_dt=ten) for cont, ten in zip(cont_list, ten_list)]
         for cont, exp in zip(cont_list, exp_dates):
             if exp >= start_date:
                 ex = exch2wind_dict[exch]
@@ -128,7 +128,7 @@ def save_hist_data(start_date, end_date, index_list = [], product_codes = [], sp
             df['invID'] = invID
             df['prod'] = prod
             print("saving data for invID = %s with number of data pts = %s" % (invID, len(df)))
-            df.to_sql('inv', con = conn, if_exists='append', index=False, method = func)
+            df.to_sql('com_inv_data', con = conn, if_exists='append', index=False, method = func)
 
 if __name__ == "__main__":
     pass

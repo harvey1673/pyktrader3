@@ -261,6 +261,7 @@ class VnctpTdApi(TdApi):
             self.login()
         else:
             self.gateway.write_error("交易服务器认证失败", error)
+            self.auth_status = False
 
     def onRspUserLogin(self, data, error, n, last):
         """登陆回报"""

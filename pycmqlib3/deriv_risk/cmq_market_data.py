@@ -19,7 +19,7 @@ def comfwd_db_loader(market_data, fwd_index, dep_tenors = []):
     if len(df) == 0:
         print("COMFwd data is not available for %s on %s" % (fwd_index, mkey))
     df['date'] = df['instID'].apply(lambda x: misc.inst2cont(x))
-    df['expiry'] = df['instID'].apply(lambda x: misc.contract_expiry(x, []))
+    df['expiry'] = df.apply(lambda x: misc.contract_expiry(x['instID'], curr_dt=x['date']), axis=1)
     df = df[pd.to_datetime(df.date).dt.month.isin(curve_info['active_mths'])]
     return df[['date', 'expiry', 'close']].values.tolist()
 

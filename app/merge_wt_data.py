@@ -28,20 +28,30 @@ if src_folder.lower() == target_folder.lower():
 else:
     update_flag = False
 for period in ['day', 'min1', 'min5', ]:
+    if period == 'day':
+        is_day = True
+    else:
+        is_day = False
     for exch in ['CFFEX', 'DCE', 'CZCE', 'SHFE', 'INE', 'GFEX']:
         print(f'{period}-{exch}')
         src_path = '%s/%s/%s' % (src_folder, period, exch)
         file_list = [f for f in listdir(src_path) if isfile(join(src_path, f))]
         for file in file_list:
             cont = file.split('.')[0]
-            src_df = dtHelper.read_dsb_bars(f'{src_path}/{file}')
-            src_df = src_df.to_df().rename(columns={'bartime': 'time', 'volume': 'vol'})
+            src_df = dtHelper.read_dsb_bars(f'{src_path}/{file}', isDay=is_day)
+            src_df = src_df.to_df().rename(columns={'bartime': 'time', 
+                                                        'money': 'turnover',
+                                                        'hold': 'open_interest',
+                                                        })
             #src_df['time'] = src_df['time'] - 199000000000
             src_df = src_df[src_df['vol']>0]
             dst_path = '%s/%s/%s' % (dst_folder, period, exch)
-            dst_df = dtHelper.read_dsb_bars(f'{dst_path}/{file}')
+            dst_df = dtHelper.read_dsb_bars(f'{dst_path}/{file}', isDay=is_day)
             if dst_df:
-                dst_df = dst_df.to_df().rename(columns={'bartime': 'time', 'volume': 'vol'})                
+                dst_df = dst_df.to_df().rename(columns={'bartime': 'time', 
+                                                        'money': 'turnover',
+                                                        'hold': 'open_interest',
+                                                        })                
                 dst_df = dst_df[dst_df['vol'] > 0]
                 if period == 'day':
                     src_df = src_df[src_df['date'] < d_cutoff]

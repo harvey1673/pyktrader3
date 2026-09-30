@@ -11,7 +11,7 @@ from misc_scripts.daily_update_job import scenarios_test, scenarios_elite
 ferrous_products_mkts = ['rb', 'hc', 'i', 'j', 'jm']
 ferrous_mixed_mkts = ['ru', 'FG', 'SM', "SF", 'nr', 'SA', 'UR'] # 'ZC',
 base_metal_mkts = ['cu', 'al', 'zn', 'pb', 'ni', 'sn', 'ss', 'ao', 'si', 'bc']
-precious_metal_mkts = ['au', 'ag']
+precious_metal_mkts = ['au', 'ag', 'pd', 'pt']
 ind_metal_mkts = ferrous_products_mkts + ferrous_mixed_mkts + base_metal_mkts
 petro_chem_mkts = ['l', 'pp', 'v', 'TA', 'MA', 'bu', 'sc', 'fu', 'eg', 'eb', 'lu', 'pg', 'PF']
 ind_all_mkts = ind_metal_mkts + petro_chem_mkts
@@ -39,103 +39,6 @@ product_grouping_partial = {
     'petro': ['l', 'pp', 'v', 'TA', 'MA', 'sc', 'eg', 'ru', 'CF', 'SR', 'fu'],
     'ags': ['m', 'RM', 'y', 'p', 'OI', 'a', 'c', 'cs', 'jd', 'AP', 'CJ', 'pb', 'b'],
 }
-
-daily_start_dict = { 'c': datetime.date(2011,1,1), 'm': datetime.date(2011,1,1),
-    'y': datetime.date(2011,1,1), 'l': datetime.date(2011,1,1), 'rb':datetime.date(2011,1,1),
-    'p': datetime.date(2011,1,1), 'cu':datetime.date(2011,1,1), 'al':datetime.date(2011,1,1),
-    'zn':datetime.date(2011,1,1), 'au':datetime.date(2015,12,1), 'v': datetime.date(2011,1,1),
-    'a': datetime.date(2011,1,1), 'ru':datetime.date(2011,1,1), 'ag':datetime.date(2012,6,1),
-    'i': datetime.date(2014,1,1), 'j': datetime.date(2012,6,1), 'jm':datetime.date(2013,7,1),
-    'CF':datetime.date(2012,5,1),  'TA':datetime.date(2012,4,15),
-    'PM':datetime.date(2013,10,1), 'RM':datetime.date(2013,1,1),  'SR':datetime.date(2013,1,1),
-    'FG':datetime.date(2013,1,1),  'OI':datetime.date(2013,5,1),  'RI':datetime.date(2013,1,1),
-    'WH':datetime.date(2014,5,1),  'pp':datetime.date(2014,5,1),
-    'IF':datetime.date(2010,5,1),  'MA':datetime.date(2015,1,1),  'TF':datetime.date(2019,6,1),
-    'IH':datetime.date(2015,5,1),  'IC':datetime.date(2015,5,1),  'cs':datetime.date(2015,2,1),
-    'jd':datetime.date(2014,5,1),  'ni':datetime.date(2015,9,1),  'sn':datetime.date(2017,5,1),
-    'ZC':datetime.date(2013,11,1), 'hc':datetime.date(2016, 4, 1), 'SM': datetime.date(2017,1,1),
-    'SF': datetime.date(2017,9,1), 'CY': datetime.date(2017, 9, 1), 'AP': datetime.date(2018, 1, 1),
-    'TS': datetime.date(2018, 9, 1), 'fu': datetime.date(2018, 9, 1), 'sc': datetime.date(2018, 10, 1),
-    'b': datetime.date(2018, 1, 1), 'pb': datetime.date(2016, 7, 1), 'bu': datetime.date(2015,9,15),
-    'T':datetime.date(2019,4,1), 'ss': datetime.date(2020, 5, 1), 'sp': datetime.date(2019, 5, 1),
-    'CJ': datetime.date(2019, 8, 9), 'UR': datetime.date(2019, 8, 9), 'SA': datetime.date(2020, 1, 1),
-    'eb': datetime.date(2020, 2, 1), 'eg': datetime.date(2019, 4, 2), 'rr': datetime.date(2019, 9, 1),
-    'pg': datetime.date(2020, 9, 5), 'lu': datetime.date(2020, 10, 1), 'nr': datetime.date(2020,1,1),
-    'lh': datetime.date(2021,5,1), 'PF': datetime.date(2021,1,1), 'PK': datetime.date(2021,4,1), }
-
-
-def transform_output(pnl_stats, metrics=['sharpe', 'std', 'sortino']):
-    df_list = []
-    for key in metrics:
-        adf = pnl_stats[key].reset_index()
-        adf['index'] = adf['index'].apply(lambda x: x.split('_')[1] if '_' in x else 'all')
-        adf = adf.rename(columns={'index': 'tenor', 'total': key}).set_index('tenor')
-        df_list.append(adf)
-    perf_df = pd.concat(df_list, axis=1, join='outer')
-    return perf_df
-
-
-def load_hist_data(start_date, end_date,
-                   roll_name='hot',
-                   sim_markets=all_markets,
-                   freq='d',
-                   roll_file_loc="C:/dev/wtdev/config/",
-                   shift_mode=1):
-    field_list = ['contract', 'open', 'high', 'low', 'close', 'volume', 'openInterest', 'expiry', 'mth', 'shift']
-    nb_cont = 2
-    data_df = pd.DataFrame()
-    error_list = []
-    for prodcode in sim_markets:
-        for nb in range(nb_cont):
-            try:
-                if roll_name == 'CAL_30b':
-                    roll = '-30b'
-                    if prodcode in eq_fut_mkts:
-                        roll = '0b'
-                    elif prodcode in ['cu', 'al', 'zn', 'pb', 'sn', 'ss', 'lu']:
-                        roll = '-25b'
-                    elif prodcode in ['ni', 'jd', 'lh', 'eg',]:
-                        roll = '-35b'
-                    elif prodcode in ['v', 'MA', 'rb', 'hc']:
-                        roll = '-28b'
-                    elif prodcode in ['sc', 'eb'] + bond_fut_mkts:
-                        roll = '-20b'
-                    elif prodcode in precious_metal_mkts:
-                        roll = '-15b'
-                    sdate = max(start_date, daily_start_dict.get(prodcode, start_date))
-                    adf = misc.nearby(prodcode, nb+1,
-                                      start_date=sdate,
-                                      end_date=end_date,
-                                      shift_mode=shift_mode,
-                                      freq=freq,
-                                      roll_rule=roll).reset_index()
-                else:
-                    adf = dataseries.nearby(prodcode,
-                                            nb+1,
-                                            start_date=start_date,
-                                            end_date=end_date,
-                                            shift_mode=shift_mode,
-                                            freq=freq,
-                                            roll_name=roll_name,
-                                            config_loc=roll_file_loc)
-                adf['expiry'] = adf['contract'].map(misc.contract_expiry)
-                adf['contmth'] = adf['contract'].map(misc.inst2contmth)
-                adf['mth'] = adf['contmth'].apply(lambda x: x // 100 * 12 + x % 100)
-                adf['product'] = prodcode
-                adf['code'] = f'c{nb + 1}'
-                data_df = pd.concat([data_df, adf])
-            except:
-                error_list.append((prodcode, nb))
-
-    df = pd.pivot_table(data_df.reset_index(),
-                        index='date',
-                        columns=['product', 'code'],
-                        values=field_list,
-                        aggfunc='last')
-    df = df.reorder_levels([1, 2, 0], axis=1).sort_index(axis=1)
-    df.columns.rename(['product', 'code', 'field', ], inplace=True)
-    df.index = pd.to_datetime(df.index)
-    return df, error_list
 
 
 def run_grid_btest(df, start_date, end_date, sim_type, signal_name,

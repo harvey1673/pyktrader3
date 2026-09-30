@@ -211,14 +211,14 @@ class BFOptGui(tk.Tk):
 
     def save_plant_setting(self):
         with open(self.plant_file, 'w') as ofile:
-            json.dump(self.plant_config, ofile)
+            json.dump(self.plant_config, ofile, indent=4)
 
     def save_material_setting(self):
         mat_dict = {}
         for input in self.material_dict:
             mat_dict[input] = self.material_dict[input].__dict__
         with open(self.material_file, 'w') as ofile:
-            json.dump(mat_dict, ofile)
+            json.dump(mat_dict, ofile, indent=4)
 
     def solve_solution(self):
         self.plant_status.set(0)
