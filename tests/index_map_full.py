@@ -442,9 +442,6 @@ index_map_full = {
     'S004085268': 'ckc_stock_ganqimaodu',
     'S004110574': 'idx_30大中城市_商品房成交面积',  # sheets: macro_d
     'S004127496': 'UR_inv_social',
-    'S004129783': '出厂价含税_焦炭_二级冶金焦_分区域_华北',  # sheets: ferrous_d
-    'S004129784': '出厂价含税_焦炭_二级冶金焦_分区域_华东',  # sheets: ferrous_d
-    'S004129785': '出厂价含税_焦炭_二级冶金焦_分区域_华中',  # sheets: ferrous_d
     'S004155300': 'SH_32_spot_sdjl_shandong',
     'S004155302': 'SH_50_spot_sdjl_shandong',
     'S004156562': 'pl_east_spot',
@@ -480,9 +477,6 @@ index_map_full = {
     'S004227274': '平均价_氧化铝_山西',  # sheets: base_d
     'S004227277': '平均价_氧化铝_广西',  # sheets: base_d
     'S004227280': '平均价_氧化铝_贵州',  # sheets: base_d
-    'S004238790': 'coke_hebei',
-    'S004238793': 'coke_shandong',
-    'S004238796': 'coke_henan',
     'S004242343': 'espo_spot',
     'S004242346': 'ru_100ppi_spot',
     'S004242347': '现货价_石油沥青',  # sheets: petchem_d
@@ -943,8 +937,6 @@ index_map_full = {
     'S010596299': 'alumina_spot_cnports',
     'S010596302': 'alumina_aus_fob',
     'S010861418': 'sa_heavy_shahe',
-    'S010997539': '铁矿石港口现货价格指数_铁矿石港口现货fot_61pct_青岛',  # sheets: ferrous_d
-    'S010997540': '铁矿石港口现货价格指数_铁矿石港口现货cfr_61pct_青岛',  # sheets: ferrous_d
     'S010998475': 'io_inv_sb_ausbrl_7ports',
     'S011214521': 'cu_inv_bonded_gd',
     'S011258003': '国产铝土矿_海漂量_总计',  # sheets: base_w

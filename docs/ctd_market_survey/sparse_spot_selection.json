@@ -15,12 +15,12 @@
       "data_gap": "Rizhao starts 2018-01-02; early Tianjin conversion needs an explicit representative-assay assumption."
     },
     "jm": {
-      "core": ["ckc_a10v24s08_lvliang", "ckc_stock_ganqimaodu"],
-      "optional": [],
-      "method": "Compare domestic and Mongolian washed-coal normalized proxies; optional minimum with winner recorded. Use domestic only when Mongolia is unavailable.",
+      "core": ["ckc_a10v24s08_lvliang"],
+      "optional": ["ID01892939", "ID00103479"],
+      "method": "Use the domestic proxy as the continuous 2016 baseline. Add Tangshan Mongolian No. 5 washed coal ID01892939 from 2017-02-06 and record the winner when taking a minimum. Treat ID00103479 as a border/logistics comparator rather than an unconverted CTD candidate.",
       "retain": ["JM1907/JM2304/JM2701 quality regimes", "moisture convention", "representative transport and delivery-location basis"],
-      "assumptions": ["Xiaoyi header assay treated as representative, not daily measurement", "Mongolia assay and transport are declared scenarios", "no automatic substitution with the newer Ganqimaodu ticker"],
-      "data_gap": "Mongolian washed-coal series has a 495-calendar-day observation gap in 2016-2017."
+      "assumptions": ["Xiaoyi header assay treated as representative, not daily measurement", "ID01892939 omits Y in the displayed specification", "tax/cash basis for ID01892939 must be confirmed", "no unconverted border quote is allowed to win the CTD minimum", "the discontinued Shaheyi series is not spliced into a current series"],
+      "data_gap": "ID01892939 starts on 2017-02-06, so the domestic series remains the 2016 baseline. The Shaheyi series ends in 2024 and is not used for backfill."
     },
     "ss": {
       "core": ["ss_304_gross_wuxi"],

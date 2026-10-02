@@ -24,7 +24,9 @@ CTD_SPOT_REQUIREMENTS = [
         "product": "jm",
         "candidate": "Mongolian No. 5 raw/washed coking coal",
         "existing_aliases": ["ckc_outstock_ganqimaodu", "ckc_stock_ganqimaodu"],
-        "required_metadata": ["confirm Mongolian No. 5 and raw/washed status", "border_or_port", "A", "S", "V", "G", "Y", "CSR", "Mt", "freight"],
+        "requested_indicator_ids": ["ID01892939", "ID00103479"],
+        "preferred_indicator_id": "ID01892939",
+        "required_metadata": ["confirm Mongolian No. 5 and washed status", "Tangshan preferred; Ganqimaodu plus freight fallback", "A", "S", "V", "G", "Y", "CSR", "Mt", "tax/cash basis", "freight"],
         "priority": "must_have",
     },
     {
