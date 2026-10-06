@@ -1261,9 +1261,10 @@ def _strategy_assets(scenario: StrategyScenario) -> list[str]:
     for item in assets:
         if not isinstance(item, dict) or not item.get("underliers"):
             continue
-        product = inst2product(str(item["underliers"][0]))
-        if product not in products:
-            products.append(product)
+        for underlier in item["underliers"]:
+            product = inst2product(str(underlier))
+            if product not in products:
+                products.append(product)
     if not products:
         raise ValueError(f"No assets found in {scenario.strategy_file}")
     return products

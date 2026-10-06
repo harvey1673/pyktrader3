@@ -5,1034 +5,1218 @@ from pycmqlib3.utility.misc import CHN_Holidays
 from pycmqlib3.analytics.tstool import vat_adj
 
 index_map = {
-    # macro
-    'G002600770': 'usgg2yr',
-    'G002600774': 'usgg10yr',
-    'G002600783': 'usggt10yr',
-    'G013233151': 'usggbe5',
-    'G013233152': 'usggbe10',
-    'G013233153': 'inflation_exp_5y_us',
-    #'G005172253': 'usgg10yr_2yr_spd',
-
-    'M002842089': 'usdcny_mid',
-    'M004147024': 'usdcnh_spot',
-    'M011202650': 'usdcnh_close',
-    'M004147023': 'usdcny_spot', # 4:00pm
-    'M004370159': 'usdcny_spot2', # 4:30pm
-    'M004377555': 'usdcny_spot_volume',
-
-    'G002600791': 'libor3m',
-    'G002600885': 'dxy',
-    #'G002601505': 'vix',
-    'G003082203': 'vix',
-    'G003082207': 'vvix',
-    'G003082211': 'vxeem',
-    'G003082215': 'vxd', # Vol for DJ
-    'G003082227': 'vxn', # Vol for Nasdaq
-
-    'G003146263': 'usdzar_xe',
-    'G003146267': 'usdbrl_xe',
-    'G003146268': 'usdnok_xe',
-    'G003146276': 'usdkrw_xe',
-    'G003146252': 'usdcny_xe',
-    'G003146248': 'usdaud_xe',
-    'G003146249': 'usdcad_xe',
-    'G003146245': 'usdeur_xe',
-    'G003146246': 'usdgbp_xe',
-    'G003146256': 'usdjpy_xe',
-    'G004849308': 'usdclp_xe',
-    'G019711418': 'usdcnh_xe',
-
-    'L001619493': 'dr007_cn',
-    'L004366599': 'usdcny_on',
-    'L004366605': 'usdcny_1m',
-    'L015211333': 'cnh_hibor_1m',
-    'M002816448': 'shibor_on',
-    'M002816449': 'shibor_1w',
-    'M002816451': 'shibor_1m',
-    'M002816452': 'shibor_3m',
-    'M002816455': 'shibor_1y',
-    'M002816576': 'r007_cn',
-    'M002816575': 'r001_cn',
-    'L001618805': 'cn_govbond_yield_1y',
-    'L001619213': 'cn_govbond_yield_2y',
-    'L001618480': 'cn_govbond_yield_5y',
-    'L001619214': 'cn_govbond_yield_10y',
-    'G009067321': "eco_policy_uncertainty_idx_us",
-    'G005432431': 'citi_eco_surprise_idx_cn',
-    'G005326174': 'citi_eco_surprise_idx_us',
-    'G005432432': 'citi_eco_surprise_idx_eu',
-    'G005432436': 'citi_eco_surprise_idx_global',
-    'G005432438': 'citi_eco_surprise_idx_em',
-    'G005432439': 'citi_eco_surprise_idx_asia',
-    'S003587817': "margin_outstanding_total_cn",
-    'S016720335': "margin_mktcap_ratio_cn",
-    'S016720336': "margin_mktvol_ratio_cn",
-
-    # 'M016266040': 'icpi_all',
-    # 'M016266041': 'icpi_food',
-    # 'M016266042': 'icpi_clothes',
-    # 'M016266043': 'icpi_housing',
-    # 'M016266044': 'icpi_service',
-    'M002826785': 'cpi_cn_mom',
-    'M002842661': 'ppi_cn_mom',
-    'M001625222': 'm2_cn_yoy',
-    'M001625224': 'm1_cn_yoy',
-    "M004369935": 'pmi_cn_cons_all',
-    "M005933607": 'pmi_cn_cons_new_order',
-    "M005933608": 'pmi_cn_cons_rm_px',
-    "M005933609": 'pmi_cn_cons_px',
-    "M005933610": 'pmi_cn_cons_hr',
-    "M005933611": 'pmi_cn_cons_bus_exp',
-    #"M011799928": 'pmi_cn_cons_exports',
-    "M003559320": 'pmi_cn_steel_all',
-    "M003559341": 'pmi_cn_steel_prod',
-    "M003559342": 'pmi_cn_steel_rm_vol',
-    "M003559343": 'pmi_cn_steel_rm_inv',
-    "M003559344": 'pmi_cn_steel_new_order',
-    #"M003559345": 'pmi_cn_steel_exports',
-    "M003559346": 'pmi_cn_steel_inv',
-    "M003559347": 'pmi_cn_steel_rm_px',
-    "S004038574": 'pmi_lgsc_steel_all',
-    "S009224315": 'pmi_lgsc_steel_inv',
-    "S009224314": 'pmi_lgsc_steel_sales',
-    "S004038576": 'pmi_lgsc_steel_tot_order',
-    #"S009224316": 'pmi_lgsc_steel_mkt_exp',
-    "S004038575": 'pmi_lgsc_steel_purchase_exp',
-    "M002043802": 'pmi_cn_manu_all',
-    "M002043804": 'pmi_cn_manu_new_order',
-    "M002043811": 'pmi_cn_manu_rm_inv',
-    "M002043805": 'pmi_cn_manu_exports',
-    "M002043809": 'pmi_cn_manu_imports',
-    "M002043808": 'pmi_cn_manu_purchase',
-    "M002043806": 'pmi_cn_manu_curr_order',
-    "M003721097": 'pmi_cn_manu_bus_exp',
-    #"M002811186": 'pmi_caixin_manu_all',
-    "M004088026": "epmi_cn_all",
-    "M004088027": "epmi_cn_prod",
-    "M004088028": "epmi_cn_order",
-    "M004302214": "epmi_cn_exports",
-    "M004302216": "epmi_cn_inv",
-    "M004302217": "epmi_cn_purchase",
-    # "S009065264": "cement_idx_cn",
-    # "S009065254": "cement_idx_cj",
-    # "S012691163": "concrete_idx_cn",
-    "S004543083": "prop_2ndhand_px_idx",
-
-    # ferrous
-    'S003019324': 'plt62',
-    'S002808964': 'plt58',
-    'S002808963': 'plt65',
-    'S000020892': 'hrc_sh',
-    'S002859801': 'hrc_tj',
-    'S000020868': 'rebar_sh',
-    'S002917430': 'plate_8mm',
-    'S000020903': 'crc_sh',
-    'S000020933': 'gi_0.5_sh',
-    'S002917486': 'gi_0.5',
-    'S002917688': 'strip_3.0x685',
-    'S002917771': 'pipe_1.5x3.25',
-    'S002917646': 'hsec_400x200',
-    'S021281530': 'rebar_eaf_prodcost_base_cn',
-    'S021281525': 'rebar_eaf_prodcost_base_east',
-    'S021281538': 'rebar_eaf_prodcost_pk_cn',
-    'S021281533': 'rebar_eaf_prodcost_pk_east',
-    'S021281546': 'rebar_eaf_prodcost_opk_cn',
-    'S021281541': 'rebar_eaf_prodcost_opk_east',
-    'S021281570': 'rebar_eaf_margin_base_cn',
-    'S021281565': 'rebar_eaf_margin_base_east',
-
-    'S002911091': 'pbf_cfd',
-    'S002911136': 'pbf_qd',
-    'S007746654': 'nmf_qd', # 'S004317116'
-    'S009067527': 'nmf_cfd', # 'S002911094'
-    'S004210693': 'macf_cfd',
-    'S004317118': 'macf_qd',
-    'S004317120': 'iocj_qd',
-    'S005429351': 'jmb_qd',
-    'S004317128': 'fbf_qd',
-    'S004317129': 'ssf_qd',
-    'S004317121': 'brbf_qd',
-    'S008679890': 'pbf_prem',
-    'S008679891': 'nmf_prem',
-    'S008679892': 'macf_prem',
-    'S008679893': 'jmb_prem',
-    'S008679896': 'iocj_prem',
-    'S021039360': 'viu_fe',
-    'S021794952': 'viu_al',
-    'S008679905': 'ssf_sb',
-    'S008679899': 'pbf_sb',
-    'S008679900': 'nmf_sb',
-    'S008679901': 'macf_sb',
-    'S008679902': 'jmb_sb',
-    'S008679908': 'iocj_sb',
-    'S008679910': 'brbf_sb',
-    'S019823003': 'hrc_cn_fob',
-    'S019823002': 'hrc_sea_cfr',
-    'S019822995': 'hrc_bs_fob',
-    'S019823001': 'hrc_mideast_cfr',
-    'S019823047': 'rebar_cn_fob',
-    'S019823046': 'rebar_sea_cfr',
-    'S019823080': 'billet_cn_fob',
-    'S019823072': 'billet_bs_fob',
-
-    'S002827225': 'billet_ts',
-    'S002827223': 'billet_js',
-
-    'S002954691': 'scrap_sh',
-    'S002827258': 'scrap_zjg',
-    'S002827270': 'scrap_ts',
-    'S002983449': 'pci_yangquan',
-    'S002983448': 'pci_jincheng',
-    'S004369291': 'coke_tj',
-    'S004425298': 'coke_sub_a_rz',
-    'S004369291': 'coke_sub_a_tj',
-    'S008061234': 'coke_xuzhou_xb',
-    'S008061203': 'coke_ts_xb',
-    'S008061232': 'coke_sh_xb',
-    'S008061213': 'coke_changzhi_xb',
-    'S002877257': "ckc_a10v24s08_lvliang",
-    'S002877258': "ckc_a9v18s10_lvliang",
-    'S002877299': "ckc_a10v24s10_ts",
-    'S009785426': "ckc_outstock_ganqimaodu",
-    'S004085268': "ckc_stock_ganqimaodu",
-    'S005580993': 'ckc_au_cfr_cn',
-    'S011799884': 'ckc_au_fob',
-
-    'S004378612': 'coal_5500_jingtang',
-    'S002882871': 'coal_5500_sx_qhd',
-    'S002837009': 'coal_5500_qhd', # not good
-    'S004381182': 'coal_6000_newc_fob',
-    'S004381181': 'coal_6000_api4_sa',
-    'S004381180': 'coal_6000_api2_ara',
-
-    'S004018814': 'io_loading_14ports_ausbzl',
-    'S005961124': 'io_inv_31ports',
-    'S005961126': 'io_inv_41ports',
-    'S005961128': 'io_inv_45ports',
-    'S002837160': 'io_inv_47ports',
-    'S005961196': 'io_inv_31ports_trade',
-    'S010998475': 'io_inv_sb_ausbrl_7ports',
-    'S006574700': 'io_inv_sf_45ports',
-
-    'S004226161': 'io_inv_imp_mill(64)',
-    'S004226163': 'io_inv_dom_mill(64)',
-    'S003817887': 'io_invdays_imp_mill(64)',
-    'S017639430': 'io_inv_imp_mill(247)',
-
-    'S002837394': 'io_removal_47ports',
-    'S005961326': 'io_removal_45ports',
-    'S008618299': 'consteel_dsales_mysteel',
-    'S005656437': 'consteel_dsales_banksteel',
-    'S004029055': 'rebar_enduse_sales_sh',
-    'S005653695': 'bf_workrate_247',
-    'S009122299': 'bf_workrate_num',
-    'S009122311': 'bf_workrate_cap',
-
-    'S013050080': 'cement_mill_run_rate',
-    'S013050004': 'cement_dispatch_rate',
-    'S012683154': 'cement_inv_ratio',
-    'S012683281': 'cement_clinker_inv_ratio',
-    'S015756661': 'cement_clinker_util',
-
-    "S002863470": "brent_dtd_spot",
-    "S002863469": "oman_spot",
-    "S000006462": "dubai_spot",
-    "S004242343": "espo_spot",
-    "S009761782": "oman_spot_sd",
-    "S009761761": "espo_spot_sd",
-    "S009767208": "crude_imp_spot_cn",
-    "S009767207": "crude_arrival_prem",
-    "S009761758": "espo_prem_sd",
-    "S009761779": "oman_prem_sd",
-    "S003011318": "propane_cfr_asia_n",
-    "S003011351": "butane_cfr_asia_n",
-    "S003011327": "propane_cfr_china_s",
-    "S003011360": "butane_cfr_china_s",
-    "S003011336": "propane_cfr_tw",
-    "S003011369": "butane_cfr_tw",
-    "S003031624": "fo_180cst_sgp",
-    "S003031623": "fo_380cst_sgp",
-    "S009138374": "fo_380cst_m1_sgp",
-    "S009138375": "fo_380cst_m2_sgp",
-    "S009138370": "fo_180cst_m1_sgp",
-    "S009138371": "fo_180cst_m2_sgp",
-    "S003011283": "fo_180cst_east",
-    "S003011289": "fo_180cst_sh",
-    "S003011302": "fo_180cst_xiamen",
-    "S005126417": "lu_0.5_sgp",
-    "S009138389": "lu_0.5_prem_sgp",
-    "S004077380": "pg_cn_spot",
-    "S005028348": "pg_100ppi_spot",
-    "S011334851": "pg_east_spot_idx",
-    "S011334852": "pg_south_spot_idx",
-    "S011334855": "pg_sd_spot_idx",
-
-    "S004163704": "bu_heavy_shandong",
-    "S004163701": "bu_heavy_north",
-    "S004163702": "bu_heavy_east",
-    "S004242346": "ru_100ppi_spot",
-    "S004321834": "ru_scrwf_kunming",
-    "S004321831": "ru_scrwf_zhejiang",
-    "S004321822": "ru_scrwf_jiangsu",
-
-    "S004156580": "bz_east_spot",
-    "S002955332": "bz_taiwan_cfr_usd",
-    "S016681643": "bz_cn_cfr_usd",
-    "S016681640": "bz_korea_fob_usd",
-    "S004156652": "eb_east_spot",
-    "S004156649": "eb_north_spot",
-    #"S004156658": "eb_south_spot",
-    "S002955437": "eb_cfr_cn",
-    "S005349978": "eb_100ppi_spot",
-
-    "S004077398": "ma_zj_spot",
-    "S004242348": "ma_100ppi_spot",
-    "S003994516": "ma_spot_jiangsu",
-    "S005955220": "ma_spot_sd",
-    "S005955224": "ma_east_spot",
-    "S003994543": "ma_spot_neimeng",
-    "S002955504": "ma_cfr_cn",
-    "S004077476": "pp_linyi_spot",
-    "S004242351": "pp_100ppi_spot",
-    "S004161475": "pp_wenzhou_spot",
-    "S003157699": "l_7042_tj",
-    "S003157759": "l_7042_sh",
-    "S002836797": "l_7042_east",
-    "S002836796": "l_7042_north",
-    "S002836798": "l_7042_south",
-    "S006095407": "l_tj_spot",
-    "S004077382": "pl_shandong_spot",
-    "S004156562": "pl_east_spot",
-
-    "S016841666": "ur_henan_spot",
-    "S002854771": "ur_north_spot",
-    "S005349977": "ur_100ppi_spot",
-    "S005953372": "ur_shandong_spot",
-    "S016842082": "ur_cn_fob_usd",
-    "S016842079": "ur_gcc_cfr_usd",
-    "S004724779": "sp_100ppi_spot",
-    "S004339370": "sp_pz_ca_moon_sh",
-    "S016635856": "sp_pz_ca_ma_sh",
-    "S004349724": "sp_pz_ch_si_sd",
-    "S004349728": "sp_pz_ca_lion_sd",
-    "S004349732": "sp_pk_br_yw_sd",
-    "S004807566": "sp_pz_ru_sd",
-
-    "S002835975": "pta_east_spot",
-    "S004242352": "pta_100ppi_spot",
-    "S012185571": "pta_east_spot2",
-    'S002863167': 'pta_cfr_cn',
-    "S005402481": "px_100ppi_spot",
-    "S002863173": "px_exw_east_spot",
-    "S002835961": "px_taiwan_cfr_usd",
-    "S002835955": "px_korea_fob_usd",
-    "S003994600": "eg_east_spot",
-    "S003994603": "eg_south_spot",
-    "S002893910": "eg_north_exw",
-    "S002956186": "eg_cfr_cn",
-    "S002956195": "eg_cfr_sea",
-
-    "S005402526": "pf_100ppi_spot",
-    "S004407080": "pf_east_spot",
-    "S004407077": "pf_fujian_spot",
-    "S004407062": "pr_east_spot",
-    "S022010507": "pr_north_spot",
-
-    #"S020459829": "sh_50_32_spd_sd",
-    #"S004077496": "sh_32_sd_spot",
-    #"S009630097": "sh_50_sd_spot",
-    "S004155300": "SH_32_spot_sdjl_shandong",
-    "S004155302": "SH_50_spot_sdjl_shandong",
-    "S020003119": "SH_margin_sd",
-    "S020003107": "SH_util_w",
-
-    "S002825712": "pvc_cac2_north",
-    "S002825715": "pvc_cac2_east",
-    "S002825718": "pvc_cac2_south",
-    "S002825721": "pvc_cac2_central",
-    "S002825727": "pvc_ethylene_east",
-    "S002825730": "pvc_ethylene_south",
-
-    "S005470470": 'fg_5mm_shahe',
-    'S005470469': 'fg_5mm_north',
-    "S004242725": "fg_100ppi",  # x80 = RMB/ton
-    "S002825734": "sa_heavy_north",
-    "S002825740": "sa_heavy_east",
-    "S002825733": "sa_light_north",
-    "S002825739": "sa_light_east",
-    "S010861418": "sa_heavy_shahe",
-    "S005349979": "sa_heavy_sys",
-    "S006404818": "sa_margin_lianchan",
-    "S006404817": "sa_margin_anjian",
-    "S011318571": "syn_ammonia_margin_coal",
-    "S011318572": "syn_ammonia_margin_gas",
-    "S009134956": "sa_wprod_cn",
-    "S005439592": "sa_workrate_cn",
-    "S005439594": "sa_workrate_anjian",
-    "S005439596": "sa_workrate_lianchan",
-    "S011311758": "sa_sales_prod_ratio",
-    "S019254411": "fg_margin_coal",
-    "S019254412": "fg_margin_petcoke",
-    "S017068418": "fg_margin_natgas",
-    "S024334444": "fg_margin_avg",
-    "S019255501": "solarglass_dprod",
-    "S019255498": "solarglass_util",
-    "S017438009": "fg_dprod",
-    "S005696261": "fg_util_adj",
-    'S005696264': 'fg_util_w',
-
-    "S002959491": "sm_65s17_neimeng",
-    "S002959498": "sm_65s17_tj",
-    "S002959495": "sm_65s17_guangxi",
-    "S002959499": "sm_65s17_gansu",
-    "S017658895": "sm_neimeng_cost",
-    "S017658896": "sm_ningxia_cost",
-    "S017658905": "sm_margin_north",
-    "S017658906": "sm_margin_south",
-    "S006158942": "mn_44_gabon_tj",
-    #"S006158933": "mn_44_gabon_qingzhou",
-    #"S021992679": "mn_45_gabon_southports",
-    "S021992693": "mn_45_gabon_northports",
-
-    "S004789784": "sf_72_ningxia",
-    "S004789790": "sf_72_neimeng",
-    "S004789786": "sf_72_gansu",
-    "S005068112": "sm_65s17_shmet",
-    "S005068030": "sf_72_shmet",
-    "S005068027": "sf_75_shmet",
-    "S017659510": "sf_neimeng_cost",
-    "S017659509": "sf_ningxia_cost",
-    "S017659520": "sf_neimeng_margin",
-    "S017659519": "sf_ningxia_margin",
-    "S008082266": "sf_operating_rate",
-    "S008082269": "sf_prod_cn",
-    "S008082268": "sf_dmd_cn",
-    "S008082267": "sf_dprod_cn",
-    "S008082266": "sf_workrate_cn",
-    "S008082272": "sm_dmd_cn",
-    "S008082273": "sm_prod_cn",
-    "S008082271": "sm_dprod_cn",
-    "S008082270": "sm_workrate_cn",
-    "S008618451": "sm_stockdays",
-
-    'S008618440': 'sm_inv_mill',
-    'S008618447': 'sf_inv_mill',
-    "S005696248": "fg_inv_mill",
-    "S005439547": "v_inv_social",
-    'S005439550': "v_inv_social_east",
-    'S018042405': "v_inv_mill_mth",
-    "S005439586": 'sa_inv_mill_all',
-    "S011319484": "sh_inv_mill_all",
-    "S003138068": "coke_inv_ports_tj", # 20110121
-    "S003138069": "coke_inv_ports_lyg", # 20110121
-    "S003138070": "coke_inv_ports_rz", # 20110121
-    "S010338984": "coke_inv_ports", # 20211217
-    "S012116529": "ckc_inv_ports", # 20220107
-    "S009341306": "ckc_inv_cokery", #20210115
-    "S009341305": "coke_inv_cokery", #20210115
-    "S005653704": "coke_inv_230cokery",
-    "S005653705": "ckc_inv_230cokery",
-    "S009341250": "coke_inv_247mill",
-    "S009341251": "ckc_inv_247mill",
-    "S004039587": "ckc_inv_6ports",
-    "S010308683": "ckc_inv_110washery",
-    "S012116534": "coke_inv_4ports", # 20140801
-    #"S006136000": "ckc_inv_all",
-
-    'S005580634': 'rebar_inv_social',
-    'S005580635': 'hrc_inv_social',
-    'S005580633': 'wirerod_inv_social',
-    'S005580639': 'crc_inv_social',
-    'S005580636': 'plate_inv_social',
-    'S009045420': 'steel_inv_social',
-    'S009097506': 'long_inv_social',
-    'S004378418': 'rebar_inv_mill',
-    'S004378419': 'wirerod_inv_mill',
-    'S004378420': 'hrc_inv_mill',
-    'S004378421': 'crc_inv_mill',
-    'S004378422': 'plate_inv_mill',
-    'S005580641': 'rebar_inv_all',
-    'S005580642': 'wirerod_inv_all',
-    'S005580640': 'hrc_inv_all',
-    'S005580646': 'crc_inv_all',
-    'S005580643': 'plate_inv_all',
-    'S004802760': 'rebar_prod_all',
-    'S004802761': 'wirerod_prod_all',
-    'S005580652': 'crc_prod_all',
-    'S005107854': 'hrc_prod_all',
-    'S004039553': 'billet_inv_social_ts',
-    'S005953318': 'csteel_prod_cisa',
-    'S005953326': 'steelproducts_prod_cisa',
-    'S005953322': 'pigiron_prod_cisa',
-    'S006154238': 'eaf_util_87mills',
-    'S005656440': 'eaf_util_all',  # changed from S006154248
-    'S006154226': 'eaf_prodcost_east',
-    'S021277623': 'scrap_use_mill_eaf',
-    'S021374817': 'scrap_use_mill_all',
-    'S021277629': 'scrap_ratio_mill_all',
-    'S021374832': 'scrap_inv_mill_all',
-    'S021277634': 'scrap_inv_mill_eaf',
-    # 'S021182444': 'scrap_use_300mill',
-    # 'S021182443': 'scrap_arr_300mill',
-    # 'S021182446': 'scrap_invdays_300mill',
-
-    # base
-    'S005808359': 'cu_lme_3m_close',
-    'S005808360': 'al_lme_3m_close',
-    'S005808361': 'pb_lme_3m_close',
-    'S005808362': 'zn_lme_3m_close',
-    'S005808363': 'sn_lme_3m_close',
-    'S005808364': 'ni_lme_3m_close',
-
-    'S004303031': 'cu_lme_0m_3m_spd',
-    'S004303035': 'al_lme_0m_3m_spd',
-    'S004303034': 'zn_lme_0m_3m_spd',
-    'S004303033': 'pb_lme_0m_3m_spd',
-    'S004303032': 'sn_lme_0m_3m_spd',
-    'S004303036': 'ni_lme_0m_3m_spd',
-    'S003018859': 'cu_lme_3m_15m_spd',
-    'S003018860': 'cu_lme_3m_27m_spd',
-    'S003018862': 'al_lme_3m_15m_spd',
-    'S003018863': 'al_lme_3m_27m_spd',
-    'S003018865': 'ni_lme_3m_15m_spd',
-    'S003018866': 'ni_lme_3m_27m_spd',
-    'S003018868': 'sn_lme_3m_15m_spd',
-    'S003018871': 'zn_lme_3m_15m_spd',
-    'S003018872': 'zn_lme_3m_27m_spd',
-    'S003018874': 'pb_lme_3m_15m_spd',
-    'S003018875': 'pb_lme_3m_27m_spd',
-    #'S003018876': 'aa_lme_0m_3m_spd',
-    #'S003018877': 'aa_lme_3m_15m_spd',
-    #'S003018878': 'aa_lme_3m_27m_spd',
-    "S002855118": "cu_inv_cme_total",
-    "S000025728": "cu_inv_lme_total",
-    "S002836856": "cu_inv_lme_cancelled",
-    "S000025729": "al_inv_lme_total",
-    "S002836862": "al_inv_lme_cancelled",
-    "S000025731": "pb_inv_lme_total",
-    "S002836868": "pb_inv_lme_cancelled",
-    "S000025730": "zn_inv_lme_total",
-    "S002836874": "zn_inv_lme_cancelled",
-    "S000025732": "sn_inv_lme_total",
-    "S002836880": "sn_inv_lme_cancelled",
-    "S000025733": "ni_inv_lme_total",
-    "S002836886": "ni_inv_lme_cancelled",
-    "S003164358": "cu_inv_shfe_d",
-    "S003164360": "zn_inv_shfe_d",
-    "S003164359": "al_inv_shfe_d",
-    "S003164361": "pb_inv_shfe_d",
-    "S004322735": "ni_inv_shfe_d",
-    "S004322736": "sn_inv_shfe_d",
-    "S019848684": "ao_inv_shfe_d",
-    "S019848689": "ao_inv_shfe_mill_d",
-    "S009223764": "ss_inv_shfe_d",
-    "S019735959": "si_inv_gfex_d",
-    "S020098434": "lc_inv_gfex_d",
-    "S033367931": "ps_inv_gfex_d",
-    "S022117012": "SH_inv_czce_warrant",
-    "S022319791": "SH_inv_czce_unwarrant",
-    "S003008076": "TA_inv_czce_warrant",
-    "S005451492": "TA_inv_czce_unwarrant",
-    "S004302740": "MA_inv_czce_warrant",
-    "S005451467": "MA_inv_czce_unwarrant",
-    "S005451340": "UR_inv_czce_warrant",
-    "S005451410": "UR_inv_czce_unwarrant",
-    "S005658949": "PF_inv_czce_warrant",
-    "S035614282": "PR_inv_czce_warrant",
-
-    "S003787910": "l_inv_dce_warrant",
-    "S003787913": "pp_inv_dce_warrant",
-    "S003787915": "v_inv_dce_warrant",
-    "S005450245": "eg_inv_dce_warrant",
-    "S005450249": "eb_inv_dce_warrant",
-    "S004302762": "bu_inv_shfe_warrant",
-    "S004302780": "bu_inv_shfe_mill",
-    "S003154875": "FG_inv_czce_warrant",
-    "S005451360": "SA_inv_czce_warrant",
-    "S005451430": "SA_inv_czce_unwarrant",
-    "S022117035": "PX_inv_czce_warrant",
-    "S022319792": "PX_inv_czce_unwarrant",
-    "S005476601": "sc_inv_ine_warrant",
-    "S005476602": "fu_inv_shfe_warrant",
-    "S006404843": "lu_inv_ine_warrant",
-    "S006404844": "pg_inv_dce_warrant",
-    "S005476603": "j_inv_dce_warrant",
-    "S005476604": "jm_inv_dce_warrant",
-    "S005476308": "rb_inv_shfe_warrant",
-    "S005476309": "hc_inv_shfe_warrant",
-    "S005476310": "i_inv_dce_warrant",
-    "S005476311": "SF_inv_czce_warrant",
-    "S005476313": "SF_inv_czce_unwarrant",
-    "S005476312": "SM_inv_czce_warrant",
-    "S005476314": "SM_inv_czce_unwarrant",
-    "S003277851": "m_inv_dce_warrant",
-    "S003278148": "RM_inv_czce_warrant",
-    "S003278185": "RM_inv_czce_unwarrant",
-    "S000001487": "c_inv_dce_warrant",
-    "S000001485": "a_inv_dce_warrant",
-    "S003277847": "b_inv_dce_warrant",
-    "S005532615": "jd_inv_dce_warrant",
-    "S000001484": "y_inv_dce_warrant",
-    "S003155008": "p_inv_dce_warrant",
-    "S000001491": "OI_inv_czce_warrant",
-    "S000001493": "OI_inv_czce_unwarrant",
-    "S000001490": "CF_inv_czce_warrant",
-    "S003278182": "CF_inv_czce_unwarrant",
-    "S000001488": "SR_inv_czce_warrant",
-    "S000001496": "SR_inv_czce_unwarrant",
-    "S005532620": "AP_inv_czce_warrant",
-    "S005532621": "AP_inv_czce_unwarrant",
-    "S005532619": "CJ_inv_czce_warrant",
-    "S005532625": "CJ_inv_czce_unwarrant",
-    "S009637664": "PK_inv_czce_warrant",
-    "S003164362": "au_inv_shfe_warrant",
-    "S003164363": "ag_inv_shfe_warrant",
-    "S005476287": "sp_inv_shfe_warrant",
-    "S006700187": "lh_inv_dce_warrant",
-    "S005532617": "CY_inv_czce_warrant",
-    "S005532614": "cs_inv_dce_warrant",
-    "S006409299": "bc_inv_ine_warrant",
-    "S004410360": "ru_inv_shfe_warrant",
-    "S005450012": "nr_inv_shfe_warrant",
-
-    'S006018632': 'MA_inv_ports_total',
-    'S009065244': 'PF_inv_mill_treasury',
-    'S009065245': 'PF_inv_mill_physical',
-    'S011319525': 'PF_viscosefiber_invdays_mill',
-    'S011319524': 'PF_viscosefiber_inv_mill',
-    'S011319505': 'PET_chip_invdays_mill',
-    'S024761635': 'PET_invdays_mill',
-    'S022014758': 'PL_inv_all',
-    'S005439569': 'PTA_inv_social_mth',
-    'S019985011': 'PTA_inv_social_wk',
-    'S009065246': 'PTA_inv_mill',
-    'S003085584': 'PTA_invdays_mill',
-    'S009128523': 'PTA_margin_cn_d',
-    'S009128522': 'PTA_prodcost_cn_d',
-    'S020004695': 'PX_margin_cn_w',
-    'S020209589': 'PX_naph_spd_w',
-    'S020209590': 'PX_MX_spd_w',
-    'S002825872': 'naph_cfr_jp',
-    'S020210081': 'PX_util_kr',
-    'S019506839': 'MX_inv_east',
-    'S019506841': 'MX_inv_south',
-    'S003085590': 'DTY_invdays_mill',
-    'S003085589': 'FDY_invdays_mill',
-    'S003085588': 'POY_invdays_mill',
-    'S005616301': 'weaviing_dnstream_invdays_mill',
-    'S019732993': 'pe_inv_social',
-    'S020602643': 'ru_half_steel_tire_invdays_sd',
-    'S020602996': 'ru_all_steel_tire_invdays_sd',
-
-    'S004788710': 'UR_inv_mill',
-    'S004127496': 'UR_inv_social',
-    'S004647718': 'compound_fertilizer_inv_social',
-    'S004869809': 'eb_inv_mill', # in ton
-    'S004869807': 'eb_inv_port_east', # in W ton
-    'S004869808': 'eb_inv_port_east_trader',
-    'S008618767': 'eb_inv_port_south',
-    'S008618768': 'eb_inv_port_south_trader',
-    'S008618769': 'bz_inv_port_east',
-    'S022014760': 'bz_inv_ports',
-    'S004383001': 'eg_inv_port_east',
-    'S017643268': 'pe_inv_mill',
-    'S011319581': 'pe_pipe_invdays',
-    'S011319572': 'wovenplastics_invdays_raw_mill_sm',
-    'S011319574': 'wovenplastics_inv_finished_mill_lg',
-    'S011319499': 'BOPP_invdays_raw',
-    'S011319502': 'CPP_invdays_finished',
-    'S011319504': 'pp_nonwoven_inv_finished',
-    'S004392973': 'polyolefin_inv',
-    'S019732994': 'pe_inv_traders',
-    'S011319336': 'ru_inv_bonded_traders_qd',
-    'S011319345': 'br_inv_social',
-    'S020559734': 'br_inv_traders',
-
-    'S004494138': 'bu_inv_social',
-    'S004494153': 'bu_inv_mill',
-    'S004494149': 'bu_inv_mill_shandong',
-    'S007247253': 'bu_inv_shfe_all',
-    'S004302829': 'bu_inv_shfe_mill_w',
-    'S004302811': 'bu_inv_shfe_social',
-    'S004302793': 'bu_inv_shfe_social_addon',
-    'S007247476': 'bu_invcap_shfe_all',
-    'S004302841': 'bu_invcap_shfe_social',
-    'S004302859': 'bu_invcap_shfe_mill',
-    'S004410392': 'ru_inv_shfe_all',
-    'S005451604': 'nr_inv_shfe_all',
-    'S026354501': 'pg_inv_port_all',
-    'S019733356': 'pg_inv_port_south',
-    'S019733357': 'pg_inv_port_east',
-    'S026354504': 'pg_inv_port_north',
-    'S026354506': 'pg_invratio_ports',
-    'S026354493': 'pg_inv_mill_all',
-    'S026354485': 'pg_inv_mill_res',
-    'S018553310': 'gasoline_inv_social',
-    'S018553311': 'diesel_inv_social',
-    'S006374450': 'refined_products_inv_indep',
-    'S004248164': 'fu_inv_sing',
-    'S018521625': 'fu_inv_cnship',
-    'S005451610': 'fu_inv_shfe',
-    'S003583337': 'm_inv_mill_sm',
-    'S003583339': 'm_inv_mill_nonexec',
-    'S017385971': 'm_invdays_downstream',
-    'S018052590': 'm_inv_mill_lg',
-    'S018489426': 'RM_inv_mill_mth',
-    'S018862300': 'RM_inv_mill_east',
-    'S017942027': 'c_invdays_downstream',
-    'S017209307': 'c_inv_ports_4north',
-    'S017209293': 'c_inv_mill',
-    'S017647060': 'cs_inv_mill',
-    'S017406429': 'CJ_inv_sample',
-    'S018380017': 'jd_invdays_prod',
-    'S018380018': 'jd_invdays_transit',
-    'S006466874': 'AP_inv_frozen', # 10 days after data
-    'S002841991': 'lh_inv_mth',
-    'S002841992': 'lh_breeding_sow_inv_mth',
-    'S003986222': 'CF_inv_social_mth',
-    'S011936208': 'CF_inv_weaving_mth',
-    'S011936209': 'CF_inv_weaving_lg_mth',
-    'S016734044': 'y_inv_mill',
-    'S003148264': 'y_inv_ports',
-    'S003254707': 'p_inv_ports',
-    'S018493782': 'p_inv_mill',
-    'S003052593': 'bean_inv_ports_d',
-    'S017992344': 'bean_inv_mill',
-    'S017992372': 'bean_inv_ports_full',
-    'S018479716': 'OI_inv_mill_east',
-    'S018479717': 'OI_inv_mill_guangxi',
-    'S018479719': 'OI_inv_mill_coastal',
-    'S018634615': 'PK_oil_inv_mill',
-    'S018634610': 'PK_inv_mill',
-    'S004370169': 'RS_inv_mill',
-    'S017935492': 'ZC_inv_social',
-    'S003839317': 'ZC_inv_6gen',
-    'S003839331': 'ZC_invdays_6gen',
-    'S000009279': 'crude_inv_eia_ex_spr_all',
-    'S002958615': 'crude_inv_eia_ex_spr_cushing',
-    'S000009278': 'crude_refined_inv_eia_ex_spr',
-    'S000009280': 'oil_inv_eia_spr',
-
-    'S004630824': 'cu_mine_tc',
-    'S019779606': 'cu_blister_rc_south',
-    'S019779609': 'cu_blister_rc_north',
-    'S019779612': 'cu_anode_rc',
-    #'S011211693': 'cu_25conc_tc',
-    'S005951203': 'pb_60conc_tc_ports',
-    'S006158372': 'pb_50conc_tc_hunan',
-    'S006158375': 'pb_50conc_tc_yunnan',
-    'S006158378': 'pb_50conc_tc_guangxi',
-    'S006158381': 'pb_50conc_tc_neimeng',
-    'S006158384': 'pb_50conc_tc_henan',
-    'S009620177': 'sn_60conc_tc_jiangxi',
-    'S009620198': 'sn_60conc_tc_guangxi',
-    'S009620213': 'sn_40conc_tc_yunnan',
-    'S016702541': 'zn_50conc_tc_neimeng',
-    'S016702544': 'zn_50conc_tc_yunnan',
-    'S016702547': 'zn_50conc_tc_hunan',
-    'S016702550': 'zn_50conc_tc_guangxi',
-    'S016702553': 'zn_50conc_tc_henan',
-    'S016702556': 'zn_50conc_tc_sichuan',
-    'S016702559': 'zn_50conc_tc_shanaxi',
-    'S016702562': 'zn_48conc_tc_ports',
-
-    'S003797045': 'ni_1.8conc_spot_php_lianyungang',
-    "S005068187": "ni_1.5conc_spot_rz",
-    'S005102262': 'sn_60conc_spot_guangxi',
-    'S009137295': 'ni_nis_cjb_spot',
-    'S009200268': 'ni_nis_spot_gi',
-    'S009273405': 'ni_nis_spot_battery',
-    'S020207789': 'ni_mhp_34_ports',
-
-    "S006157941": "cu_prem_bonded_warrant",
-    "S006157947": "cu_prem_bonded_cny",
-    "S006157944": "cu_prem_bonded_cif",
-    "S005068109": "al_prem_bonded_warrant",
-    "S005068106": "al_prem_bonded_cif",
-    "S005068427": 'zn_prem_smm_import',
-    "S005068439": "zn_prem_bonded_warrant",
-    "S005068436": "zn_prem_bonded_cif",
-    "S005068184": 'ni_prem_bonded_warrant',
-    "S005068181": 'ni_prem_bonded_cif',
-    "S009200256": "ni_prem_import",
-    "S005068220": 'pb_prem_bonded_warrant',
-    "S005068217": 'pb_prem_bonded_cif',
-    "S005068331": 'cu_prem_bonded_warrant_er',
-    "S005068328": 'cu_prem_bonded_warrant_sx',
-    "S005068337": 'cu_prem_bonded_cif_er',
-    "S005068334": 'cu_prem_bonded_cif_sx',
-
-    "S000025471": "cu_cjb_spot",
-    "S000025473": "al_cjb_spot",
-    "S000025475": "pb_cjb_spot",
-    "S000025476": "zn_cjb_spot",
-    "S000025478": "sn_cjb_spot",
-    "S000025479": "ni_cjb_spot",
-
-    "S002981535": "cu_smm1_spot",
-    "S002981536": "cu_smm1_prem_spot",
-    #"S002981537": "cu_smm1_shifa_spot",
-    #"S002981538": "cu_smm1_guixi_spot",
-    'S004077505': 'cu_spot_sh',
-    #'S004077504': 'cu_spot_bj',
-    "S002865592": "al_smm0_spot",
-    "S002865578": "zn_smm0_spot",
-    "S002865583": "pb_smm1_spot",
-    'S005068208': 'pb_994_shmet_east',
-    "S002865591": "pb_sec9997_spot",
-    "S002865595": "pb_sec985_spot",
-    "S002981539": "sn_smm1_spot",
-    "S002981540": "ni_smm1_spot",
-    "S002981541": "ni_smm1_jc_spot",
-    "S002981542": "ni_smm1_imp_spot",
-    "S010361921": "ni_cj1_spot",
-    "S004785205": "ss_304_gross_wuxi",
-    "S004785215": "ss_304_wuxi_phybasis",
-    "S002865685": "lc_bat_dom_cn_spot",
-    "S019779625": "lc_ind_dom_cn_spot", # need to multiply 10000
-    "S020190575": "lc_bat_dom_east_spot",
-    "S020190572": "lc_ind_dom_east_spot",
-    "S017498544": "lc_bat_dom_jiangxi",
-    "S020190581": "lc_bat_dom_sichuan_spot",
-    "S020190578": "lc_ind_dom_sichuan_spot",
-    "S005100607": "lc_li2Omine_6pct_cif",
-    "S017498571": "lc_bat_asia_cif",
-    "S017498574": "lc_bat_eu_cif",
-    "S017498565": "lc_bat_sam_fob",
-    "S012518267": "lc_util_mth",
-    # "S010596542": "lioh_bat_coarse_spot", # need to multiply 10000
-    # "S010596545": "lioh_bat_fine_spot", # need to multiply 10000
-
-    'S003048722': 'cu_smm_phybasis',
-    'S003048723': 'cu_flat_phybasis',
-    'S003048724': 'cu_prem_phybasis',
-    #'S003048725': 'cu_shifa_phybasis',
-    #'S003048726': 'cu_guixi_phybasis',
-    "S009137283": "cu_cj_phybasis",
-    "S009137286": "cu_cjb_phybasis",
-    "S009621955": "cu_sh_phybasis",
-
-    "S003048727": "al_smm0_phybasis",
-    "S005068103": "al_a00_phybasis_shmet",
-    "S004031017": "al_sh_phybasis",
-    "S009137289": "al_cj_phybasis",
-    "S009137292": "al_cjb_phybasis",
-    "S008871816": "al_nanchu_phybasis",
-    "S008527822": "al_wm0_phybasis_low",
-    "S008527823": "al_wm0_phybasis_high",
-
-    "S005068421": 'zn_smm0_sh_phybasis',
-    "S005068424": 'zn_smm1_sh_phybasis',
-    "S008871823": "zn_nanchu_phybasis", # fut0
-    "S008527843": 'zn_wm0_phybasis',
-    "S008527848": 'zn_wm1_phybasis',
-
-    "S005068193": "ni_smm1_phybasis",
-    "S005068175": "ni_smm1_jc_phybasis",
-    "S005068169": "ni_smm1_ru_phybasis",
-    "S005068211": "pb_smm1_sh_phybasis",
-    "S005068409": "sn_smm1_sh_phybasis",
-
-    "S009160074": "cu_scrap_1_spot_jzh",
-    "S009160107": "cu_scrap_2_spot_jzh",
-    "S008545965": "cu_scrap_1_sh",
-    "S008545990": "cu_scrap_2_sh",
-    "S009626046": "al_scrap_shreded_spot_foshan",
-    "S009626791": "ni_scrap_spot_foshan",
-    "S015202398": "cu_scrap1_diff_gd", # short history
-    "S015202399": "cu_scrap1_diff_tj",
-    "S015202400": "cu_scrap1_fv_diff_gd",
-    "S015202401": "cu_scrap_import_margin",
-    "S015202402": "cu_import_margin_sh",
-    "S023828847": "cu_prem_cif_tw",
-    "S023828850": "cu_prem_cif_sea",
-
-    "S004243370": "zn_scrap_sh_high",
-    "S004243369": "zn_scrap_sh_low",
-    "S004243249": "al_scrap_shredded_sh_low",
-    "S004243250": "al_scrap_shredded_sh_high",
-    "S009780583": "pb_scrap_autostarter_sh",
-    "S009626378": "pb_scrap_ebike_sh",
-    "S009626602": "sn_scrap_pure_bulk_shandong",
-    "S009626605": "sn_scrap_bulk_shandong",
-    "S009626611": "sn_scrap_slag_shandong",
-    "S002959172": "ss_304_scrap_wuxi",
-
-    "S008871802": "cu_rod_8_procfee_nanchu", # short history
-    "S008871805": "cu_rod_2.6_procfee_nanchu",
-    "S009621341": "al_rod_6063_procfee_jiangxi", # no good
-    "S009621410": "al_rod_6063_procfee_sichuan",
-    "S009621539": "al_rod_6063_procfee_gansu",
-
-    'S018696379': "sn_inv_social_all",
-    'S005971281': 'cu_mine_inv_ports',
-#    "S006161499": "cu_inv_social_all",
-    "S005118151": "cu_inv_social_dom",
-    "S011214521": "cu_inv_bonded_gd",
-    "S005118141": "cu_inv_bonded_sh",
-#    "S005363047": "al_inv_social_all",
-    "S009010885": "al_inv_social_all",
-    #"S006161627": "zn_inv_social_3p",
-    #"S006161628": "zn_inv_social_7p",
-    "S004425257": "zn_inv_social_all",
-    "S011334489": "zn_inv_smelter_finished",
-    #"S006161636": "ni_inv_social_6p",
-    "S011333399": "ni_inv27_plate_dom",
-    "S011333401": "ni_inv27_plate_bonded",
-    "S011333403": "ni_inv27_all",
-    #'S006161617': 'pb_inv_social_5p',
-    "S011334192": 'pb_inv_social_all',
-
-    'S006167225': 'bauxite_inv_az_ports',
-    'S006167236': 'alumina_inv_az_ports',
-    'S004425326': 'alumina_inv_ports',
-    'S011258021': 'bauxite_inv_ports_inv',
-
-    #'S012937595': 'si_inv_social_all',
-    'S006563225': 'al_6063rod_inv_social',
-    "S006161096": "ss_inv_social_all",
-    "S006161093": "ss_inv_social_200",
-    "S006161094": "ss_inv_social_300",
-    "S006161095": "ss_inv_social_400",
-
-    "S002808967": "container_exp_scfi",
-    "S008527041": "alumina_spot_shanxi",
-    "S008527032": "alumina_spot_guangxi",
-    "S008527044": "alumina_spot_henan",
-    "S008527035": "alumina_spot_guizhou",
-    "S004077728": "alumina_spot_qd",
-    "S010596299": "alumina_spot_cnports",
-    "S010596302": "alumina_aus_fob",
-    "S023510418": "alumina_cfr_cn",
-    "S023510421": "alumina_fob_au",
-
-    #"S002865625": 'si_553_spot_smm',
-    'S006159069': 'si_553_nonoxy_east',
-    'S006159164': 'si_553_nonoxy_sichuan',
-    'S003014166': "si_553_nonoxy_kunming",
-    'S006159072': 'si_553_oxy_east',
-    'S006159146': 'si_553_oxy_kunming',
-    'S006159081': 'si_421_east',
-    'S005956443': 'si_421_sichuan',
-    'S006159154': 'si_421_kunming',
-    'T025173022': 'si_421_prem_gd',
-
-    "M002845714": "csi300_idx",
-    "M002845725": "csi500_idx",
-    "M012963695": "csi1000_idx",
-    "G002837002": "shcmp_idx",
-    "G002856504": "hk_cncorp_idx",
-    "G002856503": "hk_hsi_idx",
-    "G002856511": "jp_nk225_idx",
-    "G002856507": "sp500_idx",
-    "G002856508": "nasdaq_idx",
-    "G002856506": "dji_idx",
-    "M009042848": "sw_sector_idx_basemetal",
-    "M009042858": "sw_sector_idx_prop",
-    "M009042864": "sw_sector_idx_const",
-    "M009042847": 'sw_sector_idx_steel',
-    "M009042873": "sw_sector_idx_petchem",
-    "M009042872": "sw_sector_idx_coal",
-    "M003802454": "sw_sector2_idx_glass",
-    "M003802458": "sw_sector2_idx_infra",
-    #"M003802411": "sw_sector2_idx_weaving",
-    "M003802386": "sw_sector2_idx_rubber",
-    #"M003802385": "sw_sector2_idx_plastics",
-
-    "M003588167": "zx_sector_idx_const",
-    "M003588182": "zx_sector_idx_prop",
-    "M003588162": "zx_sector_idx_basemetal",
-    "M003588164": "zx_sector_idx_steel",
-    "M003588160": "zx_sector_idx_oil_petchem",
-    "M003588161": "zx_sector_idx_coal",
-
-    "S000025546": "au_td_sge",
-    'S000025544': 'au_9999_sge_close',
-    "S003057206": "ag_td_sge",
-    'S005068033': 'au_9999_sh',
-    'S005068036': 'ag_1_9999_sh',
-    'S004045178': 'ag_inv_sge',
-    'S004045185': 'ag_9999_sge_close',
-    "S005068066": "ag_td_phbasis",
-    "S002855119": "au_cme_warrant_all",
-    "S003852895": "au_cme_warrant_reg",
-    "S003852896": "au_cme_warrant_unreg",
-    "S002855120": "ag_cme_warrant_all",
-    "S003852912": "ag_cme_warrant_reg",
-    "S003852913": "ag_cme_warrant_unreg",
-    'G003082236': 'cl_vol_idx',
-    'G003082240': 'gc_vol_idx',
-
-    "S003583313": "au_etf_spdr_holding",
-    "S004320033": "au_etf_ishares_holding",
-    "S006955749": "au_etf_gbs_holding",
-    "S006955753": "au_etf_sgbs_holding",
-    "S006955757": "au_etf_phau_holding",
-    "S006955761": "au_etf_gold_holding",
-    "S006955770": "au_etf_cef_holding",
-    "S003715212": "ag_etf_slv_holding",
-    "S006955790": "ag_etf_cef_holding",
-    "S006955786": "ag_etf_pslv_holding",
-    "S006955782": "ag_etf_etpmag_holding",
-    "S006955778": "ag_etf_phag_holding",
-    "S006955772": "ag_etf_sivr_holding",
+    'G002600770': 'usgg2yr',  # macro_d: 美国:国债收益率:2年
+    'G002600774': 'usgg10yr',  # macro_d: 美国:国债收益率:10年
+    'G002600783': 'usggt10yr',  # macro_d: 美国:国债收益率:以通胀为标的:10年
+    'G013233151': 'usggbe5',  # macro_d: 美国:5年期盈亏平衡通胀率
+    'G013233152': 'usggbe10',  # macro_d: 美国:10年期盈亏平衡通胀率
+    'G013233153': 'inflation_exp_5y_us',  # macro_d: 美国:5年远期通胀预期率
+    'M002842089': 'usdcny_mid',  # used in prod; macro_d: 中间价:美元兑人民币
+    'M004147024': 'usdcnh_spot',  # used in prod; macro_d: 人民币即期汇率:离岸价
+    'M011202650': 'usdcnh_close',  # used in prod; macro_d: 人民币离岸价(USDCNH):收盘价
+    'M004147023': 'usdcny_spot',  # used in prod; macro_d: 参考汇率(16:00):美元兑人民币
+    'M004370159': 'usdcny_spot2',  # used in prod; macro_d: 即期汇率(16:30):美元兑人民币
+    'M004377555': 'usdcny_spot_volume',  # macro_d: 即期询价成交量:美元兑人民币
+    'G002600885': 'dxy',  # macro_d: 美国:美元指数
+    'G003082203': 'vix',  # used in prod; macro_d: CBOE:波动率指数(VIX):收盘
+    'G003082207': 'vvix',  # macro_d: CBOE:波动性指数(VVIX):收盘
+    'G003082211': 'vxeem',  # macro_d: CBOE:新型市场ETF波动率指数(VXEEM):收盘
+    'G003082215': 'vxd',  # macro_d: CBOE:道琼斯工业平均波动率指数(VXD):收盘
+    'G003082227': 'vxn',  # macro_d: CBOE:纳斯达克波动率指数(VXN):收盘
+    'G003146263': 'usdzar_xe',  # used in prod; macro_d: 美元兑南非兰特
+    'G003146267': 'usdbrl_xe',  # used in prod; macro_d: 美元兑巴西雷亚尔
+    'G003146268': 'usdnok_xe',  # macro_d: 美元兑挪威克朗
+    'G003146276': 'usdkrw_xe',  # macro_d: 美元兑韩元
+    'G003146252': 'usdcny_xe',  # used in prod; macro_d: 美元兑人民币
+    'G003146248': 'usdaud_xe',  # used in prod; macro_d: 美元兑澳元
+    'G003146249': 'usdcad_xe',  # macro_d: 美元兑加元
+    'G003146245': 'usdeur_xe',  # macro_d: 美元兑欧元
+    'G003146246': 'usdgbp_xe',  # macro_d: 美元兑英镑
+    'G003146256': 'usdjpy_xe',  # macro_d: 美元兑日元
+    'G004849308': 'usdclp_xe',  # used in prod; macro_d: 美元兑智利比索
+    'G019711418': 'usdcnh_xe',  # macro_d: 美元兑离岸人民币
+    'L001619493': 'dr007_cn',  # macro_d: DR007
+    'L004366599': 'usdcny_on',  # macro_d: USD/CNY外汇掉期曲线:ON
+    'L004366605': 'usdcny_1m',  # macro_d: USD/CNY外汇掉期曲线:1M
+    'M002816448': 'shibor_on',  # macro_d: Shibor:隔夜
+    'M002816449': 'shibor_1w',  # macro_d: Shibor:1周
+    'M002816451': 'shibor_1m',  # used in prod; macro_d: Shibor:1月
+    'M002816576': 'r007_cn',  # used in prod; macro_d: 收盘利率:R007
+    'M002816575': 'r001_cn',  # macro_d: 收盘利率:R001
+    'L001618805': 'cn_govbond_yield_1y',  # used in prod; macro_d: 银行间国债到期收益率:1年
+    'L001619213': 'cn_govbond_yield_2y',  # used in prod; macro_d: 银行间国债到期收益率:2年
+    'L001618480': 'cn_govbond_yield_5y',  # used in prod; macro_d: 银行间国债到期收益率:5年
+    'L001619214': 'cn_govbond_yield_10y',  # macro_d: 银行间国债到期收益率:10年
+    'G009067321': 'eco_policy_uncertainty_idx_us',  # macro_d: 美国:每日经济政策不确定性指数
+    'S003587817': 'margin_outstanding_total_cn',  # macro_d: 融资融券业务:融资融券余额:合计
+    'S016720335': 'margin_mktcap_ratio_cn',  # macro_d: 融资融券业务:两融余额占A股流通市值比重
+    'S016720336': 'margin_mktvol_ratio_cn',  # macro_d: 融资融券业务:两融交易额占A股交易额比重
+    'M002826785': 'cpi_cn_mom',  # macro_m: CPI:环比
+    'M002842661': 'ppi_cn_mom',  # macro_m: PPI:环比
+    'M001625222': 'm2_cn_yoy',  # used in prod; macro_m: M2(货币和准货币):同比
+    'M001625224': 'm1_cn_yoy',  # used in prod; macro_m: M1(货币):同比
+    'M004369935': 'pmi_cn_cons_all',  # macro_m: 非制造业PMI:建筑业
+    'M005933607': 'pmi_cn_cons_new_order',  # macro_m: 非制造业PMI:建筑业:新订单
+    'M005933608': 'pmi_cn_cons_rm_px',  # macro_m: 非制造业PMI:建筑业:投入品价格
+    'M005933609': 'pmi_cn_cons_px',  # macro_m: 非制造业PMI:建筑业:销售价格
+    'M005933610': 'pmi_cn_cons_hr',  # macro_m: 非制造业PMI:建筑业:从业人员
+    'M005933611': 'pmi_cn_cons_bus_exp',  # macro_m: 非制造业PMI:建筑业:业务活动预期
+    'M003559320': 'pmi_cn_steel_all',  # macro_m: 制造业PMI:钢铁行业
+    'M003559341': 'pmi_cn_steel_prod',  # macro_m: 制造业PMI:钢铁行业:生产指数
+    'M003559342': 'pmi_cn_steel_rm_vol',  # macro_m: 制造业PMI:钢铁行业:原材料采购量指数
+    'M003559343': 'pmi_cn_steel_rm_inv',  # macro_m: 制造业PMI:钢铁行业:原材料库存指数
+    'M003559344': 'pmi_cn_steel_new_order',  # used in prod; macro_m: 制造业PMI:钢铁行业:新订单指数
+    'M003559346': 'pmi_cn_steel_inv',  # used in prod; macro_m: 制造业PMI:钢铁行业:产成品库存指数
+    'M003559347': 'pmi_cn_steel_rm_px',  # macro_m: 制造业PMI:钢铁行业:原材料购进价格指数
+    'S004038574': 'pmi_lgsc_steel_all',  # macro_m: 钢铁流通业采购经理人指数(LGSC-PMI):总指数
+    'S009224315': 'pmi_lgsc_steel_inv',  # macro_m: 钢铁流通业采购经理人指数(LGSC-PMI):库存水平
+    'S009224314': 'pmi_lgsc_steel_sales',  # macro_m: 钢铁流通业采购经理人指数(LGSC-PMI):销量
+    'S004038576': 'pmi_lgsc_steel_tot_order',  # macro_m: 钢铁流通业采购经理人指数(LGSC-PMI):总订单量
+    'S004038575': 'pmi_lgsc_steel_purchase_exp',  # macro_m: 钢铁流通业采购经理人指数(LGSC-PMI):采购意愿
+    'M002043802': 'pmi_cn_manu_all',  # macro_m: 制造业PMI
+    'M002043804': 'pmi_cn_manu_new_order',  # used in prod; macro_m: 制造业PMI:新订单
+    'M002043811': 'pmi_cn_manu_rm_inv',  # used in prod; macro_m: 制造业PMI:原材料库存
+    'M002043805': 'pmi_cn_manu_exports',  # macro_m: 制造业PMI:新出口订单
+    'M002043809': 'pmi_cn_manu_imports',  # macro_m: 制造业PMI:进口
+    'M002043808': 'pmi_cn_manu_purchase',  # macro_m: 制造业PMI:采购量
+    'M002043806': 'pmi_cn_manu_curr_order',  # macro_m: 制造业PMI:在手订单
+    'M003721097': 'pmi_cn_manu_bus_exp',  # macro_m: 制造业PMI:生产经营活动预期
+    'M004088026': 'epmi_cn_all',  # macro_m: 中国战略性新兴产业采购经理指数(EPMI):当月值
+    'M004088027': 'epmi_cn_prod',  # macro_m: 中国战略性新兴产业采购经理指数(EPMI):生产量指数:当月值
+    'M004088028': 'epmi_cn_order',  # macro_m: 中国战略性新兴产业采购经理指数(EPMI):产品订货指数:当月值
+    'M004302214': 'epmi_cn_exports',  # macro_m: 中国战略性新兴产业采购经理指数(EPMI):出口订货指数:当月值
+    'M004302216': 'epmi_cn_inv',  # macro_m: 中国战略性新兴产业采购经理指数(EPMI):用户库存指数:当月值
+    'M004302217': 'epmi_cn_purchase',  # macro_m: 中国战略性新兴产业采购经理指数(EPMI):采购量指数:当月值
+    'S004543083': 'prop_2ndhand_px_idx',  # const_d: 全国城市二手房出售挂牌价指数:当周值
+    'S003019324': 'plt62',  # ferrous_d: 普氏铁矿石价格指数:62%Fe:CFR:青岛港
+    'S002808964': 'plt58',  # ferrous_d: 普氏铁矿石价格指数:58%Fe:CFR:青岛港
+    'S002808963': 'plt65',  # ferrous_d: 普氏铁矿石价格指数:65%Fe:CFR:青岛港
+    'S000020892': 'hrc_sh',  # used in prod; ferrous_d: 热轧:4.75热轧板卷:上海
+    'S002859801': 'hrc_tj',  # ferrous_d: 热轧:4.75热轧板卷:天津
+    'S000020868': 'rebar_sh',  # used in prod; ferrous_d: 市场价:螺纹钢:HRB400E 20MM:上海
+    'S002917430': 'plate_8mm',  # ferrous_d: 中板:普8mm:全国均价
+    'S000020903': 'crc_sh',  # used in prod; ferrous_d: 冷轧:1.0mm:上海
+    'S000020933': 'gi_0.5_sh',  # ferrous_d: 涂镀:0.5mm镀锌:上海
+    'S002917486': 'gi_0.5',  # ferrous_d: 涂镀:0.5mm镀锌:全国均价
+    'S002917688': 'strip_3.0x685',  # used in prod; ferrous_d: 市场价:热轧带钢(3.0*685mm):全国均价
+    'S002917771': 'pipe_1.5x3.25',  # ferrous_d: 焊管:1.5寸*3.25:全国均价
+    'S002917646': 'hsec_400x200',  # used in prod; ferrous_d: 型钢:H型钢(400*200):全国均价
+    'S021281530': 'rebar_eaf_prodcost_base_cn',  # const_d: 废钢:成本:短流程:平电:全国
+    'S021281525': 'rebar_eaf_prodcost_base_east',  # const_d: 废钢:成本:短流程:平电:华东
+    'S021281538': 'rebar_eaf_prodcost_pk_cn',  # const_d: 废钢:成本:短流程:峰电:全国
+    'S021281533': 'rebar_eaf_prodcost_pk_east',  # const_d: 废钢:成本:短流程:峰电:华东
+    'S021281546': 'rebar_eaf_prodcost_opk_cn',  # const_d: 废钢:成本:短流程:谷电:全国
+    'S021281541': 'rebar_eaf_prodcost_opk_east',  # const_d: 废钢:成本:短流程:谷电:华东
+    'S021281570': 'rebar_eaf_margin_base_cn',  # const_d: 废钢:利润:短流程:全国
+    'S021281565': 'rebar_eaf_margin_base_east',  # const_d: 废钢:利润:短流程:华东
+    'S002911091': 'pbf_cfd',  # ferrous_d: 车板价:含税:进口铁矿石(PB粉61.5%,澳洲):曹妃甸
+    'S002911136': 'pbf_qd',  # used in prod; ferrous_d: 车板价:含税:进口铁矿石(PB粉61.5%,澳洲):青岛港
+    'S007746654': 'nmf_qd',  # ferrous_d: 车板价:铁矿石:纽曼粉矿(Fe:62.5%,SiO2:4%,Al2O3:2.5%,H2O<8%):皮尔巴拉:青岛港
+    'S009067527': 'nmf_cfd',  # ferrous_d: 车板价:铁矿石:纽曼粉矿:Fe:62.5%,SiO2:4%,Al2O3:2.5%,H2O<6%:皮尔巴拉:曹妃甸
+    'S004210693': 'macf_cfd',  # used in prod; ferrous_d: 车板价:含税:进口铁矿石(麦克粉61%,澳洲):曹妃甸
+    'S004317118': 'macf_qd',  # used in prod; ferrous_d: 车板价:含税:进口铁矿石(麦克粉61.0%,BHP):青岛港
+    'S004317120': 'iocj_qd',  # used in prod; ferrous_d: 车板价:含税:进口铁矿石(卡拉加斯粉65.0%,Vale):青岛港
+    'S005429351': 'jmb_qd',  # used in prod; ferrous_d: 车板价:含税:进口铁矿石(金布巴粉59.5%,BHP):青岛港
+    'S004317128': 'fbf_qd',  # ferrous_d: 车板价:含税:进口铁矿石(混合粉58.5%,FMG):青岛港
+    'S004317121': 'brbf_qd',  # ferrous_d: 车板价:含税:进口铁矿石(巴混(BRBF)62.5%,Vale):青岛港
+    'S008679891': 'nmf_prem',  # used in prod; ferrous_d: 品牌浮动溢价:铁矿石:NHGF:62%:澳洲:Hedland
+    'S008679892': 'macf_prem',  # used in prod; ferrous_d: 品牌浮动溢价:铁矿石:MACF:62%:澳洲:Hedland
+    'S008679893': 'jmb_prem',  # ferrous_d: 品牌浮动溢价:铁矿石:JMBF:62%:澳洲:Hedland
+    'S008679896': 'iocj_prem',  # ferrous_d: 品牌浮动溢价:铁矿石:IOCJ:65%:巴西:PDM
+    'S021039360': 'viu_fe',  # ferrous_d: 价格指数:铁矿石:1%价差:60%-63.5%:FE
+    'S021794952': 'viu_al',  # ferrous_d: 价格指数:铁矿石:1%价差:1-2.5%:Al2O3
+    'S008679905': 'ssf_sb',  # ferrous_d: 基准价:铁矿石:SS Fines:56.5%:澳洲:Hedland:青岛
+    'S008679900': 'nmf_sb',  # ferrous_d: 基准价:铁矿石:NHGF:62.3%:澳洲:Hedland:青岛
+    'S008679901': 'macf_sb',  # ferrous_d: 基准价:铁矿石:Mac Fines:60.8%:澳洲:Hedland:青岛
+    'S008679902': 'jmb_sb',  # ferrous_d: 基准价:铁矿石:JMBF:60.5%:澳洲:Hedland:青岛
+    'S008679908': 'iocj_sb',  # ferrous_d: 基准价:铁矿石:IOCJ:65.1%:巴西:PDM:青岛
+    'S008679910': 'brbf_sb',  # ferrous_d: 基准价:铁矿石:BRBF:63%:巴西:Teluk Rubiah:青岛
+    'S019823003': 'hrc_cn_fob',  # ferrous_w: 市场价:热轧板卷:上海
+    'S019823002': 'hrc_sea_cfr',  # ferrous_w: 进口价:热轧板卷:东南亚
+    'S019822995': 'hrc_bs_fob',  # ferrous_w: 出口价(黑海/波罗的海FOB):热轧板卷:独联体
+    'S019823001': 'hrc_mideast_cfr',  # ferrous_w: 进口价:热轧板卷:中东
+    'S019823047': 'rebar_cn_fob',  # ferrous_w: 市场价:螺纹钢:上海
+    'S019823046': 'rebar_sea_cfr',  # ferrous_w: 进口价:螺纹钢:东南亚
+    'S019823080': 'billet_cn_fob',  # ferrous_w: 市场价:方坯:上海
+    'S019823072': 'billet_bs_fob',  # ferrous_w: 出口价(黑海/波罗的海FOB):方坯:独联体
+    'S002827225': 'billet_ts',  # used in prod; ferrous_d: 方坯:含税价:Q235:唐山
+    'S002827223': 'billet_js',  # ferrous_d: 方坯:含税价:Q235:江苏
+    'S002954691': 'scrap_sh',  # ferrous_d: 市场价(现金):废钢:6-8mm:上海
+    'S002827258': 'scrap_zjg',  # ferrous_d: 市场价(现金):废钢:6-8mm:张家港
+    'S002827270': 'scrap_ts',  # ferrous_d: 市场价(现金):废钢:6-8mm:唐山
+    'S002983449': 'pci_yangquan',  # ferrous_d: 喷吹煤指数:无烟喷:阳泉
+    'S004369291': 'coke_sub_a_tj',  # ferrous_d: 天津港:平仓价格:准一级冶金焦(A<12.5%,S<0.7%,M25>90%,M10<7.5%,Mt<7%,CSR>62):山西
+    'S004425298': 'coke_sub_a_rz',  # used in prod; ferrous_d: 日照港:平仓价格(含税):准一级冶金焦(A13,S0.7,CSR60,MT7):日照; const_d: 日照港:平仓价格(含税):准一级冶金焦(A13,S0.7,CSR60,MT7):日照
+    'S004626322': 'coke_sub_a_rz_outstock',  # ferrous_d: 日照港:出库价格(现金含税):准一级冶金焦(A13,S0.7,CSR60):日照
+    'S008061234': 'coke_xuzhou_xb',  # used in prod; ferrous_d: 出厂含税价:准一级焦炭:徐州
+    'S008061203': 'coke_ts_xb',  # ferrous_d: 到厂含税价:准一级焦炭:唐山
+    'S008061232': 'coke_sh_xb',  # ferrous_d: 到厂含税价:准一级焦炭:上海
+    'S008061213': 'coke_changzhi_xb',  # ferrous_d: 出厂含税价:准一级焦炭:长治
+    'S002877257': 'ckc_a10v24s08_lvliang',  # ferrous_d: 车板价(含税):焦精煤:吕梁:孝义(灰分10,挥发分24,硫分0.8,G75,Y24,CSR63)
+    'S002877258': 'ckc_a9v18s10_lvliang',  # ferrous_d: 车板价(含税):焦精煤:吕梁:离石(灰分9,挥发分18,硫分1,G80,Y18,CSR68)
+    'S002877299': 'ckc_a10v24s10_ts',  # ferrous_d: 出厂价(含税):焦精煤:河北:唐山(灰分10,挥发分24,硫分1,G80,Y20,全水Mt6,CSR46)
+    'S009785426': 'ckc_outstock_ganqimaodu',  # used in prod; ferrous_d: 库提含税价:炼焦煤:主焦(蒙古):甘其毛都
+    'S004085268': 'ckc_stock_ganqimaodu',  # ferrous_d: 甘其毛都:库提价:蒙古:焦煤精煤
+    'S004378612': 'coal_5500_jingtang',  # ferrous_d: 平仓价(含税):动力末煤(5500):京唐港
+    'S002882871': 'coal_5500_sx_qhd',  # used in prod; ferrous_d: 平仓价:动力煤:山西优混(5500):秦皇岛
+    'S002837009': 'coal_5500_qhd',  # ferrous_d: 平仓含税价:动力煤(Q5500):秦皇岛
+    'S004381182': 'coal_6000_newc_fob',  # const_d: 离岸价(FOB):动力煤:Q6000:澳大利亚纽卡斯尔港NEWC Index
+    'S004381181': 'coal_6000_api4_sa',  # const_d: 离岸价(FOB):动力煤:南非理查德港RB Index
+    'S004381180': 'coal_6000_api2_ara',  # const_d: 离岸价(FOB):动力煤:欧洲三港DES ARA
+    'S004018814': 'io_loading_14ports_ausbzl',  # ferrous_w: 铁矿石:澳洲和巴西发货量
+    'S005961128': 'io_inv_45ports',  # used in prod; ferrous_w: 库存:铁矿石:45港总计
+    'S002837160': 'io_inv_47ports',  # ferrous_w: 库存:铁矿石:总计
+    'S010998475': 'io_inv_sb_ausbrl_7ports',  # ferrous_w: 库存:铁矿石:澳大利亚、巴西七港
+    'S006574700': 'io_inv_sf_45ports',  # ferrous_w: 库存:铁矿石:粗粉:总计
+    'S004226161': 'io_inv_imp_mill(64)',  # used in prod; ferrous_w: 进口矿:烧结粉矿:总库存
+    'S004226163': 'io_inv_dom_mill(64)',  # used in prod; ferrous_w: 国产矿:烧结粉矿:总库存
+    'S003817887': 'io_invdays_imp_mill(64)',  # used in prod; ferrous_w: 钢厂铁矿石:进口矿:平均可用天数
+    'S017639430': 'io_inv_imp_mill(247)',  # ferrous_w: 进口矿:库存:钢厂:全国
+    'S002837394': 'io_removal_47ports',  # ferrous_w: 日均疏港量:铁矿石:总计
+    'S005961326': 'io_removal_45ports',  # used in prod; ferrous_w: 日均疏港量:铁矿石:45港总计
+    'S008618299': 'consteel_dsales_mysteel',  # used in prod; ferrous_d: 成交量:建筑钢材:主流贸易商
+    'S005656437': 'consteel_dsales_banksteel',  # ferrous_d: 成交量:建材:钢银
+    'S004029055': 'rebar_enduse_sales_sh',  # ferrous_w: 终端采购量:线螺:上海
+    'S005653695': 'bf_workrate_247',  # ferrous_w: 高炉开工率:全国(样本数247家):当周值
+    'S009122299': 'bf_workrate_num',  # ferrous_w: 高炉开工率(个数):全国
+    'S013050080': 'cement_mill_run_rate',  # const_d: 磨机运转率:全国:当周值
+    'S013050004': 'cement_dispatch_rate',  # const_d: 水泥发运率:全国:当周值
+    'S012683154': 'cement_inv_ratio',  # const_d: 库容比:水泥:全国:当周值
+    'S012683281': 'cement_clinker_inv_ratio',  # const_d: 库容比:熟料:全国:当周值
+    'S015756661': 'cement_clinker_util',  # const_d: 产能利用率:水泥熟料:全国:当周值
+    'S002863470': 'brent_dtd_spot',  # petchem_d: 现货价:布伦特DTD:原油
+    'S002863469': 'oman_spot',  # petchem_d: 现货价:阿曼:原油
+    'S000006462': 'dubai_spot',  # petchem_d: 现货价:迪拜:原油
+    'S004242343': 'espo_spot',  # petchem_d: 现货美元价(FOB):俄罗斯ESPO:原油
+    'S003031624': 'fo_180cst_sgp',  # petchem_d: 现货价:普氏(Platts):燃料油(180CST):新加坡
+    'S003031623': 'fo_380cst_sgp',  # petchem_d: 现货价:普氏(Platts):燃料油(380CST):新加坡
+    'S005126414': 'fo_380cst_sgp_fob',  # petchem_d: 现货价:燃料油(船用380Cst,FOB):新加坡:中间价
+    'S006854047': 'lu_05_zhoushan',  # petchem_d: 市场价:船用油(0.5%低硫燃料油):舟山
+    'S009395713': 'lu_bonded_zhoushan',  # petchem_d: 主流价:燃料油(低硫燃料油,保税船用):舟山
+    'S006854048': 'fo_380cst_zhoushan',  # used in prod; petchem_d: 市场价:船用油(380CST):舟山
+    'S010795263': 'br9000_yangzi_sh_if',  # petchem_d: 主流价:顺丁橡胶(BR9000,扬子石化):上海
+    'S017304608': 'br9000_sichuan_sd',  # petchem_d: 市场估价:顺丁橡胶BR9000:山东:四川石化:均价
+    'S017304605': 'br9000_daqing_sd',  # petchem_d: 市场估价:顺丁橡胶BR9000:山东:大庆石化:均价
+    'S017304620': 'br9000_daqing_east',  # petchem_d: 市场估价:顺丁橡胶BR9000:华东:大庆石化:均价
+    'S004414844': 'eb_fob_korea_usd',  # petchem_d: 国际市场价:苯乙烯:FOB韩国:中间价
+    'S005126411': 'fo_180cst_sgp_fob',  # petchem_d: 现货价:燃料油(船用180CST,FOB):新加坡:中间价
+    'S006853914': 'lu_05_huangpu_cfr',  # petchem_d: 市场价:船用油(0.5%低硫燃料油,到岸价CFR):黄埔区
+    'S006854042': 'lu_05_qingdao',  # petchem_d: 市场价:船用油(0.5%低硫燃料油):青岛
+    'S006854050': 'lu_05_shanghai',  # petchem_d: 市场价:船用油(0.5%低硫燃料油):上海
+    'S009395719': 'fo_bonded_highsulfur_zhoushan',  # petchem_d: 主流价:燃料油(高硫燃料油,保税船用):舟山
+    'S009395581': 'lu_bonded_qingdao',  # petchem_d: 主流价:燃料油(低硫燃料油,保税船用):青岛
+    'S009395611': 'lu_bonded_shenzhen',  # petchem_d: 主流价:燃料油(低硫燃料油,保税船用):深圳
+    'S009395716': 'mgo_bonded_zhoushan',  # petchem_d: 主流价:燃料油(MGO,保税船用):舟山
+    'S006854049': 'mgo_zhoushan',  # petchem_d: 市场价:船用油(MGO):舟山
+    'S009138374': 'fo_380cst_m1_sgp',  # petchem_d: 国际市场价:燃料油(纸货380CST,近1月):新加坡:离岸价(FOB)
+    'S009138375': 'fo_380cst_m2_sgp',  # petchem_d: 国际市场价:燃料油(纸货380CST,近2月):新加坡:离岸价(FOB)
+    'S005126417': 'lu_0.5_sgp',  # petchem_d: 现货价:燃料油(低硫0.5%,FOB):新加坡:中间价
+    'S004077380': 'pg_cn_spot',  # petchem_d: 现货基准价:液化气:全国
+    'S004163704': 'bu_heavy_shandong',  # used in prod; petchem_d: 市场价:沥青(重交沥青):山东
+    'S004163701': 'bu_heavy_north',  # petchem_d: 市场价:沥青(重交沥青):华北
+    'S004163702': 'bu_heavy_east',  # petchem_d: 市场价:沥青(重交沥青):华东
+    'S004321834': 'ru_scrwf_kunming',  # used in prod; petchem_d: 天然橡胶:全乳胶(SCRWF):昆明:主流价
+    'S004321831': 'ru_scrwf_zhejiang',  # petchem_d: 天然橡胶:全乳胶(SCRWF):浙江:主流价
+    'S004321822': 'ru_scrwf_jiangsu',  # petchem_d: 天然橡胶:全乳胶(SCRWF):江苏:主流价
+    'S004156580': 'bz_east_spot',  # petchem_d: 市场价:纯苯:华东市场:主流价
+    'S002955332': 'bz_taiwan_cfr_usd',  # petchem_d: 现货价:纯苯:中国台湾:到岸主流价
+    'S016681643': 'bz_cn_cfr_usd',  # petchem_d: 国际市场价(中间价):纯苯:中国:到岸价(CFR)
+    'S016681640': 'bz_korea_fob_usd',  # petchem_d: 国际市场价(中间价):纯苯:韩国:离岸价(FOB)
+    'S004156652': 'eb_east_spot',  # used in prod; petchem_d: 市场价:苯乙烯:华东地区:主流价
+    'S004156649': 'eb_north_spot',  # petchem_d: 市场价:苯乙烯:华北地区:主流价
+    'S002955437': 'eb_cfr_cn',  # petchem_d: 现货价:苯乙烯:中国:到岸主流价
+    'S004077398': 'MA_zj_spot',  # petchem_d: 现货基准价:甲醇:浙江
+    'S003994516': 'MA_spot_jiangsu',  # used in prod; petchem_d: 市场价:甲醇:江苏市场:主流价
+    'S005955220': 'MA_spot_sd',  # petchem_d: 国内市场价:甲醇:山东地区
+    'S003994543': 'MA_spot_neimeng',  # petchem_d: 市场价:甲醇:内蒙古地区:主流价
+    'S002955504': 'MA_cfr_cn',  # petchem_d: 现货价:甲醇:中国:到岸中间价
+    'S003157699': 'l_7042_tj',  # used in prod; petchem_d: 主流价:LLDPE(7042,薄膜,大庆石化):天津
+    'S003157759': 'l_7042_sh',  # petchem_d: 主流价:LLDPE(7042,薄膜,大庆石化):上海
+    'S002836797': 'l_7042_east',  # petchem_d: LLDPE(7042)均价:华东
+    'S002836796': 'l_7042_north',  # petchem_d: LLDPE(7042)均价:华北
+    'S004077382': 'pl_shandong_spot',  # petchem_d: 现货基准价:丙烯:山东
+    'S004156562': 'pl_east_spot',  # petchem_d: 市场价:丙烯:华东地区:主流价
+    'S016841666': 'UR_henan_spot',  # petchem_d: 市场价(中间价):尿素(小颗粒):河南
+    'S002854771': 'UR_north_spot',  # petchem_d: 主流价:尿素(小颗粒):华北地区
+    'S005953372': 'UR_shandong_spot',  # petchem_d: 国内市场价:尿素(小颗粒):山东菏泽:主流价
+    'S016842082': 'UR_cn_fob_usd',  # petchem_d: 国际市场价(中间价):尿素(小颗粒):中国:离岸价(FOB)
+    'S016842079': 'UR_gcc_cfr_usd',  # petchem_d: 国际市场价(中间价):尿素(小颗粒):阿拉伯湾:离岸价(FOB)
+    'S004339370': 'sp_pz_ca_moon_sh',  # petchem_d: 现货价:漂针浆:月亮(加拿大):上海
+    'S016635856': 'sp_pz_ca_ma_sh',  # petchem_d: 现货价:漂针浆:马牌(加拿大):上海
+    'S004349724': 'sp_pz_ch_si_sd',  # petchem_d: 现货价:漂针浆:银星(智利):山东
+    'S004349728': 'sp_pz_ca_lion_sd',  # petchem_d: 现货价:漂针浆:狮牌(加拿大):山东
+    'S004349732': 'sp_pk_br_yw_sd',  # petchem_d: 现货价:漂阔浆:鹦鹉(巴西):山东
+    'S004807566': 'sp_pz_ru_sd',  # petchem_d: 市场价:针叶浆(俄针):山东地区:主流价
+    'S002835975': 'TA_east_spot',  # used in prod; petchem_d: PTA:华东:主流价
+    'S016571550': 'TA_cfr_cn',  # used in prod; petchem_d: 现货价:精对苯二甲酸(PTA):CFR中国:中间价
+    'S005594160': 'TA_cfr_cn_long',  # petchem_d: 国际市场价:PTA:中国:CFR主流价
+    'S002863173': 'PX_exw_east_spot',  # petchem_d: 出厂均价:PX:华东地区
+    'S002835955': 'PX_korea_fob_usd',  # petchem_d: PX(对二甲苯):韩国:离岸主流价
+    'S003994600': 'eg_east_spot',  # used in prod; petchem_d: 市场价:乙二醇:华东地区:主流价
+    'S002956186': 'eg_cfr_cn',  # petchem_d: 现货价:乙二醇:中国:到岸中间价
+    'S002956195': 'eg_cfr_sea',  # petchem_d: 现货价:乙二醇:东南亚:到岸中间价
+    'S004407080': 'PF_east_spot',  # petchem_d: 国内市场价:涤纶短纤:半光本白1.56*38mm:江苏市场:主流价
+    'S004407077': 'PF_fujian_spot',  # used in prod; petchem_d: 国内市场价:涤纶短纤:半光本白1.56*38mm:福建市场:主流价
+    'S004407062': 'PR_east_spot',  # petchem_d: 市场价:聚酯瓶片:华东市场:主流价
+    'S022010507': 'PR_north_spot',  # petchem_d: 国内市场价:聚酯瓶片:水瓶级:华北市场:主流价
+    'S004155300': 'SH_32_spot_sdjl_shandong',  # used in prod; base_d2: 出厂价:烧碱(32%离子膜碱):山东金岭
+    'S004155302': 'SH_50_spot_sdjl_shandong',  # used in prod; base_d2: 出厂价:烧碱(50%离子膜碱):山东金岭
+    'S020003119': 'SH_margin_sd',  # used in prod; base_w: 氯碱利润:山东地区:当周值
+    'S020003107': 'SH_util_w',  # base_w: 烧碱:产能利用率:当周值
+    'S002825712': 'pvc_cac2_north',  # petchem_d: 华北:PVC主流价:电石法
+    'S002825715': 'pvc_cac2_east',  # used in prod; petchem_d: 华东:PVC主流价:电石法
+    'S002825718': 'pvc_cac2_south',  # petchem_d: 华南:PVC主流价:电石法
+    'S002825727': 'pvc_ethylene_east',  # petchem_d: 华东:PVC主流价:乙烯法
+    'S005470470': 'FG_5mm_shahe',  # used in prod; const_d: 国内市场价:玻璃(5.0mm,大板):沙河
+    'S005470469': 'FG_5mm_north',  # const_d: 国内市场价:玻璃(5.0mm):华北
+    'S004242725': 'FG_100ppi',  # const_d: 现货价:玻璃
+    'S002825734': 'SA_heavy_north',  # ferrous_d: 纯碱:重质:华北:主流价
+    'S002825740': 'SA_heavy_east',  # ferrous_d: 纯碱:重质:华东:主流价
+    'S002825733': 'SA_light_north',  # ferrous_d: 纯碱:轻质:华北:主流价
+    'S002825739': 'SA_light_east',  # ferrous_d: 纯碱:轻质:华东:主流价
+    'S010861418': 'SA_heavy_shahe',  # used in prod; ferrous_d: 市场价:纯碱(重质):沙河市场:主流价
+    'S005349979': 'SA_heavy_sys',  # ferrous_d: 现货价:纯碱
+    'S006404818': 'SA_margin_lianchan',  # ferrous_w: 纯碱:联产企业利润:当周值
+    'S006404817': 'SA_margin_anjian',  # ferrous_w: 纯碱:氨碱企业利润:当周值
+    'S011318571': 'syn_ammonia_margin_coal',  # ferrous_w: 周度利润:合成氨:煤制
+    'S011318572': 'syn_ammonia_margin_gas',  # ferrous_w: 周度利润:合成氨:气制
+    'S009134956': 'SA_wprod_cn',  # ferrous_w: 周产量:纯碱:中国
+    'S005439592': 'SA_workrate_cn',  # ferrous_w: 开工率:纯碱:全国
+    'S005439594': 'SA_workrate_anjian',  # ferrous_w: 开工率:纯碱:氨碱
+    'S005439596': 'SA_workrate_lianchan',  # ferrous_w: 开工率:纯碱:联产
+    'S011311758': 'SA_sales_prod_ratio',  # ferrous_w: 产销率:纯碱:当周值
+    'S019254411': 'FG_margin_coal',  # ferrous_w: 周度利润:浮法玻璃:煤制
+    'S019254412': 'FG_margin_petcoke',  # ferrous_w: 周度利润:浮法玻璃:石油焦制
+    'S017068418': 'FG_margin_natgas',  # ferrous_w: 周度利润:浮法玻璃:天然气制; const_d: 周度利润:浮法玻璃:天然气制
+    'S024334444': 'FG_margin_avg',  # used in prod; ferrous_w: 平均利润:浮法玻璃:当周值
+    'S019255501': 'solarglass_dprod',  # ferrous_w: 在产日熔量:光伏玻璃:当周值
+    'S019255498': 'solarglass_util',  # ferrous_w: 产能利用率:光伏玻璃:当周值
+    'S017438009': 'FG_dprod',  # ferrous_w: 浮法玻璃:在产日熔量
+    'S005696261': 'FG_util_adj',  # used in prod; ferrous_w: 浮法玻璃:产能利用率(剔除僵尸产线):当周值
+    'S005696264': 'FG_util_w',  # const_d: 浮法玻璃:开工率:当周值
+    'S002959491': 'SM_65s17_neimeng',  # ferrous_d: 市场价:硅锰:FeMn65Si17:内蒙
+    'S002959498': 'SM_65s17_tj',  # used in prod; ferrous_d: 市场价:硅锰:FeMn65Si17:天津
+    'S002959499': 'SM_65s17_gansu',  # ferrous_d: 市场价:硅锰:FeMn65Si17:甘肃
+    'S017658895': 'SM_neimeng_cost',  # used in prod; ferrous_d: 硅锰:现货生产成本:内蒙古
+    'S017658896': 'SM_ningxia_cost',  # ferrous_d: 硅锰:现货生产成本:宁夏
+    'S017658905': 'SM_margin_north',  # used in prod; ferrous_d: 硅锰:利润率:北方大区
+    'S017658906': 'SM_margin_south',  # ferrous_d: 硅锰:利润率:南方大区
+    'S006158942': 'mn_44_gabon_tj',  # used in prod; ferrous_d: 平均价:锰矿(加蓬Mn44%):天津港
+    'S021992693': 'mn_45_gabon_northports',  # ferrous_d: 车板含税价:锰矿:Mn:45%:块矿:加蓬:北方港
+    'S004789784': 'SF_72_ningxia',  # used in prod; ferrous_d: 出厂价(含税):硅铁:72:宁夏
+    'S004789790': 'SF_72_neimeng',  # ferrous_d: 出厂价(含税):硅铁:72:内蒙
+    'S004789786': 'SF_72_gansu',  # ferrous_d: 出厂价(含税):硅铁:72:甘肃
+    'S016192874': 'SF_72_tj_if',  # ferrous_d: 市场价:硅铁:FeSi72:天津市
+    'S005068112': 'SM_65s17_shmet',  # base_d2: 平均价:硅锰合金(6517):全国
+    'S005068030': 'SF_72_shmet',  # base_d2: 平均价:硅铁(72):全国
+    'S005068027': 'SF_75_shmet',  # base_d2: 平均价:硅铁(75):全国
+    'S017659510': 'SF_neimeng_cost',  # used in prod; ferrous_d: 硅铁:现货生产成本:内蒙古
+    'S017659509': 'SF_ningxia_cost',  # ferrous_d: 硅铁:现货生产成本:宁夏
+    'S017659520': 'SF_neimeng_margin',  # used in prod; ferrous_d: 硅铁:利润率:内蒙古
+    'S017659519': 'SF_ningxia_margin',  # ferrous_d: 硅铁:利润率:宁夏
+    'S008082266': 'SF_workrate_cn',  # used in prod; ferrous_w: 硅铁:开工率:当周值
+    'S008082269': 'SF_prod_cn',  # ferrous_w: 硅铁:产量:当周值
+    'S008082268': 'SF_dmd_cn',  # used in prod; ferrous_w: 硅铁:需求量:当周值
+    'S008082267': 'SF_dprod_cn',  # ferrous_w: 硅铁:日均产量:当周值
+    'S008082272': 'SM_dmd_cn',  # used in prod; ferrous_w: 硅锰:需求量:当周值
+    'S008082273': 'SM_prod_cn',  # ferrous_w: 硅锰:产量:当周值
+    'S008082271': 'SM_dprod_cn',  # ferrous_w: 硅锰:日均产量:当周值
+    'S008082270': 'SM_workrate_cn',  # used in prod; ferrous_w: 硅锰:开工率:当周值
+    'S008618451': 'SM_stockdays',  # used in prod; ferrous_w: 库存天数:硅锰:全国:期末值
+    'S008618440': 'SM_inv_mill',  # ferrous_w: 硅锰:库存:全国:当周值
+    'S008618447': 'SF_inv_mill',  # used in prod; ferrous_w: 硅铁:库存:全国:当周值
+    'S005696248': 'FG_inv_mill',  # used in prod; const_d: 企业库存:浮法玻璃:合计:当周值
+    'S005439547': 'v_inv_social',  # used in prod; const_d: 社会库存:PVC:总计
+    'S005439550': 'v_inv_social_east',  # petchem_w: 社会库存:PVC:华东地区:总计
+    'S005439586': 'SA_inv_mill_all',  # used in prod; const_d: 企业库存:纯碱:全国
+    'S011319484': 'SH_inv_mill_all',  # used in prod; const_d: 库存:烧碱:当周值
+    'S003138068': 'coke_inv_ports_tj',  # used in prod; ferrous_w: 库存:焦炭:天津港
+    'S003138069': 'coke_inv_ports_lyg',  # used in prod; ferrous_w: 库存:焦炭:连云港
+    'S003138070': 'coke_inv_ports_rz',  # used in prod; ferrous_w: 库存:焦炭:日照港
+    'S010338984': 'coke_inv_ports',  # ferrous_w: 库存:焦炭:合计
+    'S012116529': 'ckc_inv_ports',  # ferrous_w: 库存:焦煤:合计
+    'S009341306': 'ckc_inv_cokery',  # ferrous_w: 总库存:炼焦煤:统计独立焦企全样本
+    'S009341305': 'coke_inv_cokery',  # ferrous_w: 库存:焦炭:统计独立焦企全样本
+    'S005653704': 'coke_inv_230cokery',  # ferrous_w: 库存:焦炭:独立焦化厂(样本数230家):期末值
+    'S005653705': 'ckc_inv_230cokery',  # ferrous_w: 库存:炼焦煤:独立焦化厂(样本数230家):期末值
+    'S009341250': 'coke_inv_247mill',  # ferrous_w: 库存:焦炭:钢厂(247家)
+    'S009341251': 'ckc_inv_247mill',  # ferrous_w: 库存:炼焦煤:钢厂(247家)
+    'S004039587': 'ckc_inv_6ports',  # used in prod; ferrous_w: 库存:炼焦煤:六港合计:当周值
+    'S012116534': 'coke_inv_4ports',  # ferrous_w: 库存:焦炭:四港
+    'S005580634': 'rebar_inv_social',  # used in prod; ferrous_w: 社会库存:螺纹钢
+    'S005580635': 'hrc_inv_social',  # used in prod; ferrous_w: 社会库存:热轧板卷
+    'S005580633': 'wirerod_inv_social',  # used in prod; ferrous_w: 社会库存:线材
+    'S005580639': 'crc_inv_social',  # used in prod; ferrous_w: 社会库存:冷轧板卷
+    'S005580636': 'plate_inv_social',  # ferrous_w: 社会库存:中厚板
+    'S009045420': 'steel_inv_social',  # used in prod; ferrous_w: 社会库存:主要钢材品种:合计
+    'S009097506': 'long_inv_social',  # ferrous_w: 社会库存:建筑钢材
+    'S004378418': 'rebar_inv_mill',  # ferrous_w: 全国建材钢厂:螺纹钢:钢厂库存
+    'S004378419': 'wirerod_inv_mill',  # ferrous_w: 全国建材钢厂:线材:钢厂库存
+    'S004378420': 'hrc_inv_mill',  # ferrous_w: 全国热轧板卷厂:热轧板卷:钢厂库存
+    'S004378421': 'crc_inv_mill',  # ferrous_w: 全国冷轧板卷厂:冷轧板卷:钢厂库存
+    'S004378422': 'plate_inv_mill',  # ferrous_w: 全国中厚板厂:中厚板:钢厂库存
+    'S005580641': 'rebar_inv_all',  # used in prod; ferrous_w: 总库存:螺纹钢
+    'S005580642': 'wirerod_inv_all',  # used in prod; ferrous_w: 总库存:线材
+    'S005580640': 'hrc_inv_all',  # used in prod; ferrous_w: 总库存:热轧板卷
+    'S005580646': 'crc_inv_all',  # used in prod; ferrous_w: 总库存:冷轧板卷
+    'S005580643': 'plate_inv_all',  # ferrous_w: 总库存:中厚板
+    'S004802760': 'rebar_prod_all',  # used in prod; ferrous_w: 全国建材钢厂:螺纹钢:产量:当周值
+    'S004802761': 'wirerod_prod_all',  # used in prod; ferrous_w: 全国建材钢厂:线材:产量:当周值
+    'S005580652': 'crc_prod_all',  # used in prod; ferrous_w: 全国冷轧板卷钢厂:冷轧板卷:产量:当周值
+    'S005107854': 'hrc_prod_all',  # used in prod; ferrous_w: 热轧板卷:产量:当周值
+    'S004039553': 'billet_inv_social_ts',  # used in prod; ferrous_w: 库存:钢坯:唐山:合计
+    'S005953318': 'csteel_prod_cisa',  # ferrous_w: 产量:粗钢:当旬值
+    'S005953322': 'pigiron_prod_cisa',  # ferrous_w: 产量:生铁:当旬值
+    'S006154238': 'eaf_util_87mills',  # ferrous_w: 产能利用率:独立电弧炉钢厂:全国
+    'S005656440': 'eaf_util_weekly',  # ferrous_w: 电弧炉钢厂:产能利用率:当周值
+    'S006154226': 'eaf_prodcost_east',  # ferrous_w: 电炉钢厂:炼钢成本:华东区
+    'S021277623': 'scrap_use_mill_eaf',  # ferrous_w: 废钢:消耗量:钢厂:短流程
+    'S021374817': 'scrap_use_mill_all',  # ferrous_w: 废钢:消耗量:钢厂
+    'S021277629': 'scrap_ratio_mill_all',  # ferrous_w: 废钢:废钢比:钢厂
+    'S021374832': 'scrap_inv_mill_all',  # ferrous_w: 废钢:库存:钢厂
+    'S021277634': 'scrap_inv_mill_eaf',  # ferrous_w: 废钢:库存:钢厂:短流程
+    'S005808359': 'cu_lme_3m_close',  # used in prod; base_d: 最后收盘价:LME铜(3个月)
+    'S005808360': 'al_lme_3m_close',  # used in prod; base_d: 最后收盘价:LME铝(3个月)
+    'S005808361': 'pb_lme_3m_close',  # used in prod; base_d: 最后收盘价:LME铅(3个月)
+    'S005808362': 'zn_lme_3m_close',  # used in prod; base_d: 最后收盘价:LME锌(3个月)
+    'S005808363': 'sn_lme_3m_close',  # used in prod; base_d: 最后收盘价:LME锡(3个月)
+    'S005808364': 'ni_lme_3m_close',  # used in prod; base_d: 最后收盘价:LME镍(3个月)
+    'S004303031': 'cu_lme_0m_3m_spd',  # used in prod; base_d: LME铜(现货/三个月):升贴水
+    'S004303035': 'al_lme_0m_3m_spd',  # used in prod; base_d: LME铝(现货/三个月):升贴水
+    'S004303034': 'zn_lme_0m_3m_spd',  # used in prod; base_d: LME锌(现货/三个月):升贴水
+    'S004303033': 'pb_lme_0m_3m_spd',  # used in prod; base_d: LME铅(现货/三个月):升贴水
+    'S004303032': 'sn_lme_0m_3m_spd',  # used in prod; base_d: LME锡(现货/三个月):升贴水
+    'S004303036': 'ni_lme_0m_3m_spd',  # used in prod; base_d: LME镍(现货/三个月):升贴水
+    'S003018859': 'cu_lme_3m_15m_spd',  # used in prod; base_d: LME铜3-15:升贴水
+    'S003018860': 'cu_lme_3m_27m_spd',  # base_d: LME铜3-27:升贴水
+    'S003018862': 'al_lme_3m_15m_spd',  # used in prod; base_d: LME铝3-15:升贴水
+    'S003018863': 'al_lme_3m_27m_spd',  # base_d: LME铝3-27:升贴水
+    'S003018865': 'ni_lme_3m_15m_spd',  # base_d: LME镍3-15:升贴水
+    'S003018866': 'ni_lme_3m_27m_spd',  # base_d: LME镍3-27:升贴水
+    'S003018868': 'sn_lme_3m_15m_spd',  # base_d: LME锡3-15:升贴水
+    'S003018871': 'zn_lme_3m_15m_spd',  # used in prod; base_d: LME锌3-15:升贴水
+    'S003018872': 'zn_lme_3m_27m_spd',  # base_d: LME锌3-27:升贴水
+    'S003018874': 'pb_lme_3m_15m_spd',  # base_d: LME铅3-15:升贴水
+    'S003018875': 'pb_lme_3m_27m_spd',  # base_d: LME铅3-27:升贴水
+    'S002855118': 'cu_inv_cme_total',  # base_d: 库存:COMEX:铜:合计
+    'S000025728': 'cu_inv_lme_total',  # used in prod; base_d: LME:库存:铜
+    'S002836856': 'cu_inv_lme_cancelled',  # used in prod; base_d: LME:注销仓单:铜
+    'S000025729': 'al_inv_lme_total',  # used in prod; base_d: LME:库存:铝
+    'S002836862': 'al_inv_lme_cancelled',  # used in prod; base_d: LME:注销仓单:铝
+    'S000025731': 'pb_inv_lme_total',  # base_d: LME:库存:铅
+    'S002836868': 'pb_inv_lme_cancelled',  # base_d: LME:注销仓单:铅
+    'S000025730': 'zn_inv_lme_total',  # used in prod; base_d: LME:库存:锌
+    'S002836874': 'zn_inv_lme_cancelled',  # used in prod; base_d: LME:注销仓单:锌
+    'S000025732': 'sn_inv_lme_total',  # used in prod; base_d: LME:库存:锡
+    'S002836880': 'sn_inv_lme_cancelled',  # used in prod; base_d: LME:注销仓单:锡
+    'S000025733': 'ni_inv_lme_total',  # used in prod; base_d: LME:库存:镍
+    'S002836886': 'ni_inv_lme_cancelled',  # used in prod; base_d: LME:注销仓单:镍
+    'S003164358': 'cu_inv_shfe_d',  # used in prod; warrant_d: 仓单数量:铜:总计
+    'S003164360': 'zn_inv_shfe_d',  # used in prod; warrant_d: 仓单数量:锌:总计
+    'S003164359': 'al_inv_shfe_d',  # used in prod; warrant_d: 仓单数量:铝:总计
+    'S003164361': 'pb_inv_shfe_d',  # used in prod; warrant_d: 仓单数量:铅:总计
+    'S004322735': 'ni_inv_shfe_d',  # used in prod; warrant_d: 仓单数量:镍:总计
+    'S004322736': 'sn_inv_shfe_d',  # used in prod; warrant_d: 仓单数量:锡:总计
+    'S019848684': 'ao_inv_shfe_d',  # used in prod; warrant_d: 仓单数量:氧化铝:仓库:总计
+    'S019848689': 'ao_inv_shfe_mill_d',  # used in prod; warrant_d: 仓单数量:氧化铝:厂库:总计
+    'S009223764': 'ss_inv_shfe_d',  # used in prod; warrant_d: 仓单数量:不锈钢:合计
+    'S019735959': 'si_inv_gfex_d',  # used in prod; warrant_d: 仓单数量:工业硅:小计
+    'S020098434': 'lc_inv_gfex_d',  # used in prod; warrant_d: 仓单数量:碳酸锂:小计
+    'S033367931': 'ps_inv_gfex_d',  # warrant_d: 仓单数量:多晶硅
+    'S022117012': 'SH_inv_czce_warrant',  # warrant_d: 仓单数量:烧碱:总计
+    'S022319791': 'SH_inv_czce_unwarrant',  # warrant_d: 有效预报:烧碱:总计
+    'S003008076': 'TA_inv_czce_warrant',  # used in prod; warrant_d: 仓单数量:PTA:总计
+    'S005451492': 'TA_inv_czce_unwarrant',  # used in prod; warrant_d: 有效预报:PTA:总计
+    'S004302740': 'MA_inv_czce_warrant',  # used in prod; warrant_d: 仓单数量:甲醇:总计
+    'S005451467': 'MA_inv_czce_unwarrant',  # used in prod; warrant_d: 有效预报:甲醇:总计
+    'S005451340': 'UR_inv_czce_warrant',  # used in prod; warrant_d: 仓单数量:尿素:总计
+    'S005451410': 'UR_inv_czce_unwarrant',  # used in prod; warrant_d: 有效预报:尿素:总计
+    'S005658949': 'PF_inv_czce_warrant',  # warrant_d: 仓单数量:短纤:总计
+    'S035614282': 'PR_inv_czce_warrant',  # warrant_d: 仓单数量:瓶片:总计
+    'S003787910': 'l_inv_dce_warrant',  # used in prod; warrant_d: 仓单数量:聚乙烯:总计
+    'S003787913': 'pp_inv_dce_warrant',  # used in prod; warrant_d: 仓单数量:聚丙烯:总计
+    'S003787915': 'v_inv_dce_warrant',  # used in prod; warrant_d: 仓单数量:聚氯乙烯:总计
+    'S005450245': 'eg_inv_dce_warrant',  # used in prod; warrant_d: 仓单数量:乙二醇:总计
+    'S005450249': 'eb_inv_dce_warrant',  # warrant_d: 仓单数量:苯乙烯:总计
+    'S004302762': 'bu_inv_shfe_warrant',  # used in prod; warrant_d: 仓单数量:沥青:仓库:总计
+    'S004302780': 'bu_inv_shfe_mill',  # used in prod; warrant_d: 仓单数量:沥青:厂库:总计
+    'S003154875': 'FG_inv_czce_warrant',  # used in prod; warrant_d: 仓单数量:玻璃:总计
+    'S005451360': 'SA_inv_czce_warrant',  # used in prod; warrant_d: 仓单数量:纯碱:总计
+    'S005451430': 'SA_inv_czce_unwarrant',  # used in prod; warrant_d: 有效预报:纯碱:总计
+    'S022117035': 'PX_inv_czce_warrant',  # warrant_d: 仓单数量:对二甲苯:总计
+    'S022319792': 'PX_inv_czce_unwarrant',  # warrant_d: 有效预报:对二甲苯:总计
+    'S005476601': 'sc_inv_ine_warrant',  # warrant_d: 仓单数量:中质含硫原油
+    'S005476602': 'fu_inv_shfe_warrant',  # used in prod; warrant_d: 仓单数量:燃料油
+    'S006404843': 'lu_inv_ine_warrant',  # warrant_d: 仓单数量:低硫燃料油
+    'S006404844': 'pg_inv_dce_warrant',  # warrant_d: 仓单数量:液化石油气
+    'S005476603': 'j_inv_dce_warrant',  # warrant_d: 仓单数量:焦炭
+    'S005476604': 'jm_inv_dce_warrant',  # warrant_d: 仓单数量:焦煤
+    'S005476308': 'rb_inv_shfe_warrant',  # warrant_d: 仓单数量:螺纹钢
+    'S005476309': 'hc_inv_shfe_warrant',  # warrant_d: 仓单数量:热轧卷板
+    'S005476310': 'i_inv_dce_warrant',  # warrant_d: 仓单数量:铁矿石
+    'S005476311': 'SF_inv_czce_warrant',  # warrant_d: 仓单数量:硅铁
+    'S005476313': 'SF_inv_czce_unwarrant',  # warrant_d: 有效预报:硅铁
+    'S005476312': 'SM_inv_czce_warrant',  # warrant_d: 仓单数量:锰硅
+    'S005476314': 'SM_inv_czce_unwarrant',  # warrant_d: 有效预报:锰硅
+    'S003277851': 'm_inv_dce_warrant',  # warrant_d: 仓单数量:豆粕
+    'S003278148': 'RM_inv_czce_warrant',  # warrant_d: 仓单数量:菜粕
+    'S003278185': 'RM_inv_czce_unwarrant',  # warrant_d: 有效仓单预报:菜粕:小计
+    'S000001487': 'c_inv_dce_warrant',  # used in prod; warrant_d: 仓单数量:玉米
+    'S000001485': 'a_inv_dce_warrant',  # used in prod; warrant_d: 仓单数量:豆一
+    'S003277847': 'b_inv_dce_warrant',  # warrant_d: 仓单数量:豆二
+    'S005532615': 'jd_inv_dce_warrant',  # warrant_d: 仓单数量:鸡蛋
+    'S000001484': 'y_inv_dce_warrant',  # warrant_d: 仓单数量:豆油
+    'S003155008': 'p_inv_dce_warrant',  # warrant_d: 仓单数量:棕榈油
+    'S000001491': 'OI_inv_czce_warrant',  # warrant_d: 仓单数量:菜籽油
+    'S000001493': 'OI_inv_czce_unwarrant',  # warrant_d: 有效仓单预报:菜籽油:小计
+    'S000001490': 'CF_inv_czce_warrant',  # used in prod; warrant_d: 仓单数量:一号棉
+    'S003278182': 'CF_inv_czce_unwarrant',  # used in prod; warrant_d: 有效仓单预报:一号棉:小计
+    'S000001488': 'SR_inv_czce_warrant',  # warrant_d: 仓单数量:白糖
+    'S000001496': 'SR_inv_czce_unwarrant',  # warrant_d: 有效仓单预报:白糖:小计
+    'S005532620': 'AP_inv_czce_warrant',  # warrant_d: 仓单数量:苹果
+    'S005532621': 'AP_inv_czce_unwarrant',  # warrant_d: 有效仓单预报:苹果:小计
+    'S005532619': 'CJ_inv_czce_warrant',  # warrant_d: 仓单数量:红枣
+    'S005532625': 'CJ_inv_czce_unwarrant',  # warrant_d: 有效仓单预报:红枣:小计
+    'S009637664': 'PK_inv_czce_warrant',  # warrant_d: 仓单数量:花生
+    'S003164362': 'au_inv_shfe_warrant',  # warrant_d: 仓单数量:黄金:上期所指定交割金库
+    'S003164363': 'ag_inv_shfe_warrant',  # warrant_d: 仓单数量:白银:总计
+    'S006409299': 'bc_inv_ine_warrant',  # warrant_d: 仓单数量:铜(BC):总计
+    'S004410360': 'ru_inv_shfe_warrant',  # used in prod; warrant_d: 仓单数量:天然橡胶:总计
+    'S005450012': 'nr_inv_shfe_warrant',  # warrant_d: 仓单数量:20号胶:总计
+    'S006018632': 'MA_inv_ports_total',  # petchem_w: 港口库存:甲醇:总计
+    'S009065244': 'PF_inv_mill_treasury',  # petchem_w: 工厂库存:涤纶短纤:权益库存
+    'S009065245': 'PF_inv_mill_physical',  # petchem_w: 工厂库存:涤纶短纤:实物库存
+    'S011319525': 'PF_viscosefiber_invdays_mill',  # petchem_w: 库存天数:粘胶短纤:期末值
+    'S011319524': 'PF_viscosefiber_inv_mill',  # petchem_w: 企业库存:粘胶短纤:期末值
+    'S011319505': 'PET_chip_invdays_mill',  # petchem_w: 企业库存:聚酯切片:期末值
+    'S024761635': 'PET_invdays_mill',  # petchem_w: 聚酯瓶片:库存可用天数:期末值
+    'S022014758': 'PL_inv_all',  # petchem_w: 丙烯:库存:期末值
+    'S005439569': 'TA_inv_social_mth',  # petchem_w: 社会库存:PTA:全国
+    'S019985011': 'TA_inv_social_wk',  # petchem_w: 社会库存:PTA:期末值
+    'S009065246': 'TA_inv_mill',  # petchem_w: 工厂库存:PTA:聚酯原料
+    'S003085584': 'TA_invdays_mill',  # petchem_w: 库存天数:PTA:工厂:平均
+    'S009128523': 'TA_margin_cn_d',  # used in prod; petchem_d: 日度利润:PTA:中国
+    'S009128522': 'TA_prodcost_cn_d',  # petchem_d: 日度成本:PTA:中国
+    'S020004695': 'PX_margin_cn_w',  # used in prod; petchem_w: 平均利润:PX:当周值
+    'S020209589': 'PX_naph_spd_w',  # petchem_w: 价差:PX-石脑油:当周值
+    'S020209590': 'PX_MX_spd_w',  # petchem_w: 价差:PX-MX:当周值
+    'S002825872': 'naph_cfr_jp',  # petchem_d: CFR:中间价:石脑油:日本地区
+    'S020210081': 'PX_util_kr',  # petchem_w: 开工率:PX:韩国:当周值
+    'S019506839': 'MX_inv_east',  # used in prod; petchem_w: 库存:二甲苯:华东:期末值
+    'S019506841': 'MX_inv_south',  # used in prod; petchem_w: 库存:二甲苯:华南:期末值
+    'S003085590': 'DTY_invdays_mill',  # petchem_w: 库存天数:涤纶长丝:工厂库存:DTY
+    'S003085589': 'FDY_invdays_mill',  # petchem_w: 库存天数:涤纶长丝:工厂库存:FDY
+    'S003085588': 'POY_invdays_mill',  # petchem_w: 库存天数:涤纶长丝:工厂库存:POY
+    'S005616301': 'weaviing_dnstream_invdays_mill',  # petchem_w: 库存天数:坯布:终端织造
+    'S019732993': 'pe_inv_social',  # petchem_w: 社会库存:PE:国内:期末值
+    'S020602643': 'ru_half_steel_tire_invdays_sd',  # petchem_w: 库存天数:半钢轮胎:山东:期末值
+    'S020602996': 'ru_all_steel_tire_invdays_sd',  # petchem_w: 库存天数:全钢轮胎:山东:期末值
+    'S004788710': 'UR_inv_mill',  # petchem_w: 企业库存:尿素:总计:期末值
+    'S004127496': 'UR_inv_social',  # petchem_w: 库存:尿素
+    'S004647718': 'compound_fertilizer_inv_social',  # petchem_w: 库存:复合肥:总计
+    'S004869809': 'eb_inv_mill',  # petchem_w: 库存:苯乙烯:全国
+    'S004869807': 'eb_inv_port_east',  # petchem_w: 库存:苯乙烯:华东主港:总计
+    'S004869808': 'eb_inv_port_east_trader',  # petchem_w: 库存:苯乙烯:华东主港:贸易
+    'S008618767': 'eb_inv_port_south',  # petchem_w: 库存:苯乙烯(社会库存):华南港口
+    'S008618768': 'eb_inv_port_south_trader',  # petchem_w: 库存:苯乙烯(商品库存):华南港口
+    'S008618769': 'bz_inv_port_east',  # petchem_w: 库存:纯苯(商业库存):华东港口:当期值
+    'S022014760': 'bz_inv_ports',  # petchem_w: 港口库存:纯苯:期末值
+    'S004383001': 'eg_inv_port_east',  # petchem_w: 库存:MEG(乙二醇):华东主港
+    'S017643268': 'pe_inv_mill',  # petchem_w: 企业库存:聚乙烯(PE):中国样本企业
+    'S011319581': 'pe_pipe_invdays',  # petchem_w: 原料库存:PE管材:期末值
+    'S011319572': 'wovenplastics_invdays_raw_mill_sm',  # petchem_w: 原料库存天数:塑编:小型企业:期末值
+    'S011319574': 'wovenplastics_inv_finished_mill_lg',  # petchem_w: 成品库存:塑编:大型企业:期末值
+    'S011319499': 'BOPP_invdays_raw',  # petchem_w: 原料库存:BOPP:期末值
+    'S011319502': 'CPP_invdays_finished',  # petchem_w: 成品库存:CPP:期末值
+    'S011319504': 'pp_nonwoven_inv_finished',  # petchem_w: 成品库存:PP无纺布:期末值
+    'S004392973': 'polyolefin_inv',  # petchem_w: 库存:聚烯烃:总计
+    'S019732994': 'pe_inv_traders',  # petchem_w: 库存:PE:贸易商:期末值
+    'S011319336': 'ru_inv_bonded_traders_qd',  # petchem_w: 库存:天然橡胶:青岛(保税和一般贸易)
+    'S011319345': 'br_inv_social',  # petchem_w: 社会库存:顺丁橡胶:期末值
+    'S020559734': 'br_inv_traders',  # petchem_w: 贸易商库存:顺丁橡胶:期末值
+    'S004494138': 'bu_inv_social',  # petchem_w: 社会库存:沥青:国内样本企业:合计:期末值
+    'S004494153': 'bu_inv_mill',  # petchem_w: 厂家库存:沥青:国内样本企业:合计:期末值
+    'S004494149': 'bu_inv_mill_shandong',  # petchem_w: 厂家库存:沥青:国内样本企业:山东地区:期末值
+    'S007247253': 'bu_inv_shfe_all',  # petchem_w: 期货库存:沥青:总计
+    'S004302829': 'bu_inv_shfe_mill_w',  # petchem_w: 期货库存:沥青:厂库:总计
+    'S004302811': 'bu_inv_shfe_social',  # petchem_w: 期货库存:沥青:仓库:总计
+    'S004302793': 'bu_inv_shfe_social_addon',  # petchem_w: 库存:沥青:仓库:总计
+    'S007247476': 'bu_invcap_shfe_all',  # petchem_w: 可用库容量:沥青:总计
+    'S004302841': 'bu_invcap_shfe_social',  # petchem_w: 可用库容量:沥青:仓库:总计
+    'S004302859': 'bu_invcap_shfe_mill',  # petchem_w: 可用库容量:沥青:厂库:总计
+    'S004410392': 'ru_inv_shfe_all',  # petchem_w: 库存:天然橡胶:总计
+    'S005451604': 'nr_inv_shfe_all',  # petchem_w: 库存:20号胶:总计
+    'S026354501': 'pg_inv_port_all',  # petchem_w: 液化气:港口库存:期末值
+    'S019733356': 'pg_inv_port_south',  # petchem_w: 液化气:港口库存:华南
+    'S019733357': 'pg_inv_port_east',  # petchem_w: 液化气:港口库存:华东
+    'S026354504': 'pg_inv_port_north',  # petchem_w: 液化气:港口库存:华北地区:期末值
+    'S026354506': 'pg_invratio_ports',  # petchem_w: 液化气:港口库容比:期末值
+    'S026354493': 'pg_inv_mill_all',  # petchem_w: 液化气:企业库存:期末值
+    'S026354485': 'pg_inv_mill_res',  # petchem_w: 民用液化气:企业库存:期末值
+    'S018553310': 'gasoline_inv_social',  # petchem_w: 汽油:商业库存:期末值
+    'S018553311': 'diesel_inv_social',  # petchem_w: 柴油:商业库存:期末值
+    'S006374450': 'refined_products_inv_indep',  # petchem_w: 独立炼厂库存:成品油:期末值
+    'S004248164': 'fu_inv_sing',  # petchem_w: 燃料油库存:新加坡
+    'S018521625': 'fu_inv_cnship',  # petchem_w: 库存量:燃料油:内贸船用180/120cst:总计:期末值
+    'S005451610': 'fu_inv_shfe',  # petchem_w: 库存:燃料油:总计
+    'S003583337': 'm_inv_mill_sm',  # ag_w: 库存:豆粕:国内主流油厂:合计
+    'S003583339': 'm_inv_mill_nonexec',  # ag_w: 库存:豆粕:国内主流油厂:未执行合同:合计
+    'S017385971': 'm_invdays_downstream',  # ag_w: 饲料企业库存天数:豆粕:全国
+    'S018052590': 'm_inv_mill_lg',  # ag_w: 豆粕:库存:主要油厂:合计
+    'S018489426': 'RM_inv_mill_mth',  # ag_w: 菜籽粕:库存量:主要油厂:沿海地区:当月值
+    'S018862300': 'RM_inv_mill_east',  # ag_w: 菜籽粕库存:华东:合计
+    'S017942027': 'c_invdays_downstream',  # ag_w: 玉米:库存天数:饲料企业:全国:当周值
+    'S017209307': 'c_inv_ports_4north',  # ag_w: 玉米库存:北方四港
+    'S017209293': 'c_inv_mill',  # ag_w: 深加工企业库存:玉米:总计
+    'S017647060': 'cs_inv_mill',  # ag_w: 企业库存:玉米淀粉:合计
+    'S017406429': 'CJ_inv_sample',  # ag_w: 库存:红枣:样本点
+    'S018380017': 'jd_invdays_prod',  # ag_w: 鸡蛋:生产环节库存天数:当周值
+    'S018380018': 'jd_invdays_transit',  # ag_w: 鸡蛋:流通环节库存天数:当周值
+    'S006466874': 'AP_inv_frozen',  # ag_w: 冷库库存:苹果:全国
+    'S002841991': 'lh_inv_mth',  # ag_w: 全国:生猪存栏
+    'S002841992': 'lh_breeding_sow_inv_mth',  # ag_w: 全国:能繁母猪存栏
+    'S003986222': 'CF_inv_social_mth',  # ag_w: 商业库存:棉花:全国
+    'S011936208': 'CF_inv_weaving_mth',  # ag_w: 纺织企业工业库存:棉花:全国
+    'S011936209': 'CF_inv_weaving_lg_mth',  # ag_w: 纺织企业可支配库存:棉花:全国
+    'S016734044': 'y_inv_mill',  # ag_w: 油厂库存量:豆油:全国
+    'S003148264': 'y_inv_ports',  # ag_w: 豆油港口库存:全国
+    'S003254707': 'p_inv_ports',  # ag_w: 棕榈油港口库存:合计
+    'S018493782': 'p_inv_mill',  # ag_w: 油厂商业库存:棕榈油:合计
+    'S003052593': 'bean_inv_ports_d',  # ag_w: 大豆港口库存:合计
+    'S017992344': 'bean_inv_mill',  # ag_w: 大豆:库存量:主要油厂:合计
+    'S017992372': 'bean_inv_ports_full',  # ag_w: 大豆:库存量:全国港口
+    'S018479716': 'OI_inv_mill_east',  # ag_w: 菜籽油:商业库存:主要油厂:华东
+    'S018479717': 'OI_inv_mill_guangxi',  # ag_w: 菜籽油:商业库存:主要油厂:广西
+    'S018479719': 'OI_inv_mill_coastal',  # ag_w: 菜籽油:库存量:主要油厂:沿海地区
+    'S018634615': 'PK_oil_inv_mill',  # ag_w: 花生油库存:样本企业:当周值
+    'S018634610': 'PK_inv_mill',  # ag_w: 花生库存:样本企业:合计
+    'S004370169': 'RS_inv_mill',  # ag_w: 油厂库存量:菜籽:总计
+    'S017935492': 'ZC_inv_social',  # petchem_w: 煤炭:库存:分区域:合计
+    'S003839317': 'ZC_inv_6gen',  # petchem_w: 煤炭:库存量:六大发电集团:总计
+    'S003839331': 'ZC_invdays_6gen',  # petchem_w: 煤炭:库存可用天数:六大发电集团:总计
+    'S000009279': 'crude_inv_eia_ex_spr_all',  # petchem_w: 库存:原油(不包括战略石油储备)
+    'S002958615': 'crude_inv_eia_ex_spr_cushing',  # petchem_w: 库存:原油(不包括战略石油储备):库欣
+    'S000009278': 'crude_refined_inv_eia_ex_spr',  # petchem_w: 库存:原油和石油产品(不包括战略石油储备)
+    'S000009280': 'oil_inv_eia_spr',  # petchem_w: 库存:战略石油储备
+    'S004630824': 'cu_mine_tc',  # used in prod; base_d: 铜精矿:现货:粗炼费(TC)
+    'S019779606': 'cu_blister_rc_south',  # used in prod; base_w: 平均价:加工费:国内南方粗铜:当周值
+    'S019779609': 'cu_blister_rc_north',  # base_w: 平均价:加工费:国内北方粗铜:当周值
+    'S019779612': 'cu_anode_rc',  # base_w: 平均价:加工费:国内阳极板:当周值
+    'S005951203': 'pb_60conc_tc_ports',  # base_w: 铅精矿60%:加工费:主要港口
+    'S006158372': 'pb_50conc_tc_hunan',  # base_w: 平均价:加工费TC:铅精矿(Pb50):湖南:当周值:上海有色
+    'S006158375': 'pb_50conc_tc_yunnan',  # base_w: 平均价:加工费TC:铅精矿(Pb50):云南:当周值:上海有色
+    'S006158378': 'pb_50conc_tc_guangxi',  # base_w: 平均价:加工费TC:铅精矿(Pb50):广西:当周值:上海有色
+    'S006158381': 'pb_50conc_tc_neimeng',  # used in prod; base_w: 平均价:加工费TC:铅精矿(Pb50):内蒙古:当周值:上海有色
+    'S006158384': 'pb_50conc_tc_henan',  # base_w: 平均价:加工费TC:铅精矿(Pb50):河南:当周值:上海有色
+    'S009620177': 'sn_60conc_tc_jiangxi',  # base_d: 平均价:加工费(60%锡精矿):江西有色
+    'S009620198': 'sn_60conc_tc_guangxi',  # base_d: 平均价:加工费(60%锡精矿):广西有色
+    'S009620213': 'sn_40conc_tc_yunnan',  # used in prod; base_d: 平均价:加工费(40%锡精矿):云南有色
+    'S016702541': 'zn_50conc_tc_neimeng',  # base_w: 平均价:加工费:锌精矿(50%):内蒙古
+    'S016702544': 'zn_50conc_tc_yunnan',  # base_w: 平均价:加工费:锌精矿(50%):云南
+    'S016702547': 'zn_50conc_tc_hunan',  # base_w: 平均价:加工费:锌精矿(50%):湖南
+    'S016702550': 'zn_50conc_tc_guangxi',  # base_w: 平均价:加工费:锌精矿(50%):广西
+    'S016702553': 'zn_50conc_tc_henan',  # used in prod; base_w: 平均价:加工费:锌精矿(50%):河南
+    'S016702556': 'zn_50conc_tc_sichuan',  # base_w: 平均价:加工费:锌精矿(50%):四川
+    'S016702559': 'zn_50conc_tc_shanaxi',  # base_w: 平均价:加工费:锌精矿(50%):陕西
+    'S016702562': 'zn_48conc_tc_ports',  # base_w: 平均价:加工费:锌精矿(48%):主要港口
+    'S003797045': 'ni_1.8conc_spot_php_lianyungang',  # base_d: 车板含税价:红土镍矿(Ni:1.8%、Fe:15-20%、H2O:33-35%):菲律宾品种:连云港
+    'S005068187': 'ni_1.5conc_spot_rz',  # base_d2: 平均价:红土镍矿(1.4%-1.6%):日照港
+    'S005102262': 'sn_60conc_spot_guangxi',  # used in prod; base_d: 平均价:60%锡精矿:广西
+    'S009137295': 'ni_nis_cjb_spot',  # used in prod; base_d: 平均价:硫酸镍:长江现货
+    'S009200268': 'ni_nis_spot_gi',  # base_d: 平均价:电镀级硫酸镍(Ni:22%,Co:0.05%)
+    'S009273405': 'ni_nis_spot_battery',  # base_d: 平均价:电池级硫酸镍(≥22%)
+    'S020207789': 'ni_mhp_34_ports',  # base_d: 平均价:MHP(NI≥34%,CO≥2%):中国主港
+    'S006157941': 'cu_prem_bonded_warrant',  # used in prod; base_d: 平均价:洋山铜溢价(仓单):上海有色
+    'S006157947': 'cu_prem_bonded_cny',  # base_d: 平均价:人民币洋山铜溢价:上海有色
+    'S006157944': 'cu_prem_bonded_cif',  # base_d: 平均价:洋山铜溢价(提单):上海有色
+    'S005068109': 'al_prem_bonded_warrant',  # used in prod; base_d2: 平均价:A00铝保税区仓单:保税库
+    'S005068106': 'al_prem_bonded_cif',  # base_d2: 平均价:A00铝CIF提单/上海:保税库
+    'S005068427': 'zn_prem_smm_import',  # base_d2: 平均价:进口锌升贴水:上海
+    'S005068439': 'zn_prem_bonded_warrant',  # used in prod; base_d2: 平均价:锌保税区仓单:保税库
+    'S005068436': 'zn_prem_bonded_cif',  # base_d2: 平均价:锌CIF提单/上海:保税库
+    'S005068184': 'ni_prem_bonded_warrant',  # used in prod; base_d2: 平均价:镍保税区仓单/上海:保税库
+    'S005068181': 'ni_prem_bonded_cif',  # base_d2: 平均价:镍CIF提单/上海:保税库
+    'S009200256': 'ni_prem_import',  # base_d: 平均价:进口镍升贴水
+    'S005068220': 'pb_prem_bonded_warrant',  # used in prod; base_d2: 平均价:铅保税区仓单:保税库
+    'S005068217': 'pb_prem_bonded_cif',  # base_d2: 平均价:铅CIF提单/上海:保税库
+    'S005068331': 'cu_prem_bonded_warrant_er',  # base_d2: 平均价:铜保税仓单(火法,ER):保税库
+    'S005068328': 'cu_prem_bonded_warrant_sx',  # base_d2: 平均价:铜保税仓单(湿法,SX-EW):保税库
+    'S005068337': 'cu_prem_bonded_cif_er',  # base_d2: 平均价:铜CIF上海(火法,ER):保税库
+    'S005068334': 'cu_prem_bonded_cif_sx',  # base_d2: 平均价:铜CIF上海(湿法,SX-EW):保税库
+    'S000025471': 'cu_cjb_spot',  # base_d: 现货均价:铜:长江有色
+    'S000025473': 'al_cjb_spot',  # base_d: 现货均价:铝:长江有色
+    'S000025475': 'pb_cjb_spot',  # base_d: 现货均价:1#铅锭:长江有色
+    'S000025476': 'zn_cjb_spot',  # base_d: 现货均价:0#锌:长江有色
+    'S000025478': 'sn_cjb_spot',  # base_d: 现货均价:1#锡:长江有色
+    'S000025479': 'ni_cjb_spot',  # base_d: 现货均价:1#镍板:长江有色
+    'S002981535': 'cu_smm1_spot',  # used in prod; base_d: 现货含税均价:1#电解铜(Cu_Ag>=99.95%):上海有色
+    'S002981536': 'cu_smm1_prem_spot',  # base_d: 现货含税均价:升水铜(Cu_Ag>=99.95%):上海有色
+    'S004077505': 'cu_spot_sh',  # base_d: 市场价:电解铜:上海
+    'S002865592': 'al_smm0_spot',  # used in prod; base_d: 现货含税均价:A00铝锭(Al99.70):上海有色
+    'S002865578': 'zn_smm0_spot',  # used in prod; base_d: 现货含税均价:0#锌锭(Zn99.995):上海有色
+    'S002865583': 'pb_smm1_spot',  # base_d: 现货含税均价:1#铅锭(Pb99.994):上海有色; base_d: 平均价:1#铅锭(Pb99.994)
+    'S005068208': 'pb_994_shmet_east',  # used in prod; base_d2: 平均价:1#铅锭(99.994%):华东
+    'S002865591': 'pb_sec9997_spot',  # base_d: 平均价:再生精铅(≥Pb99.97)
+    'S002865595': 'pb_sec985_spot',  # base_d: 平均价:再生铅(≥Pb98.5)
+    'S002981539': 'sn_smm1_spot',  # used in prod; base_d: 现货含税均价:1#锡锭(Sn99.90):上海有色
+    'S002981540': 'ni_smm1_spot',  # used in prod; base_d: 现货含税均价:1#电解镍(Ni99.90):上海有色
+    'S002981541': 'ni_smm1_jc_spot',  # base_d: 现货含税均价:1#金川镍(Ni99.90):上海有色
+    'S002981542': 'ni_smm1_imp_spot',  # base_d: 现货含税均价:1#进口镍:上海有色
+    'S010361921': 'ni_cj1_spot',  # base_d: 平均价:1#镍:长江现货
+    'S004785205': 'ss_304_gross_wuxi',  # used in prod; base_d: 现货价:304/2B卷:毛边:无锡
+    'S004785215': 'ss_304_wuxi_phybasis',  # base_d: 现货升贴水:不锈钢:无锡
+    'S006145828': 'ss_304_2b_hongwang_wuxi_if',  # ferrous_d: 市场价:冷轧不锈钢(卷板2.0*1240*C304/2B):宏旺:无锡
+    'S002865685': 'lc_bat_dom_cn_spot',  # base_d2: 平均价:碳酸锂(99.5%电池级,国产)
+    'S019779625': 'lc_ind_dom_cn_spot',  # base_d2: 平均价:碳酸锂(99.2%工业级)
+    'S020190575': 'lc_bat_dom_east_spot',  # base_d2: 平均价:碳酸锂:电池级(Li2CO3≥99.5%):华东
+    'S020190572': 'lc_ind_dom_east_spot',  # base_d2: 平均价:碳酸锂:工业级(Li2CO3≥99.2%):华东
+    'S017498544': 'lc_bat_dom_jiangxi',  # base_d2: 平均价:电池级碳酸锂(Li2CO3≥99.5%):江西
+    'S020190581': 'lc_bat_dom_sichuan_spot',  # base_d2: 平均价:碳酸锂:电池级(Li2CO3≥99.5%):四川
+    'S020190578': 'lc_ind_dom_sichuan_spot',  # base_d2: 平均价:碳酸锂:工业级(Li2CO3≥99.2%):四川
+    'S005100607': 'lc_li2Omine_6pct_cif',  # used in prod; base_d2: 平均价:锂精矿(Li2O:6%-6.5%):进口
+    'S017498571': 'lc_bat_asia_cif',  # used in prod; base_d2: 平均价:电池级碳酸锂(到岸CIF):亚洲
+    'S017498574': 'lc_bat_eu_cif',  # base_d2: 平均价:电池级碳酸锂(到岸CIF):欧洲
+    'S017498565': 'lc_bat_sam_fob',  # used in prod; base_d2: 平均价:电池级碳酸锂(离岸FOB):南美洲
+    'S012518267': 'lc_util_mth',  # base_w: 碳酸锂:开工率:当月值
+    'S003048722': 'cu_smm_phybasis',  # used in prod; base_d: 现货升贴水:1#电解铜(Cu_Ag>=99.95%):上海有色
+    'S003048723': 'cu_flat_phybasis',  # base_d: 现货升贴水:平水铜(Cu_Ag>=99.95%):上海有色
+    'S003048724': 'cu_prem_phybasis',  # base_d: 现货升贴水:升水铜(Cu_Ag>=99.95%):上海有色
+    'S009137283': 'cu_cj_phybasis',  # base_d: 平均价:铜升贴水:长江现货
+    'S009137286': 'cu_cjb_phybasis',  # used in prod; base_d: 平均价:铜升贴水:长江有色
+    'S009621955': 'cu_sh_phybasis',  # base_d: 平均价:铜升贴水:上海地区
+    'S003048727': 'al_smm0_phybasis',  # used in prod; base_d: 现货升贴水:A00铝锭(Al99.70):上海有色
+    'S005068103': 'al_a00_phybasis_shmet',  # base_d2: 平均价:A00铝锭升贴水(99.7%):华东
+    'S004031017': 'al_sh_phybasis',  # base_d: 平均价:铝:升贴水:上海物贸
+    'S009137289': 'al_cj_phybasis',  # base_d: 平均价:铝升贴水:长江现货
+    'S009137292': 'al_cjb_phybasis',  # base_d: 平均价:铝升贴水:长江有色
+    'S008871816': 'al_nanchu_phybasis',  # base_d: 平均价:A00铝锭升贴水:南储佛山
+    'S005068421': 'zn_smm0_sh_phybasis',  # used in prod; base_d2: 平均价:0#锌锭升贴水(99.995%):上海
+    'S005068424': 'zn_smm1_sh_phybasis',  # base_d2: 平均价:1#锌锭升贴水(99.99%):上海
+    'S008871823': 'zn_nanchu_phybasis',  # base_d: 平均价:0#锌锭升贴水:南储佛山
+    'S008527843': 'zn_wm0_phybasis',  # base_d: 平均价:0#锌锭升贴水:物贸
+    'S008527848': 'zn_wm1_phybasis',  # base_d: 平均价:1#锌锭升贴水:物贸
+    'S005068193': 'ni_smm1_phybasis',  # base_d2: 平均价:1#电解镍升贴水(99.9%):上海
+    'S005068175': 'ni_smm1_jc_phybasis',  # used in prod; base_d2: 平均价:金川镍升贴水(无锡):上海
+    'S005068169': 'ni_smm1_ru_phybasis',  # base_d2: 平均价:俄镍升贴水(无锡):上海
+    'S005068211': 'pb_smm1_sh_phybasis',  # used in prod; base_d2: 平均价:1#铅锭升贴水(99.994%):华东
+    'S005068409': 'sn_smm1_sh_phybasis',  # used in prod; base_d2: 平均价:1#锡升贴水(99.9%):华东
+    'S009160074': 'cu_scrap_1_spot_jzh',  # base_d: 平均价:1#铜(Cu97%):江浙沪:91再生
+    'S009160107': 'cu_scrap_2_spot_jzh',  # base_d: 平均价:2#铜(Cu95.5%):江浙沪:91再生
+    'S008545965': 'cu_scrap_1_sh',  # base_d: 平均价:废铜:1#光亮铜线:上海
+    'S008545990': 'cu_scrap_2_sh',  # base_d: 平均价:废铜:2#铜:上海
+    'S009626046': 'al_scrap_shreded_spot_foshan',  # base_d: 平均价:破碎生铝:佛山金属废料
+    'S009626791': 'ni_scrap_spot_foshan',  # base_d: 平均价:纯镍废料(广东):佛山金属废料
+    'S015202398': 'cu_scrap1_diff_gd',  # base_d: 精废差:1#光亮铜:广东
+    'S015202399': 'cu_scrap1_diff_tj',  # base_d: 精废差:1#光亮铜:天津
+    'S015202400': 'cu_scrap1_fv_diff_gd',  # base_d2: 合理价差:1#光亮铜:广东
+    'S015202401': 'cu_scrap_import_margin',  # base_d2: 进口盈亏:再生铜
+    'S015202402': 'cu_import_margin_sh',  # base_d2: 盈亏平衡:进口铜:上海
+    'S023828847': 'cu_prem_cif_tw',  # base_d2: 平均价:台湾美金铜溢价(CIF提单)
+    'S023828850': 'cu_prem_cif_sea',  # base_d2: 平均价:东南亚美金铜溢价(CIF提单)
+    'S004243370': 'zn_scrap_sh_high',  # base_d: 最高价:废锌:破碎锌:上海
+    'S004243369': 'zn_scrap_sh_low',  # base_d: 最低价:废锌:破碎锌:上海
+    'S004243249': 'al_scrap_shredded_sh_low',  # base_d: 最低价:废铝:破碎生铝:上海
+    'S004243250': 'al_scrap_shredded_sh_high',  # base_d: 最高价:废铝:破碎生铝:上海
+    'S009780583': 'pb_scrap_autostarter_sh',  # base_d: 平均价:废铅:废白壳:上海
+    'S009626378': 'pb_scrap_ebike_sh',  # base_d: 平均价:废电瓶铅(上海):上海金属废料
+    'S009626602': 'sn_scrap_pure_bulk_shandong',  # base_d: 平均价:纯锡块:山东金属废料
+    'S009626605': 'sn_scrap_bulk_shandong',  # base_d: 平均价:锡块:山东金属废料
+    'S009626611': 'sn_scrap_slag_shandong',  # base_d: 平均价:锡渣:山东金属废料
+    'S002959172': 'ss_304_scrap_wuxi',  # base_d: 市场价:废不锈钢:304:无锡
+    'S008871802': 'cu_rod_8_procfee_nanchu',  # base_d: 平均价:8mm无氧铜杆加工费:南储广东
+    'S008871805': 'cu_rod_2.6_procfee_nanchu',  # base_d: 平均价:2.6mm无氧铜杆加工费:南储广东
+    'S009621341': 'al_rod_6063_procfee_jiangxi',  # base_d: 平均价:加工费(6063铝棒):江西有色
+    'S009621410': 'al_rod_6063_procfee_sichuan',  # base_d: 平均价:加工费(6063铝棒):四川有色
+    'S009621539': 'al_rod_6063_procfee_gansu',  # base_d: 平均价:加工费(6063铝棒):甘肃有色
+    'S018696379': 'sn_inv_social_all',  # base_w: 锡锭:库存:合计:当周值
+    'S005971281': 'cu_mine_inv_ports',  # base_w: 铜精矿:港口库存:合计
+    'S005118151': 'cu_inv_social_dom',  # base_w: 库存:铜:合计
+    'S011214521': 'cu_inv_bonded_gd',  # base_w: 库存:铜:境外:广东保税区
+    'S005118141': 'cu_inv_bonded_sh',  # base_w: 库存:铜:境外:上海保税区
+    'S009010885': 'al_inv_social_all',  # used in prod; base_w: 电解铝:库存:合计
+    'S004425257': 'zn_inv_social_all',  # used in prod; base_w: 库存:锌锭:合计
+    'S011334489': 'zn_inv_smelter_finished',  # base_w: 冶炼厂成品库存:锌锭
+    'S011333399': 'ni_inv27_plate_dom',  # base_w: 27库社会库存:现货库存:镍板:期末值
+    'S011333401': 'ni_inv27_plate_bonded',  # base_w: 27库社会库存:保税区库存:镍板:期末值
+    'S011333403': 'ni_inv27_all',  # base_w: 27库社会库存:总计:期末值
+    'S011334192': 'pb_inv_social_all',  # base_w: 铅锭:现货库存:合计
+    'S006167225': 'bauxite_inv_az_ports',  # base_w: 港口库存:铝土矿:合计
+    'S006167236': 'alumina_inv_az_ports',  # base_w: 港口库存:氧化铝:合计
+    'S004425326': 'alumina_inv_ports',  # base_w: 库存:氧化铝:总计
+    'S011258021': 'bauxite_inv_ports_inv',  # base_w: 港口库存:铝土矿:总计:当周值
+    'S006563225': 'al_6063rod_inv_social',  # base_w: 库存:6063铝棒:合计
+    'S006161096': 'ss_inv_social_all',  # base_w: 库存:不锈钢:合计:当周值
+    'S006161093': 'ss_inv_social_200',  # base_w: 库存:不锈钢:200系:合计:当周值
+    'S006161094': 'ss_inv_social_300',  # used in prod; base_w: 库存:不锈钢:300系:合计:当周值
+    'S006161095': 'ss_inv_social_400',  # base_w: 库存:不锈钢:400:合计:当周值
+    'S002808967': 'container_exp_scfi',  # const_d: SCFI:综合指数
+    'S004077728': 'alumina_spot_qd',  # used in prod; base_d: 中间价:A0-1氧化铝(AL2O3≥98.6%):青岛港
+    'S010596299': 'alumina_spot_cnports',  # const_d: 平均价:港口氧化铝
+    'S010596302': 'alumina_aus_fob',  # const_d: 平均价:澳洲现货氧化铝
+    'S023510418': 'alumina_cfr_cn',  # base_d2: 平均价:氧化铝(CIF,市场):中国到岸
+    'S023510421': 'alumina_fob_au',  # base_d2: 平均价:氧化铝(FOB,市场):澳洲离岸
+    'S006159069': 'si_553_nonoxy_east',  # base_d2: 平均价:不通氧553#硅:华东
+    'S006159164': 'si_553_nonoxy_sichuan',  # used in prod; base_d2: 平均价:不通氧553#硅:四川
+    'S003014166': 'si_553_nonoxy_kunming',  # base_d2: 平均价:不通氧553#硅:昆明
+    'S006159072': 'si_553_oxy_east',  # base_d2: 平均价:通氧553#硅:华东
+    'S006159146': 'si_553_oxy_kunming',  # base_d2: 平均价:通氧553#硅:昆明
+    'S006159081': 'si_421_east',  # base_d2: 平均价:421#硅:华东
+    'S005956443': 'si_421_sichuan',  # used in prod; base_d2: 平均价:421#硅:四川
+    'S006159154': 'si_421_kunming',  # base_d2: 平均价:421#硅:昆明
+    'T025173022': 'si_421_prem_gd',  # base_d2: 平均价:升贴水:421#硅:广东
+    'M002845714': 'csi300_idx',  # macro_d: 沪深300指数
+    'M002845725': 'csi500_idx',  # used in prod; macro_d: 中证500指数
+    'M012963695': 'csi1000_idx',  # macro_d: 中证1000指数
+    'G002837002': 'shcmp_idx',  # macro_d: 上证综合指数
+    'G002856504': 'hk_cncorp_idx',  # macro_d: 恒生中国企业指数
+    'G002856503': 'hk_hsi_idx',  # macro_d: 恒生指数
+    'G002856511': 'jp_nk225_idx',  # macro_d: 东京日经225指数
+    'G002856507': 'sp500_idx',  # macro_d: 标准普尔500指数
+    'G002856508': 'nasdaq_idx',  # macro_d: 纳斯达克综合指数
+    'G002856506': 'dji_idx',  # macro_d: 道琼斯工业平均指数
+    'M009042848': 'sw_sector_idx_basemetal',  # macro_d: 申万行业指数:一级行业:有色金属
+    'M009042858': 'sw_sector_idx_prop',  # macro_d: 申万行业指数:一级行业:房地产
+    'M009042864': 'sw_sector_idx_const',  # macro_d: 申万行业指数:一级行业:建筑材料
+    'M009042847': 'sw_sector_idx_steel',  # macro_d: 申万行业指数:一级行业:钢铁
+    'M009042873': 'sw_sector_idx_petchem',  # macro_d: 申万行业指数:一级行业:石油石化
+    'M009042872': 'sw_sector_idx_coal',  # macro_d: 申万行业指数:一级行业:煤炭
+    'M003802454': 'sw_sector2_idx_glass',  # macro_d: 申万行业指数:二级行业:玻璃制造
+    'M003802458': 'sw_sector2_idx_infra',  # macro_d: 申万行业指数:二级行业:基础建设
+    'M003802386': 'sw_sector2_idx_rubber',  # macro_d: 申万行业指数:二级行业:橡胶
+    'M003588167': 'zx_sector_idx_const',  # macro_d: 中信行业指数:建材
+    'M003588182': 'zx_sector_idx_prop',  # macro_d: 中信行业指数:房地产
+    'M003588162': 'zx_sector_idx_basemetal',  # macro_d: 中信行业指数:有色金属
+    'M003588164': 'zx_sector_idx_steel',  # macro_d: 中信行业指数:钢铁
+    'M003588160': 'zx_sector_idx_oil_petchem',  # macro_d: 中信行业指数:石油石化
+    'M003588161': 'zx_sector_idx_coal',  # macro_d: 中信行业指数:煤炭
+    'S000025546': 'au_td_sge',  # used in prod; base_d: 上海黄金交易所:收盘价:黄金:Au(T+D)
+    'S000025544': 'au_9999_sge_close',  # used in prod; base_d: 上海黄金交易所:收盘价:黄金:Au9999
+    'S003057206': 'ag_td_sge',  # base_d: 白银:国内定盘价:一号国标
+    'S005068033': 'au_9999_sh',  # base_d: 平均价:黄金(99.99%):上海
+    'S005068036': 'ag_1_9999_sh',  # base_d: 平均价:1#白银(99.99%):上海
+    'S004045178': 'ag_inv_sge',  # warrant_d: 上海黄金交易所:库存:白银:期末值
+    'S004045185': 'ag_9999_sge_close',  # used in prod; base_d: 上海黄金交易所:收盘价:白银:Ag99.99
+    'S005068066': 'ag_td_phbasis',  # base_d: 平均价:白银TD升贴水:上海
+    'S002855119': 'au_cme_warrant_all',  # used in prod; macro_d: 库存:COMEX:黄金:合计
+    'S003852895': 'au_cme_warrant_reg',  # macro_d: 库存:COMEX:黄金:合计:注册
+    'S003852896': 'au_cme_warrant_unreg',  # macro_d: 库存:COMEX:黄金:合计:未注册
+    'S002855120': 'ag_cme_warrant_all',  # used in prod; macro_d: 库存:COMEX:银:合计
+    'S003852912': 'ag_cme_warrant_reg',  # macro_d: 库存:COMEX:银:合计:注册
+    'S003852913': 'ag_cme_warrant_unreg',  # macro_d: 库存:COMEX:银:合计:未注册
+    'G003082236': 'cl_vol_idx',  # macro_d: CBOE:原油波动率指数(OVX):收盘
+    'G003082240': 'gc_vol_idx',  # macro_d: CBOE:黄金波动率指数(GVZ):收盘
+    'S003583313': 'au_etf_spdr_holding',  # used in prod; macro_d: SPDR:黄金:持仓量(吨)
+    'S004320033': 'au_etf_ishares_holding',  # macro_d: iShares:黄金:持仓量(吨)
+    'S006955749': 'au_etf_gbs_holding',  # macro_d: GBS:黄金:持仓量(吨)
+    'S006955753': 'au_etf_sgbs_holding',  # macro_d: SGBS:黄金:持仓量(吨)
+    'S006955757': 'au_etf_phau_holding',  # macro_d: PHAU:黄金:持仓量(吨)
+    'S006955761': 'au_etf_gold_holding',  # macro_d: GOLD:黄金:持仓量(吨)
+    'S006955770': 'au_etf_cef_holding',  # macro_d: CEF:黄金:持仓量(吨)
+    'S003715212': 'ag_etf_slv_holding',  # macro_d: SLV:白银:净持仓量(吨)
+    'S006955790': 'ag_etf_cef_holding',  # macro_d: CEF:白银:持仓量(吨)
+    'S006955786': 'ag_etf_pslv_holding',  # macro_d: PSLV:白银:持仓量(吨)
+    'S006955782': 'ag_etf_etpmag_holding',  # macro_d: ETPMAG:白银:持仓量(吨)
+    'S006955778': 'ag_etf_phag_holding',  # macro_d: PHAG:白银:持仓量(吨)
+    'S006955772': 'ag_etf_sivr_holding',  # used in prod; macro_d: SIVR:白银:持仓价值
+    'G002601505': '标准普尔500波动率指数vix',  # macro_d: 标准普尔500波动率指数(VIX)
+    'G003082139': 'cboe_认沽_认购比率_波动率指数vix',  # macro_d: CBOE:认沽/认购比率:波动率指数(VIX)
+    'G003082171': 'cboe_尾对冲指数vxth_收盘',  # macro_d: CBOE:尾对冲指数(VXTH):收盘
+    'L001618809': '银行间国债到期收益率_30年',  # macro_d: 银行间国债到期收益率:30年
+    'L004162230': '银行间政策性金融债收益率曲线国开行_1年',  # macro_d: 银行间政策性金融债收益率曲线(国开行):1年
+    'L004162231': '银行间政策性金融债收益率曲线国开行_2年',  # macro_d: 银行间政策性金融债收益率曲线(国开行):2年
+    'L004162234': '银行间政策性金融债收益率曲线国开行_5年',  # macro_d: 银行间政策性金融债收益率曲线(国开行):5年
+    'L004162238': '银行间政策性金融债收益率曲线国开行_10年',  # macro_d: 银行间政策性金融债收益率曲线(国开行):10年
+    'L004162241': '银行间政策性金融债收益率曲线国开行_30年',  # macro_d: 银行间政策性金融债收益率曲线(国开行):30年
+    'L004366607': 'usd_cny外汇掉期曲线_3m',  # macro_d: USD/CNY外汇掉期曲线:3M
+    'L004366612': 'usd_cny外汇掉期曲线_1y',  # macro_d: USD/CNY外汇掉期曲线:1Y
+    'M001622302': '规模以上工业增加值_当月同比',  # macro_m: 规模以上工业增加值:当月同比
+    'M002808932': '出口总值美元计价_当月同比',  # macro_m: 出口总值(美元计价):当月同比
+    'M002808933': '进口总值美元计价_当月同比',  # macro_m: 进口总值(美元计价):当月同比
+    'M002845716': '上证50指数',  # macro_d: 上证50指数
+    'M002859231': '金融机构_人民币贷款_当月增加_住户_短期',  # macro_m: 金融机构:人民币贷款:当月增加:住户:短期
+    'M002859232': '金融机构_人民币贷款_当月增加_住户_中长期',  # macro_m: 金融机构:人民币贷款:当月增加:住户:中长期
+    'M002859234': '金融机构_人民币贷款_当月增加_企事业单位_短期贷款',  # macro_m: 金融机构:人民币贷款:当月增加:企(事)业单位:短期贷款
+    'M002859235': '金融机构_人民币贷款_当月增加_企事业单位_中长期贷款',  # macro_m: 金融机构:人民币贷款:当月增加:企(事)业单位:中长期贷款
+    'M002917567': '社会融资规模增量_人民币贷款_当月值',  # macro_m: 社会融资规模增量:人民币贷款:当月值
+    'M003146166': '金融机构_新增人民币贷款_中长期贷款_当月值',  # macro_m: 金融机构:新增人民币贷款:中长期贷款:当月值
+    'M003146168': '全社会用电量_工业用电量_当月值',  # macro_m: 全社会用电量:工业用电量:当月值
+    'M004103409': 'gdp_现价_当季值',  # macro_m: GDP:现价:当季值
+    'M004323982': '社会融资规模存量_人民币贷款_期末值',  # macro_m: 社会融资规模存量:人民币贷款:期末值
+    'M004323990': '社会融资规模存量_人民币贷款_期末同比',  # macro_m: 社会融资规模存量:人民币贷款:期末同比
+    'M004734589': '社会融资规模存量_企业债券_期末值',  # macro_m: 社会融资规模存量:企业债券:期末值
+    'M004734590': '社会融资规模存量_企业债券_期末同比',  # macro_m: 社会融资规模存量:企业债券:期末同比
+    'M004891020': '社会融资规模存量_期末值',  # macro_m: 社会融资规模存量:期末值
+    'M004891021': '社会融资规模存量_期末同比',  # macro_m: 社会融资规模存量:期末同比
+    'M012370785': '社会融资规模存量_人民币贷款_初值',  # macro_m: 社会融资规模存量:人民币贷款:初值
+    'M013284221': 'gdp_初步核算数_当季值',  # macro_m: GDP:初步核算数:当季值
+    'S000001489': '仓单数量_强筋小麦',  # warrant_d: 仓单数量:强筋小麦
+    'S000001495': '有效仓单预报_强筋小麦_小计',  # warrant_d: 有效仓单预报:强筋小麦:小计
+    'S000025477': '现货均价_1_锌_长江有色',  # base_d: 现货均价:1#锌:长江有色
+    'S000025548': '上海黄金交易所_收盘价_白银_agt_plus_d',  # base_d: 上海黄金交易所:收盘价:白银:Ag(T+D)
+    'S000025556': '伦敦现货黄金_美元',  # base_d: 伦敦现货黄金:美元
+    'S000025559': '伦敦现货白银_美元',  # base_d: 伦敦现货白银:美元
+    'S000042897': 'ccfi_综合指数',  # const_d: CCFI:综合指数
+    'S000042906': 'ccfi_欧洲航线',  # const_d: CCFI:欧洲航线
+    'S000047990': '商品房销售面积_累计值',  # macro_m: 商品房销售面积:累计值
+    'S000047991': '商品房销售面积_住宅_累计值',  # macro_m: 商品房销售面积:住宅:累计值
+    'S002835927': '电石_华中_主流均价',  # ferrous_d: 电石:华中:主流均价
+    'S002836134': 'l_lldpe_cfr_sea',  # petchem_d: LLDPE(丁烯基):东南亚:CFR主流价
+    'S002836137': 'l_lldpe_cfr_cn',  # petchem_d: LLDPE(丁烯基):中国:CFR主流价
+    'S002836848': '电石_华北_主流均价',  # ferrous_d: 电石:华北:主流均价
+    'S002858879': '京唐港_库提价含税_澳大利亚_主焦煤',  # ferrous_d: 京唐港:库提价(含税):澳大利亚:主焦煤
+    'S002859811': '热轧_4_75热轧板卷_全国均价',  # ferrous_d: 热轧:4.75热轧板卷:全国均价
+    'S002860878': '市场价_螺纹钢_hrb400e_20mm_全国均价',  # ferrous_d: 市场价:螺纹钢:HRB400E 20MM:全国均价
+    'S002865585': '现货含税均价_1_锌锭zn99_99_上海有色',  # base_d: 现货含税均价:1#锌锭(Zn99.99):上海有色
+    'S002865596': '现货均价含税_1_银99_99pct',  # base_d: 现货均价(含税):1#银(99.99%)
+    'S002865601': '现货均价含税_金99_95pct',  # base_d: 现货均价(含税):金(99.95%)
+    'S002865602': '现货均价含税_金99_99pct',  # base_d: 现货均价(含税):金(99.99%)
+    'S002865711': '现货均价_1_电解铜_广东南储华南',  # base_d: 现货均价:1#电解铜:广东南储(华南)
+    'S002882887': '铁矿石国际运价_理查德兹_萨尔达尼亚_中国海岬型',  # ferrous_d: 铁矿石国际运价:理查德兹/萨尔达尼亚-中国(海岬型)
+    'S002882893': '铁矿石国际运价_纽卡斯尔_中国海岬型',  # ferrous_d: 铁矿石国际运价:纽卡斯尔-中国(海岬型)
+    'S002882896': '铁矿石国际运价_西澳大利亚丹皮尔_青岛海岬型',  # ferrous_d: 铁矿石国际运价:西澳大利亚丹皮尔-青岛(海岬型)
+    'S002882897': '铁矿石国际运价_图巴朗_青岛海岬型',  # ferrous_d: 铁矿石国际运价:图巴朗-青岛(海岬型)
+    'S002883659': '环渤海动力煤_综合平均价格5500k',  # const_d: 环渤海动力煤:综合平均价格(5500K)
+    'S002883666': '环渤海动力煤价格_秦皇岛5500k',  # const_d: 环渤海动力煤价格:秦皇岛(5500K)
+    'S002916792': '商品房销售面积_累计同比',  # macro_m: 商品房销售面积:累计同比
+    'S002933708': '库存_铜_上海_合计',  # base_w: 库存:铜:上海:合计
+    'S002933710': '库存_铜_完税总计',  # base_w: 库存:铜:完税总计
+    'S002933720': '库存_铝_总计',  # base_w: 库存:铝:总计
+    'S002933746': '库存_锌_总计',  # base_w: 库存:锌:总计
+    'S002933764': '库存_铅_总计',  # base_w: 库存:铅:总计
+    'S002950206': '车板价_含税_进口铁矿石61_5pct_pb粉_日照港',  # ferrous_d: 车板价:含税:进口铁矿石(61.5%,PB粉):日照港
+    'S002950528': 'eg_shpc_exw',  # petchem_d: 出厂价:乙二醇:上海石化
+    'S002955440': 'eb_cfr_tw',  # petchem_d: 现货价:苯乙烯:中国台湾:到岸主流价
+    'S002955446': 'eb_cfr_sea',  # petchem_d: 现货价:苯乙烯:东南亚:到岸主流价
+    'S002956389': '含税价_兰炭中料_固定碳_84pct_神木',  # ferrous_d: 含税价:兰炭(中料):固定碳≥84%:神木
+    'S002959574': '天津航运指数tsi',  # const_d: 天津航运指数(TSI)
+    'S002966141': '出厂价_电石_陕西神木县昌明',  # ferrous_d: 出厂价:电石:陕西神木县昌明
+    'S002981537': '现货含税均价_湿法铜cu_ag_99_95pct_上海有色',  # base_d: 现货含税均价:湿法铜(Cu_Ag>=99.95%):上海有色
+    'S002981538': '现货含税均价_贵溪铜cu_ag_99_95pct_上海有色',  # base_d: 现货含税均价:贵溪铜(Cu_Ag>=99.95%):上海有色
+    'S002981543': '现货含税均价_平水铜cu_ag_99_95pct_上海有色',  # base_d: 现货含税均价:平水铜(Cu_Ag>=99.95%):上海有色
+    'S003008289': '开工率_pta_全国',  # petchem_w: 开工率:PTA:全国
+    'S003008291': '开工率_织机_江浙地区',  # petchem_w: 开工率:织机:江浙地区
+    'S003011277': '市场价_mtbe_华东',  # petchem_d: 市场价:MTBE:华东
+    'S003011278': '市场价_mtbe_华南',  # petchem_d: 市场价:MTBE:华南
+    'S003048725': '现货升贴水_湿法铜cu_ag_99_95pct_上海有色',  # base_d: 现货升贴水:湿法铜(Cu_Ag>=99.95%):上海有色
+    'S003048726': '现货升贴水_贵溪铜cu_ag_99_95pct_上海有色',  # base_d: 现货升贴水:贵溪铜(Cu_Ag>=99.95%):上海有色
+    'S003131240': '市场价不含税_氧化锰矿_广西_mn30fe10p双零块',  # ferrous_d: 市场价(不含税):氧化锰矿:广西:Mn30Fe10P双零块
+    'S003131312': '市场价不含税_富锰渣_mn28pct_广西',  # ferrous_d: 市场价(不含税):富锰渣:Mn28%:广西
+    'S003131313': '市场价不含税_富锰渣_mn30pct_广西',  # ferrous_d: 市场价(不含税):富锰渣:Mn30%:广西
+    'S003131357': '锰矿_库存_合计',  # base_w: 锰矿:库存:合计
+    'S003157687': 'l_7042_qilu_zibo',  # petchem_d: 主流价:LLDPE(7042,薄膜,齐鲁石化):淄博
+    'S003157729': 'l_7042_jilin_hz',  # petchem_d: 主流价:LLDPE(7042,薄膜,吉林石化):杭州
+    'S003164365': '仓单数量_铜_完税总计',  # warrant_d: 仓单数量:铜:完税总计
+    'S003164385': '仓单数量_铝_完税总计',  # warrant_d: 仓单数量:铝:完税总计
+    'S003276468': '天津港_平仓价格含税_准一级冶金焦a_12_5_s_0_7_csr_60_mt8_山西',  # ferrous_d: 天津港:平仓价格(含税):准一级冶金焦(A<12.5,S<0.7,CSR>60,Mt8):山西
+    'S003277863': '仓单数量_早籼稻',  # warrant_d: 仓单数量:早籼稻
+    'S003278183': '有效仓单预报_早籼稻_小计',  # warrant_d: 有效仓单预报:早籼稻:小计
+    'S003281517': '全国_房地产施工面积_合计_累计值',  # macro_m: 全国:房地产施工面积:合计:累计值
+    'S003281522': '全国_房地产新开工面积_合计_累计值',  # macro_m: 全国:房地产新开工面积:合计:累计值
+    'S003281527': '全国_房地产竣工面积_合计_累计值',  # macro_m: 全国:房地产竣工面积:合计:累计值
+    'S003560513': '开工率_涤纶长丝_江浙地区',  # petchem_w: 开工率:涤纶长丝:江浙地区
+    'S003560514': '开工率_涤纶短纤_全国',  # petchem_w: 开工率:涤纶短纤:全国
+    'S003563054': '现货均价_1_电解铜_广东南储华东',  # base_d: 现货均价:1#电解铜:广东南储(华东)
+    'S003809462': '镍矿_港口库存_总计',  # base_w: 镍矿:港口库存:总计
+    'S003852932': '库存_comex_铜_合计_注册',  # base_d: 库存:COMEX:铜:合计:注册
+    'S003852933': '库存_comex_铜_合计_未注册',  # base_d: 库存:COMEX:铜:合计:未注册
+    'S003853061': '上海船舶价格指数spi',  # const_d: 上海船舶价格指数(SPI)
+    'S004018816': '铁矿石_澳洲发货量',  # ferrous_w: 铁矿石:澳洲发货量
+    'S004018822': '铁矿石_澳洲发货量_至中国',  # ferrous_w: 铁矿石:澳洲发货量:至中国
+    'S004018831': '铁矿石_巴西发货量',  # ferrous_w: 铁矿石:巴西发货量
+    'S004018842': '铁矿石_中国到港量_北方六港',  # ferrous_w: 铁矿石:中国到港量:北方六港
+    'S004077496': '现货基准价_烧碱32pct离子膜碱_山东',  # petchem_d: 现货基准价:烧碱(32%离子膜碱):山东
+    'S004077608': '到厂含税价_中间价_预焙阳极国标_山东',  # base_d: 到厂含税价:中间价:预焙阳极(国标):山东
+    'S004077746': '中间价_a0_1氧化铝al2o3_98_6pct_连云港',  # base_d: 中间价:A0-1氧化铝(AL2O3≥98.6%):连云港
+    'S004077839': '含税现货矿山价_铝土矿_三门峡al_55_60pct_si_12_13pct',  # base_d: 含税现货矿山价:铝土矿:三门峡(Al:55-60%,Si:12-13%)
+    'S004077840': '含税现货矿山价_铝土矿_阳泉al_si_4_5',  # base_d: 含税现货矿山价:铝土矿:阳泉(Al:Si=4.5)
+    'S004077841': '含税现货矿山价_铝土矿_贵阳al_60_65pct_si_9_11pct',  # base_d: 含税现货矿山价:铝土矿:贵阳(Al:60-65%,Si:9-11%)
+    'S004077856': '到厂价_铅精矿_济源50pct',  # base_d: 到厂价:铅精矿:济源50%
+    'S004077857': '到厂价_铅精矿_郴州50pct',  # base_d: 到厂价:铅精矿:郴州50%
+    'S004077858': '到厂价_铅精矿_个旧50pct',  # base_d: 到厂价:铅精矿:个旧50%
+    'S004077859': '车板价_铅精矿_凉山50pct',  # base_d: 车板价:铅精矿:凉山50%
+    'S004077860': '车板价_铅精矿_昆明50pct',  # base_d: 车板价:铅精矿:昆明50%
+    'S004077861': '车板价_铅精矿_宝鸡50pct',  # base_d: 车板价:铅精矿:宝鸡50%
+    'S004110574': 'idx_30大中城市_商品房成交面积',  # macro_d: 30大中城市:商品房成交面积
+    'S004157509': '出厂价_pvc_大连商品交易所_sg_5',  # ferrous_d: 出厂价:PVC:大连商品交易所:SG-5
+    'S004161916': '主流价_丁苯橡胶1502吉林石化_江苏',  # petchem_d: 主流价:丁苯橡胶(1502吉林石化):江苏
+    'S004161931': '主流价_丁苯橡胶1502齐鲁石化_山东',  # petchem_d: 主流价:丁苯橡胶(1502齐鲁石化):山东
+    'S004163697': '市场价_沥青sbs改性沥青_山东',  # petchem_d: 市场价:沥青(SBS改性沥青):山东
+    'S004163708': '市场价_沥青建筑沥青_山东',  # petchem_d: 市场价:沥青(建筑沥青):山东
+    'S004226162': '进口矿_烧结粉矿_总日耗',  # ferrous_w: 进口矿:烧结粉矿:总日耗
+    'S004226164': '国产矿_烧结粉矿_总日耗',  # ferrous_w: 国产矿:烧结粉矿:总日耗
+    'S004227265': '平均价_氧化铝_全国',  # base_d: 平均价:氧化铝:全国
+    'S004227268': '平均价_氧化铝_河南',  # base_d: 平均价:氧化铝:河南
+    'S004227274': '平均价_氧化铝_山西',  # base_d: 平均价:氧化铝:山西
+    'S004227277': '平均价_氧化铝_广西',  # base_d: 平均价:氧化铝:广西
+    'S004227280': '平均价_氧化铝_贵州',  # base_d: 平均价:氧化铝:贵州
+    'S004242733': '平均价_1_铜_长江有色',  # base_d: 平均价:1#铜:长江有色
+    'S004242750': '平均价_a00铝_上海',  # base_d: 平均价:A00铝:上海
+    'S004242751': '平均价_a00铝_长江有色',  # base_d: 平均价:A00铝:长江有色
+    'S004242813': '平均价_1_镍_长江有色',  # base_d: 平均价:1#镍:长江有色
+    'S004248145': 'cicfi_综合指数',  # const_d: CICFI:综合指数
+    'S004248146': 'cicfi_欧洲航线',  # const_d: CICFI:欧洲航线
+    'S004248148': 'cicfi_美西航线',  # const_d: CICFI:美西航线
+    'S004321828': 'ru_scrwf_sh',  # petchem_d: 天然橡胶:全乳胶(SCRWF):上海:主流价
+    'S004369292': '天津港_平仓价格_准一级冶金焦a_13pct_s_0_70pct_mt_7pct_csr_60_山西',  # ferrous_d: 天津港:平仓价格:准一级冶金焦(A<13%,S<0.70%,Mt<7%,CSR>60):山西
+    'S004369601': '水泥价格指数_全国',  # const_d: 水泥价格指数:全国
+    'S004369602': '水泥价格指数_华东',  # const_d: 水泥价格指数:华东
+    'S004382952': '库存_原油变化_实际值',  # petchem_w: 库存:原油变化:实际值
+    'S004414102': 'pp_t30s_daqing_exw',  # petchem_d: 企业出厂价:聚丙烯PP:T30S:大庆炼化
+    'S004414126': 'pp_t30s_daqing_east',  # petchem_d: 企业出厂价:聚丙烯PP:T30S/大庆炼化:中油华东
+    'S004414755': 'pp_t30s_shaoxing_hz',  # used in prod; petchem_d: 国内市场价:PP(T30S):杭州:绍兴三圆
+    'S004414841': 'eb_cfr_cn_mid',  # petchem_d: 国际市场价:苯乙烯:CFR中国:中间价
+    'S004425304': '港口均价_平仓价格含税_一级冶金焦a12_5_s0_65_csr65_mt7',  # const_d: 港口均价:平仓价格(含税):一级冶金焦(A12.5,S0.65,CSR65,MT7)
+    'S004630825': '铜精矿_现货_精炼费rc',  # base_d: 铜精矿:现货:精炼费(RC)
+    'S004785206': '现货价_304_2b卷_切边_无锡',  # base_d: 现货价:304/2B卷:切边:无锡
+    'S004785207': '现货价_304_no_1卷_无锡',  # base_d: 现货价:304/No.1卷:无锡
+    'S004807554': 'sp_silver_sd',  # petchem_d: 市场价:针叶浆(银星):山东地区:主流价
+    'S004807572': 'sp_silver_jzh',  # petchem_d: 市场价:针叶浆(银星):江浙沪地区:主流价
+    'S004808173': 'sp_silver_cfr',  # petchem_d: 国际市场价(CFR):针叶浆:银星
+    'S004812255': 'nr_str20_mix_qd_bonded',  # petchem_d: 天然橡胶:泰国20#复合胶(STR20,MIX,现货):青岛保税区:主流价
+    'S004869812': '开工率_聚氯乙烯pvc',  # petchem_w: 开工率:聚氯乙烯(PVC)
+    'S004869813': '开工率_聚氯乙烯pvc_电石法',  # petchem_w: 开工率:聚氯乙烯(PVC):电石法
+    'S004869814': '开工率_聚氯乙烯pvc_乙烯法',  # petchem_w: 开工率:聚氯乙烯(PVC):乙烯法
+    'S005068100': '平均价_a00铝锭99_7pct_华东',  # base_d2: 平均价:A00铝锭(99.7%):华东
+    'S005068154': '平均价_硫酸镍21_8pct_全国',  # base_d2: 平均价:硫酸镍(21.8%):全国
+    'S005068163': '平均价_1_电解镍99_9pct_上海',  # base_d2: 平均价:1#电解镍(99.9%):上海
+    'S005068166': '平均价_俄镍_上海',  # base_d2: 平均价:俄镍:上海
+    'S005068172': '平均价_金川镍_上海',  # base_d2: 平均价:金川镍:上海
+    'S005068178': '平均价_金川镍出厂价99_96pct_上海',  # base_d2: 平均价:金川镍出厂价(99.96%):上海
+    'S005068190': '平均价_镍铁7_10pct_全国',  # base_d2: 平均价:镍铁(7-10%):全国
+    'S005068196': '平均价_镍铁8_10pct_内蒙古',  # base_d2: 平均价:镍铁(8-10%):内蒙古
+    'S005068199': '平均价_镍豆99_93pct_99_94pct_上海',  # base_d2: 平均价:镍豆(99.93%-99.94%):上海
+    'S005068301': '平均价_无氧铜杆8mm_全国',  # base_d2: 平均价:无氧铜杆(8mm):全国
+    'S005068304': '平均价_无氧铜丝3mm_全国',  # base_d2: 平均价:无氧铜丝(3mm):全国
+    'S005068340': '平均价_升水铜升贴水_上海',  # base_d2: 平均价:升水铜升贴水:上海
+    'S005068343': '平均价_平水铜升贴水_上海',  # base_d2: 平均价:平水铜升贴水:上海
+    'S005068346': '平均价_差铜升贴水_上海',  # base_d2: 平均价:差铜升贴水:上海
+    'S005068349': '平均价_1_电解铜_99_95pct_上海',  # base_d2: 平均价:1#电解铜(≥99.95%):上海
+    'S005068352': '平均价_1_电解铜升贴水_99_95pct_上海',  # base_d2: 平均价:1#电解铜升贴水(≥99.95%):上海
+    'S005068394': '平均价_1_锡99_9pct_华东',  # base_d2: 平均价:1#锡(99.9%):华东
+    'S005068412': '平均价_0_锌锭99_995pct_上海',  # base_d2: 平均价:0#锌锭(99.995%):上海
+    'S005068418': '平均价_氧化锌99_7pct_全国',  # base_d2: 平均价:氧化锌(99.7%):全国
+    'S005068430': '平均价_进口锌_上海',  # base_d2: 平均价:进口锌:上海
+    'S005363047': '上海有色_库存_电解铝_总计',  # base_w: 上海有色:库存:电解铝:总计
+    'S005402570': 'cement_spot_cn',  # const_d: 现货价:水泥
+    'S005429350': '车板价_含税_进口铁矿石金布巴粉60_5pct_bhp_青岛港',  # const_d: 车板价:含税:进口铁矿石(金布巴粉60.5%,BHP):青岛港
+    'S005439581': '开工率_eps',  # petchem_w: 开工率:EPS
+    'S005439582': '开工率_ps',  # petchem_w: 开工率:PS
+    'S005439583': '开工率_abs',  # petchem_w: 开工率:ABS
+    'S005439588': '企业库存_纯碱轻质_全国',  # const_d: 企业库存:纯碱(轻质):全国
+    'S005439590': '企业库存_纯碱重质_全国',  # const_d: 企业库存:纯碱(重质):全国
+    'S005450018': '仓单数量_燃料油_总计',  # warrant_d: 仓单数量:燃料油:总计
+    'S005470484': '国内市场价_玻璃5_0mm_华东',  # const_d: 国内市场价:玻璃(5.0mm):华东
+    'S005476605': '仓单数量_动力煤',  # warrant_d: 仓单数量:动力煤
+    'S005532616': '仓单数量_晚籼稻',  # warrant_d: 仓单数量:晚籼稻
+    'S005532618': '仓单数量_粳稻',  # warrant_d: 仓单数量:粳稻
+    'S005532622': '有效仓单预报_晚籼稻_小计',  # warrant_d: 有效仓单预报:晚籼稻:小计
+    'S005532623': '有效仓单预报_粳稻_小计',  # warrant_d: 有效仓单预报:粳稻:小计
+    'S005580356': '库存_镍_合计',  # base_w: 库存:镍:合计
+    'S005580375': '库存_锡_合计',  # base_w: 库存:锡:合计
+    'S005580617': '钢厂库存_涂镀钢厂_镀锌板卷_全国',  # ferrous_w: 钢厂库存:涂镀钢厂:镀锌板卷:全国
+    'S005580618': '钢厂库存_涂镀钢厂_彩涂板卷_全国',  # ferrous_w: 钢厂库存:涂镀钢厂:彩涂板卷:全国
+    'S005580637': '社会库存_镀锌板卷',  # ferrous_w: 社会库存:镀锌板卷
+    'S005580638': '社会库存_彩涂板卷',  # ferrous_w: 社会库存:彩涂板卷
+    'S005580644': '总库存_镀锌板卷',  # ferrous_w: 总库存:镀锌板卷
+    'S005580645': '总库存_彩涂板卷',  # ferrous_w: 总库存:彩涂板卷
+    'S005696262': '浮法玻璃_生产线条数剔除僵尸产线_合计_当周值',  # const_d: 浮法玻璃:生产线条数(剔除僵尸产线):合计:当周值
+    'S005696263': '浮法玻璃_生产线条数剔除僵尸产线_在产_当周值',  # const_d: 浮法玻璃:生产线条数(剔除僵尸产线):在产:当周值
+    'S005814718': '库存_螺纹钢35城市',  # ferrous_w: 库存:螺纹钢(35城市)
+    'S005949692': '国内市场价_玻璃5_0mm_全国均价',  # const_d: 国内市场价:玻璃(5.0mm):全国均价
+    'S006154239': '开工率_独立电弧炉钢厂_全国',  # ferrous_w: 开工率:独立电弧炉钢厂:全国
+    'S006154248': 'eaf_util_all',  # used in prod; ferrous_w: 产能利用率:电炉钢厂:全国
+    'S006154249': '开工率_电炉钢厂_全国',  # ferrous_w: 开工率:电炉钢厂:全国
+    'S006157950': '平均价_tc指数_铜精矿_当周值_上海有色',  # base_w: 平均价:TC指数:铜精矿:当周值:上海有色
+    'S006158933': '平均价_锰矿加蓬mn44pct_钦州港',  # ferrous_d: 平均价:锰矿(加蓬Mn44%):钦州港
+    'S006159859': '平均价_加工费_zamak3锌合金_广东_当周值_上海有色',  # base_w: 平均价:加工费:Zamak3锌合金:广东:当周值:上海有色
+    'S006159865': '平均价_加工费_zamak3锌合金_浙江_当周值_上海有色',  # base_w: 平均价:加工费:Zamak3锌合金:浙江:当周值:上海有色
+    'S006159871': '平均价_加工费_zamak3锌合金_江苏_当周值_上海有色',  # base_w: 平均价:加工费:Zamak3锌合金:江苏:当周值:上海有色
+    'S006159877': '平均价_加工费_zamak3锌合金_福建_当周值_上海有色',  # base_w: 平均价:加工费:Zamak3锌合金:福建:当周值:上海有色
+    'S006404825': '仓单数量_粳米',  # warrant_d: 仓单数量:粳米
+    'S006574701': '在港船舶数_铁矿石_总计',  # ferrous_w: 在港船舶数:铁矿石:总计
+    'S006574742': '平仓含税价_准一级冶金焦_a13_s0_7_csr60_mt7_沫7_青岛港_山西产',  # const_d: 平仓含税价:准一级冶金焦:A13,S0.7,CSR60,MT7,沫7:青岛港:山西产
+    'S006731716': 'propane_cfr_south',  # used in prod; petchem_d: 现货价:丙烷(冷冻货):华南:到岸价(CFR)
+    'S006731717': 'butane_cfr_south',  # petchem_d: 现货价:丁烷(冷冻货):华南:到岸价(CFR)
+    'S006731718': 'propane_cfr_east',  # petchem_d: 现货价:丙烷(冷冻货):华东:到岸价(CFR)
+    'S006731719': 'butane_cfr_east',  # petchem_d: 现货价:丁烷(冷冻货):华东:到岸价(CFR)
+    'S006731720': 'propane_cfr_tw',  # petchem_d: 现货价:丙烷(冷冻货):中国台湾:到岸价(CFR)
+    'S006731721': 'butane_cfr_tw',  # petchem_d: 现货价:丁烷(冷冻货):中国台湾:到岸价(CFR)
+    'S006731733': 'propane_discount_me_fob',  # petchem_d: 离岸贴水:丙烷(冷冻货):中东
+    'S006731735': 'propane_prem_jp_cfr',  # petchem_d: 到岸贴水:丙烷(冷冻货):日本
+    'S006731739': 'propane_prem_south_cfr',  # petchem_d: 到岸贴水:丙烷(冷冻货):华南
+    'S006731741': 'propane_prem_east_cfr',  # petchem_d: 到岸贴水:丙烷(冷冻货):华东
+    'S007756870': '主要航线即期运价_综合运价',  # const_d: 主要航线即期运价:综合运价
+    'S007756871': '主要航线即期运价_上海_鹿特丹',  # const_d: 主要航线即期运价:上海-鹿特丹
+    'S007756874': '主要航线即期运价_上海_洛杉矶',  # const_d: 主要航线即期运价:上海-洛杉矶
+    'S008211716': 'tci_天津_欧洲基本港',  # const_d: TCI:天津-欧洲基本港
+    'S008211719': 'tci_天津_美国西岸基本港',  # const_d: TCI:天津-美国西岸基本港
+    'S008546019': '平均价_废铜_国标低氧杆8mm含税_上海',  # base_d: 平均价:废铜:国标低氧杆(8mm)(含税):上海
+    'S008546020': '平均价_废铜_国标无氧杆8mm含税_上海',  # base_d: 平均价:废铜:国标无氧杆(8mm)(含税):上海
+    'S008618297': 'scfis_欧洲航线基本港',  # const_d: SCFIS:欧洲航线(基本港)
+    'S008618298': 'scfis_美西航线基本港',  # const_d: SCFIS:美西航线(基本港)
+    'S008618763': '库存_苯乙烯工厂库存_全国',  # petchem_w: 库存:苯乙烯(工厂库存):全国
+    'S008871808': '平均价_8mm无氧铜杆_南储广东',  # base_d: 平均价:8mm无氧铜杆:南储广东
+    'S008871811': '平均价_2_6mm无氧铜杆_南储广东',  # base_d: 平均价:2.6mm无氧铜杆:南储广东
+    'S009065254': 'cement_px_idx_yangtze',  # const_d: 中国水泥网:水泥价格指数:长江指数
+    'S009065264': 'cement_px_idx_cn',  # const_d: 中国水泥网:水泥价格指数:全国CEMPI
+    'S009137298': '平均价_硫酸镍_长江有色',  # base_d: 平均价:硫酸镍:长江有色
+    'S009138595': '库存量_原油_api_同比',  # petchem_w: 库存量:原油:API:同比
+    'S009200262': '平均价_镍豆升贴水',  # base_d: 平均价:镍豆升贴水
+    'S009222920': '仓单数量_黄金_总计',  # warrant_d: 仓单数量:黄金:总计
+    'S009621515': '平均价_加工费6063铝棒_江苏有色',  # base_d: 平均价:加工费(6063铝棒):江苏有色
+    'S009630097': '国内市场价_烧碱50pct离子膜碱_山东_主流价',  # petchem_d: 国内市场价:烧碱(50%离子膜碱):山东:主流价
+    'S011004429': 'eb_shandong_delivered',  # petchem_d: 市场价:苯乙烯(国标优级品):山东:主流价(送到)
+    'S011004432': 'eb_jiangsu_n1',  # petchem_d: 市场价:苯乙烯(江苏市场N+1):江苏:主流价
+    'S011004435': 'eb_jiangsu_n2',  # petchem_d: 市场价:苯乙烯(江苏市场N+2):江苏:主流价
+    'S011258003': '国产铝土矿_海漂量_总计',  # base_w: 国产铝土矿:海漂量:总计
+    'S011258007': '国产铝土矿_发运量_总计',  # base_w: 国产铝土矿:发运量:总计
+    'S011334532': '港口库存_锌精矿_合计_当周值',  # base_w: 港口库存:锌精矿:合计:当周值
+    'S012417638': 'TA_cfr_sea',  # petchem_d: 现货价(中间价):精对苯二甲酸(PTA):CFR东南亚
+    'S012691163': 'concrete_px_idx_cn',  # const_d: 混凝土价格指数:全国指数
+    'S012691166': 'concrete_px_idx_east',  # const_d: 混凝土价格指数:华东指数
+    'S012937595': '金属硅_社会库存_总计',  # base_w: 金属硅:社会库存:总计
+    'S013735402': '锡锭_社会库存_合计_当周值',  # base_w: 锡锭:社会库存:合计:当周值
+    'S016695728': 'eb_east_selfpickup',  # petchem_d: 市场价(中间价):苯乙烯(自提价):华东
+    'S016701640': 'eg_east_spot_mid',  # petchem_d: 市场价(中间价):乙二醇:华东
+    'S016702455': 'eg_cfr_nea',  # petchem_d: 国际市场价(中间价):乙二醇:东北亚:到岸价(CFR)
+    'S017209311': '玉米库存_广东港合计',  # ag_w: 玉米库存:广东港合计
+    'S017304503': 'nr_str20_usd_qd_bonded',  # petchem_d: 市场估价:天然橡胶:青岛保税区:STR20美金盘:均价
+    'S017438010': 'FG_weekly_melt',  # ferrous_w: 浮法玻璃:周熔量
+    'S018574405': '螺纹钢20mmhrb400_成本含税_江苏',  # ferrous_w: 螺纹钢(20mmHRB400):成本(含税):江苏
+    'S018791012': '社会库存_电解镍_镍豆_六地总计_当周值_上海有色',  # base_w: 社会库存:电解镍:镍豆:六地总计:当周值:上海有色
+    'S018857355': '油厂库存量_菜籽粕_总计',  # ag_w: 油厂库存量:菜籽粕:总计
+    'S019254955': '社会库存_天然橡胶_中国_期末值',  # petchem_w: 社会库存:天然橡胶:中国:期末值
+    'S019255552': '企业库存_光伏玻璃_当周值',  # const_d: 企业库存:光伏玻璃:当周值
+    'S019294884': 'SF_hesteel_purchase_px',  # ferrous_w: 采购价:硅铁:河钢
+    'S019294885': 'SM_hesteel_purchase_px',  # ferrous_w: 采购价:硅锰:河钢
+    'S019294886': 'SF_hesteel_purchase_qty',  # ferrous_w: 采购数量:硅铁:河钢
+    'S019294887': 'SM_hesteel_purchase_qty',  # ferrous_w: 采购数量:硅锰:河钢
+    'S019823083': '出口价黑海_波罗的海fob_板坯_独联体',  # ferrous_w: 出口价(黑海/波罗的海FOB):板坯:独联体
+    'S019833798': '企业库存样本_浮法玻璃_当周值',  # const_d: 企业库存(样本):浮法玻璃:当周值
+    'S019988718': 'ferroalloy_power_px_gansu',  # ferrous_w: 电价:甘肃:硅锰硅铁
+    'S019988719': 'ferroalloy_power_px_qinghai',  # ferrous_w: 电价:青海:硅锰硅铁
+    'S019988720': 'ferroalloy_power_px_ningxia',  # ferrous_w: 电价:宁夏:硅锰硅铁
+    'S019988722': 'ferroalloy_power_px_neimeng',  # ferrous_w: 电价:内蒙古:硅锰硅铁
+    'S019988726': 'ferroalloy_power_px_yunnan',  # ferrous_w: 电价:云南:硅锰硅铁
+    'S019988727': 'ferroalloy_power_px_guangxi',  # ferrous_w: 电价:广西:硅锰硅铁
+    'S020003109': '企业库存_烧碱_期末值',  # petchem_w: 企业库存:烧碱:期末值
+    'S020089266': '仓单数量_丁二烯橡胶_仓库_总计',  # warrant_d: 仓单数量:丁二烯橡胶:仓库:总计
+    'S020459829': '价差_烧碱_50_32_山东地区',  # petchem_d: 价差:烧碱:50-32:山东地区
+    'S023487508': '仓单数量_氧化铝_总计',  # warrant_d: 仓单数量:氧化铝:总计
 }
 
 mysteel_index_map = {
-    'ID01168763': 'cu_sinv_cn_d',
-    'ID01200757': 'cu_sinv_bonded_cn_d',
-    'ID02424817': 'cu_mkt_senti_idx_w',
-    'ID01245758': 'ps_util_cn_mth',
-    'ID01349545': 'lc_margin_cn_w',
-    'ID01736015': 'lc_inv_sale_cn_w',
-    'ID01835359': 'lc_margin_conc',
-    'ID01835361': 'lc_margin_lepi',
-    'ID01998696': 'ps_util_15mill_mth',
-    'ID02026458': 'ps_n_dense_prodcost_w',
-    'ID02032074': 'ps_inv_cn_w',
-    'ID02069937': 'lc_mine_inv_trader_w',
-    'ID02215004': 'lc_margin_carbonation',
-    'ID01490913': 'ni_sinv_27_cn',
-    'ID01532024': 'npi_import_profit_id_cn',
-    'ID00408153': 'ni_ore_1.5_php_cif', # '红土镍矿_1_5pctni_15_25pctfe_33_35pct含水_菲律宾产_cif汇总价格日'
-    'ID00408155': 'ni_ore_1.8_others_cif',
-    'ID00188314': 'ao_inv_ports_cn_w',  # 氧化铝_港口库存_中国周
-    'ID00188315': 'pb_ingot_sinv_cn_d',  # 铅锭_现货库存日
-    'ID01167269': 'pb_sec_reflector_profit',  # 再生铅_反射炉_利润日
-    'ID01167270': 'pb_sec_oxygen_blow_profit',  # 再生铅_富氧侧吹炉_利润日
-    'ID01167591': 'pb_sec_raw_inv_cn_w',  # 再生铅_原材料_库存周
-    'ID01167594': 'pb_sec_fg_inv_cn_w',  # 再生铅_成品库存周
-    'ID01517441': 'sn_sinv_cn_w',  # 锡锭_库存_中国周
-    'ID01721655': 'ao_minv_cn_ex_xj',  # 氧化铝_厂内库存_中国除新疆周
-    'ID01721691': 'ao_minv_cn',  # 氧化铝_厂内库存_中国_电解铝厂周
-    'ID01721692': 'ao_inv_in_transit_cn',  # 氧化铝_站台_在途库存_中国周
-    'ID01721697': 'ao_inv_total_cn',  # 氧化铝_库存_中国周
-
-    'ID01002311': 'io_invdays_mill(247)', # '铁矿_进口_库存消费比_247家钢铁企业周',
-    'ID00186001': 'io_invdays_mill(64)', #'铁矿_进口_平均可用天数_64家钢厂周',
-    'ID01037437': 'pbf_import_profit',
-    'RE00024794': 'jmb_import_profit',
-    'RE00024799': 'macf_import_profit',
-    'RE00024787': 'nmf_import_profit', #'纽曼粉_即期合约_现货落地利润日',
-    'ID01718576': 'jm_inv_523mines',
-    'ID01718581': 'jm_dprod_523mines',
-    'ID01718582': 'jm_raw_inv_523mines',
-    'ID01719869': 'jm_auction_rate_cn_d',
-    'ID01720310': 'jm_listed_cn_d',
-    'RE00024806': 'jm_import_throughput_gantimaodu',
-    'ID02069031': 'jm_inv_314washery',
-    'ID00184174': 'coke_senti_124cokery',  # '焦炭_124家独立焦化厂_市场情绪指数周'
-    'ID00184175': 'coke_senti_31mills',  # '焦炭_31家钢铁企业_市场情绪指数周'
-    'ID00184176': 'coke_senti_38mines',  # '焦炭_市场情绪指数_38家煤矿企业周'
-    'ID00184178': 'coke_senti_12traders',  # '焦炭_市场情绪指数_12家贸易商周'
-    'ID00184490': 'ckc_senti_31mill',  # '焦煤_31家钢铁企业_市场情绪指数周'
-    'ID00184492': 'ckc_senti_38mines',  # '焦煤_38家煤矿企业_市场情绪指数周'
-    'ID00184494': 'ckc_senti_14traders',  # '焦煤_14家贸易商_市场情绪指数周'
-    'ID00184497': 'ckc_senti_150cokery',  # '焦煤_150家独立焦化厂_市场情绪指数周'
-    'ID01011788': 'ckc_senti_10washery',  # '焦煤_样本洗煤厂10家_市场情绪指数周'
-    'ID01109378': 'coke_dprod_247mill', # '焦炭_247家钢铁企业_日均产量_中国周',
-    'ID00187978': 'coke_dprod_230cokery',  # '焦炭_230家独立焦化厂_日均产量_中国周',
+    'ID01168763': 'cu_sinv_cn_d',  # used in prod; metal: 电解铜：现货库存：中国（日）
+    'ID01200757': 'cu_sinv_bonded_cn_d',  # metal: 电解铜：现货库存：中国：保税区（日）
+    'ID02424817': 'cu_mkt_senti_idx_w',  # metal: 铜：市场情绪指数（周）
+    'ID01245758': 'ps_util_cn_mth',  # metal: 多晶硅：产能利用率：中国（月）
+    'ID01349545': 'lc_margin_cn_w',  # metal: 碳酸锂：生产毛利：中国（周）
+    'ID01736015': 'lc_inv_sale_cn_w',  # metal: 锂矿：可售库存：中国（周）
+    'ID01835359': 'lc_margin_conc',  # metal: 碳酸锂：原料：外采锂精矿：生产利润（日）
+    'ID01835361': 'lc_margin_lepi',  # metal: 碳酸锂：原料：外采锂云母：生产利润（日）
+    'ID01998696': 'ps_util_15mill_mth',  # metal: 多晶硅：15家样本企业：产能利用率：中国（月）
+    'ID02026458': 'ps_n_dense_prodcost_w',  # metal: 多晶硅：N型：致密料：生产成本（周）
+    'ID02032074': 'ps_inv_cn_w',  # metal: 多晶硅：库存：中国（周）
+    'ID02069937': 'lc_mine_inv_trader_w',  # metal: 锂矿：库存：贸易商（周）
+    'ID02215004': 'lc_margin_carbonation',  # metal: 碳酸锂：碳化法：生产利润（日）
+    'ID01490913': 'ni_sinv_27_cn',  # used in prod; metal: 精炼镍：库存：中国：27家样本仓库（周）
+    'ID01532024': 'npi_import_profit_id_cn',  # metal: 镍铁：印尼产：进口盈亏：中国（日）
+    'ID00408153': 'ni_ore_1.5_php_cif',  # metal: 红土镍矿：1.5%Ni，15-25%Fe，33-35%含水：菲律宾产：CIF汇总价格（日）
+    'ID00408155': 'ni_ore_1.8_others_cif',  # used in prod; metal: 红土镍矿：1.8%Ni，15-20%Fe，33-35%含水：其他国家产：CIF汇总价格（日）
+    'ID00188314': 'ao_inv_ports_cn_w',  # metal: 氧化铝：港口库存：中国（周）
+    'ID00188315': 'pb_ingot_sinv_cn_d',  # used in prod; metal: 铅锭：现货库存（日）
+    'ID01167269': 'pb_sec_reflector_profit',  # metal: 再生铅：反射炉：利润（日）
+    'ID01167270': 'pb_sec_oxygen_blow_profit',  # metal: 再生铅：富氧侧吹炉：利润（日）
+    'ID01167591': 'pb_sec_raw_inv_cn_w',  # metal: 再生铅：原材料：库存（周）
+    'ID01167594': 'pb_sec_fg_inv_cn_w',  # metal: 再生铅：成品库存（周）
+    'ID01517441': 'sn_sinv_cn_w',  # used in prod; metal: 锡锭：库存：中国（周）
+    'ID01721655': 'ao_minv_cn_ex_xj',  # metal: 氧化铝：厂内库存：中国（除新疆）（周）
+    'ID01721691': 'ao_minv_cn',  # metal: 氧化铝：厂内库存：中国：电解铝厂（周）
+    'ID01721692': 'ao_inv_in_transit_cn',  # metal: 氧化铝：站台/在途库存：中国（周）
+    'ID01721697': 'ao_inv_total_cn',  # used in prod; metal: 氧化铝：库存：中国（周）
+    'ID01002311': 'io_invdays_mill(247)',  # used in prod; metal: 铁矿：进口：库存消费比：247家钢铁企业（周）
+    'ID00186001': 'io_invdays_mill(64)',  # metal: 铁矿：进口：平均可用天数：64家钢厂（周）
+    'ID01037437': 'pbf_import_profit',  # used in prod; metal: PB粉：即期合约：现货落地利润（日）
+    'RE00024794': 'jmb_import_profit',  # metal: 金布巴粉：即期合约：现货落地利润（日）
+    'RE00024799': 'macf_import_profit',  # used in prod; metal: 麦克粉：即期合约：现货落地利润（日）
+    'RE00024787': 'nmf_import_profit',  # metal: 纽曼粉：即期合约：现货落地利润（日）
+    'ID00104205': 'ssf_qd',  # used in prod; metal: 超特粉：56.5%Fe：品牌价格：青岛港：FMG（日）
+    'ID00178979': 'br9000_yangzi_sh',  # petchem: 顺丁橡胶：BR9000：市场价：上海：扬子石化（日）
+    'ID00407482': 'br9000_qilu_sd',  # petchem: 顺丁橡胶：BR9000：市场价：山东：齐鲁石化（日）
+    'ID00003727': 'ss_304_2b_hongwang_wuxi',  # metal: 冷轧不锈板卷：304/2B：2*1240*C：市场价：无锡：宏旺（日）
+    'ID00102802': 'coke_sub_a_rz_haoyu',  # metal: 冶金焦：准一级：A＜13，S＜0.72，MT0，CSR＞60，CRI＜30：出厂价：日照：浩宇能源（日）
+    'ID00258827': 'SF_72_tj',  # metal: 硅铁：合格块：72%FeSi：市场价：天津（日）
+    'ID00399689': 'pvc_cac2_tj',  # metal: PVC：电石法：SG-5：市场价：天津（日）
+    'ID00399698': 'pvc_cac2_sh',  # metal: PVC：电石法：SG-5：市场价：上海（日）
+    'ID01199235': 'coke_sub_a_dry_lvliang_jinyan',  # metal: 冶金焦：准一级：A＜13，S＜0.75，MT＜1，CSR＞65：出厂价：吕梁：山西孝义金岩：金岩焦化（日）
+    'ID01892939': 'ckc_mongol5_ts',  # metal: 主焦煤：精煤：蒙5#：A＜10.5，V＜28，S＜0.75，G＞78，MT＜8，CSR＞60，岩相≤0.15：蒙古产：自提价：唐山（日）
+    'RE00035725': 'ckc_midsulfur_jiexiu_kaijia',  # metal: 主焦煤：中硫：A≤10.5，V≤25，S≤1.3，G≥80，Y≥14，MT≤8，CSR≥65，岩相＜0.15：介休产：采购指导价：晋中：凯嘉能源（日）
+    'ID01718576': 'jm_inv_523mines',  # used in prod; metal: 精煤：523家样本矿山：库存（周）
+    'ID01718581': 'jm_dprod_523mines',  # metal: 精煤：523家样本矿山：日均产量（周）
+    'ID01718582': 'jm_raw_inv_523mines',  # metal: 原煤：523家样本矿山：库存（周）
+    'ID01719869': 'jm_auction_rate_cn_d',  # used in prod; metal: 焦煤：竞拍成交率（日）
+    'ID01720310': 'jm_listed_cn_d',  # metal: 焦煤：挂牌量（日）
+    'RE00024806': 'jm_import_throughput_gantimaodu',  # metal: 煤炭：进口：蒙古产：通关量：甘其毛都口岸（日）
+    'ID02069031': 'jm_inv_314washery',  # metal: 精煤：样本洗煤厂（314家）：库存：中国（周）
+    'ID00184174': 'coke_senti_124cokery',  # used in prod; metal: 焦炭：124家独立焦化厂：市场情绪指数（周）
+    'ID00184175': 'coke_senti_31mills',  # metal: 焦炭：31家钢铁企业：市场情绪指数（周）
+    'ID00184176': 'coke_senti_38mines',  # used in prod; metal: 焦炭：市场情绪指数：38家煤矿企业（周）
+    'ID00184178': 'coke_senti_12traders',  # used in prod; metal: 焦炭：市场情绪指数：12家贸易商（周）
+    'ID01011788': 'ckc_senti_10washery',  # metal: 焦煤：样本洗煤厂（10家）：市场情绪指数（周）
+    'ID01109378': 'coke_dprod_247mill',  # used in prod; metal: 焦炭：247家钢铁企业：日均产量：中国（周）
+    'ID00187978': 'coke_dprod_230cokery',  # used in prod; metal: 焦炭：230家独立焦化厂：日均产量：中国（周）
+    'ID00112684': 'PX_cfr_tw_cny',  # petchem: PX：国际市场：CFR人民币价：台湾省（日）
+    'ID00112688': 'PX_cfr_tw_usd',  # petchem: PX：国际市场：CFR价：台湾省（日）
+    'ID00112716': 'PX_fob_kr_cny',  # petchem: PX：国际市场：FOB人民币价：人民币：韩国（日）
+    'ID00112728': 'PX_fob_kr_usd',  # petchem: PX：国际市场：FOB价：韩国（日）
+    'ID00112732': 'PX_fob_rotterdam_usd',  # petchem: PX：国际市场：FOB价：鹿特丹港（日）
+    'ID00115336': 'PX_sinopec_sh_settlement_east',  # petchem: PX：出厂结算价：华东地区：上海石化（日）
+    'ID00186597': 'io_spot_trade_volume_ports_w_ms',  # metal: 铁矿：现货日均成交量合计：贸易商：中国主要港口（周）
+    'ID00187013': 'io_trade_volume_ports_d_ms',  # metal: 铁矿：成交量合计：中国主要港口（日）
+    'ID00187443': 'ss_300_inv_wuxi_30_ms',  # metal: 不锈钢：300：30家样本企业：库存：无锡（周）
+    'ID00188061': 'OI_inv_east_w_ms',  # metal: 菜油：库存：华东地区（周）
+    'ID00188062': 'soybean_inv_ports_cn_w_ms',  # metal: 大豆：港口库存：中国（周）
+    'ID00188063': 'soybean_inv_crushers_111_w_ms',  # metal: 压榨厂：大豆：111家样本企业：库存：中国（周）
+    'ID00188064': 'm_inv_crushers_111_w_ms',  # metal: 压榨厂：豆粕：111家样本企业：库存：中国（周）
+    'ID00188065': 'y_inv_crushers_90_w_ms',  # metal: 压榨厂：豆油：90家样本企业：库存：中国（周）
+    'ID00188307': 'al_sinv_cn_d_ms',  # metal: 电解铝：现货库存：中国（日）
+    'ID00188359': 'pe_inv_social_cn_w_ms',  # metal: PE：社会库存：中国（周）
+    'ID00375008': 'pg_inv_mill_cn_w_ms',  # metal: 液化气：厂内库存：中国（周）
+    'ID00384633': 'ss_300_inv_foshan_14_ms',  # metal: 不锈钢：300：14家样本企业：库存：佛山（周）
+    'ID00394230': 'eg_east_spot_ms',  # petchem: MEG：市场价：华东地区（日）
+    'ID00408152': 'ni_ore_1.6_php_cif',  # metal: 红土镍矿：1.6%Ni，15-25%Fe，33-35%含水：菲律宾产：CIF汇总价格（日）
+    'ID01001977': 'MA_import_taicang_spot_ms',  # petchem: 甲醇：进口：市场价：太仓（日）
+    'ID01002072': 'al_inv_mill_cn_d_ms',  # metal: 电解铝：厂内库存：中国（日）
+    'ID01024124': 'MA_spot_ordos_south_ms',  # petchem: 甲醇：国标：市场价：鄂尔多斯南线（日）
+    'ID01027073': 'coal_inv_55ports_w_ms',  # metal: 动力煤：港口库存：55个港口（周）
+    'ID01030576': 'RM_inv_crushers_cn_w_ms',  # metal: 压榨厂：菜粕：库存：中国（周）
+    'ID01201815': 'RM_pellet_inv_nantong_w_ms',  # metal: 菜粕：颗粒：库存：南通（周）
+    'ID01207170': 'c_inv_4north_ports_w_ms',  # metal: 玉米：库存：北方四港（周）
+    'ID01214595': 'pp_inv_mill_cn_w_ms',  # metal: PP：生产企业：权益库存：中国（周）
+    'ID01216483': 'PK_inv_cn_w_ms',  # metal: 花生：库存：中国（周）
+    'ID01218647': 'MA_inv_ports_cn_w_ms',  # metal: 甲醇：港口库存：中国（周）
+    'ID01230664': 'PET_bottle_invdays_mill_cn_w_ms',  # metal: PET瓶片：厂内库存可用天数：中国（周）
+    'ID01232909': 'FG_inv_mill_shahe_w_ms',  # metal: 浮法玻璃：厂内库存：沙河（周）
+    'ID01301727': 'sp_inv_changshu_port_w_ms',  # metal: 纸浆：港口库存：常熟港（周）
+    'ID01301728': 'sp_inv_qingdao_port_w_ms',  # metal: 纸浆：港口库存：青岛港（周）
+    'ID01301853': 'c_inv_guangdong_ports_w_ms',  # metal: 玉米、谷物：库存：广东港（周）
+    'ID01369403': 'FG_inv_mill_hubei_w_ms',  # metal: 浮法玻璃：厂内库存：湖北（周）
+    'ID01370598': 'sp_inv_ports_cn_w_ms',  # metal: 纸浆：港口库存：中国（周）
+    'ID01388077': 'eg_sh_spot_ms',  # petchem: MEG：市场价：上海（日）
+    'ID01508544': 'RM_inv_south_w_ms',  # metal: 菜粕：库存：华南地区（周）
+    'ID01616600': 'MA_taicang_paper_lm_ms',  # petchem: 甲醇：进口：纸货交易：当月下旬：市场价：太仓（日）
+    'ID01616603': 'MA_taicang_paper_nm_ms',  # petchem: 甲醇：进口：纸货交易：次月下旬：市场价：太仓（日）
+    'ID01709994': 'soybean_inv_crushers_full_w_ms',  # metal: 压榨厂：大豆：全样本企业：库存：中国（周）
+    'ID01733105': 'bu_inv_social_104_cn_w_ms',  # metal: 沥青：104家样本企业：社会库存：中国（周）
+    'ID01862250': 'OI_inv_small_sample_cn_w_ms',  # metal: 菜油：小样本：库存：中国（周）
+    'ID01881060': 'softwood_log_inv_cn_w_ms',  # metal: 针叶原木：库存：中国（周）
+    'ID01891248': 'RM_inv_north_w_ms',  # metal: 菜粕：库存：华北地区（周）
+    'ID01897968': 'RM_inv_ports_cn_w_ms',  # metal: 菜粕：港口库存：中国（周）
+    'ID01990129': 'v_inv_social_large_cn_w_ms',  # metal: PVC：大样本：社会库存：中国（周）
+    'ID02343778': 'OI_inv_large_sample_cn_w_ms',  # metal: 菜油：大样本：库存：中国（周）
+    'RE00010184': 'eb_inv_commercial_js_w_ms',  # metal: 苯乙烯：商业库存：江苏（周）
+    'RE00010776': 'TA_feedstock_invdays_polyester_w_ms',  # metal: PTA：原料：中国聚酯工厂：库存可用天数（周）
+    'RE00033240': 'pe_inv_mill_cn_w_ms',  # metal: PE：生产企业：权益库存：中国（周）
 }
 
 
@@ -1073,12 +1257,12 @@ def adj_publish_time(spot_df):
         'rebar_inv_social', 'wirerod_inv_social', 'hrc_inv_social', 'crc_inv_social', 'plate_inv_social',
         'steel_inv_social', 'rebar_inv_all', 'rebar_prod_all', 'wirerod_prod_all', 'wirerod_inv_all',
         'hrc_prod_all', 'hrc_inv_all', 'crc_prod_all', 'crc_inv_all',
-        'fg_inv_mill',
+        'FG_inv_mill',
     ]
     shift_map = {0: -4, 1: -5, 2: -6, 3: 0, 4: -1, 5: -2, 6: -3}
     spot_df = data_wkday_adj(spot_df, col_list, shift_map=shift_map)
 
-    for col in ['sm_stockdays']:
+    for col in ['SM_stockdays']:
         if col in spot_df.columns:
             ts = spot_df[col].dropna()
             ts.index = ts.index - pd.Timedelta(days=7)
@@ -1149,7 +1333,8 @@ def process_spot_df(spot_df, adjust_time=False):
     spot_dict['cny_mid_dev1'] = spot_df['usdcny_spot'] - spot_df['usdcny_mid']
     spot_dict['cny_mid_dev2'] = spot_df['usdcny_spot2'] - spot_df['usdcny_mid']
     spot_dict['r_dr_7d_spd'] = spot_df['r007_cn'] - spot_df['dr007_cn']
-    spot_dict['shibor_3m_1y_spd'] = spot_df['shibor_3m'] - spot_df['shibor_1y']
+    if 'shibor_3m' in spot_df.columns and 'shibor_1y' in spot_df.columns:
+        spot_dict['shibor_3m_1y_spd'] = spot_df['shibor_3m'] - spot_df['shibor_1y']
 
     spot_dict['steel_inv_mill'] = spot_df['rebar_inv_mill'] + spot_df['wirerod_inv_mill'] + \
                                 spot_df['hrc_inv_mill'] + spot_df['crc_inv_mill'] #+ spot_df['plate_inv_mill']
@@ -1187,7 +1372,8 @@ def process_spot_df(spot_df, adjust_time=False):
     if 'coke_dprod_230cokery' in spot_df.columns and 'coke_dprod_247mill' in spot_df.columns:
         spot_dict['coke_dprod_total'] = spot_df['coke_dprod_230cokery'] + spot_df['coke_dprod_247mill']
     port_fee = 25
-    spot_dict['import_arb_pbf'] = vat_adj(spot_df['pbf_qd'] - port_fee)/spot_df['usdcnh_spot']/0.915 - spot_df['pbf_sb']
+    if 'pbf_sb' in spot_df.columns:
+        spot_dict['import_arb_pbf'] = vat_adj(spot_df['pbf_qd'] - port_fee)/spot_df['usdcnh_spot']/0.915 - spot_df['pbf_sb']
     spot_dict['import_arb_nmf'] = vat_adj(spot_df['nmf_qd'] - port_fee)/spot_df['usdcnh_spot']/0.917 - spot_df['nmf_sb']
     spot_dict['import_arb_macf'] = vat_adj(spot_df['macf_qd'] - port_fee)/spot_df['usdcnh_spot']/0.915 - spot_df['macf_sb']
     spot_dict['import_arb_jmb'] = vat_adj(spot_df['jmb_qd'] - port_fee)/spot_df['usdcnh_spot']/0.924 - spot_df['jmb_sb']
@@ -1195,14 +1381,14 @@ def process_spot_df(spot_df, adjust_time=False):
     spot_dict['import_arb_iocj'] = vat_adj(spot_df['iocj_qd'] - port_fee)/spot_df['usdcnh_spot']/0.915 - spot_df['iocj_sb']
     spot_dict['io_on_off_arb'] = vat_adj(spot_df['pbf_cfd'] - port_fee)/spot_df['usdcnh_spot']/0.915/61.5*62 - spot_df['plt62']
 
-    spot_dict['smsf_dmd_ratio'] = spot_df['sm_dmd_cn']/spot_df['sf_dmd_cn']
-    spot_dict['smsf_dprod_ratio'] = spot_df['sm_dprod_cn']/spot_df['sf_dprod_cn']
-    spot_dict['smsf_prod_ratio'] = spot_df['sm_prod_cn']/spot_df['sf_prod_cn']
-    spot_dict['sm_dmd_prod_ratio'] = spot_df['sm_dmd_cn']/spot_df['sm_prod_cn']
-    spot_dict['sf_dmd_prod_ratio'] = spot_df['sf_dmd_cn']/spot_df['sf_prod_cn']
-    spot_dict['smsf_workrate_ratio'] = spot_df['sm_workrate_cn']/spot_df['sf_workrate_cn']
-    spot_dict['smsf_margin_diff'] = spot_df["sm_margin_north"] - spot_df["sf_neimeng_margin"]
-    spot_dict['smsf_prodcost_diff'] = spot_df["sm_neimeng_cost"] - spot_df["sf_neimeng_cost"]
+    spot_dict['smsf_dmd_ratio'] = spot_df['SM_dmd_cn']/spot_df['SF_dmd_cn']
+    spot_dict['smsf_dprod_ratio'] = spot_df['SM_dprod_cn']/spot_df['SF_dprod_cn']
+    spot_dict['smsf_prod_ratio'] = spot_df['SM_prod_cn']/spot_df['SF_prod_cn']
+    spot_dict['sm_dmd_prod_ratio'] = spot_df['SM_dmd_cn']/spot_df['SM_prod_cn']
+    spot_dict['sf_dmd_prod_ratio'] = spot_df['SF_dmd_cn']/spot_df['SF_prod_cn']
+    spot_dict['smsf_workrate_ratio'] = spot_df['SM_workrate_cn']/spot_df['SF_workrate_cn']
+    spot_dict['smsf_margin_diff'] = spot_df["SM_margin_north"] - spot_df["SF_neimeng_margin"]
+    spot_dict['smsf_prodcost_diff'] = spot_df["SM_neimeng_cost"] - spot_df["SF_neimeng_cost"]
 
     spot_dict["zn_scrap_sh_mid"] = (spot_df["zn_scrap_sh_low"] + spot_df["zn_scrap_sh_high"])/2
     spot_dict["al_scrap_shredded_sh_mid"] = (spot_df["al_scrap_shredded_sh_low"] + spot_df["al_scrap_shredded_sh_high"])/2
@@ -1229,8 +1415,20 @@ def process_spot_df(spot_df, adjust_time=False):
         spot_dict['SH_50_32_spd'] =spot_df["SH_50_spot_sdjl_shandong"]/0.5 - spot_df["SH_32_spot_sdjl_shandong"]/0.32
 
     spot_dict['MX_inv_combo'] = spot_df[['MX_inv_east', 'MX_inv_south']].dropna(how='all').ffill().sum(axis=1)
-    if "pta_cfr_cn" in spot_df.columns and "pta_east_spot" in spot_df.columns and "usdcnh_spot" in spot_df.columns:
-        spot_dict['PTA_cfr_dom_ratio'] = np.log(spot_df['pta_cfr_cn']*spot_df['usdcnh_spot']/vat_adj(spot_df['pta_east_spot']))
+    if "TA_cfr_cn" in spot_df.columns and "TA_east_spot" in spot_df.columns and "usdcnh_spot" in spot_df.columns:
+        spot_dict['TA_cfr_dom_ratio'] = np.log(spot_df['TA_cfr_cn']*spot_df['usdcnh_spot']/vat_adj(spot_df['TA_east_spot']))
+    if "propane_cfr_south" in spot_df.columns and "usdcny_xe" in spot_df.columns:
+        # Screening proxy for a South-China imported-propane physical price.
+        # Port costs, financing, duty and inland freight remain unmodelled.
+        spot_dict['propane_cfr_south_cny_vat'] = (
+            spot_df['propane_cfr_south'] * spot_df['usdcny_xe'] * 1.13
+        )
+    if "fo_380cst_zhoushan" in spot_df.columns and "usdcny_xe" in spot_df.columns:
+        # The vendor quote is USD/t.  Convert currency for the FU carry proxy;
+        # bonded/domestic tax and storage adjustments still require validation.
+        spot_dict['fo_380cst_zhoushan_cny'] = (
+            spot_df['fo_380cst_zhoushan'] * spot_df['usdcny_xe']
+        )
 
     warrant_dict = {
         "cu": ["cu_inv_shfe_d"],
@@ -1290,8 +1488,10 @@ def process_spot_df(spot_df, adjust_time=False):
         "lu": ["lu_inv_ine_warrant"],
         "sc": ["sc_inv_ine_warrant"],
     }
-    for asset in warrant_dict:
-        spot_dict[f"{asset}_exch_warrant"] = spot_df[warrant_dict[asset]].dropna().sum(axis=1).dropna()
+    for asset, columns in warrant_dict.items():
+        columns = [column for column in columns if column in spot_df.columns]
+        if columns:
+            spot_dict[f"{asset}_exch_warrant"] = spot_df[columns].dropna().sum(axis=1).dropna()
 
     asset_pairs = [
         ("sw_sector_idx_prop", 'csi500_idx', 'prop_sw_csi500'),
@@ -1320,5 +1520,4 @@ def process_spot_df(spot_df, adjust_time=False):
         spot_dict[key + "_ret"] = asset_df['ret'].dropna()
         spot_dict[key + '_beta'] = asset_df['beta']
         spot_dict[key + '_val'] = asset_df['ret'].dropna().cumsum()
-    spot_df = pd.concat([spot_df, pd.DataFrame(spot_dict)], axis=1)
-    return spot_df
+    return pd.concat([spot_df, pd.DataFrame(spot_dict)], axis=1)

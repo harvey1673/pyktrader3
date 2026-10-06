@@ -167,6 +167,11 @@ config = ResearchConfig(
     aggregate_cache=Path(saved_config["aggregate_cache"]),
     validation_start=pd.Timestamp(saved_config["validation_start"]),
     oos_start=pd.Timestamp(saved_config["oos_start"]),
+    aggregate_file=(
+        None
+        if not saved_config.get("aggregate_file")
+        else Path(saved_config["aggregate_file"])
+    ),
     contract_period=saved_config["contract_period"],
     cost_bps=float(saved_config["cost_bps"]),
     refresh_aggregate=False,

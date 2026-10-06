@@ -2,6 +2,13 @@ import sys
 import logging
 import datetime
 import json
+
+# This script is also launched directly by the daily batch job.  Make the two
+# local source roots available before importing modules that depend on WTPY.
+for local_source in ("C:/dev/pyktrader3", "C:/dev/wtpy"):
+    if local_source not in sys.path:
+        sys.path.append(local_source)
+
 from misc_scripts.factor_data_update import update_port_position
 from misc_scripts.fun_factor_update import update_db_factor
 from misc_scripts.auto_update_data_xl import update_data_from_xl

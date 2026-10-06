@@ -406,7 +406,7 @@ def sf_adjustment(candidate: CTDCandidate, contract_month: int) -> RuleResult:
 # supplied through overrides and cash-cost fields.
 # ---------------------------------------------------------------------------
 
-_REGISTERED_BRAND_PRODUCTS = {"l", "pp", "v", "TA", "bu", "ru", "nr", "br"}
+_REGISTERED_BRAND_PRODUCTS = {"l", "pp", "v", "TA", "bu", "ru", "nr", "br", "pg"}
 _STANDARD_ONLY_PRODUCTS = {"eg", "eb", "PX", "MA", "sc", "fu", "lu"}
 
 
@@ -423,7 +423,7 @@ def simple_adjustment(product: str, candidate: CTDCandidate, contract_month: int
         quality_adj = -20.0 if quality in {"qualified", "substitute"} else 0.0
         eligible = eligible and quality in {"standard", "premium", "qualified", "substitute"}
         note = "Registered brand required from L2104; qualified substitute is -20 yuan/t."
-    elif product in {"pp", "v", "TA", "bu", "br"}:
+    elif product in {"pp", "v", "TA", "bu", "br", "pg"}:
         note = "Registered brand/producer eligibility required; no universal fixed brand premium encoded."
     elif product in {"eg", "eb", "PX", "MA"}:
         note = "Standard-grade eligibility; location/factory-pickup schedule belongs in overrides."
@@ -474,7 +474,7 @@ _ADJUSTERS: dict[str, AdjustmentFunction] = {
 def _get_adjuster(product: str) -> AdjustmentFunction:
     if product in _ADJUSTERS:
         return _ADJUSTERS[product]
-    supported_simple = {"l", "pp", "v", "eg", "eb", "TA", "PX", "MA", "sc", "fu", "lu", "bu", "UR", "ru", "nr", "br"}
+    supported_simple = {"l", "pp", "v", "eg", "eb", "TA", "PX", "MA", "sc", "fu", "lu", "bu", "UR", "ru", "nr", "br", "pg"}
     if product in supported_simple:
         return lambda candidate, cm: simple_adjustment(product, candidate, cm)
     raise KeyError(f"unsupported CTD product: {product}")
@@ -533,17 +533,28 @@ def ctd_basis(
     candidates: Iterable[CTDCandidate] | None = None,
     return_details: bool = False,
 ) -> pd.Series | tuple[pd.Series, pd.DataFrame]:
-    use_default_j_fallback = candidates is None and product == "j"
+    default_priority = None
+    if candidates is None:
+        default_priority = {
+            "j": ["rizhao_quasi_1_outstock", "rizhao_quasi_1", "tianjin_early_history"],
+            "SF": ["tianjin_72", "national_72_proxy"],
+            "fu": ["zhoushan_380cst_cny_proxy", "singapore_380cst_fob_cny_proxy"],
+            "lu": ["zhoushan_bonded_05_cny_proxy", "zhoushan_05_cny_proxy"],
+        }.get(product)
     candidates = list(candidates if candidates is not None else priority_ctd_candidates(product))
     details = adjusted_candidates(product, spot_df, expiry, candidates)
     if details.empty:
         ctd = pd.Series(np.nan, index=pd.to_datetime(expiry.dropna()).index, name=f"{product}_ctd")
     else:
         equivalents = details.xs("equivalent", axis=1, level="field")
-        if use_default_j_fallback:
-            primary = equivalents.get("rizhao_quasi_1", pd.Series(index=equivalents.index, dtype=float))
-            fallback = equivalents.get("tianjin_early_history", pd.Series(index=equivalents.index, dtype=float))
-            ctd = primary.combine_first(fallback)
+        if default_priority:
+            ctd = pd.Series(np.nan, index=equivalents.index, dtype=float)
+            for candidate_name in default_priority:
+                candidate = equivalents.get(
+                    candidate_name,
+                    pd.Series(index=equivalents.index, dtype=float),
+                )
+                ctd = ctd.combine_first(candidate)
         else:
             ctd = equivalents.min(axis=1, skipna=True).where(equivalents.notna().any(axis=1))
         ctd.name = f"{product}_ctd"
@@ -563,6 +574,12 @@ def priority_ctd_candidates(product: str) -> list[CTDCandidate]:
     defaults = {
         "j": [
             CTDCandidate(
+                "rizhao_quasi_1_outstock", "coke_sub_a_rz_outstock", location="rizhao",
+                spec={"ash": 13, "sulfur": .7, "m40": 80, "m10": 7.5,
+                      "cri": 30, "csr": 60, "moisture": 7,
+                      "equilibrium_moisture": None},
+            ),
+            CTDCandidate(
                 "rizhao_quasi_1", "coke_sub_a_rz", location="rizhao",
                 spec={"ash": 13, "sulfur": .7, "m40": 80, "m10": 7.5,
                       "cri": 30, "csr": 60, "moisture": 7,
@@ -581,6 +598,18 @@ def priority_ctd_candidates(product: str) -> list[CTDCandidate]:
                 spec={"ash": 10, "sulfur": .8, "volatile": 24, "g": 75,
                       "y": 24, "csr": 63, "moisture": 8},
             ),
+            CTDCandidate(
+                "tangshan_mongol_5_proxy", "ckc_mongol5_ts", location="tangshan",
+                spec={"ash": 10.5, "sulfur": .75, "volatile": 28, "g": 78,
+                      "y": 14, "csr": 60, "moisture": 8,
+                      "assumed_fields": ("y",)},
+            ),
+            CTDCandidate(
+                "jiexiu_kaijia", "ckc_midsulfur_jiexiu_kaijia", location="shanxi",
+                brand="kaijia_no_1",
+                spec={"ash": 10.5, "sulfur": 1.3, "volatile": 25, "g": 80,
+                      "y": 14, "csr": 65, "moisture": 8},
+            ),
         ],
         "ss": [
             CTDCandidate(
@@ -588,14 +617,90 @@ def priority_ctd_candidates(product: str) -> list[CTDCandidate]:
                 spec={"registered": True, "grade": "304", "surface": "2B",
                       "thickness_mm": 2.0, "width_mm": 1219, "edge": "mill"},
             ),
+            CTDCandidate(
+                "hongwang_2x1240_market_proxy", "ss_304_2b_hongwang_wuxi", location="wuxi",
+                brand="hongwang",
+                spec={"registered": True, "grade": "304", "surface": "2B",
+                      "thickness_mm": 2.0, "width_mm": 1240, "edge": "trimmed"},
+            ),
         ],
         "SM": [
-            CTDCandidate("tianjin_6517", "sm_65s17_tj", location="tianjin",
+            CTDCandidate("tianjin_6517", "SM_65s17_tj", location="tianjin",
                          spec={"grade": "6517"}),
         ],
         "SF": [
-            CTDCandidate("national_72_proxy", "sf_72_shmet", location="tianjin",
+            CTDCandidate("tianjin_72", "SF_72_tj", location="tianjin",
                          spec={"grade": "72"}),
+            CTDCandidate("national_72_proxy", "SF_72_shmet", location="tianjin",
+                         spec={"grade": "72"}),
+        ],
+        "l": [
+            CTDCandidate("tianjin_7042_proxy", "l_7042_tj", location="tianjin",
+                         spec={"registered": True, "quality": "standard"}),
+        ],
+        "pp": [
+            CTDCandidate("t30s_market_proxy", "pp_t30s_shaoxing_hz", location="hangzhou",
+                         spec={"registered": True, "quality": "standard"}),
+        ],
+        "v": [
+            CTDCandidate("shanghai_carbide_sg5_proxy", "pvc_cac2_sh", location="shanghai",
+                         spec={"registered": True, "quality": "standard"}),
+            CTDCandidate("east_china_carbide_sg5_proxy", "pvc_cac2_east", location="east_china",
+                         spec={"registered": True, "quality": "standard"}),
+        ],
+        "eg": [
+            CTDCandidate("east_china_tank", "eg_east_spot", location="east_china",
+                         spec={"quality": "standard"}),
+        ],
+        "eb": [
+            CTDCandidate("east_china_spot", "eb_east_spot", location="east_china",
+                         spec={"quality": "standard"}),
+        ],
+        "TA": [
+            CTDCandidate("east_china_registered_proxy", "TA_east_spot", location="east_china",
+                         spec={"registered": True, "quality": "standard"}),
+        ],
+        "PX": [
+            CTDCandidate("east_china_ex_factory", "PX_exw_east_spot", location="east_china",
+                         spec={"quality": "standard"}),
+        ],
+        "MA": [
+            CTDCandidate("jiangsu_spot", "MA_spot_jiangsu", location="jiangsu",
+                         spec={"quality": "standard"}),
+        ],
+        "UR": [
+            CTDCandidate("shandong_small_granule", "UR_shandong_spot", location="shandong",
+                         spec={"quality": "standard"}),
+        ],
+        "ru": [
+            CTDCandidate("jiangsu_scr_wf", "ru_scrwf_jiangsu", location="jiangsu",
+                         spec={"registered": True, "grade": "scr_wf"}),
+        ],
+        "bu": [
+            CTDCandidate("shandong_heavy_asphalt_proxy", "bu_heavy_shandong", location="shandong",
+                         spec={"registered": True, "quality": "standard"}),
+        ],
+        "pg": [
+            CTDCandidate("south_china_import_propane_proxy", "propane_cfr_south_cny_vat", location="south_china",
+                         spec={"registered": True, "quality": "standard"}),
+        ],
+        "br": [
+            CTDCandidate("qilu_br9000_shandong", "br9000_qilu_sd", location="shandong",
+                         brand="sinopec", spec={"registered": True, "quality": "standard", "grade": "br9000"}),
+            CTDCandidate("daqing_br9000_shandong", "br9000_daqing_sd", location="shandong",
+                         brand="kunlun", spec={"registered": True, "quality": "standard", "grade": "br9000"}),
+        ],
+        "fu": [
+            CTDCandidate("zhoushan_380cst_cny_proxy", "fo_380cst_zhoushan_cny", location="zhoushan",
+                         spec={"quality": "standard", "grade": "rmg380"}),
+            CTDCandidate("singapore_380cst_fob_cny_proxy", "fo_380cst_sgp_fob_cny", location="singapore",
+                         spec={"quality": "standard", "grade": "rmg380"}),
+        ],
+        "lu": [
+            CTDCandidate("zhoushan_bonded_05_cny_proxy", "lu_bonded_zhoushan_cny", location="zhoushan",
+                         spec={"quality": "standard", "sulfur_pct": 0.5}),
+            CTDCandidate("zhoushan_05_cny_proxy", "lu_05_zhoushan_cny", location="zhoushan",
+                         spec={"quality": "standard", "sulfur_pct": 0.5}),
         ],
     }
     if product not in defaults:
@@ -624,6 +729,7 @@ UR_ctd_basis = _wrapper("UR")
 ru_ctd_basis = _wrapper("ru")
 nr_ctd_basis = _wrapper("nr")
 br_ctd_basis = _wrapper("br")
+pg_ctd_basis = _wrapper("pg")
 
 # Lower-case convenience aliases for callers that use product keys rather than
 # exchange display codes.
@@ -638,7 +744,7 @@ pvc_ctd_basis = v_ctd_basis
 
 RULE_COVERAGE = {
     "automatic": ["j:J2201+", "jm", "ss", "SM", "SF", "l", "UR", "ru", "nr"],
-    "eligibility_plus_overrides": ["pp", "v", "eg", "eb", "TA", "PX", "MA", "sc", "fu", "lu", "bu", "br"],
+    "eligibility_plus_overrides": ["pp", "v", "eg", "eb", "TA", "PX", "MA", "sc", "fu", "lu", "bu", "br", "pg"],
     "known_gap": ["j:pre-J2201", "dynamic factory-pickup guidance", "historical registered-brand lists"],
 }
 

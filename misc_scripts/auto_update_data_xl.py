@@ -56,7 +56,7 @@ def update_ifind_xlsheet(filename='C:/Users/harvey/Nutstore/1/Nutstore/ifind_dat
 
 
 def update_mysteel_xlsheet(
-        filename=f'{LOCAL_NUTSTORE_FOLDER}/mysteel_metal.xlsx',
+        filename=f'{LOCAL_NUTSTORE_FOLDER}/mysteel_data.xlsx',
         wait_time=40):
     """Refresh a Mysteel workbook once using its Excel add-in hotkeys."""
     file_name = os.path.basename(filename)
@@ -100,7 +100,9 @@ def update_data_from_xl(data_folder=LOCAL_NUTSTORE_FOLDER,
     file_setup = {
         # ('ifind_data.xlsx', 'hist'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 2, 7, 8, 9],
         #                                 'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
-        ('mysteel_metal.xlsx', 'data'): {'header': [0, 1, 2, 3], 'skiprows': [0, 3, 6, 7, 8, 9],
+        ('mysteel_data.xlsx', 'metal'): {'header': [0, 1, 2, 3], 'skiprows': [0, 3, 6, 7, 8, 9],
+                                          'source': 'mysteel', 'reorder': [0, 3, 1, 2], 'drop_zero': False},
+        ('mysteel_data.xlsx', 'petchem'): {'header': [0, 1, 2, 3], 'skiprows': [0, 3, 6, 7, 8, 9],
                                           'source': 'mysteel', 'reorder': [0, 3, 1, 2], 'drop_zero': False},
         ('ifind_data.xlsx', 'ferrous_w'): {'header': [0, 1, 2, 3], 'skiprows': [0, 1, 6, 7, 8],
                                         'source': 'ifind', 'reorder': [0, 1, 2, 3], 'drop_zero': False},
@@ -151,7 +153,7 @@ if __name__ == "__main__":
     else:
         cmd = args[0]
     if cmd in ['refresh_all', 'refresh', 'all']:
-        update_mysteel_xlsheet(filename=f'{data_folder}/mysteel_metal.xlsx', wait_time=40)
+        update_mysteel_xlsheet(filename=f'{data_folder}/mysteel_data.xlsx', wait_time=60)
         if (now.time() > datetime.time(18, 0, 0)) or (cmd in ['refresh_all']):
             update_ifind_xlsheet(filename=f'{data_folder}/ifind_data.xlsx', wait_time=40, excluded=['hist'])
             update_ifind_xlsheet(filename=f'{data_folder}/ifind_wkly.xlsx', wait_time=40, excluded=[])

@@ -1,6 +1,8 @@
 import datetime as dt
 import json
+import sys
 import tempfile
+import types
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -11,6 +13,7 @@ from openpyxl import Workbook, load_workbook
 
 from misc_scripts.strategy_scenario_backtest import (
     _append_spread_contract_prices,
+    _strategy_assets,
     FactorFrameSignalProvider,
     SignalBacktestResult,
     SignalSpec,
@@ -103,6 +106,25 @@ class StrategyScenarioBacktestTests(unittest.TestCase):
 
     def tearDown(self):
         self.temp_dir.cleanup()
+
+    def test_strategy_assets_include_every_json_underlier(self):
+        misc_module = types.ModuleType("pycmqlib3.utility.misc")
+        misc_module.inst2product = lambda value: value.rstrip("0123456789")
+        strategy = StrategyScenario(
+            name="test",
+            strategy_file="test.json",
+            scaler=1.0,
+            signals={},
+            config={
+                "assets": [
+                    {"underliers": ["rb2610", "hc2610"]},
+                    {"underliers": ["rb2701"]},
+                ]
+            },
+        )
+
+        with patch.dict(sys.modules, {"pycmqlib3.utility.misc": misc_module}):
+            self.assertEqual(_strategy_assets(strategy), ["rb", "hc"])
 
     def test_spread_price_loader_builds_notebook_d1_columns(self):
         dates = pd.date_range("2015-01-02", periods=4, freq="B")

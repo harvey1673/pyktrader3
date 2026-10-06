@@ -46,19 +46,19 @@ These are research priorities inferred from local mappings, not confirmed delive
 | J | coke_sub_a_rz | Establish wet/dry weight and full assay; compare adjusted Rizhao benchmark with inland-to-port alternatives. |
 | JM | ckc_outstock_ganqimaodu | Inspect Ganqimaodu stock/outstock and Lvliang/Tangshan assay-labelled quotes before buying new series. Do not infer Mongolian No. 5 or washed status from the aliases. |
 | SS | ss_304_gross_wuxi | Confirm thickness, edge, brand composition and weight convention; determine if adjusted benchmark is sufficient. Treat ss_304_wuxi_phybasis as a basis, not an outright price. |
-| SM | sm_65s17_tj + 190 | Validate historical Tianjin adjustment; compare producer locations only with exact pickup points and freight. |
-| SF | sf_72_ningxia + 350 | Establish whether regional Ningxia price represents the relevant delivery point; validate contract-specific adjustment history. |
+| SM | SM_65s17_tj + 190 | Validate historical Tianjin adjustment; compare producer locations only with exact pickup points and freight. |
+| SF | SF_72_ningxia + 350 | Establish whether regional Ningxia price represents the relevant delivery point; validate contract-specific adjustment history. |
 | EG | eg_east_spot | Audit domestic tank/warehouse benchmark, tax and timestamp first. |
 | EB | eb_east_spot | Audit East-China quote basis before expanding regional/import panel. |
-| TA | pta_east_spot | Confirm brand/grade and pickup convention; compare second East-China series. |
-| MA | ma_spot_jiangsu | Audit Jiangsu benchmark, then compare Zhejiang and inland prices after conversion. |
+| TA | TA_east_spot | Confirm brand/grade and pickup convention; compare second East-China series. |
+| MA | MA_spot_jiangsu | Audit Jiangsu benchmark, then compare Zhejiang and inland prices after conversion. |
 | L | l_7042_tj | Compare Tianjin with East/North/South 7042; establish producer/grade composition. |
 | PP | pp_100ppi_spot | Inspect aggregation and grade; compare Linyi/Wenzhou alternatives. |
 | V | pvc_cac2_east | Audit grade/process and compare regional/ethylene-route candidates on common basis. |
 | BU | bu_heavy_shandong | Confirm producer/grade and pickup basis; compare North/East prices. |
 | RU | ru_scrwf_kunming | Validate brand, production year and location adjustment; compare Zhejiang/Jiangsu. |
 | FU | fo_180cst_xiamen | Explicitly audit grade and domestic/bonded basis compatibility before treating it as a futures-comparable spot. |
-| PX | No entry | Audit px_exw_east_spot first; retain CFR/FOB conversion as a separate candidate path. |
+| PX | No entry | Audit PX_exw_east_spot first; retain CFR/FOB conversion as a separate candidate path. |
 | UR | No entry | Compare Henan/Shandong/North quotes with grade and pickup metadata. |
 | SC | No entry | Separate grade, currency, unit and bonded/import basis workstream. |
 | LU | No entry | Establish cargo versus bunker convention and bonded delivery comparability. |

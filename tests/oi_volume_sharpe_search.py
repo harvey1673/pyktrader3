@@ -536,6 +536,9 @@ def write_outputs(
                 "price_file": str(config.price_file),
                 "output_dir": str(config.output_dir),
                 "aggregate_cache": str(config.aggregate_cache),
+                "aggregate_file": (
+                    None if config.aggregate_file is None else str(config.aggregate_file)
+                ),
                 "start": str(config.start.date()),
                 "end": str(config.end.date()),
                 "validation_start": str(config.validation_start.date()),
@@ -585,9 +588,9 @@ def run_search(config: ResearchConfig) -> dict[str, Path]:
 
 def parse_args(argv: Sequence[str] | None = None) -> ResearchConfig:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--price-file", type=Path, default=Path("C:/dev/data/fut_d_20260918.parquet"))
+    parser.add_argument("--price-file", type=Path, default=Path("C:/dev/data/fut_d_20260930.parquet"))
     parser.add_argument("--start", default="2010-01-01")
-    parser.add_argument("--end", default="2026-09-18")
+    parser.add_argument("--end", default="2026-09-30")
     parser.add_argument("--validation-start", default="2019-01-01")
     parser.add_argument("--oos-start", default="2024-01-01")
     parser.add_argument(
@@ -596,6 +599,11 @@ def parse_args(argv: Sequence[str] | None = None) -> ResearchConfig:
         default=Path("C:/dev/data/output") / "oi_volume_sharpe_search",
     )
     parser.add_argument("--aggregate-cache", type=Path)
+    parser.add_argument(
+        "--aggregate-file",
+        type=Path,
+        default=Path("C:/dev/data/fut_oi_volume_20260930.parquet"),
+    )
     parser.add_argument("--products", nargs="*", default=None)
     parser.add_argument("--contract-period", default="12m")
     parser.add_argument("--cost-bps", type=float, default=2.0)
@@ -616,6 +624,9 @@ def parse_args(argv: Sequence[str] | None = None) -> ResearchConfig:
         aggregate_cache=cache.resolve(),
         validation_start=pd.Timestamp(args.validation_start),
         oos_start=pd.Timestamp(args.oos_start),
+        aggregate_file=(
+            None if args.aggregate_file is None else args.aggregate_file.resolve()
+        ),
         contract_period=args.contract_period,
         cost_bps=args.cost_bps,
         refresh_aggregate=args.refresh_aggregate,

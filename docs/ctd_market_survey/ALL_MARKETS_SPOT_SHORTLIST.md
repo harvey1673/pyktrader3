@@ -31,10 +31,10 @@ that the series is absent from the source workbook.
 | i | Qingdao PB fines cash price, wet tonne | BRBF/IOC6/SSF small basket | Mysteel | `io_ctd_spot` | contract-era brand and chemistry penalties; wet-to-dry |
 | j | Rizhao quasi-grade-1 wet-quench coke, cash tax-included ex-warehouse | Luliang quasi-grade-1 dry-quench ex-works | Mysteel | `coke_sub_a_rz` | moisture, quality, freight; do not mix with port closing/FOB quote |
 | jm | Tangshan pickup Mongolian No.5 washed coal, **ID01892939** | Jiexiu medium-sulfur prime coking coal; Xiaoyi low-sulfur for backfill | Mysteel | `ckc_outstock_ganqimaodu` | quality and delivery-location cost; Shaheyi ends in 2024 and is not the core leg |
-| SM | Tianjin FeMn65Si17 | Ulanqab producer price | Mysteel | `sm_65s17_tj` | size, chemistry, payment term, freight |
-| SF | Tianjin 72# qualified lump ferrosilicon | Ningxia Zhongwei producer price | Mysteel | `sf_72_ningxia` | size, impurities, payment term, freight |
-| SA | Shahe heavy soda ash | Shandong heavy soda ash | Mysteel | `sa_heavy_shahe` | heavy grade only; ex-works/delivered and warehouse |
-| FG | Shahe 5mm large-sheet float glass | Hubei same specification | Mysteel | `fg_5mm_shahe` | specification, weight convention, factory warehouse |
+| SM | Tianjin FeMn65Si17 | Ulanqab producer price | Mysteel | `SM_65s17_tj` | size, chemistry, payment term, freight |
+| SF | Tianjin 72# qualified lump ferrosilicon | Ningxia Zhongwei producer price | Mysteel | `SF_72_ningxia` | size, impurities, payment term, freight |
+| SA | Shahe heavy soda ash | Shandong heavy soda ash | Mysteel | `SA_heavy_shahe` | heavy grade only; ex-works/delivered and warehouse |
+| FG | Shahe 5mm large-sheet float glass | Hubei same specification | Mysteel | `FG_5mm_shahe` | specification, weight convention, factory warehouse |
 | v | East China carbide-process PVC SG-5 | North China SG-5 | Mysteel | `pvc_cac2_east` | deliverable producer/grade, pickup location |
 | SH | Shandong 32% liquid caustic soda divided by 0.32 | Shandong 50% divided by 0.50 | Mysteel | `SH_ctd_spot` | dry-basis conversion, contract-era concentration/location adjustment |
 
@@ -70,7 +70,7 @@ exact vendor indicator code and history start still need recording.
 | Code | Preferred spot | Fallback | Preferred source | Local alias | Main conversion |
 |---|---|---|---|---|---|
 | ru | East China registered SCR WF full-ribbed rubber | Kunming SCR WF | Mysteel | `ru_scrwf_kunming` | production year, region discount and freight |
-| UR | Shandong small-granule urea | Henan small-granule urea | Mysteel | `ur_shandong_spot` | nitrogen, size, ex-works/delivered, factory warehouse |
+| UR | Shandong small-granule urea | Henan small-granule urea | Mysteel | `UR_shandong_spot` | nitrogen, size, ex-works/delivered, factory warehouse |
 | sp | Shandong imported softwood pulp, Silver Star brand | Jiangsu/Shanghai Silver Star | Mysteel | — | registered brand/origin and warehouse |
 | nr | Qingdao bonded STR20/SIR20 USD spot | Qingdao non-bonded RMB TSR20 | Mysteel | — | FX, tax, financing, bonded warehouse, registered origin |
 | br | Shandong BR9000 registered-brand spot | East China BR9000 | Mysteel | — | certified brand/grade, tax and warehouse |
@@ -81,10 +81,10 @@ exact vendor indicator code and history start still need recording.
 |---|---|---|---|---|---|
 | l | North China/Tianjin LLDPE 7042 deliverable producer | East China 7042 | Mysteel | `l_7042_tj` | producer, grade, tax, pickup location |
 | pp | East China PP raffia T30S deliverable producer | Linyi/North China T30S | Mysteel | `pp_100ppi_spot` | replace generic index with producer/grade quote when available |
-| TA | East China PTA spot pickup | main-port deliverable brand | Mysteel | `pta_east_spot` | payment, brand, warehouse |
+| TA | East China PTA spot pickup | main-port deliverable brand | Mysteel | `TA_east_spot` | payment, brand, warehouse |
 | PX | East China domestic PX ex-warehouse | CFR China/Taiwan PX USD | Mysteel | — | imported landed cost: FX, duty/VAT, port, freight, financing |
 | eg | East China main-port MEG tank spot | Zhangjiagang MEG | Mysteel | `eg_east_spot` | tank, payment, tax, grade |
-| MA | Taicang/Jiangsu methanol ex-tank | southern Shandong ex-works | Mysteel | `ma_spot_jiangsu` | port preferred; inland freight and payment basis |
+| MA | Taicang/Jiangsu methanol ex-tank | southern Shandong ex-works | Mysteel | `MA_spot_jiangsu` | port preferred; inland freight and payment basis |
 | eb | East China main-port styrene ex-tank | Jiangsu styrene | Mysteel | `eb_east_spot` | delivery month, tank, tax, grade |
 | sc | landed-cost basket of deliverable medium-sour crude, including Oman/Dubai grades | INE bonded warrant/spot trade | iFinD | — | grade differential, FX, bbl/t, freight and bonded costs; Brent alone is unsuitable |
 | lu | Singapore 0.5% LSFO cargo | Zhoushan bonded LSFO warrant/spot | iFinD | — | use cargo rather than bunker retail; FX, freight, bonded storage |

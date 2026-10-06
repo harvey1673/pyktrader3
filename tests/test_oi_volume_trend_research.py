@@ -16,6 +16,7 @@ from tests.oi_volume_trend_research import (  # noqa: E402
     build_feature_panels,
     cost_sensitivity_metrics,
     evaluate_signal,
+    normalize_aggregate_panel,
 )
 from pycmqlib3.analytics import tstool  # noqa: E402
 
@@ -79,6 +80,21 @@ class OiVolumeTrendResearchTests(unittest.TestCase):
         self.assertEqual(panel.columns.names, ["product", "field"])
         self.assertEqual(panel.loc[pd.Timestamp("2024-01-03"), ("rb", "openInterest")], 40.0)
         self.assertEqual(failures.iloc[0]["product"], "bad")
+
+    def test_dated_aggregate_export_schema_is_normalized(self):
+        exported = pd.DataFrame(
+            {
+                ("rbc1", "agg_vol"): [10.0, 20.0],
+                ("rbc1", "agg_oi"): [30.0, 40.0],
+            },
+            index=pd.to_datetime(["2024-01-02", "2024-01-03"]),
+        )
+        normalized = normalize_aggregate_panel(exported)
+        self.assertEqual(normalized.columns.names, ["product", "field"])
+        self.assertEqual(normalized.loc["2024-01-03", ("rb", "volume")], 20.0)
+        self.assertEqual(
+            normalized.loc["2024-01-03", ("rb", "openInterest")], 40.0
+        )
 
     def test_feature_transforms_match_tstool_and_do_not_use_future_rows(self):
         features = build_feature_panels(self.front, self.aggregate)

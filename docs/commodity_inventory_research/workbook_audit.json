@@ -1,0 +1,76 @@
+{
+  "ifind_daily.xlsx": {
+    "path": "C:\\Users\\harve\\Nutstore\\1\\Nutstore\\ifind_daily.xlsx",
+    "modified_at": "2026-10-03T01:49:04",
+    "sheets": {
+      "petchem_d": {
+        "indicators": 118,
+        "inventory": 0
+      },
+      "macro_d": {
+        "indicators": 105,
+        "inventory": 6
+      },
+      "ferrous_d": {
+        "indicators": 101,
+        "inventory": 0
+      },
+      "base_d": {
+        "indicators": 164,
+        "inventory": 16
+      }
+    }
+  },
+  "ifind_data.xlsx": {
+    "path": "C:\\Users\\harve\\Nutstore\\1\\Nutstore\\ifind_data.xlsx",
+    "modified_at": "2026-09-30T20:14:10",
+    "sheets": {
+      "hist": {
+        "indicators": 1,
+        "inventory": 0
+      },
+      "ag_w": {
+        "indicators": 34,
+        "inventory": 34
+      },
+      "const_d": {
+        "indicators": 64,
+        "inventory": 10
+      },
+      "warrant_d": {
+        "indicators": 89,
+        "inventory": 81
+      },
+      "base_d2": {
+        "indicators": 75,
+        "inventory": 6
+      },
+      "ferrous_w": {
+        "indicators": 125,
+        "inventory": 50
+      },
+      "base_w": {
+        "indicators": 66,
+        "inventory": 39
+      },
+      "petchem_w": {
+        "indicators": 96,
+        "inventory": 82
+      },
+      "macro_m": {
+        "indicators": 61,
+        "inventory": 5
+      }
+    }
+  },
+  "mysteel_metal.xlsx": {
+    "path": "C:\\Users\\harve\\Nutstore\\1\\Nutstore\\mysteel_metal.xlsx",
+    "modified_at": "2026-09-30T20:05:58",
+    "sheets": {
+      "data": {
+        "indicators": 93,
+        "inventory": 57
+      }
+    }
+  }
+}

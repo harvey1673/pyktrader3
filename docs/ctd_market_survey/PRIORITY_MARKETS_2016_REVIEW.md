@@ -13,8 +13,8 @@ The user clarified that the goal is to capture the major contribution to physica
 | J | coke_sub_a_rz | coke_sub_a_tj for 2016–2017 and overlap checks | Wet/dry accounting, old quality discount and J2604 Mf effect | Model the quoted standard assay; use one documented port-cost convention. No daily multi-origin CTD. |
 | JM | ckc_a10v24s08_lvliang | ID01892939 唐山蒙5#精煤 from 2017-02-06; ID00103479 as a border comparator | Domestic versus Mongolian sourcing, quality-regime shifts and transport/location conversion | Use Xiaoyi as the continuous 2016 baseline. ID01892939 can enter the normalized CTD minimum once imported and its tax/cash basis is confirmed. |
 | SS | ss_304_gross_wuxi | None | Mill-edge conversion; thickness assumption | Use a representative 2.0mm 304/2B assumption provisionally if provider clarification is unavailable; no registered-brand panel. |
-| SM | sm_65s17_tj | None | Historical 0/150/190 location conversion | Single representative grade and pickup convention; no provincial minimum. |
-| SF | sf_72_shmet | sf_72_ningxia from 2019-07-15 | Persistent national/producer basis and freight | Use the national series for a consistent 2016 benchmark; compare Ningxia separately before deciding whether it improves the signal. |
+| SM | SM_65s17_tj | None | Historical 0/150/190 location conversion | Single representative grade and pickup convention; no provincial minimum. |
+| SF | SF_72_shmet | SF_72_ningxia from 2019-07-15 | Persistent national/producer basis and freight | Use the national series for a consistent 2016 benchmark; compare Ningxia separately before deciding whether it improves the signal. |
 
 For JM, the previously proposed Shaheyi series stops in 2024. Retain Xiaoyi as the continuous 2016 baseline. The preferred current Mongolian leg is ID01892939: 唐山自提蒙5#精煤 with A<10.5, V<28, S<0.75, G>78, MT<8, CSR>60 and 岩相≤0.15. Its screenshot history begins on 2017-02-06. The displayed definition omits Y and does not explicitly show the tax/cash convention, so those remain validation items. ID00103479 is a useful 乌不浪口 comparator from 2017-03-24, but it should not enter the CTD minimum without a freight conversion.
 
@@ -51,9 +51,9 @@ The full-history workbook generally stops in June 2026; the current daily workbo
 | ckc_outstock_ganqimaodu | S009785426 | daily workbooks / ferrous_d / AX | 2021-09-30 | 主焦(蒙古)库提含税; No.5 identity and full assay are not explicit. |
 | Australian Jingtang port quote | S002858879 | daily workbooks / ferrous_d / AY | 2016-01-04 | 库提含税澳大利亚主焦煤; no exact brand/assay. |
 | ss_304_gross_wuxi | S004785205 | daily workbooks / base_d / BL | 2019-07-01 | 304/2B卷、毛边; “gross” alias means mill edge here, not proof of gross-weight pricing. |
-| sm_65s17_tj | S002959498 | daily workbooks / ferrous_d / AB | 2016-01-04 | 天津市场价 FeMn65Si17; exact pickup/tax/payment terms need confirmation. |
-| sf_72_ningxia | S004789784 | daily workbooks / ferrous_d / CH | 2019-07-15 | 宁夏出厂含税72; not a named Zhongwei delivery warehouse quote. |
-| sf_72_shmet | S005068030 | ifind_data.xlsx / base_d2 / Q | 2016-01-04 | 全国平均72; usable benchmark, but no unique delivery location. |
+| SM_65s17_tj | S002959498 | daily workbooks / ferrous_d / AB | 2016-01-04 | 天津市场价 FeMn65Si17; exact pickup/tax/payment terms need confirmation. |
+| SF_72_ningxia | S004789784 | daily workbooks / ferrous_d / CH | 2019-07-15 | 宁夏出厂含税72; not a named Zhongwei delivery warehouse quote. |
+| SF_72_shmet | S005068030 | ifind_data.xlsx / base_d2 / Q | 2016-01-04 | 全国平均72; usable benchmark, but no unique delivery location. |
 
 Exact headers, units, cells, per-source observation dates/counts and annual counts are in `priority_spot_audit/inventory.csv` and `yearly_coverage.csv`. `merged_profiles.csv` describes combined coverage. `observations.csv` preserves the originating cell for each numeric observation.
 

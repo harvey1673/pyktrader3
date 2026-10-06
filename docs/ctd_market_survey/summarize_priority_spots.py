@@ -22,7 +22,7 @@ def main():
         role = ('basis_only' if '升贴水' in meta.description else
                 'scrap_not_deliverable_coil' if '废不锈钢' in meta.description else
                 'monthly_tender_not_daily_spot' if '采购价' in meta.description else
-                'grade75_separate_benchmark' if meta.alias == 'sf_75_shmet' else
+                'grade75_separate_benchmark' if meta.alias == 'SF_75_shmet' else
                 'outright_spot_candidate')
         delta = frame.date.diff().dt.days
         summaries.append({'product': meta['product'], 'code': code, 'alias': meta.alias,
@@ -41,8 +41,8 @@ def main():
     pd.DataFrame(summaries).sort_values(['product','alias']).to_csv(BASE/'merged_profiles.csv', index=False, encoding='utf-8-sig')
     pd.DataFrame(gaps).to_csv(BASE/'long_gaps.csv', index=False, encoding='utf-8-sig')
     selected = ['coke_sub_a_rz','coke_sub_a_tj','ckc_stock_ganqimaodu','ckc_outstock_ganqimaodu',
-        'ckc_a10v24s08_lvliang','ckc_a9v18s10_lvliang','sm_65s17_tj','sm_65s17_neimeng',
-        'sf_72_shmet','sf_72_ningxia','sf_72_neimeng','sf_72_gansu','ss_304_gross_wuxi']
+        'ckc_a10v24s08_lvliang','ckc_a9v18s10_lvliang','SM_65s17_tj','SM_65s17_neimeng',
+        'SF_72_shmet','SF_72_ningxia','SF_72_neimeng','SF_72_gansu','ss_304_gross_wuxi']
     panel = unique[unique.alias.isin(selected)].pivot(index='date', columns='alias', values='value').sort_index()
     panel.to_csv(BASE/'raw_benchmark_panel.csv', encoding='utf-8-sig')
     selection = json.loads((BASE.parent/'sparse_spot_selection.json').read_text(encoding='utf-8'))

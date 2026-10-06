@@ -14,9 +14,9 @@ and evaluated in two separate families:
 Typical usage::
 
     D:\\miniconda3\\python.exe tests\\oi_volume_trend_research.py \
-        --price-file C:\\dev\\data\\fut_d_20260918.parquet \
+        --price-file C:\\dev\\data\\fut_d_20260930.parquet \
         --start 2010-01-01 --validation-start 2019-01-01 \
-        --oos-start 2024-01-01 --end 2026-09-18
+        --oos-start 2024-01-01 --end 2026-09-30
 
 The script writes bounded CSV evidence, charts, and a Markdown summary to a
 ``C:/dev/data/output/oi_volume_trend_research`` by default.  It never changes the WTPY store or production
@@ -80,6 +80,7 @@ class ResearchConfig:
     aggregate_cache: Path
     validation_start: pd.Timestamp
     oos_start: pd.Timestamp
+    aggregate_file: Path | None = None
     contract_period: str = "12m"
     cost_bps: float = 2.0
     refresh_aggregate: bool = False
@@ -216,11 +217,51 @@ def build_aggregate_panel(
     return panel, pd.DataFrame(failures, columns=["product", "error"])
 
 
+def normalize_aggregate_panel(panel: pd.DataFrame) -> pd.DataFrame:
+    """Normalize cached and dated aggregate OI/volume parquet schemas."""
+    if not isinstance(panel.columns, pd.MultiIndex) or panel.columns.nlevels != 2:
+        raise ValueError("Expected two-level aggregate OI/volume columns.")
+    field_map = {
+        "openInterest": "openInterest",
+        "volume": "volume",
+        "agg_oi": "openInterest",
+        "agg_vol": "volume",
+    }
+    normalized: dict[tuple[str, str], pd.Series] = {}
+    for raw_product, raw_field in panel.columns:
+        field = field_map.get(str(raw_field))
+        if field is None:
+            continue
+        product = str(raw_product)
+        if product.endswith("c1"):
+            product = product[:-2]
+        key = (product, field)
+        if key in normalized:
+            raise ValueError(f"Duplicate aggregate column after normalization: {key}")
+        normalized[key] = pd.to_numeric(
+            panel[(raw_product, raw_field)], errors="coerce"
+        )
+    if not normalized:
+        raise ValueError("No aggregate OI/volume fields were recognized.")
+    result = pd.DataFrame(normalized, index=pd.to_datetime(panel.index)).sort_index()
+    result.columns = pd.MultiIndex.from_tuples(
+        result.columns, names=["product", "field"]
+    )
+    return result
+
+
 def load_or_build_aggregate_panel(config: ResearchConfig) -> tuple[pd.DataFrame, pd.DataFrame]:
     config.aggregate_cache.parent.mkdir(parents=True, exist_ok=True)
     failure_path = config.aggregate_cache.with_suffix(".failures.csv")
+    if config.aggregate_file is not None and not config.refresh_aggregate:
+        if not config.aggregate_file.exists():
+            raise FileNotFoundError(
+                f"Aggregate input does not exist: {config.aggregate_file}"
+            )
+        panel = normalize_aggregate_panel(pd.read_parquet(config.aggregate_file))
+        return panel, pd.DataFrame(columns=["product", "error"])
     if config.aggregate_cache.exists() and not config.refresh_aggregate:
-        panel = pd.read_parquet(config.aggregate_cache)
+        panel = normalize_aggregate_panel(pd.read_parquet(config.aggregate_cache))
         failures = (
             pd.read_csv(failure_path)
             if failure_path.exists()
@@ -238,7 +279,7 @@ def load_or_build_aggregate_panel(config: ResearchConfig) -> tuple[pd.DataFrame,
     )
     panel.to_parquet(config.aggregate_cache)
     failures.to_csv(failure_path, index=False)
-    return panel, failures
+    return normalize_aggregate_panel(panel), failures
 
 
 def _field(panel: pd.DataFrame, name: str, products: Sequence[str]) -> pd.DataFrame:
@@ -1103,10 +1144,13 @@ def write_summary(
         robust = pd.DataFrame()
 
     robust_names = robust["signal"].tolist() if not robust.empty else []
-    fixed_robust = universe_incremental[
-        universe_incremental["signal"].isin(robust_names)
-        & universe_incremental["split"].isin(["validation", "oos"])
-    ]
+    if universe_incremental.empty:
+        fixed_robust = pd.DataFrame()
+    else:
+        fixed_robust = universe_incremental[
+            universe_incremental["signal"].isin(robust_names)
+            & universe_incremental["split"].isin(["validation", "oos"])
+        ]
     if not fixed_robust.empty:
         fixed_robust = fixed_robust.pivot_table(
             index=["cohort", "n_products", "signal"],
@@ -1329,8 +1373,16 @@ def run_research(config: ResearchConfig) -> dict[str, Path]:
         cohort_increments.insert(1, "n_products", len(cohort_products))
         universe_metrics_parts.append(cohort_metrics)
         universe_increment_parts.append(cohort_increments)
-    universe_metrics = pd.concat(universe_metrics_parts, ignore_index=True)
-    universe_increments = pd.concat(universe_increment_parts, ignore_index=True)
+    universe_metrics = (
+        pd.concat(universe_metrics_parts, ignore_index=True)
+        if universe_metrics_parts
+        else pd.DataFrame()
+    )
+    universe_increments = (
+        pd.concat(universe_increment_parts, ignore_index=True)
+        if universe_increment_parts
+        else pd.DataFrame()
+    )
 
     paths = {
         "quality": config.output_dir / "data_quality.csv",
@@ -1369,6 +1421,9 @@ def run_research(config: ResearchConfig) -> dict[str, Path]:
                 "price_file": str(config.price_file),
                 "output_dir": str(config.output_dir),
                 "aggregate_cache": str(config.aggregate_cache),
+                "aggregate_file": (
+                    None if config.aggregate_file is None else str(config.aggregate_file)
+                ),
                 "start": str(config.start.date()),
                 "end": str(config.end.date()),
                 "validation_start": str(config.validation_start.date()),
@@ -1397,13 +1452,18 @@ def run_research(config: ResearchConfig) -> dict[str, Path]:
 
 def parse_args(argv: Sequence[str] | None = None) -> ResearchConfig:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--price-file", type=Path, default=Path("C:/dev/data/fut_d_20260918.parquet"))
+    parser.add_argument("--price-file", type=Path, default=Path("C:/dev/data/fut_d_20260930.parquet"))
     parser.add_argument("--start", default="2010-01-01")
-    parser.add_argument("--end", default="2026-09-18")
+    parser.add_argument("--end", default="2026-09-30")
     parser.add_argument("--validation-start", default="2019-01-01")
     parser.add_argument("--oos-start", default="2024-01-01")
     parser.add_argument("--output-dir", type=Path, default=Path("C:/dev/data/output") / "oi_volume_trend_research")
     parser.add_argument("--aggregate-cache", type=Path)
+    parser.add_argument(
+        "--aggregate-file",
+        type=Path,
+        default=Path("C:/dev/data/fut_oi_volume_20260930.parquet"),
+    )
     parser.add_argument("--products", nargs="*", default=None)
     parser.add_argument("--contract-period", default="12m")
     parser.add_argument("--cost-bps", type=float, default=2.0)
@@ -1422,6 +1482,9 @@ def parse_args(argv: Sequence[str] | None = None) -> ResearchConfig:
         aggregate_cache=cache.resolve(),
         validation_start=_as_timestamp(args.validation_start),
         oos_start=_as_timestamp(args.oos_start),
+        aggregate_file=(
+            None if args.aggregate_file is None else args.aggregate_file.resolve()
+        ),
         contract_period=args.contract_period,
         cost_bps=args.cost_bps,
         refresh_aggregate=args.refresh_aggregate,

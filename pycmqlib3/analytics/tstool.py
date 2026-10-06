@@ -1753,7 +1753,24 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
         else:
             post_func_list = [post_func]
         for pfunc in post_func_list:
-            if pfunc[:3] == 'ema':
+            if pfunc[:2] == "vf":
+                split_str = pfunc[2:].split('_')
+                n_win = int(split_str[0])
+                if len(split_str) > 1:
+                    k = int(split_str[1])
+                else:
+                    k = 5
+                if "_px" in feature:
+                    lret = np.log(spot_df[feature].dropna()).diff()
+                elif "_logret" in feature:
+                    lret = spot_df[feature].dropna()
+                vol20 = lret.rolling(20).std()
+                vol_lt = lret.rolling(n_win).std()
+                vol_ratio = (vol20 / vol_lt)
+                if pfunc[:2] == "vf":
+                    vol_ratio = vol_ratio.apply(lambda x: np.exp(-k*(x-1)) if x > 1 else 1)
+                signal_ts *= vol_ratio.reindex(index=signal_ts.index).ffill()
+            elif pfunc[:3] == 'ema':
                 n_win = int(pfunc[3:])
                 signal_ts = signal_ts.ewm(n_win, ignore_na=True).mean()
             elif pfunc[:3] == 'sma':
