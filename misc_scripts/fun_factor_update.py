@@ -90,7 +90,7 @@ single_factors = {
     'eb_pinv_east_cal_hlr': ['eb'],
     'eb_pinvchg_east_cal_hlr': ['eb'],
     'ru_invchg_cal_zs': ['ru'],
-    'nr_invchg_ma': ['nr', 'ru'],
+    'nr_invchg_ma': ['nr'],
 
     'FG_margin_hlr_1y': ['SA'],
     'FG_util_mom_st': ['FG'],
