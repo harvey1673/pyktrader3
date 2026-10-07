@@ -45,6 +45,8 @@ single_factors = {
     'io_millinv_lyoy': ['hc', 'i'],
     'io_minvdays_mds': ['i'],
     'io_invdays_imp_mill(64)_lvl': ['i'],
+    'iosales_lyoy_ema': ['i'],
+
     'pbf_arb_hlr': ['rb', 'hc'],
     'macf_arb_hlr': ['rb', 'hc'],
     'billet_inv_hlr_lt': ['rb', 'hc', 'i'],
@@ -79,6 +81,17 @@ single_factors = {
     "TA_ryieldmom_zs": ["TA"],
     "PX_margin_mds": ["PX", "TA"],
     "MX_invchg_ma": ["TA", "PX"],
+    'PX_inv_mill_hlr': ["PX"],
+    'PX_inv_mill_yoy_hlr': ["PX"],
+    'DTY_invdays_yoy_hlr': ['TA', 'PX', 'eg', 'PF'],
+    'FDY_invdays_lyoy_hlr': ['TA', 'PX', 'eg', 'PF'],
+    'eg_invchg_ma': ['eg'],
+    'eg_invchg_lunar_hlr': ['eg'],
+    'eb_pinv_east_cal_hlr': ['eb'],
+    'eb_pinvchg_east_cal_hlr': ['eb'],
+    'ru_invchg_cal_zs': ['ru'],
+    'nr_invchg_ma': ['nr', 'ru'],
+
     'FG_margin_hlr_1y': ['SA'],
     'FG_util_mom_st': ['FG'],
 
@@ -101,7 +114,7 @@ single_factors = {
     "prop_etf_mom_dbth_qtl": ["rb", "i", "FG", "v"],
     "prop_etf_mom_dbth_qtl2": ["rb", "i", "FG", "v"],
     "glass_etf_mom_dbth_zs": ["FG"],
-    "us_oil_prod_etf_mom": ['sc', 'bu', 'TA'],
+    "us_oil_prod_etf_mom": ['sc', 'bu', 'fu'],
 
     'hc_rb_diff_20': ['rb', 'hc', 'i', 'j', 'jm', 'au', 'ag', 'cu', 'al', 'zn', 'sn', 'ss', 'ni', 'pb', 'y', 'OI', 'p', 'm', 'RM'],
     'shibor1m_qtl': ['cu', 'al', 'zn', 'rb', 'hc', 'FG', 'SA', 'ag', 'l', 'pp', 'v', 'TA', 'eg', 'MA'],
@@ -270,11 +283,13 @@ factors_by_beta_neutral = {
     'fef_basmom5_spd_qtl': [('rb', 'i', 1), ('hc', 'i', 1), ('j', 'i', 1)],
     'fef_basmom5_spd_ema': [('rb', 'i', 1), ('hc', 'i', 1), ('j', 'i', 1)],
 
-    'auag_csi500_zs_st': [('au', 'ag', 1),],
     'coal_mom_spd_st': [('SF', 'SM', 1), ('jm', 'i', 1), ('j', 'i', 1),],
     'coal_mom_spd_yr': [('SF', 'SM', 1), ('jm', 'i', 1), ('j', 'i', 1),],
     'coke_dprod_lt_hlr': [('j', 'jm', 1)],
     'coke_dprod_st_qtl': [('j', 'jm', 1)],
+    'FG_util_mom_spd_st': [('FG', 'SA', 1)],
+    'nr_inv_rev_hlr': [('br', 'nr', 1)],
+    'auag_csi500_zs_st': [('au', 'ag', 1),],
     # 'rbhc_px_diff_mds': [('hc', 'rb', 1 )],
     # 'rbhc_px_diff_lyoy_mds': [('hc', 'rb', 1 )],
     # 'rbhc_phycarry_diff_zs': [('hc', 'rb', 1 )],
@@ -869,12 +884,12 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql',
 
             data_dict[f'{asset}_basmom'] = np.log(price_df[(asset+'c1', 'close')].pct_change()+1) - \
                 np.log(price_df[(asset+'c2', 'close')].pct_change()+1)
-            data_dict[f'{asset}_basmom5'] = data_dict[f'{asset}_basmom'].dropna().rolling(5).sum()
-            data_dict[f'{asset}_basmom10'] = data_dict[f'{asset}_basmom'].dropna().rolling(10).sum()
-            data_dict[f'{asset}_basmom20'] = data_dict[f'{asset}_basmom'].dropna().rolling(20).sum()
-            data_dict[f'{asset}_basmom40'] = data_dict[f'{asset}_basmom'].dropna().rolling(40).sum()
-            data_dict[f'{asset}_basmom60'] = data_dict[f'{asset}_basmom'].dropna().rolling(60).sum()
-            data_dict[f'{asset}_basmom120'] = data_dict[f'{asset}_basmom'].dropna().rolling(120).sum()
+            # data_dict[f'{asset}_basmom5'] = data_dict[f'{asset}_basmom'].dropna().rolling(5).sum()
+            # data_dict[f'{asset}_basmom10'] = data_dict[f'{asset}_basmom'].dropna().rolling(10).sum()
+            # data_dict[f'{asset}_basmom20'] = data_dict[f'{asset}_basmom'].dropna().rolling(20).sum()
+            # data_dict[f'{asset}_basmom40'] = data_dict[f'{asset}_basmom'].dropna().rolling(40).sum()
+            # data_dict[f'{asset}_basmom60'] = data_dict[f'{asset}_basmom'].dropna().rolling(60).sum()
+            # data_dict[f'{asset}_basmom120'] = data_dict[f'{asset}_basmom'].dropna().rolling(120).sum()
         if asset in commod_phycarry_dict:
             adder_dict = {"SF": 350, "SM": 190}
             asset_feature = commod_phycarry_dict[asset]
@@ -996,8 +1011,9 @@ def update_db_factor(run_date=datetime.date.today(), flavor='mysql',
     logging.info("updating factor for beta neutral ratio ...")
     beta_win = 244
     asset_pairs = [('rb', 'i'), ('hc', 'i'), ('i', 'rb'), ('i', 'hc'),
-                   ('j', 'i'), ('j', 'jm'), ('jm', 'i'), ('jm', 'rb'), ('jm', 'hc'),
-                   ('au', 'ag'), ('au', 'cu'), ('au', 'rb'), ('SF', 'SM'), ('SM', 'SF')]
+                   ('j', 'i'), ('j', 'jm'), ('jm', 'i'), ('jm', 'rb'), ('jm', 'hc'), 
+                   ('FG', 'SA'), ('SF', 'SM'), ('SM', 'SF'), ('br', 'nr'),
+                   ('au', 'ag'), ('au', 'cu'), ('au', 'rb')]
     beta_dict = {}
     for trade_asset, index_asset in asset_pairs:
         key = '_'.join([trade_asset, index_asset, 'beta'])
