@@ -1,5 +1,6 @@
 import json
 import tempfile
+import types
 import unittest
 from pathlib import Path
 
@@ -7,6 +8,8 @@ import pandas as pd
 from openpyxl import Workbook
 
 from misc_scripts.portfolio_weight_backtest import (
+    _iplot_figure,
+    _split_strategy_cumulative_pnl,
     aggregate_strategy_results,
     run_full_portfolio_backtest,
     workbook_new_weight_strategies,
@@ -69,6 +72,60 @@ def _write_strategy(path, scaler):
 
 
 class PortfolioWeightBacktestTests(unittest.TestCase):
+    def test_strategy_chart_uses_nearest_point_hover(self):
+        class FakeScatter(dict):
+            def __init__(self, **kwargs):
+                super().__init__(kwargs)
+
+        class FakeFigure:
+            def __init__(self):
+                self.data = []
+                self.layout = {}
+
+            def add_trace(self, trace):
+                self.data.append(trace)
+
+            def add_annotation(self, **kwargs):
+                self.layout.setdefault("annotations", []).append(kwargs)
+
+            def update_layout(self, **kwargs):
+                self.layout.update(kwargs)
+
+        fake_go = types.SimpleNamespace(Figure=FakeFigure, Scatter=FakeScatter)
+        frame = pd.DataFrame(
+            {"strategy_a": [1.0, 2.0]},
+            index=pd.date_range("2026-01-01", periods=2),
+        )
+
+        figure = _iplot_figure(
+            frame,
+            "Strategy PNL",
+            fake_go,
+            hovermode="closest",
+        )
+
+        self.assertEqual(figure.layout["hovermode"], "closest")
+        self.assertIn("%{x|%Y-%m-%d}", figure.data[0]["hovertemplate"])
+        self.assertIn("%{y:,.0f}", figure.data[0]["hovertemplate"])
+
+    def test_strategy_curves_split_by_ending_cumulative_pnl(self):
+        cumulative = pd.DataFrame(
+            {
+                "high": [10_000_000.0, 31_000_000.0],
+                "equal": [15_000_000.0, 30_000_000.0],
+                "low": [5_000_000.0, 20_000_000.0],
+            },
+            index=pd.date_range("2026-01-01", periods=2),
+        )
+
+        above, below = _split_strategy_cumulative_pnl(
+            cumulative,
+            ["high", "equal", "low"],
+        )
+
+        self.assertEqual(list(above.columns), ["high"])
+        self.assertEqual(list(below.columns), ["equal", "low"])
+
     def test_workbook_strategy_discovery_uses_nonzero_new_weight(self):
         with tempfile.TemporaryDirectory() as temp:
             workbook = Path(temp) / "weights.xlsx"
@@ -207,6 +264,9 @@ class PortfolioWeightBacktestTests(unittest.TestCase):
             document = html_path.read_text(encoding="utf-8")
             self.assertIn("Full portfolio cumulative PNL", document)
             self.assertIn("Cumulative PNL by strategy", document)
+            self.assertIn("ending above 30M", document)
+            self.assertIn("ending at or below 30M", document)
+            self.assertIn('"hovermode":"closest"', document)
             self.assertIn("Strategy daily-PNL correlation", document)
             self.assertIn("Strategy Sharpe by tenor", document)
             self.assertIn("Strategy daily standard deviation by tenor", document)

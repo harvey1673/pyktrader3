@@ -3144,6 +3144,14 @@ def _build_parser() -> argparse.ArgumentParser:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
+    from misc_scripts.factor_data_update import sync_port_pos_scalers
+
+    updated_scalers = sync_port_pos_scalers(
+        settings_dir=args.settings_dir,
+        strategy_file=args.strategy_file,
+    )
+    if updated_scalers:
+        print(f"Updated pos_scaler in {updated_scalers[0]}")
     template = load_strategy_scenario(
         args.settings_dir,
         args.strategy_file,

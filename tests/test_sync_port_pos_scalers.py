@@ -23,6 +23,19 @@ def load_sync_function(port_config):
 
 
 class SyncPortPosScalersTest(unittest.TestCase):
+    def test_position_update_syncs_json_scalers_first(self):
+        tree = ast.parse(FACTOR_UPDATE.read_text(encoding="utf-8"))
+        function = next(
+            node
+            for node in tree.body
+            if isinstance(node, ast.FunctionDef) and node.name == "update_port_position"
+        )
+
+        first_statement = function.body[0]
+        self.assertIsInstance(first_statement, ast.Assign)
+        self.assertIsInstance(first_statement.value, ast.Call)
+        self.assertEqual(first_statement.value.func.id, "sync_port_pos_scalers")
+
     def test_syncs_json_and_ignores_non_json_entries(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
@@ -72,6 +85,33 @@ class SyncPortPosScalersTest(unittest.TestCase):
                 sync_port_pos_scalers()
 
             self.assertEqual(strategy.read_text(encoding="utf-8"), original)
+
+    def test_can_sync_only_one_selected_strategy(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            settings = root / "settings"
+            settings.mkdir()
+            strategy = settings / "STRAT.json"
+            strategy.write_text(
+                '{"config": {"pos_scaler": 1}}',
+                encoding="utf-8",
+            )
+            sync_port_pos_scalers = load_sync_function(
+                {
+                    "PORT": {
+                        "pos_loc": str(root),
+                        "strat_list": [("STRAT.json", 2), ("MISSING.json", 3)],
+                    }
+                }
+            )
+
+            updated = sync_port_pos_scalers(strategy_file="STRAT.json")
+
+            self.assertEqual([Path(path) for path in updated], [strategy])
+            self.assertEqual(
+                json.loads(strategy.read_text(encoding="utf-8"))["config"]["pos_scaler"],
+                2,
+            )
 
 
 if __name__ == "__main__":

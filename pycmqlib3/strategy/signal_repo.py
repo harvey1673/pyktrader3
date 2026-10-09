@@ -570,8 +570,8 @@ signal_store = {
     "lc_sam_fob_mom": [['lc'], ["lc_bat_sam_fob", 'zscore', [60, 80, 2], '', '', True, 'price', "", 120, [-2,2]]],
     "lc_mine_mom": [['lc'], ["lc_li2Omine_6pct_cif", 'zscore', [60, 80, 2], '', '', True, 'price', "", 120, [-2,2]]],
     "lc_sam_asia_arb_qtl": [['lc'], ["lc_sam_asia_arb", 'qtl', [60, 100, 2], '', '', True, 'price', "", 120, [-2,2]]],
-    "SH_margin_mom": [['SH'], ['SH_margin_sd', 'qtl', [40, 80, 2], '', '', False, 'price', "", 120, [-2,2]]],
-    "SH_50_32_spd_mom": [['SH'], ['SH_50_32_spd', 'zscore', [20, 60, 2], '', '', True, 'price', "", 120, [-2,2]]],
+    "SH_margin_mom": [['SH'], ['SH_margin_sd', 'qtl', [2, 16, 1], '', '', False, '', "", 120, [-2,2]]],
+    "SH_50_32_spd_mom": [['SH'], ['SH_50_32_spd', 'hlratio', [40, 60, 2], '', '', True, 'price', "", 120, [-2,2]]],
 
     # metal group
     'metal_pbc_ema': [['i', 'rb', 'hc', 'jm', 'SM', 'SF', 'FG', 'SA', 'v', 'SH',

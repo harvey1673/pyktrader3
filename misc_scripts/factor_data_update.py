@@ -51,18 +51,23 @@ for _port in port_pos_config.values():
 del _config_file
 
 
-def sync_port_pos_scalers(port_name=None, settings_dir=None):
+def sync_port_pos_scalers(port_name=None, settings_dir=None, strategy_file=None):
     """Copy scalers from port_pos_config to strategy JSON files."""
     if port_name is not None and port_name not in port_pos_config:
         raise ValueError(f'Unknown portfolio: {port_name}')
 
     ports = [port_name] if port_name else port_pos_config.keys()
+    selected_strategy = str(strategy_file).lower() if strategy_file else None
+    if selected_strategy and not selected_strategy.endswith('.json'):
+        selected_strategy += '.json'
     pending = []
     for name in ports:
         port = port_pos_config[name]
         target_dir = settings_dir or f"{port['pos_loc']}/settings"
         for strat_file, pos_scaler in port['strat_list']:
             if not strat_file.lower().endswith('.json'):
+                continue
+            if selected_strategy and strat_file.lower() != selected_strategy:
                 continue
             filename = f'{target_dir}/{strat_file}'
             with open(filename, 'r') as fp:
@@ -212,6 +217,12 @@ def create_strat_json(product_list, freq, roll_rule, factor_repo,
 
 
 def update_port_position(run_date=datetime.date.today()):
+    updated_scalers = sync_port_pos_scalers()
+    if updated_scalers:
+        logging.info(
+            "updated pos_scaler in %s strategy JSON files",
+            len(updated_scalers),
+        )
     results = {
         'pos_update': {},
         'details': {}
@@ -315,6 +326,13 @@ def update_port_position(run_date=datetime.date.today()):
 
 if __name__ == "__main__":
     args = sys.argv[1:]
+    if args and args[0] == "--sync-scalers":
+        port_name = args[1] if len(args) > 1 else None
+        updated = sync_port_pos_scalers(port_name=port_name)
+        print(f"Updated {len(updated)} strategy JSON files")
+        for filename in updated:
+            print(filename)
+        raise SystemExit(0)
     if len(args) >= 1:
         tday = datetime.datetime.strptime(args[0], "%Y%m%d").date()
     else:

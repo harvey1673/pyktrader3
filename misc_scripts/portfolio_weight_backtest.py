@@ -574,13 +574,37 @@ def _signal_asset_figure(report: FullPortfolioBacktest, go: Any) -> Any:
     return figure
 
 
-def _iplot_figure(frame: pd.DataFrame, title: str, go: Any) -> Any:
+def _iplot_figure(
+    frame: pd.DataFrame,
+    title: str,
+    go: Any,
+    *,
+    hovermode: str = "x unified",
+) -> Any:
     """Build the same one-trace-per-column view as tstool.iplot."""
 
     figure = go.Figure()
     for column in frame.columns:
         figure.add_trace(
-            go.Scatter(x=frame.index, y=frame[column], name=str(column))
+            go.Scatter(
+                x=frame.index,
+                y=frame[column],
+                name=str(column),
+                hovertemplate=(
+                    f"{column}<br>%{{x|%Y-%m-%d}}<br>"
+                    "cumulative PNL=%{y:,.0f}<extra></extra>"
+                ),
+            )
+        )
+    if frame.shape[1] == 0:
+        figure.add_annotation(
+            text="No strategies in this group",
+            x=0.5,
+            y=0.5,
+            xref="paper",
+            yref="paper",
+            showarrow=False,
+            font={"size": 16, "color": "#566575"},
         )
     figure.update_layout(
         title=title,
@@ -589,7 +613,7 @@ def _iplot_figure(frame: pd.DataFrame, title: str, go: Any) -> Any:
         width=900,
         height=600,
         template="plotly_white",
-        hovermode="x unified",
+        hovermode=hovermode,
         dragmode="zoom",
         xaxis={"fixedrange": False, "showgrid": True},
         yaxis={"fixedrange": False, "showgrid": True},
@@ -597,6 +621,20 @@ def _iplot_figure(frame: pd.DataFrame, title: str, go: Any) -> Any:
         margin={"l": 65, "r": 25, "t": 65, "b": 100},
     )
     return figure
+
+
+def _split_strategy_cumulative_pnl(
+    cumulative: pd.DataFrame,
+    strategies: Sequence[str],
+    threshold: float = 30_000_000.0,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Split strategies by ending cumulative PNL."""
+
+    strategy_pnl = cumulative.loc[:, list(strategies)]
+    ending_pnl = strategy_pnl.iloc[-1]
+    above = [name for name in strategies if ending_pnl[name] > threshold]
+    below = [name for name in strategies if ending_pnl[name] <= threshold]
+    return strategy_pnl.loc[:, above], strategy_pnl.loc[:, below]
 
 
 def _correlation_figure(daily_pnl: pd.DataFrame, go: Any) -> Any:
@@ -713,10 +751,21 @@ def write_full_portfolio_html(
         "Full portfolio cumulative PNL",
         go,
     )
-    strategy_figure = _iplot_figure(
-        cumulative.loc[:, list(report.strategies)],
-        "Cumulative PNL by strategy — click legend entries to select/unselect",
+    strategies_above_30m, strategies_below_30m = _split_strategy_cumulative_pnl(
+        cumulative,
+        list(report.strategies),
+    )
+    strategy_above_figure = _iplot_figure(
+        strategies_above_30m,
+        "Cumulative PNL by strategy — ending above 30M",
         go,
+        hovermode="closest",
+    )
+    strategy_below_figure = _iplot_figure(
+        strategies_below_30m,
+        "Cumulative PNL by strategy — ending at or below 30M",
+        go,
+        hovermode="closest",
     )
     strategy_daily_pnl = report.daily_pnl.loc[:, list(report.strategies)]
     correlation_figure = _correlation_figure(strategy_daily_pnl, go)
@@ -752,7 +801,8 @@ def write_full_portfolio_html(
 <p class="note">Workbook proposed weights (<code>new_weight</code>) · {report.start_date:%Y-%m-%d} to {report.end_date:%Y-%m-%d} · data as of {report.as_of:%Y-%m-%d} · {len(report.strategies)} strategies · {len(report.total.signal_pnl.columns)} active signals · metrics annualized with {BUSINESS_DAYS_PER_YEAR} business days. Drag a box inside any chart to zoom both axes; use the modebar or double-click to reset.</p>
 <section class="card">{total_figure.to_html(full_html=False, include_plotlyjs=False, config=config)}</section>
 <section class="card"><h2>Full portfolio performance</h2>{_format_metrics(report.total_metrics.reindex(tenor_order))}</section>
-<section class="card">{strategy_figure.to_html(full_html=False, include_plotlyjs=False, config=config)}</section>
+<section class="card">{strategy_above_figure.to_html(full_html=False, include_plotlyjs=False, config=config)}</section>
+<section class="card">{strategy_below_figure.to_html(full_html=False, include_plotlyjs=False, config=config)}</section>
 <section class="card">{correlation_figure.to_html(full_html=False, include_plotlyjs=False, config=config)}</section>
 <section class="card"><h2>Strategy reports</h2><ul class="strategy-links">{links}</ul></section>
 <section class="card"><h2>Strategy Sharpe by tenor</h2><div class="wide">{_format_metric_matrix(sharpe_matrix)}</div></section>
@@ -836,6 +886,11 @@ def _build_parser() -> argparse.ArgumentParser:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
+    from misc_scripts.factor_data_update import sync_port_pos_scalers
+
+    updated_scalers = sync_port_pos_scalers(settings_dir=args.settings_dir)
+    if updated_scalers:
+        print(f"Updated pos_scaler in {len(updated_scalers)} strategy JSON files")
     report = run_full_portfolio_backtest(
         args.settings_dir,
         args.weights_excel,
