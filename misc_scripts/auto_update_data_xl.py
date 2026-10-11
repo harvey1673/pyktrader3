@@ -156,7 +156,6 @@ if __name__ == "__main__":
         update_mysteel_xlsheet(filename=f'{data_folder}/mysteel_data.xlsx', wait_time=60)
         if (now.time() > datetime.time(18, 0, 0)) or (cmd in ['refresh_all']):
             update_ifind_xlsheet(filename=f'{data_folder}/ifind_data.xlsx', wait_time=40, excluded=['hist'])
-            update_ifind_xlsheet(filename=f'{data_folder}/ifind_wkly.xlsx', wait_time=40, excluded=[])
         update_ifind_xlsheet(filename=f'{data_folder}/ifind_daily.xlsx', wait_time=40, excluded=[])
         if (now.time() < datetime.time(12, 0, 0)) or (cmd in ['refresh_all']):
             update_ifind_xlsheet(filename=f'{data_folder}/ifind_stock.xlsx', wait_time=10, excluded=['setup'])
