@@ -20,12 +20,17 @@ import sys
 from pathlib import Path
 from typing import Callable, Iterable
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 import pandas as pd
 
+from pycmqlib3.utility.sec_bits import LOCAL_NUTSTORE_FOLDER
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+
 WTPY_ROOT = Path(r"C:\dev\wtpy")
-DEFAULT_HOTMAP = Path(r"C:\Users\harve\Nutstore\1\Nutstore\hotmap_prod.json")
+DEFAULT_HOTMAP = Path(LOCAL_NUTSTORE_FOLDER) / "hotmap_prod.json"
 DEFAULT_DATA_ROOT = Path(r"C:\dev\wtdev\storage\his")
 DEFAULT_POSITION_DIR = REPO_ROOT / "process" / "paper_sim1"
 DEFAULT_PORT_FILE = "PTSIM1_FACTPORT1_hot"

@@ -1,10 +1,12 @@
 import datetime as dt
 import math
 import unittest
+from pathlib import Path
 
 import pandas as pd
 
 from misc_scripts.futures_roll_monitor import (
+    DEFAULT_HOTMAP,
     active_products_for_position_pair,
     build_email_html,
     build_monitor,
@@ -13,9 +15,16 @@ from misc_scripts.futures_roll_monitor import (
     normalize_hotmap_contract,
     resolve_position_pair,
 )
+from pycmqlib3.utility.sec_bits import LOCAL_NUTSTORE_FOLDER
 
 
 class FuturesRollMonitorTests(unittest.TestCase):
+    def test_default_hotmap_uses_configured_nutstore_folder(self):
+        self.assertEqual(
+            DEFAULT_HOTMAP,
+            Path(LOCAL_NUTSTORE_FOLDER) / "hotmap_prod.json",
+        )
+
     def setUp(self):
         dates = [dt.date(2026, 10, day) for day in (6, 7, 8, 9, 12)]
         contracts = {
