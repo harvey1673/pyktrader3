@@ -1,4 +1,5 @@
 import sys
+import argparse
 import logging
 import datetime
 import json
@@ -54,10 +55,30 @@ def update_port_pos(tday=datetime.date.today(), email_notify=EMAIL_NOTIFY):
     return job_status, pos_update
 
 
+def parse_cli_args(argv=None):
+    parser = argparse.ArgumentParser(description="Run the portfolio position update.")
+    parser.add_argument("run_date", nargs="?", help="Run date in YYYYMMDD format.")
+    email_group = parser.add_mutually_exclusive_group()
+    email_group.add_argument(
+        "--email",
+        dest="email_notify",
+        action="store_true",
+        help="Send the position comparison email.",
+    )
+    email_group.add_argument(
+        "--no-email",
+        dest="email_notify",
+        action="store_false",
+        help="Do not send the position comparison email.",
+    )
+    parser.set_defaults(email_notify=EMAIL_NOTIFY)
+    return parser.parse_args(argv)
+
+
 if __name__ == "__main__":
-    args = sys.argv[1:]
-    if len(args) >= 1:
-        tday = datetime.datetime.strptime(args[0], "%Y%m%d").date()
+    args = parse_cli_args()
+    if args.run_date:
+        tday = datetime.datetime.strptime(args.run_date, "%Y%m%d").date()
     else:
         now = datetime.datetime.now()
         tday = now.date()
@@ -70,5 +91,7 @@ if __name__ == "__main__":
                         to_console=True,
                         console_level=logging.INFO)            
     logging.info("running for %s" % str(tday))
-    job_status, pos_update = update_port_pos(tday=tday, email_notify=EMAIL_NOTIFY)
+    job_status, pos_update = update_port_pos(
+        tday=tday, email_notify=args.email_notify
+    )
     print(job_status, pos_update)

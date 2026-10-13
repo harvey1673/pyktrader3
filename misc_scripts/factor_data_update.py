@@ -1,4 +1,4 @@
-import sys
+import argparse
 import json
 from pathlib import Path
 import copy
@@ -336,17 +336,44 @@ def update_port_position(run_date=datetime.date.today(), email_notify=EMAIL_NOTI
     return results
 
 
+def parse_cli_args(argv=None):
+    parser = argparse.ArgumentParser(description="Update factor portfolio positions.")
+    parser.add_argument("run_date", nargs="?", help="Run date in YYYYMMDD format.")
+    parser.add_argument(
+        "--sync-scalers",
+        nargs="?",
+        const="",
+        metavar="PORT_NAME",
+        help="Only synchronize position scalers, optionally for one portfolio.",
+    )
+    email_group = parser.add_mutually_exclusive_group()
+    email_group.add_argument(
+        "--email",
+        dest="email_notify",
+        action="store_true",
+        help="Send the position comparison email.",
+    )
+    email_group.add_argument(
+        "--no-email",
+        dest="email_notify",
+        action="store_false",
+        help="Do not send the position comparison email.",
+    )
+    parser.set_defaults(email_notify=EMAIL_NOTIFY)
+    return parser.parse_args(argv)
+
+
 if __name__ == "__main__":
-    args = sys.argv[1:]
-    if args and args[0] == "--sync-scalers":
-        port_name = args[1] if len(args) > 1 else None
+    args = parse_cli_args()
+    if args.sync_scalers is not None:
+        port_name = args.sync_scalers or None
         updated = sync_port_pos_scalers(port_name=port_name)
         print(f"Updated {len(updated)} strategy JSON files")
         for filename in updated:
             print(filename)
         raise SystemExit(0)
-    if len(args) >= 1:
-        tday = datetime.datetime.strptime(args[0], "%Y%m%d").date()
+    if args.run_date:
+        tday = datetime.datetime.strptime(args.run_date, "%Y%m%d").date()
     else:
         now = datetime.datetime.now()
         tday = now.date()
@@ -359,4 +386,4 @@ if __name__ == "__main__":
                         to_console=True,
                         console_level=logging.INFO)
     logging.info("running portfolio position for %s" % str(tday))
-    res = update_port_position(run_date=tday)
+    res = update_port_position(run_date=tday, email_notify=args.email_notify)

@@ -1,4 +1,5 @@
 import ast
+import argparse
 import json
 import tempfile
 import unittest
@@ -25,7 +26,35 @@ def load_sync_function(port_config):
     return namespace["sync_port_pos_scalers"]
 
 
+def load_cli_parser(path, email_notify):
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    function = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "parse_cli_args"
+    )
+    namespace = {"argparse": argparse, "EMAIL_NOTIFY": email_notify}
+    exec(
+        compile(ast.Module(body=[function], type_ignores=[]), str(path), "exec"),
+        namespace,
+    )
+    return namespace["parse_cli_args"]
+
+
 class SyncPortPosScalersTest(unittest.TestCase):
+    def test_factor_cli_email_flags_override_shared_default(self):
+        parse_args = load_cli_parser(FACTOR_UPDATE, email_notify=False)
+        self.assertTrue(parse_args(["20261013", "--email"]).email_notify)
+        self.assertFalse(parse_args(["20261013", "--no-email"]).email_notify)
+        self.assertFalse(parse_args(["20261013"]).email_notify)
+        self.assertEqual(parse_args(["--sync-scalers", "PORT"]).sync_scalers, "PORT")
+
+    def test_port_position_cli_email_flags_override_shared_default(self):
+        parse_args = load_cli_parser(PORT_POSITION_UPDATE, email_notify=True)
+        self.assertTrue(parse_args(["20261013"]).email_notify)
+        self.assertTrue(parse_args(["20261013", "--email"]).email_notify)
+        self.assertFalse(parse_args(["20261013", "--no-email"]).email_notify)
+
     def test_factor_position_email_uses_run_date_and_email_notify(self):
         tree = ast.parse(FACTOR_UPDATE.read_text(encoding="utf-8"))
         function = next(
