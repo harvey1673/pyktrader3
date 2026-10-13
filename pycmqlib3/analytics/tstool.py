@@ -1711,6 +1711,8 @@ def calc_funda_signal(spot_df, feature, signal_func, param_rng,
                                    rolling_years=rolling_years,
                                    min_obs=min_obs,
                                    signal_start=signal_start)[feature]
+    elif signal_func == 'sgn':
+        signal_ts = feature_ts[start_s:].apply(lambda x: np.sign(x))
     elif signal_func == 'rng':
         signal_ts = feature_ts[start_s:].apply(lambda x: max(min(x-param_rng[0], param_rng[1]), -param_rng[1])/param_rng[2])
     elif signal_func == 'dbl_th':

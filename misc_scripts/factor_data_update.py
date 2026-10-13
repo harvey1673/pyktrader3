@@ -15,6 +15,8 @@ from pycmqlib3.analytics.tstool import *
 from pycmqlib3.utility import base
 from pycmqlib3.strategy.strat_util import generate_strat_position
 from pycmqlib3.strategy.signal_repo import signal_buffer_config
+from pycmqlib3.utility.sec_bits import EMAIL_QQ, NOTIFIERS, LOCAL_PC_NAME, EMAIL_NOTIFY
+from pycmqlib3.utility.email_tool import send_html_by_smtp
 
 trade_cont_map = {}
 
@@ -216,7 +218,7 @@ def create_strat_json(product_list, freq, roll_rule, factor_repo,
         json.dump(strat_data, f, indent=4)
 
 
-def update_port_position(run_date=datetime.date.today()):
+def update_port_position(run_date=datetime.date.today(), email_notify=EMAIL_NOTIFY):
     updated_scalers = sync_port_pos_scalers()
     if updated_scalers:
         logging.info(
@@ -321,6 +323,16 @@ def update_port_position(run_date=datetime.date.today()):
             pos_df = pd.DataFrame({'cur': curr_pos, 'tgt': target_pos})
             pos_df['diff'] = pos_df['tgt'] - pos_df['cur']
             results['pos_update'][port_file] = pos_df
+
+    if email_notify:
+        sub = '%s port pos update<%s>' % (LOCAL_PC_NAME, run_date.strftime('%Y.%m.%d'))
+        html = "<html><head></head><body><p><br>"
+        for key in results['pos_update']:
+            html += "Position change for %s:<br>%s" % (key, results['pos_update'][key].to_html())
+        for key in results['details']:
+            html += "Signal details for %s:<br>%s" % (key, results['details'][key].to_html())
+        html += "</p></body></html>"
+        send_html_by_smtp(EMAIL_QQ, NOTIFIERS, sub, html)
     return results
 
 

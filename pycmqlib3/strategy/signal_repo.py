@@ -768,6 +768,7 @@ signal_store = {
                         ['TA_feedstock_invdays_polyester_w_ms', 'hlratio', [50, 55, 1], '', '', False, '', '', 120, [-2,2]]],
     'PX_inv_mill_yoy_hlr': [['PX'],
                         ['TA_feedstock_invdays_polyester_w_ms', 'hlratio', [50, 55, 1], 'cal_yoy_day', 'diff', False, '', '', 120, [-2,2]]],
+    'PX_util_kr_diff_sgn': [['PX', 'TA'], ['PX_util_kr', 'sgn', [1, 2, 1], 'df1', 'diff', False, '', '', 120, [-2,2]]],
     # 'TA_minv_hys': [['TA', 'eg', 'PF', 'PX'],
     #                 ['TA_invdays_mill', 'hlratio', [50, 55, 1], 'df1', 'diff', True, '', 'hys_0.5_0.5', 120, [-2,2]]],
     'DTY_invdays_yoy_hlr': [['TA', 'PX', 'eg', 'PF'], ['DTY_invdays_mill', 'hlratio', [50, 55, 1], 'cal_yoy_day', 'diff', False, '', '', 120, [-2,2]]],

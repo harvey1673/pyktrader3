@@ -8,6 +8,9 @@ from pathlib import Path
 FACTOR_UPDATE = (
     Path(__file__).resolve().parents[1] / "misc_scripts" / "factor_data_update.py"
 )
+PORT_POSITION_UPDATE = (
+    Path(__file__).resolve().parents[1] / "misc_scripts" / "port_position_update.py"
+)
 
 
 def load_sync_function(port_config):
@@ -23,6 +26,50 @@ def load_sync_function(port_config):
 
 
 class SyncPortPosScalersTest(unittest.TestCase):
+    def test_factor_position_email_uses_run_date_and_email_notify(self):
+        tree = ast.parse(FACTOR_UPDATE.read_text(encoding="utf-8"))
+        function = next(
+            node
+            for node in tree.body
+            if isinstance(node, ast.FunctionDef) and node.name == "update_port_position"
+        )
+        self.assertIsInstance(function.args.defaults[-1], ast.Name)
+        self.assertEqual(function.args.defaults[-1].id, "EMAIL_NOTIFY")
+        email_block = next(
+            node
+            for node in function.body
+            if isinstance(node, ast.If)
+            and isinstance(node.test, ast.Name)
+            and node.test.id == "email_notify"
+        )
+        names = {node.id for node in ast.walk(email_block) if isinstance(node, ast.Name)}
+        calls = {
+            node.func.id
+            for node in ast.walk(email_block)
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+        }
+        self.assertIn("run_date", names)
+        self.assertNotIn("tday", names)
+        self.assertIn("send_html_by_smtp", calls)
+
+    def test_port_position_wrapper_keeps_api_and_forwards_email_flag(self):
+        tree = ast.parse(PORT_POSITION_UPDATE.read_text(encoding="utf-8"))
+        function = next(
+            node
+            for node in tree.body
+            if isinstance(node, ast.FunctionDef) and node.name == "update_port_pos"
+        )
+        factor_call = next(
+            node
+            for node in ast.walk(function)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "update_port_position"
+        )
+        keywords = {keyword.arg: keyword.value for keyword in factor_call.keywords}
+        self.assertIsInstance(keywords["email_notify"], ast.Name)
+        self.assertEqual(keywords["email_notify"].id, "email_notify")
+
     def test_position_update_syncs_json_scalers_first(self):
         tree = ast.parse(FACTOR_UPDATE.read_text(encoding="utf-8"))
         function = next(

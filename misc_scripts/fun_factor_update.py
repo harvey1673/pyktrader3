@@ -85,6 +85,8 @@ single_factors = {
     'PX_inv_mill_yoy_hlr': ["PX"],
     'DTY_invdays_yoy_hlr': ['TA', 'PX', 'eg', 'PF'],
     'FDY_invdays_lyoy_hlr': ['TA', 'PX', 'eg', 'PF'],
+    'PX_util_kr_diff_sgn': ['PX', 'TA'],
+    
     'eg_invchg_ma': ['eg'],
     'eg_invchg_lunar_hlr': ['eg'],
     'eb_pinv_east_cal_hlr': ['eb'],
