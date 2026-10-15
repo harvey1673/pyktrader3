@@ -86,7 +86,7 @@ single_factors = {
     'DTY_invdays_yoy_hlr': ['TA', 'PX', 'eg', 'PF'],
     'FDY_invdays_lyoy_hlr': ['TA', 'PX', 'eg', 'PF'],
     'PX_util_kr_diff_sgn': ['PX', 'TA'],
-    
+
     'eg_invchg_ma': ['eg'],
     'eg_invchg_lunar_hlr': ['eg'],
     'eb_pinv_east_cal_hlr': ['eb'],
@@ -237,6 +237,8 @@ factors_by_spread = {
     'smsf_workrate_ratio': [('SM', 1), ('SF', -1)],
     'smsf_dmd_ratio': [('SM', 1), ('SF', -1)],
     'smsf_margin_diff': [('SM', 1), ('SF', -1)],
+    'ru_invdays_diff_spd_ema': [('br', 2), ('nr', -1), ('ru', -1)],
+    'ru_invdays_diff_spd_zs': [('br', 2), ('nr', -1), ('ru', -1)],
 }
 
 factors_by_spread2 = {

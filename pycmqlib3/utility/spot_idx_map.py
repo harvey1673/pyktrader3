@@ -1414,7 +1414,9 @@ def process_spot_df(spot_df, adjust_time=False):
     if "SH_50_spot_sdjl_shandong" in spot_df.columns and "SH_32_spot_sdjl_shandong" in spot_df.columns:
         spot_dict['SH_50_32_spd'] =spot_df["SH_50_spot_sdjl_shandong"]/0.5 - spot_df["SH_32_spot_sdjl_shandong"]/0.32
 
+    spot_dict['ru_full_half_invdays_spd'] = spot_df['ru_all_steel_tire_invdays_sd'] - spot_df['ru_half_steel_tire_invdays_sd']
     spot_dict['MX_inv_combo'] = spot_df[['MX_inv_east', 'MX_inv_south']].dropna(how='all').ffill().sum(axis=1)
+    
     if "TA_cfr_cn" in spot_df.columns and "TA_east_spot" in spot_df.columns and "usdcnh_spot" in spot_df.columns:
         spot_dict['TA_cfr_dom_ratio'] = np.log(spot_df['TA_cfr_cn']*spot_df['usdcnh_spot']/vat_adj(spot_df['TA_east_spot']))
     if "propane_cfr_south" in spot_df.columns and "usdcny_xe" in spot_df.columns:

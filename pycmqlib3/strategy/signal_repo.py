@@ -791,7 +791,12 @@ signal_store = {
                      ['nr_inv_shfe_all', 'ma', [1, 2, 1], 'df1', 'diff', False, '', '', 12, [-2,2]]],
     'nr_inv_rev_hlr': [['br_nr'],
                      ['nr_inv_shfe_all', 'hlratio', [50, 55, 1], '', '', True, '', '', 26, [-2,2]]],
-
+    'ru_invdays_diff_spd_ema': [['br-ru', 'br-nr'],
+                                ['ru_full_half_invdays_spd', 'ema', [1, 2, 1], 'df1|ema1', 'diff', True, '', '', 16, [-2,2]]],
+    'ru_invdays_diff_spd_zs': [['br-ru', 'br-nr'],
+                               ['ru_full_half_invdays_spd', 'zscore', [20, 24, 1], '', '', True, '', '', 16, [-2,2]]],
+                                                                
+                                
     # 'cnyrr25_zsa': ('usdcny_rr25', 'zscore_adj', [10, 20, 2], 'ema10', 'pct_change', False, 'price'),
     #
     # 'vhsi_mds': ('vhsi', 'ma_dff_sgn', [10, 20, 2], '', 'pct_change', False, 'price'),
